@@ -1,0 +1,119 @@
+# Makefile.setup
+# vim: set noet:
+#
+# Usage: make -f Makefile.setup setup
+#
+# This Makefile defines targets for setting up a development environment.
+# If you just want the bare minimum, define WITHOUT_DEV_DEPS.
+#
+
+APT := $(or \
+	$(shell command -v apt 2>/dev/null), \
+	$(shell command -v apt-get 2>/dev/null) \
+)
+APT_ARGS := --no-install-recommends -y
+
+PACMAN := $(shell command -v pacman 2>/dev/null)
+PACMAN_ARGS := --noconfirm --needed
+
+PIP := $(or \
+	$(shell command -v pipx 2>/dev/null), \
+	$(shell command -v pip3 2>/dev/null), \
+	$(shell command -v pip 2>/dev/null) \
+)
+PIP_INSTALL_ARGS :=
+
+.PHONY: help
+.DEFAULT: help
+help::
+	@echo "Available setup targets:"
+	@echo "  setup                to perform Git repository setup"
+	@echo "  install-system-deps  to install build (and development) system requirements"
+	@echo "  install-python-deps  to install build (and development) Python requirements"
+	@echo
+
+.PHONY: setup
+setup:
+	git config --local core.hooksPath .git-hooks/
+
+.PHONY: install-system-deps install-ubuntu-deps install-archlinux-deps install-python-deps
+install-system-deps::
+
+# Ubuntu ----------------------------------------------------------------------
+ifdef APT
+install-system-deps:: install-ubuntu-deps
+endif
+
+install-ubuntu-deps::
+	command -v ${APT} &>/dev/null
+	${APT} install ${APT_ARGS} \
+		bats \
+		build-essential \
+		cmake \
+		doxygen \
+		curl \
+		file \
+		git \
+		jq \
+		patchelf \
+		python3-setuptools \
+		python3-pip \
+		time
+
+ifndef WITHOUT_DEV_DEPS
+install-ubuntu-deps::
+	command -v ${APT} &>/dev/null
+	${APT} install ${APT_ARGS} \
+		clang-format \
+        python3-venv
+endif
+
+# Archlinux -------------------------------------------------------------------
+ifdef PACMAN
+install-system-deps:: install-archlinux-deps
+endif
+
+install-archlinux-deps::
+	command -v ${PACMAN} &>/dev/null
+	${PACMAN} -S ${PACMAN_ARGS} \
+		base-devel \
+		bash \
+		bash-bats \
+		cmake \
+		curl \
+		doxygen \
+		git \
+		jq \
+		patchelf \
+		python-pip \
+		time
+
+ifndef WITHOUT_DEV_DEPS
+install-archlinux-deps::
+	command -v ${PACMAN} &>/dev/null
+	${PACMAN} -S ${PACMAN_ARGS} \
+		clang \
+		python-virtualenv
+endif
+
+# Python ----------------------------------------------------------------------
+ifdef PIP
+install-deps:: install-python-deps
+endif
+
+install-python-deps::
+	command -v ${PIP} &>/dev/null
+	${PIP} install ${PIP_INSTALL_ARGS} conan
+
+ifndef WITHOUT_DEV_DEPS
+install-python-deps::
+	command -v ${PIP} &>/dev/null
+	${PIP} install ${PIP_INSTALL_ARGS} \
+		black \
+		graphviz \
+		mypy \
+		dephell \
+		poetry \
+		pylint \
+		yq
+endif

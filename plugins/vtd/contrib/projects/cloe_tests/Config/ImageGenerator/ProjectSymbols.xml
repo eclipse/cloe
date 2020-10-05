@@ -1,0 +1,20 @@
+<!-- 
+     Project symbols definition file.
+     Add/manipulate/override symbols (i.e. textures) and font definitions
+     
+     Material file order of effect:
+     1. SymbolsStd.xml              (located at "IGLinks/Distro/Config/ImageGenerator")
+     2. SetupSymbols.xml            (Optional; located at "IGLinks/Setup/Config/ImageGenerator",
+                                     can override all before coming symbol settings)
+     3. ProjectSymbols.xml        (Optional; located at "IGLinks/Project/Config/ImageGenerator", 
+                                     can override all before coming symbol settings)
+-->
+<SymbolDefinition>
+
+  <!--Symbol>
+  </Symbol-->
+
+  <Fonts>
+  </Fonts>
+
+</SymbolDefinition>

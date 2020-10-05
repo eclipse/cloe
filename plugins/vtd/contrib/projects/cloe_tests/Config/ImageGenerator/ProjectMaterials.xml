@@ -1,0 +1,21 @@
+<!-- 
+     Project materials definition file.
+     Add/manipulate/override materials (i.e. textures) and set textures assignments.
+     
+     Material file order of effect:
+     1. Materials.xml               (located at "IGLinks/Distro/Config/ImageGenerator")
+     2. Default material databases  (located at "IGLinks/Vig/data")
+     3. SetupMaterials.xml          (Optional; located at "IGLinks/Setup/Config/ImageGenerator",
+                                     can override all before coming material settings)
+     4. ProjectMaterials.xml        (Optional; located at "IGLinks/Project/Config/ImageGenerator", 
+                                     can override all before coming material settings)
+-->
+<MaterialDefinition>
+
+	<Materials>
+	</Materials>
+
+	<MaterialAssignments>	
+	</MaterialAssignments>	
+	
+</MaterialDefinition>

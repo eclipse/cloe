@@ -1,0 +1,18 @@
+{
+  "version": "4",
+  "engine": {
+    "hooks": {
+      "pre_connect": [
+        {
+          "path": "../plugins/vtd/bin/vtd",
+          "args": [
+            "stop", "--setup", "Cloe.noGUInoIG", "--project", "cloe_tests", "start"
+          ]
+        }
+      ],
+      "post_disconnect": [
+        { "path": "../plugins/vtd/bin/vtd", "args": ["stop"] }
+      ]
+    }
+  }
+}

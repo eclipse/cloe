@@ -1,0 +1,129 @@
+From 8bacbe93a5a919cd73716f82630edd9b14aa0a3a Mon Sep 17 00:00:00 2001
+Date: Tue, 19 May 2020 11:09:07 +0200
+Subject: [PATCH 1/2] Modify cmake setting for better control by conan recipe
+
+---
+ examples/OSMPDummySensor/CMakeLists.txt | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/examples/OSMPDummySensor/CMakeLists.txt b/examples/OSMPDummySensor/CMakeLists.txt
+index 155a96c..9719e3c 100644
+--- a/examples/OSMPDummySensor/CMakeLists.txt
++++ b/examples/OSMPDummySensor/CMakeLists.txt
+@@ -3,7 +3,7 @@ project(OSMPDummySensor)
+ 
+ set(CMAKE_CXX_STANDARD 11)
+ set(CMAKE_CXX_STANDARD_REQUIRED ON)
+-set(LINK_WITH_SHARED_OSI OFF CACHE BOOL "Link FMU with shared OSI library instead of statically linking")
++#set(LINK_WITH_SHARED_OSI OFF CACHE BOOL "Link FMU with shared OSI library instead of statically linking")
+ set(PUBLIC_LOGGING OFF CACHE BOOL "Enable logging via FMI logger")
+ set(PRIVATE_LOGGING OFF CACHE BOOL "Enable private logging to file")
+ if(WIN32)
+@@ -18,7 +18,7 @@ string(TIMESTAMP FMUTIMESTAMP UTC)
+ string(MD5 FMUGUID modelDescription.in.xml)
+ configure_file(modelDescription.in.xml modelDescription.xml @ONLY)
+ 
+-find_package(Protobuf 2.6.1 REQUIRED)
++#find_package(Protobuf 2.6.1 REQUIRED) # TODO: replace by find_osi
+ add_library(OSMPDummySensor SHARED OSMPDummySensor.cpp)
+ set_target_properties(OSMPDummySensor PROPERTIES PREFIX "")
+ target_compile_definitions(OSMPDummySensor PRIVATE "FMU_SHARED_OBJECT")
+-- 
+2.7.4
+
+
+From 89e232aa639bc4d48b7c1ddb70e9d617aa3500f4 Mon Sep 17 00:00:00 2001
+Date: Wed, 20 May 2020 19:29:24 +0200
+Subject: [PATCH 2/2] Changes for vtd v2.2
+
+---
+ examples/OSMPDummySensor/OSMPDummySensor.cpp | 31 +++++++++++++++++++++-------
+ examples/OSMPDummySensor/OSMPDummySensor.h   |  1 +
+ 2 files changed, 24 insertions(+), 8 deletions(-)
+
+diff --git a/examples/OSMPDummySensor/OSMPDummySensor.cpp b/examples/OSMPDummySensor/OSMPDummySensor.cpp
+index cade985..335a48e 100644
+--- a/examples/OSMPDummySensor/OSMPDummySensor.cpp
++++ b/examples/OSMPDummySensor/OSMPDummySensor.cpp
+@@ -140,6 +140,18 @@ bool COSMPDummySensor::get_fmi_sensor_view_in(osi3::SensorView& data)
+     }
+ }
+ 
++bool COSMPDummySensor::get_fmi_sensor_data_in(osi3::SensorData& data)
++{
++    if (integer_vars[FMI_INTEGER_SENSORVIEW_IN_SIZE_IDX] > 0) {
++        void* buffer = decode_integer_to_pointer(integer_vars[FMI_INTEGER_SENSORVIEW_IN_BASEHI_IDX],integer_vars[FMI_INTEGER_SENSORVIEW_IN_BASELO_IDX]);
++        normal_log("OSMP","Got %08X %08X, reading from %p ...",integer_vars[FMI_INTEGER_SENSORVIEW_IN_BASEHI_IDX],integer_vars[FMI_INTEGER_SENSORVIEW_IN_BASELO_IDX],buffer);
++        data.ParseFromArray(buffer,integer_vars[FMI_INTEGER_SENSORVIEW_IN_SIZE_IDX]);
++        return true;
++    } else {
++        return false;
++    }
++}
++
+ void COSMPDummySensor::set_fmi_sensor_data_out(const osi3::SensorData& data)
+ {
+     data.SerializeToString(&currentOutputBuffer);
+@@ -259,15 +271,18 @@ fmi2Status COSMPDummySensor::doCalc(fmi2Real currentCommunicationPoint, fmi2Real
+ {
+     DEBUGBREAK();
+ 
+-    osi3::SensorView currentIn;
++    osi3::SensorData currentIn;
+     osi3::SensorData currentOut;
+     double time = currentCommunicationPoint+communicationStepSize;
+     normal_log("OSI","Calculating Sensor at %f for %f (step size %f)",currentCommunicationPoint,time,communicationStepSize);
+-    if (get_fmi_sensor_view_in(currentIn)) {
++    if (get_fmi_sensor_data_in(currentIn)) {
++        osi3::SensorView currentSensorViewIn;
++        if(currentIn.sensor_view_size())
++            currentSensorViewIn = currentIn.sensor_view(0);
+         double ego_x=0, ego_y=0, ego_z=0;
+-        osi3::Identifier ego_id = currentIn.global_ground_truth().host_vehicle_id();
++        osi3::Identifier ego_id = currentSensorViewIn.global_ground_truth().host_vehicle_id();
+         normal_log("OSI","Looking for EgoVehicle with ID: %llu",ego_id.value());
+-        for_each(currentIn.global_ground_truth().moving_object().begin(),currentIn.global_ground_truth().moving_object().end(),
++        for_each(currentSensorViewIn.global_ground_truth().moving_object().begin(),currentSensorViewIn.global_ground_truth().moving_object().end(),
+             [this, ego_id, &ego_x, &ego_y, &ego_z](const osi3::MovingObject& obj) {
+                 normal_log("OSI","MovingObject with ID %llu is EgoVehicle: %d",obj.id().value(), obj.id().value() == ego_id.value());
+                 if (obj.id().value() == ego_id.value()) {
+@@ -286,12 +301,12 @@ fmi2Status COSMPDummySensor::doCalc(fmi2Real currentCommunicationPoint, fmi2Real
+         currentOut.mutable_timestamp()->set_seconds((long long int)floor(time));
+         currentOut.mutable_timestamp()->set_nanos((int)((time - floor(time))*1000000000.0));
+         /* Copy of SensorView */
+-        currentOut.add_sensor_view()->CopyFrom(currentIn);
++        currentOut.add_sensor_view()->CopyFrom(currentSensorViewIn);
+ 
+         int i=0;
+         double actual_range = fmi_nominal_range()*1.1;
+-        for_each(currentIn.global_ground_truth().moving_object().begin(),currentIn.global_ground_truth().moving_object().end(),
+-            [this,&i,&currentIn,&currentOut,ego_id,ego_x,ego_y,ego_z,actual_range](const osi3::MovingObject& veh) {
++        for_each(currentSensorViewIn.global_ground_truth().moving_object().begin(),currentSensorViewIn.global_ground_truth().moving_object().end(),
++            [this,&i,&currentSensorViewIn,&currentOut,ego_id,ego_x,ego_y,ego_z,actual_range](const osi3::MovingObject& veh) {
+                 if (veh.id().value() != ego_id.value()) {
+                     // NOTE: We currently do not take sensor mounting position into account,
+                     // i.e. sensor-relative coordinates are relative to center of bounding box
+@@ -308,7 +323,7 @@ fmi2Status COSMPDummySensor::doCalc(fmi2Real currentCommunicationPoint, fmi2Real
+                         obj->mutable_header()->mutable_tracking_id()->set_value(i);
+                         obj->mutable_header()->set_existence_probability(cos((2.0*distance-actual_range)/actual_range));
+                         obj->mutable_header()->set_measurement_state(osi3::DetectedItemHeader_MeasurementState_MEASUREMENT_STATE_MEASURED);
+-                        obj->mutable_header()->add_sensor_id()->CopyFrom(currentIn.sensor_id());
++                        obj->mutable_header()->add_sensor_id()->CopyFrom(currentSensorViewIn.sensor_id());
+                         obj->mutable_base()->mutable_position()->set_x(veh.base().position().x());
+                         obj->mutable_base()->mutable_position()->set_y(veh.base().position().y());
+                         obj->mutable_base()->mutable_position()->set_z(veh.base().position().z());
+diff --git a/examples/OSMPDummySensor/OSMPDummySensor.h b/examples/OSMPDummySensor/OSMPDummySensor.h
+index 7f92690..d41b545 100644
+--- a/examples/OSMPDummySensor/OSMPDummySensor.h
++++ b/examples/OSMPDummySensor/OSMPDummySensor.h
+@@ -221,6 +221,7 @@ protected:
+     void set_fmi_sensor_view_config_request(const osi3::SensorViewConfiguration& data);
+     void reset_fmi_sensor_view_config_request();
+     bool get_fmi_sensor_view_in(osi3::SensorView& data);
++    bool get_fmi_sensor_data_in(osi3::SensorData &data);
+     void set_fmi_sensor_data_out(const osi3::SensorData& data);
+     void reset_fmi_sensor_data_out();
+ 
+-- 
+2.7.4
+

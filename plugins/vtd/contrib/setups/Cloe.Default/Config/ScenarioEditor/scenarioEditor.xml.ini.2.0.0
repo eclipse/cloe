@@ -1,0 +1,710 @@
+<?xml version='1.0' standalone='yes'?>
+<ScenarioEditor>
+    <Properties>
+        <!--Initial size and position of the window-->
+        <Item key="WindowWidth" value="1024"/>
+        <Item key="WindowHeight" value="768"/>
+        <Item key="WindowPosX" value="0"/>
+        <Item key="WindowPosY" value="0"/>
+        <!--Interface-->
+        <Item key="CommUdpRxPort" value="50615"/>
+        <Item key="CommUdpTxPort" value="50616"/>
+        <Item key="NetworkEnabled" value="false"/>
+        <Item key="UseLoopback" value="true"/>
+        <Item key="AutoConnect" value="true"/>
+        <Item key="AutoReset" value="true"/>
+        <!--License Server Settings-->
+        <Item key="LicenseServer" value="myServerName"/>
+        <!--defaults-->
+        <Item key="DefaultScenario" value="scenario.xml"/>
+        <!--Unit used for speed "m/s" | "km/h" | "mi/h"-->
+        <Item key="UnitSpeed" value="km/h"/>
+        <!--Grid Spacer X and Y (between 0.1 and 1000.0)-->
+        <Item key="GridSpaceX" value="100"/>
+        <Item key="GridSpaceY" value="100"/>
+        <!--Traffic direction (right hand true or false)-->
+        <Item key="RightHandTraffic" value="true"/>
+        <!--Create backup files-->
+        <Item key="BackupOnSave" value="true"/>
+        <Item key="RemoveBackupFiles" value="true"/>
+        <!-- name (and location) of character viewer -->
+        <Item key="CharacterViewer" value="../Runtime/Core/ScenarioEditor/startCharacterViewer"/>
+        <Item key="InvertScrollWheel" value="false"/>
+        <Item key="ShowVersionWarnings" value="false"/>
+        <Item key="EditablePSPoints" value="100"/>
+        <Item key="PreserveUserData" value="false"/>
+        <Item key="UserDataAttributes" value=""/>
+    </Properties>
+    <!--Reference to vehicle models database file(s)-->
+    <VehicleModels descriptionFile="Distros/Current/Config/Players/Vehicles"/>
+    <!--Reference to the driver description file-->
+    <DriverModels descriptionFile="Distros/Current/Config/Players/driverCfg.xml"/>
+    <!--Reference to the character description file-->
+    <CharacterModels descriptionFile="Distros/Current/Config/Players/characterCfg.xml"/>
+    <!--Reference to the object description file(s)-->
+    <ObjectModels descriptionFile="Distros/Current/Config/Players/Objects"/>
+    <!--Reference to the dynamic objects logic file(s)-->
+    <DynObjects path="Distros/Current/Config/DynObjects/Logic"/>
+    <!--
+        * LightColors
+        *
+        * Definition of the colors used for the light signs. This definition
+        * should match the one of the image generators
+        * A color is indexed by a number between 0 and 15 (4 bit) and specified
+        * with the usual RGB color code normed between 0.0 and 1.0.
+    -->
+    <LightColors>
+        <Color number="0" alpha="1.0000000000000000e+00" red="0.0000000000000000e+00" blue="0.0000000000000000e+00" green="0.0000000000000000e+00"/>
+        <Color number="1" alpha="1.0000000000000000e+00" red="1.0000000000000000e+00" blue="0.0000000000000000e+00" green="0.0000000000000000e+00"/>
+        <Color number="2" alpha="1.0000000000000000e+00" red="1.0000000000000000e+00" blue="0.0000000000000000e+00" green="1.0000000000000000e+00"/>
+        <Color number="3" alpha="1.0000000000000000e+00" red="0.0000000000000000e+00" blue="2.0000000298023224e-01" green="8.0000001192092896e-01"/>
+        <Color number="4" alpha="1.0000000000000000e+00" red="1.0000000000000000e+00" blue="1.0000000000000000e+00" green="1.0000000000000000e+00"/>
+        <Color number="5" alpha="1.0000000000000000e+00" red="0.0000000000000000e+00" blue="1.0000000000000000e+00" green="0.0000000000000000e+00"/>
+        <Color number="6" alpha="1.0000000000000000e+00" red="0.0000000000000000e+00" blue="0.0000000000000000e+00" green="0.0000000000000000e+00"/>
+        <Color number="7" alpha="1.0000000000000000e+00" red="0.0000000000000000e+00" blue="0.0000000000000000e+00" green="0.0000000000000000e+00"/>
+        <Color number="8" alpha="1.0000000000000000e+00" red="0.0000000000000000e+00" blue="0.0000000000000000e+00" green="0.0000000000000000e+00"/>
+        <Color number="9" alpha="1.0000000000000000e+00" red="0.0000000000000000e+00" blue="0.0000000000000000e+00" green="0.0000000000000000e+00"/>
+        <Color number="10" alpha="1.0000000000000000e+00" red="0.0000000000000000e+00" blue="0.0000000000000000e+00" green="0.0000000000000000e+00"/>
+        <Color number="11" alpha="1.0000000000000000e+00" red="0.0000000000000000e+00" blue="0.0000000000000000e+00" green="0.0000000000000000e+00"/>
+        <Color number="12" alpha="1.0000000000000000e+00" red="0.0000000000000000e+00" blue="0.0000000000000000e+00" green="0.0000000000000000e+00"/>
+        <Color number="13" alpha="1.0000000000000000e+00" red="0.0000000000000000e+00" blue="0.0000000000000000e+00" green="0.0000000000000000e+00"/>
+        <Color number="14" alpha="5.0000000000000000e-01" red="0.0000000000000000e+00" blue="1.0000000000000000e+00" green="0.0000000000000000e+00"/>
+        <Color number="15" alpha="0.0000000000000000e+00" red="0.0000000000000000e+00" blue="0.0000000000000000e+00" green="0.0000000000000000e+00"/>
+    </LightColors>
+    <!--Description of SCP GUI-->
+    <SCPGUI>
+        <Group title="Traffic">
+            <Command title="Collision">
+                <Argument title="enable">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+                <Argument title="restitutionCoeff" default="0.0"/>
+                <Argument title="friction" default="0.0"/>
+            </Command>
+            <Command title="Config">
+                <Argument title="actionNotice">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+            </Command>
+            <Command title="LeftHandTraffic">
+                <Argument title="enable">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+            </Command>
+            <Command title="Pulk">
+                <Argument title="id" default="1"/>
+                <Argument title="enable">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+                <Argument title="desiredSpeed" default="-1.0"/>
+                <Argument title="centralPlayer" default="Ego"/>
+                <Argument title="visibleCount" default="-1"/>
+                <Argument title="semiMajorAxis" default="400"/>
+                <Argument title="semiMinorAxis" default="400"/>
+                <Argument title="offset" default="100"/>
+                <Argument title="percentageFront" default="0.4"/>
+                <Argument title="percentageBack" default="0.3"/>
+                <Argument title="percentageLeft" default="0.15"/>
+                <Argument title="percentageRight" default="0.15"/>
+                <Argument title="percentageOwnSide" default="0.6"/>
+            </Command>
+            <Command title="ResetPlayer">
+                <Argument title="id"/>
+                <Argument title="name"/>
+            </Command>
+            <Command title="Trigger">
+                <Argument title="id"/>
+                <Argument title="active">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+            </Command>
+        </Group>
+        <Group title="Traffic">
+            <Command title="ActionAutonomous">
+                <Argument title="actor" default="Ego"/>
+                <Argument title="enable" default="true">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+                <Argument title="force" default="true">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+                <Argument title="delayTime" default="0.0"/>
+                <Argument title="activateOnExit" default="false">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+            </Command>
+            <Command title="ActionBump">
+                <Argument title="actor" default="Ego"/>
+                <Argument title="force" default="true">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+                <Argument title="delayTime" default="0.0"/>
+                <Argument title="activateOnExit" default="false">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+            </Command>
+            <Command title="ActionCollision">
+                <Argument title="actor" default="Ego"/>
+                <Argument title="extTrigger"/>
+                <Argument title="force" default="true">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+                <Argument title="delayTime" default="0.0"/>
+                <Argument title="activateOnExit" default="false">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+            </Command>
+            <Command title="ActionDistance">
+                <Argument title="actor" default="Ego"/>
+                <Argument title="pivot"/>
+                <Argument title="distance"/>
+                <Argument title="kP" default="2.0"/>
+                <Argument title="kI" default="0.0"/>
+                <Argument title="kD" default="5.0"/>
+                <Argument title="timeGap"/>
+                <Argument title="netDistance" default="true">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+                <Argument title="force" default="true">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+                <Argument title="delayTime" default="0.0"/>
+                <Argument title="activateOnExit" default="false">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+            </Command>
+            <Command title="ActionLateralDistance">
+                <Argument title="actor" default="Ego"/>
+                <Argument title="pivot"/>
+                <Argument title="distance"/>
+                <Argument title="kP" default="0.4"/>
+                <Argument title="kI" default="0.4"/>
+                <Argument title="kD" default="1.3"/>
+                <Argument title="force" default="true">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+                <Argument title="delayTime" default="0.0"/>
+                <Argument title="activateOnExit" default="false">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+            </Command>
+            <Command title="ActionLaneChange">
+                <Argument title="actor" default="Ego"/>
+                <Argument title="direction" default="1">
+                    <Option title="3"/>
+                    <Option title="2"/>
+                    <Option title="1"/>
+                    <Option title="-1"/>
+                    <Option title="-2"/>
+                    <Option title="-3"/>
+                </Argument>
+                <Argument title="time" default="4.0"/>
+                <Argument title="approveByDriver" default="false">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+                <Argument title="driverApproveTime" default="1.0"/>
+                <Argument title="force" default="true">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+                <Argument title="delayTime" default="0.0"/>
+                <Argument title="activateOnExit" default="false">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+            </Command>
+            <Command title="ActionNominalTrajectory">
+                <Argument title="actor" default="Ego"/>
+                <Argument title="command" default="add">
+                    <Option title="add"/>
+                    <Option title="remove"/>
+                </Argument>
+                <Argument title="name" default="PathShape"/>
+                <Argument title="radius" default="15"/>
+                <Argument title="startS" default="0"/>
+                <Argument title="targetS" default="10"/>
+                <Argument title="endAction" default="stop">
+                    <Option title="continue"/>
+                    <Option title="loop"/>
+                    <Option title="stop"/>
+                </Argument>
+                <Argument title="force" default="true">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+                <Argument title="waypointSequence" default="ascending">
+                    <Option title="ascending"/>
+                    <Option title="descending"/>
+                    <Option title="auto"/>
+                </Argument>
+                <Argument title="delayTime" default="0.0"/>
+                <Argument title="activateOnExit" default="false">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+            </Command>
+            <Command title="ActionShowRoom">
+                <Argument title="actor" default="Ego"/>
+                <Argument title="distance" default="3.0"/>
+                <Argument title="vehicles" default="true">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+                <Argument title="objects" default="false">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+                <Argument title="pedestrians" default="false">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+                <Argument title="force" default="true">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+                <Argument title="delayTime" default="0.0"/>
+                <Argument title="activateOnExit" default="false">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+            </Command>
+            <Command title="ActionSpeedChange">
+                <Argument title="actor" default="Ego"/>
+                <Argument title="target" default="0.0"/>
+                <Argument title="rate" default="4.0"/>
+                <Argument title="pivot"/>
+                <Argument title="force" default="true">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+                <Argument title="delayTime" default="0.0"/>
+                <Argument title="activateOnExit" default="false">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+            </Command>
+            <Command title="ActionTimeTable">
+                <Argument title="actor" default="Ego"/>
+                <Argument title="previewTime" default="2.0"/>
+                <Argument title="pivot"/>
+                <Argument title="shapeName" default="PathShape"/>
+                <Argument title="offset"/>
+                <Argument title="factor"/>
+                <Argument title="radius" default="15"/>
+                <Argument title="startS" default="0"/>
+                <Argument title="targetS" default="10"/>
+                <Argument title="command" default="stop">
+                    <Option title="continue"/>
+                    <Option title="pause"/>
+                    <Option title="stop"/>
+                </Argument>
+                <Argument title="syncMode" default="time">
+                    <Option title="time"/>
+                    <Option title="way"/>
+                </Argument>
+                <Argument title="endAction" default="stop">
+                    <Option title="continue"/>
+                    <Option title="loop"/>
+                    <Option title="stop"/>
+                </Argument>
+                <Argument title="force" default="true">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+                <Argument title="delayTime" default="0.0"/>
+                <Argument title="activateOnExit" default="false">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+            </Command>
+        </Group>
+        <Group title="Traffic">
+            <Command title="ActionCounter">
+                <Argument title="name"/>
+                <Argument title="op">
+                    <Option title="INC"/>
+                    <Option title="DEC"/>
+                    <Option title="SET"/>
+                </Argument>
+                <Argument title="value" default="1"/>
+            </Command>
+            <Command title="ActionRacingClock">
+                <Argument title="clockId"/>
+                <Command title="WatchCounter">
+                    <Argument title="name"/>
+                    <Argument title="player"/>
+                </Command>
+                <Command title="WatchCounter">
+                    <Argument title="name"/>
+                    <Argument title="player"/>
+                </Command>
+                <Command title="WatchCounter">
+                    <Argument title="name"/>
+                    <Argument title="player"/>
+                </Command>
+            </Command>
+            <Command title="ActionRadarTrap">
+                <Argument title="cameraId"/>
+                <Argument title="maxAllowedSpeed" default="50"/>
+                <Argument title="catchDistance" default="10"/>
+            </Command>
+        </Group>
+        <Group title="Traffic">
+            <Command title="ActionGesture">
+                <Argument title="actor" default="Character"/>
+                <Argument title="gestureType"/>
+                <Argument title="repeatTimes" default="1"/>
+                <Argument title="delayTime" default="0.0"/>
+                <Argument title="activateOnExit" default="false">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+            </Command>
+            <Command title="ActionMotion">
+                <Argument title="actor" default="Character"/>
+                <Argument title="move"/>
+                <Argument title="speed" default="0.0"/>
+                <Argument title="force" default="true">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+                <Argument title="rate" default="0.0"/>
+                <Argument title="delayTime" default="0.0"/>
+                <Argument title="activateOnExit" default="false">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+            </Command>
+            <Command title="ActionCharacterPath">
+                <Argument title="actor" default="Character"/>
+                <Argument title="pathShape"/>
+                <Argument title="loop" default="false">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+                <Argument title="beam" default="true">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+                <Argument title="delayTime" default="0.0"/>
+                <Argument title="activateOnExit" default="false">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+            </Command>
+        </Group>
+        <Group title="TrafficLight">
+            <Command title="SetPhase">
+                <Argument title="ctrlId"/>
+                <Argument title="phase">
+                    <Option title="stop"/>
+                    <Option title="stop_attention"/>
+                    <Option title="attention"/>
+                    <Option title="go"/>
+                    <Option title="go_exclusive"/>
+                    <Option title="blink"/>
+                    <Option title="off"/>
+                </Argument>
+                <Argument title="syncJunction">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+                <Argument title="fadeTime" default="0.0"/>
+            </Command>
+            <Command title="SetCtrl">
+                <Argument title="ctrlId"/>
+                <Argument title="freeze">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+                <Argument title="syncJunction">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+            </Command>
+        </Group>
+        <Group title="Symbol">
+            <Argument title="name" default="screenSymbol"/>
+            <Argument title="duration" default="-1"/>
+            <Command title="PosScreen">
+                <Argument title="x" default="0"/>
+                <Argument title="y" default="0"/>
+            </Command>
+            <Command title="PosPlayer">
+                <Argument title="player" default="Ego"/>
+                <Argument title="dx" default="0.0"/>
+                <Argument title="dy" default="0.0"/>
+                <Argument title="dz" default="0.0"/>
+            </Command>
+            <Command title="Text">
+                <Argument title="data" default="text"/>
+                <Argument title="colorRGB" default="0xff0000"/>
+                <Argument title="size" default="100.0"/>
+                <Argument title="sizeRelative" default="0.2"/>
+            </Command>
+            <Command title="Overlay">
+                <Argument title="id" default="0"/>
+                <Argument title="state" default="0"/>
+            </Command>
+            <Command title="RectSize">
+                <Argument title="width" default="0.2"/>
+                <Argument title="height" default="0.2"/>
+            </Command>
+            <Command title="Stop"/>
+            <Command title="BoundingBox">
+                <Argument title="player" default="Ego"/>
+            </Command>
+        </Group>
+        <Group title="Path">
+            <Argument title="name"/>
+            <Argument title="shape">
+                <Option title="road"/>
+                <Option title="polyline"/>
+                <Option title="spline"/>
+            </Argument>
+            <Command title="Waypoint">
+                <Command title="PosRoad">
+                    <Argument title="roadId"/>
+                    <Argument title="s" default="0.0"/>
+                    <Argument title="t" default="0.0"/>
+                </Command>
+                <Command title="PosRelative">
+                    <Argument title="player"/>
+                    <Argument title="dx" default="0.0"/>
+                    <Argument title="dy" default="0.0"/>
+                    <Argument title="dz" default="0.0"/>
+                </Command>
+                <Command title="PosInertial">
+                    <Argument title="x" default="0.0"/>
+                    <Argument title="y" default="0.0"/>
+                    <Argument title="z" default="0.0"/>
+                    <Argument title="clampToGround" default="false">
+                        <Option title="true"/>
+                        <Option title="false"/>
+                    </Argument>
+                </Command>
+            </Command>
+            <Command title="PosRelative">
+                <Argument title="player" default=""/>
+                <Argument title="anchorWaypoint" default="1"/>
+                <Argument title="dx" default="0.0"/>
+                <Argument title="dy" default="0.0"/>
+                <Argument title="dz" default="0.0"/>
+                <Argument title="dhDeg" default="0.0"/>
+                <Argument title="dh" default="0.0"/>
+            </Command>
+            <Command title="Delete"/>
+        </Group>
+        <Group title="Player">
+            <Argument title="name" default="Ego"/>
+            <Command title="Visibility">
+                <Argument title="graphics">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+                <Argument title="traffic">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+                <Argument title="sensors">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+            </Command>
+            <Command title="Driver">
+                <Argument title="ctrlLatLong">
+                    <Option title="ghostdriver"/>
+                    <Option title="none"/>
+                </Argument>
+                <Argument title="perception">
+                    <Option title="ghostdriver"/>
+                    <Option title="none"/>
+                </Argument>
+            </Command>
+            <Command title="AddToSelection">
+                <Argument title="selectionName" default="Players"/>
+            </Command>
+            <Command title="DeleteFromoSelection">
+                <Argument title="selectionName" default="Players"/>
+            </Command>
+            <Command title="LaneOffset">
+                <Argument title="absolute" default="1.0"/>
+                <Argument title="relative" default="1.0"/>
+                <Argument title="s" default="100.0"/>
+                <Argument title="time" default="10.0"/>
+            </Command>
+        </Group>
+        <Group title="Player">
+            <Argument title="name" default="Ego"/>
+            <Command title="DriverBehavior">
+                <Argument title="desiredSpeed" default="39.0"/>
+                <Argument title="desiredSpeedRel" default="10.0"/>
+                <Argument title="desiredAcc" default="0.5"/>
+                <Argument title="desiredDec" default="4.0"/>
+                <Argument title="observeSpeedLimits" default="1.10"/>
+                <Argument title="distanceKeeping" default="1.6"/>
+                <Argument title="laneChangeDyn" default="1.8"/>
+                <Argument title="foresightDist" default="400"/>
+                <Argument title="steeringDist" default="0.5"/>
+                <Argument title="obeyTrafficSigns">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+                <Argument title="obeyTrafficLights">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+            </Command>
+            <Command title="DriverBehaviorNormalized">
+                <Argument title="desiredSpeed" default="0.5"/>
+                <Argument title="desiredAcc" default="0.5"/>
+                <Argument title="desiredDec" default="0.5"/>
+                <Argument title="curveSpeed" default="0.5"/>
+                <Argument title="observeSpeedLimits" default="0.5"/>
+                <Argument title="distanceKeeping" default="0.5"/>
+                <Argument title="laneKeeping" default="0.5"/>
+                <Argument title="speedKeeping" default="0.5"/>
+                <Argument title="laneChangeDyn" default="0.5"/>
+                <Argument title="urgeToOvertake" default="0.5"/>
+                <Argument title="keepRightRule" default="0.5"/>
+                <Argument title="respondToTailgating" default="0.5"/>
+                <Argument title="foresightDist" default="0.5"/>
+                <Argument title="steeringDist" default="0.5"/>
+                <Argument title="obeyTrafficSigns" default="1">
+                    <Option title="0"/>
+                    <Option title="1"/>
+                </Argument>
+                <Argument title="obeyTrafficLights" default="1">
+                    <Option title="0"/>
+                    <Option title="1"/>
+                </Argument>
+            </Command>
+            <Command title="DriverHandover">
+                <Argument title="handOverTime" default="1.5"/>
+                <Argument title="steeringRequestRate" default="0.1"/>
+                <Argument title="steeringRequest" default="current"/>
+            </Command>
+        </Group>
+        <Group title="Set">
+            <Argument title="entity" default="player">
+                <Option title="scenarioEditor"/>
+                <Option title="player"/>
+                <Option title="traffic"/>
+                <Option title="sound"/>
+                <Option title="imageGenerator"/>
+                <Option title="taskControl"/>
+                <Option title="dynamics"/>
+            </Argument>
+            <Argument title="id" default=""/>
+            <Argument title="name" default=""/>
+            <Command title="PathS">
+                <Argument title="name"/>
+                <Argument title="s"/>
+                <Argument title="lane"/>
+                <Argument title="endAction">
+                    <Option title="continue"/>
+                    <Option title="loop"/>
+                    <Option title="stop"/>
+                </Argument>
+            </Command>
+            <Command title="TrackPos">
+                <Argument title="track"/>
+                <Argument title="s"/>
+                <Argument title="t"/>
+                <Argument title="lane"/>
+                <Argument title="dhDeg"/>
+            </Command>
+            <Command title="PosInertial">
+                <Argument title="x"/>
+                <Argument title="y"/>
+                <Argument title="z"/>
+                <Argument title="hDeg"/>
+                <Argument title="pDeg"/>
+                <Argument title="rDeg"/>
+            </Command>
+            <Command title="Speed">
+                <Argument title="value" default="0.0"/>
+            </Command>
+            <Command title="SpeedRelative">
+                <Argument title="pivot" default="Ego"/>
+                <Argument title="value" default="0.0"/>
+            </Command>
+        </Group>
+        <Group title="Set">
+            <Argument title="entity" default="player"/>
+            <Command title="Dynamics">
+                <Argument title="x"/>
+                <Argument title="y"/>
+                <Argument title="z"/>
+                <Argument title="hDeg"/>
+                <Argument title="pDeg"/>
+                <Argument title="rDeg"/>
+            </Command>
+        </Group>
+        <Group title="Video">
+            <Command title="File">
+                <Argument title="path"/>
+                <Argument title="name"/>
+            </Command>
+            <Command title="Config">
+                <Argument title="fps" default="25"/>
+                <Argument title="format">
+                    <Option title="AVIraw"/>
+                    <Option title="AVIjpg"/>
+                    <Option title="mpeg4"/>
+                </Argument>
+                <Argument title="buffer">
+                    <Option title="color"/>
+                    <Option title="depth"/>
+                </Argument>
+                <Argument title="keepImages">
+                    <Option title="true"/>
+                    <Option title="false"/>
+                </Argument>
+            </Command>
+            <Command title="Start"/>
+            <Command title="Stop"/>
+        </Group>
+        <Group title="SimCtrl">
+            <Command title="Start">
+                <Argument title="mode">
+                    <Option title="operation"/>
+                    <Option title="preparation"/>
+                </Argument>
+            </Command>
+            <Command title="Pause"/>
+            <Command title="Stop"/>
+        </Group>
+        <Group title="Rail">
+            <Command title="Switch">
+                <Argument title="id"/>
+                <Argument title="state" default="straight">
+                    <Option title="straight"/>
+                    <Option title="turn"/>
+                </Argument>
+                <Argument title="reason" default="regular">
+                    <Option title="regular"/>
+                    <Option title="run through"/>
+                </Argument>
+            </Command>
+        </Group>
+    </SCPGUI>
+</ScenarioEditor>

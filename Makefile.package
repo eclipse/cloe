@@ -1,0 +1,233 @@
+# vim: set ft=make noet:
+#
+# Usage:
+#
+#   PROJECT_ROOT := ...
+#   include ${PROJECT_ROOT}/tools/make/conan.mk
+#
+# This Makefile is used for every Conan package in this project.
+# It expects a conanfile.py to reside in the directory and reads
+# package information from this.
+#
+# You may also use it for your own Cloe plugins or other Conan packages.
+# In this case though, you should remove variables that make explicit
+# reference to files found in the Cloe repository, such as PROJECT_VERSION.
+# You should also adjust the PACKAGE_CHANNEL variable.
+#
+
+PROJECT_ROOT     := $(dir $(abspath $(lastword ${MAKEFILE_LIST})))
+PROJECT_VERSION  := $(shell cat ${PROJECT_ROOT}/VERSION)
+
+DATE := $(shell date +"%Y%m%d")
+TIMESTAMP := $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
+
+HAS_GIT := $(shell [ -d ${PROJECT_ROOT}/.git ] && echo "true")
+ifeq (${HAS_GIT},true)
+	GIT_COMMIT_HASH  := $(shell git log -1 --format=%h)
+	GIT_COMMIT_DIRTY := $(shell git diff --quiet || echo "-dirty")
+	GIT_DESCRIBE     := ${GIT_COMMIT_HASH}${GIT_COMMIT_DIRTY}
+else
+	GIT_DESCRIBE     := "unknown"
+endif
+
+SOURCE_DIR       := .
+SOURCE_CONANFILE := conanfile.py
+SOURCE_CMAKELISTS:= ${SOURCE_DIR}/CMakeLists.txt
+CLEAN_SOURCE_DIR := false
+BUILD_DIR        := build
+BUILD_CONANINFO  := ${BUILD_DIR}/conanbuildinfo.cmake
+BUILD_CMAKECACHE := ${BUILD_DIR}/CMakeCache.txt
+BUILD_LAYOUT     := ${PROJECT_ROOT}/.conan-layout.ini
+BUILD_POLICY     := missing
+
+PACKAGE_NAME    := $(shell sed -rn 's/.*name\s*=\s*"([^"]+)"$$/\1/p' ${SOURCE_CONANFILE})
+PACKAGE_VERSION := $(or \
+	$(shell sed -rn 's/\s+version\s*=\s*"([^"]+)"$$/\1/p' ${SOURCE_CONANFILE}), \
+	${PROJECT_VERSION}, \
+	unknown \
+)
+PACKAGE_CHANNEL := cloe/develop
+PACKAGE_FQN     := ${PACKAGE_NAME}/${PACKAGE_VERSION}@${PACKAGE_CHANNEL}
+
+# Determining the PACKAGE_DIR takes a long time because we have to call Conan,
+# so only do it for the targets that actually make use of it.
+PACKAGE_DIR_TARGETS := help list
+${PACKAGE_DIR_TARGETS} : PACKAGE_DIR = $(shell \
+	conan info ${PACKAGE_FQN} --package-filter ${PACKAGE_FQN} --paths -n "package_folder" 2>/dev/null \
+	| sed -rn 's/ *package_folder: (.*)/\1/p')
+
+# These options can be set to influence package and configure
+CONAN_OPTIONS :=
+
+.DEFAULT: help
+.SILENT: help
+.PHONY: help
+help:
+	echo "Usage: make <target>"
+	echo
+	echo "The following targets define common operations with this package in"
+	echo "editable (local in-source) and uneditable (in the Conan cache) modes."
+	echo
+	echo "Available targets:"
+	echo "  help        to show this help"
+	echo
+	echo "  export            to export recipe and sources        [conan-cache]"
+	echo "  package           to create package                   [conan-cache]"
+	echo "  package-outdated  to create package if outdated       [conan-cache]"
+	echo "  list              to list installed package files     [conan-cache]"
+	echo "  purge             to remove package from cache        [conan-cache]"
+	echo
+	echo "  editable    to instruct Conan to use in-source build"
+	echo "  uneditable  to instruct Conan to use local cache"
+	echo
+	echo "  all         to build the package                        [in-source]"
+	echo "  conan       to configure Conan and install dependencies [in-source]"
+	echo "  configure   to configure CMake package                  [in-source]"
+	echo "  test        to run CMake tests if they are available    [in-source]"
+	echo "  export-pkg  to export build artifacts to Conan cache    [in-source]"
+	echo "  clean       to remove build directory                   [in-source]"
+	echo
+	echo "Configuration:"
+	echo "  SOURCE_DIR:      ${SOURCE_DIR}"
+	echo "  BUILD_DIR:       ${BUILD_DIR}"
+	echo "  CONAN_OPTIONS:   ${CONAN_OPTIONS}"
+	echo
+	echo "Package information:"
+	echo "  PACKAGE_NAME:    ${PACKAGE_NAME}"
+	echo "  PACKAGE_VERSION: ${PACKAGE_VERSION}"
+	echo "  PACKAGE_CHANNEL: ${PACKAGE_CHANNEL}"
+	echo "  PACKAGE_FQN:     ${PACKAGE_FQN}"
+	echo "  PACKAGE_DIR:     ${PACKAGE_DIR}"
+	echo "  GIT_COMMIT_HASH: ${GIT_COMMIT_HASH}"
+	echo
+
+# CONFIGURATION TARGETS -------------------------------------------------------
+.PHONY: editable uneditable
+
+editable:
+	# Conan will now resolve references to the in-source build.
+	#
+	#   In editable mode, Conan will use the in-source build for all references
+	#   to this package. You should use [in-source] targets while the package is
+	#   editable. It is not possible to create a Conan package while the package
+	#   is in editable mode.
+	#
+	#   Run `make uneditable` to leave this mode.
+	#
+	conan editable add . --layout "${BUILD_LAYOUT}" ${PACKAGE_FQN}
+
+uneditable:
+	# Conan will now resolve references to the package in the cache.
+	#
+	#   In uneditable mode, Conan will use the package within the Conan cache
+	#   (normally located in ~/.conan/data). This is the default behavior.
+	#
+	conan editable remove ${PACKAGE_FQN}
+
+# CONAN TARGETS ---------------------------------------------------------------
+.PHONY: export package package-outdated purge list
+
+export:
+	# Export sources to Conan cache.
+	#
+	#   This does not build this package but provides the sources and the
+	#   build recipe to Conan for on-demand building.
+	#
+	conan export . ${PACKAGE_FQN}
+
+package:
+	# Build the package in Conan cache unconditionally.
+	#
+	#   Conan will retrieve (and build, if necessary) any missing dependencies.
+	#   Note that this cannot be called if the package is currently in editable mode.
+	#
+	conan create . ${PACKAGE_CHANNEL} --build=${BUILD_POLICY} --build=${PACKAGE_NAME} ${CONAN_OPTIONS}
+
+package-outdated:
+	# Build the package in Conan cache if it is outdated.
+	#
+	#   Note that this does not take dependencies of ${PACKAGE_NAME} into account.
+	#   Rebuilds will occur if package info has changed or a hash of the source
+	#   code changes. Timestamps are not taken into account.
+	#
+	conan create . ${PACKAGE_CHANNEL} --build=outdated ${CONAN_OPTIONS}
+
+purge:
+	# Remove all instances of this package in the Conan cache.
+	#
+	#   Normally, building a package only replaces the instance in the Cache that
+	#   has the same ID. Purging all instances is useful for forcing a rebuild
+	#   of all instances of this package henceforth.
+	#
+	-conan remove -f ${PACKAGE_FQN}
+
+list:
+	# List all files in the Conan cache package directory.
+	#
+	@tree ${PACKAGE_DIR}
+
+# IN-SOURCE TARGETS -----------------------------------------------------------
+.PHONY: all clean conan configure test export-pkg
+all: ${SOURCE_DIR} ${BUILD_CONANINFO}
+	# Build the package in-source.
+	#
+	mkdir -p ${BUILD_DIR}
+	conan build . --source-folder=${SOURCE_DIR} --build-folder=${BUILD_DIR}
+
+clean:
+	# Clean the build directory and Python cache files.
+	#
+	rm -rf ${BUILD_DIR}
+	rm -rf __pycache__
+	if ${CLEAN_SOURCE_DIR}; then \
+		rm -rf ${SOURCE_DIR}; \
+	fi
+
+conan: ${BUILD_CONANINFO}
+
+configure: ${BUILD_CMAKECACHE}
+
+test:
+	# Run tests available to CMake ctest.
+	#
+	#   If no tests are available, this will simply return true.
+	#
+	@if [ -f ${BUILD_DIR}/CTestTestfile.cmake ]; then \
+		cd ${BUILD_DIR} && ctest; \
+	else \
+		true; \
+	fi
+
+export-pkg:
+	# Export in-source build artifacts to Conan cache.
+	#
+	#   This requires the in-source build to be complete and uses the package
+	#   recipe in the conanfile. This is useful when you want to make the
+	#   binaries available to Conan but not the source.
+	#
+	#   Note that this does not require the package to be editable.
+	conan export-pkg . --build-folder=${BUILD_DIR}
+
+${SOURCE_DIR}:
+	# Copy source to an external source directory.
+	#
+	#   This usually isn't necessary, and should not be called when
+	#   SOURCE_DIR is identical to the current directory.
+	#
+	[ "$(shell readlink -f "${SOURCE_DIR}")" != "$(shell readlink -f .)" ]
+	conan source . --source-folder=${SOURCE_DIR}
+
+${SOURCE_CMAKELISTS}: ${SOURCE_DIR}
+
+${BUILD_CONANINFO}: ${SOURCE_CONANFILE}
+	# Install package dependencies and prepare in-source build.
+	#
+	mkdir -p ${BUILD_DIR}
+	conan install . --install-folder=${BUILD_DIR} --build=${BUILD_POLICY} ${CONAN_OPTIONS}
+	touch ${BUILD_CONANINFO}
+
+${BUILD_CMAKECACHE}: ${BUILD_CONANINFO} ${SOURCE_CMAKELISTS}
+	# Configure in-source build with CMake.
+	#
+	mkdir -p ${BUILD_DIR}
+	conan build --configure . --source-folder=${SOURCE_DIR} --build-folder=${BUILD_DIR}

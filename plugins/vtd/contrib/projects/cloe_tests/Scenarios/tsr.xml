@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Scenario>
+<Scenario RevMajor="2" RevMinor="2">
+    <Layout Database="Projects/Current/Databases/highway_4lanes_6km_straight.opt.osgb" File="Projects/Current/Databases/highway_4lanes_6km_straight.xodr"/>
+    <VehicleList ConfigFile="Distros/Current/Config/Players/Vehicles"/>
+    <DriverList ConfigFile="Distros/Current/Config/Players/driverCfg.xml"/>
+    <CharacterList ConfigFile="Distros/Current/Config/Players/Pedestrians"/>
+    <ObjectList ConfigFile="Distros/Current/Config/Players/Objects"/>
+    <DynObjects Path="Distros/Current/Config/DynObjects/Logic"/>
+    <TrafficElements/>
+    <PulkTraffic/>
+    <TrafficControl>
+        <Path Name="path" PathId="1">
+            <Waypoint PathOption="shortest" s="1.0000000000000000e+01" TrackId="2"/>
+            <Waypoint PathOption="shortest" s="3.0000000000000000e+02" TrackId="2"/>
+        </Path>
+        <Player>
+            <Description Driver="DefaultDriver" Control="external" AdaptDriverToVehicleType="true" Type="Audi_S5_2009_black" Name="Ego"/>
+            <Init>
+                <Speed Value="1.2500000000000000e+01"/>
+                <PosRoute/>
+                <PathRef StartS="0.0000000000000000e+00" EndAction="continue" TargetS="1.5000000000000000e+02" StartLane="-3" PathId="1"/>
+            </Init>
+        </Player>
+        <PlayerActions Player="Ego">
+            <Action Name="unconditional_initial_speed">
+                <PosRelative CounterID="" CounterComp="COMP_EQ" NetDist="false" Distance="5.0000000000000000e+00" CounterVal="0" Pivot="Ego"/>
+                <EditorPos Radius="5.0000000000000000e+00" X="8.4499999999999993e+00" Y="1.0000000000000000e+01"/>
+                <SpeedChange Rate="4.0000000000000000e+00" Target="1.2500000000000000e+01" Force="true" ExecutionTimes="1" ActiveOnEnter="true" DelayTime="0.0000000000000000e+00"/>
+            </Action>
+        </PlayerActions>
+    </TrafficControl>
+    <MovingObjectsControl/>
+    <LightSigns/>
+    <Selections/>
+</Scenario>

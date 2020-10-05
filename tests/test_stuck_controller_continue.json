@@ -1,0 +1,35 @@
+{
+  "version": "4",
+  "simulators": [
+    {
+      "binding": "nop"
+    }
+  ],
+  "vehicles": [
+    {
+      "name": "default",
+      "from": {
+        "simulator": "nop",
+        "index": 0
+      }
+    }
+  ],
+  "controllers": [
+    {
+      "binding": "demo_stuck",
+      "vehicle": "default",
+      "args": {
+        "progress_per_step": 10000
+      }
+    }
+  ],
+  "simulation": {
+    "controller_retry_limit": 100,
+    "abort_on_controller_failure": false
+  },
+  "triggers": [
+    {"event": "start",   "action": "log=info: Running nop/demo_stuck test."},
+    {"event": "start",   "action": "realtime_factor=-1"},
+    {"event": "time=20", "action": "succeed"}
+  ]
+}

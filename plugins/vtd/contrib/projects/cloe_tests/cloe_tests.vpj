@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<!--Cloe Tests - 27.01.2020/17:27:24-->
+<Testcase author="Cloe Team" created="06.06.2011/18:49:16" modified="27.01.2020/17:27:24" name="Cloe Tests" prjParameter="" scenario="Current/Scenarios/trafficDemoPath.xml">
+    <![CDATA[Minimal VTD project containing test scenarios used in Cloe smoke- and system tests.]]>
+
+    <ViewGroup selIdx="0">
+        <View dae="1.000000e+01 0.000000e+00 1.000000e+01" hprIne="0.000000e+00 0.000000e+00 0.000000e+00" hprRel="0.000000e+00 0.000000e+00 0.000000e+00" name="VIEW" posPlayerId="2" posSensorId="-1" posType="DefEyepoint" showOwner="false" slewFrames="1" useSensorFrustum="false" viewPlayerId="2" viewType="Relative" xyzIne="0.000000e+00 0.000000e+00 0.000000e+00" xyzRel="0.000000e+00 0.000000e+00 0.000000e+00" xyzTgt="0.000000e+00 0.000000e+00 0.000000e+00" />
+    </ViewGroup>
+    <SceneGroup selIdx="0">
+        <Scene envDate="01.06.2008" envFriction="1.000000e+00" envHeadlightState="0" envRoadState="0" envSkyDome="2" envTime="11:00:00" envTzOffset="0" envVisibility="1.000000e+05" name="SCENE" overlayFile="" overlayPos="0 0" overlayScale="1.000000e+00" sensor1Idx="-1" sensor2Idx="-1" showDatabase="true" showEgo="false" showSensorCone1="false" showSensorCone2="false" showSensorSymbols1="false" showSensorSymbols2="false" showSymbology="false" streetlights="false" />
+    </SceneGroup>
+    <CameraGroup selIdx="0">
+        <Camera clipPlanes="1.000000e+00 1.500000e+03" definition="Frustum" fov="4.000000e+01 3.000000e+01" iFocalX="400" iFocalY="300" iHeight="600" iPrincipalX="400" iPrincipalY="300" iWidth="800" matRow0="0.000000e+00 0.000000e+00 0.000000e+00 0.000000e+00" matRow1="0.000000e+00 0.000000e+00 0.000000e+00 0.000000e+00" matRow2="0.000000e+00 0.000000e+00 0.000000e+00 0.000000e+00" matRow3="0.000000e+00 0.000000e+00 0.000000e+00 0.000000e+00" name="CAMERA" offsetFrustum="0.000000e+00 0.000000e+00" />
+    </CameraGroup>
+    <DisplayGroup selIdx="0">
+        <Display name="DISPLAY" showWinBorder="true" viewportX="0.000000e+00 1.000000e+00" viewportY="0.000000e+00 1.000000e+00" winPos="0 0" winSize="800 600" />
+    </DisplayGroup>
+    <SensorGroup>
+        <Sensor clip="1.000000e+00 4.000000e+01" comPort="48185" comPortName="RDBout" comType="UDP" cull="true" debugCamera="false" debugCulling="false" debugDetection="false" debugDimension="false" debugPackages="false" debugPosition="false" debugRoad="false" doubleBuffer="false" filterLaneInfo="true" filterLight="true" filterObstacle="true" filterPedestrian="true" filterRoadMarks="true" filterTrafficSign="true" filterVehicle="true" fov="3.000000e+01 1.200000e+01" nCullObjects="10" name="Sensor_MM" offset="0.000000e+00 0.000000e+00" origHpr="0.000000e+00 0.000000e+00 0.000000e+00" origType="usk" origXyz="0.000000e+00 0.000000e+00 0.000000e+00" player="0" pluginFile="../Distros/Current/Plugins/ModuleManager/libModulePerfectSensor.so" posHpr="0.000000e+00 0.000000e+00 0.000000e+00" posXyz="0.000000e+00 0.000000e+00 0.000000e+00" selected="false" shmKey="0" shmSize="0" type="video" xmitEgoData="true" />
+    </SensorGroup>
+</Testcase>

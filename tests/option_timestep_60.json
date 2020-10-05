@@ -1,0 +1,16 @@
+{
+  "version": "4",
+  "defaults": {
+    "controllers": [
+      {
+        "binding": "virtue",
+        "args": {
+          "init_phase": 250000000
+        }
+      }
+    ]
+  },
+  "simulation": {
+    "model_step_width": 60000000
+  }
+}

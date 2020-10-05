@@ -1,0 +1,56 @@
+# Dockerfile.alpine
+#
+# See Dockerfile.ubuntu for documentation of each of the lines.
+#
+# This recipe deviates from the other Dockerfiles in that it is not able to
+# build the cloe-engine, due to some problems with MUSL and the Boost library.
+# Even if this issue was resolved, there is a good chance another issue would
+# arise. Nevertheless, it is included for the value it provides in being
+# a completely different environment.
+ARG BUILD_FROM=alpine:3.12
+ARG DEPLOY_FROM=${BUILD_FROM}
+
+FROM ${BUILD_FROM} AS build
+
+# Install System Packages
+RUN apk add \
+      bash \
+      cmake \
+      curl \
+      file \
+      gcc \
+      g++ \
+      git \
+      jq \
+      linux-headers \
+      make \
+      musl-dev \
+      py3-pip \
+    && \
+    rm -rf /var/cache/apk/*
+
+# Install and Setup Conan
+ENV PATH=/root/.local/bin:$PATH
+ARG CONAN_REMOTE=https://conan.bintray.com
+ARG CONAN_REMOTE_VERIFY_SSL=true
+RUN pip3 install --upgrade pip && \
+    python3 -m pip install conan && \
+    conan profile new --detect default && \
+    conan profile update settings.compiler.libcxx=libstdc++11 default && \
+    conan remote clean && \
+    conan remote add default ${CONAN_REMOTE} ${CONAN_REMOTE_VERIFY_SSL}
+
+# Build and Install Cloe
+WORKDIR /cloe
+COPY . /cloe
+RUN make export-deps && \
+    make BUILD_TESTS=0 WITH_ENGINE=0 WITH_VTD=0 package && \
+    make BUILD_TESTS=0 WITH_ENGINE=0 WITH_VTD=0 INSTALL_DIR="/deploy" deploy && \
+    make clean && \
+    conan remove \* -b -f
+
+# Finalize Image
+FROM ${DEPLOY_FROM}
+COPY --from=build /deploy /usr/local/
+ENV LD_LIBRARY_PATH=/usr/local/lib
+ENTRYPOINT [ "cloe-engine" ]

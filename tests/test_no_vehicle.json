@@ -1,0 +1,22 @@
+
+{
+  "version": "4",
+
+  "server": {
+    "listen_port": 23456
+  },
+
+  "simulators": [
+    {
+      "binding": "nop",
+      "name": "default"
+    }
+  ],
+
+  "controllers": [
+    {
+      "binding": "basic",
+      "vehicle": "ego"
+    }
+  ]
+}

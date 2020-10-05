@@ -1,0 +1,125 @@
+/*
+ * Copyright 2020 Robert Bosch GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+@import "../../node_modules/bootstrap/scss/bootstrap";
+
+@import "./switch.scss";
+@import "./button.scss";
+@import "./icon.scss";
+@import "./link.scss";
+@import "./rangeslider.scss";
+@import "./linkButton.scss";
+
+@import "../../node_modules/react-rangeslider/umd/rangeslider.css";
+
+@import url("https://fonts.googleapis.com/css?family=Open+Sans&display=swap");
+// Styles
+html {
+  height: 100%;
+}
+
+body {
+  font-family: "Open Sans", sans-serif;
+  font-weight: normal;
+  min-height: 100%;
+  background-color: #fdfdfd;
+}
+
+.App {
+  text-align: center;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+small,
+span {
+  cursor: default;
+}
+
+.white-bg {
+  background-color: rgb(255, 255, 255);
+}
+
+.red-bg {
+  background-color: #dc3545;
+}
+
+.half-opacity {
+  opacity: 0.4;
+}
+
+// custom container width
+@media (min-width: 992px) {
+  .container {
+    max-width: 1270px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .container {
+    max-width: 1400px;
+  }
+}
+
+.dotTrue {
+  height: 10px;
+  width: 10px;
+  background-color: #7cb342;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dotFalse {
+  height: 10px;
+  width: 10px;
+  background-color: #dc3545;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+// toggle switch
+.menu-switch {
+  vertical-align: middle;
+  border: 1px solid #ccc;
+  border-radius: 15px;
+  cursor: pointer;
+  display: inline-block;
+  background-color: white;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+// version info
+.version {
+  position: fixed;
+  bottom: 1em;
+  right: 1em;
+}
+
+// make copy to clipboard link visible on hover trigger list item
+.triggerList > .copy {
+  visibility: hidden;
+}
+.triggerList:hover > .copy {
+  visibility: visible;
+}
+
+// use darker color for multi-select tag close symbol 
+.ant-tag-has-color .anticon-close {
+  color: #111;
+}

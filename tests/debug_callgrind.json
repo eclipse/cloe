@@ -1,0 +1,13 @@
+{
+  "version": "4",
+
+  "engine": {
+    "security": {
+      "enable_command_action": true
+    }
+  },
+
+  "triggers": [
+    {"event": "start", "action": "command=callgrind_control -i on"}
+  ]
+}

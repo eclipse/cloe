@@ -1,0 +1,96 @@
+3RD-PARTY LICENSES
+==================
+
+Bundled 3rd-Party Libraries
+---------------------------
+
+The following 3rd-party libraries are included in the Cloe repository:
+
+Bootstrap
+    License: MIT
+    License-Source: https://github.com/twbs/bootstrap/blob/v4.0.0-beta.2/LICENSE
+    Website: http://getbootstrap.com
+    Source: engine/webui/bootstrap.min.css
+    Description:
+        We use Bootstrap for our minimal web interface.
+        Bundled because Cloe should be able to run offline.
+
+
+External 3rd-Party Libraries
+----------------------------
+
+The following 3rd-party libraries are used by this project (these are usually
+installed with the help of Conan):
+
+Google Test with Google Mock
+    License: BSD-3
+    License-Source: https://github.com/google/googletest/blob/master/LICENSE
+    Website: https://github.com/google/googletest
+    Conan-Package: gtest
+    Description:
+        We use this for testing purposes.
+        Bundled because of project recommendations and for proper CMake integration.
+
+CLI11
+    License: BSD-3
+    License-Source: https://github.com/cliutils/cli11/blob/master/LICENSE
+    Website: https://github.com/cliutils/cli11
+    Conan-Package: CLI11@cliutils/stable
+    Description:
+        We use this for creating the cloe-engine command-line application.
+        Bundled because there is no package and it's small enough.
+
+gabime/spdlog
+    License: MIT
+    License-Source: https://github.com/gabime/spdlog/blob/v1.x/LICENSE
+    Source: https://github.com/gabime/spdlog
+    Conan-Package: spdlog
+    Description: We use spdlog to handle our logging needs.
+
+fmtlib/fmt
+    License: BSD-2
+    License-Source: https://github.com/fmtlib/fmt/blob/master/LICENSE.rst
+    Website: fmtlib.net
+    Source: https://github.com/fmtlib/fmt
+    Conan-Package: fmt
+    Description: We use fmt as a nicer way to print stuff.
+
+nlohmann/json
+    License: MIT
+    License-Source: https://github.com/nlohmann/json/blob/master/LICENSE.MIT
+    Source: https://github.com/nlohmann/json
+    Conan-Package: nlohmann_json
+    Description: We use json as our JSON library.
+
+incbin
+    License: Unlicense
+    License-Source: https://github.com/graphitemaster/blob/master/UNLICENSE
+    Website: https://github.com/graphitemaster/incbin
+    Source: runtime/include/cloe/vendor/incbin.hpp
+    Conan-Package: incbin
+    Description: We use incbin to include resource files in our binary.
+
+inja
+    License: MIT
+    License-Source: https://github.com/pantor/inja/blob/master/LICENSE
+    Source: https://github.com/pantor/inja
+    Conan-Package: inja
+    Description: We use inja for text templating.
+
+Boost
+    License: Boost
+    License-Source: https://www.boost.org/LICENSE_1_0.txt
+    Website: https://www.boost.org
+    Conan-Package: boost
+
+Eigen3
+    License: MPL2
+    License-Source: https://www.mozilla.org/en-US/MPL/2.0
+    Website: https://eigen.tuxfamily.org
+    Conan-Package: eigen
+
+Cpp-Netlib
+    License: Boost
+    License-Source: https://www.boost.org/LICENSE_1_0.txt
+    Website: https://cpp-netlib.org
+    Conan-Package: cpp-netlib

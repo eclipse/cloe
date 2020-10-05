@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  conan-server:
+    image: cloe/conan-server:${CONAN_VERSION}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - CONAN_VERSION=${CONAN_VERSION}
+        - CONAN_HOME=${CONAN_HOME}
+
+        # These are for ensuring the file permissions are good.
+        - VOLUME_GID=${VOLUME_GID}
+        - VOLUME_GROUP=${VOLUME_GROUP}
+
+        # Pass any proxy settings through
+        - https_proxy=${https_proxy}
+        - http_proxy=${http_proxy}
+        - no_proxy=${no_proxy}
+      network: host
+    ports:
+      - "9300:9300"
+    volumes:
+      - "${VOLUME_DIR}:${CONAN_HOME}/.conan_server"
+      - "./server.conf:${CONAN_HOME}/.conan_server/server.conf"
+    network_mode: host
+    environment:
+      # Pass any proxy settings through
+      - https_proxy=${https_proxy}
+      - http_proxy=${http_proxy}
+      - no_proxy=${no_proxy}

@@ -1,0 +1,66 @@
+{
+  "version": "4",
+
+  "include": [
+    "config_nop_infinite.json"
+  ],
+
+  "engine": {
+    "security": {
+      "enable_command_action": true
+    }
+  },
+
+  "server": {
+    "listen_port": 23456
+  },
+
+  "triggers": [
+    {"event": "virtue/failure", "action": "fail"},
+    {
+      "sticky": true,
+      "event": "pause",
+      "action": {
+        "name": "bundle",
+        "actions": [
+          {
+            "name": "command",
+            "command": "echo '{\"event\": \"pause\", \"action\": \"resume\"}' | curl -d @- http://localhost:23456/api/triggers/input"
+          },
+          {
+            "name": "log",
+            "level": "warn",
+            "message": "Queued resume action."
+          }
+        ]
+      }
+    },
+    {"event": "start", "action": "realtime_factor=-1"},
+    {
+      "label": "Insert the succeed trigger via curl to test the web server.",
+      "event": "time=10",
+      "action": {
+        "name": "command",
+        "command": "echo '{\"event\": \"time=60\", \"action\": \"succeed\"}' | curl -d @- http://localhost:23456/api/triggers/input"
+      }
+    },
+    {
+      "event": "time=15",
+      "action": "pause"
+    },
+    {
+      "event": "time=25",
+      "action": "pause"
+    },
+    {
+      "label": "If we get this far, then the curl command didn't work.",
+      "event": "time=120",
+      "action": {
+        "name": "bundle",
+        "actions": [
+          "fail"
+        ]
+      }
+    }
+  ]
+}

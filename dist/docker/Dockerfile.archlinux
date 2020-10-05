@@ -1,0 +1,45 @@
+# Dockerfile.archlinux
+#
+# See Dockerfile.ubuntu for documentation of each of the lines.
+ARG BUILD_FROM=archlinux:latest
+ARG DEPLOY_FROM=${BUILD_FROM}
+
+FROM ${BUILD_FROM} AS build
+
+# Install System Packages
+COPY Makefile.setup /cloe/Makefile.setup
+RUN pacman -Syu --noconfirm --needed make && \
+    make -f /cloe/Makefile.setup \
+        WITHOUT_DEV_DEPS=yes \
+        PACMAN_ARGS="--noconfirm --needed" \
+        install-system-deps \
+        && \
+    pacman -Scc --noconfirm
+
+RUN pip3 install --upgrade pip && \
+    make -f /cloe/Makefile.setup \
+        WITHOUT_DEV_DEPS=yes \
+        install-python-deps
+
+# Install and Setup Conan
+ARG CONAN_REMOTE=https://conan.bintray.com
+ARG CONAN_REMOTE_VERIFY_SSL=true
+RUN conan profile new --detect default && \
+    conan profile update settings.compiler.libcxx=libstdc++11 default && \
+    conan remote clean && \
+    conan remote add default ${CONAN_REMOTE} ${CONAN_REMOTE_VERIFY_SSL}
+
+# Build and Install Cloe
+WORKDIR /cloe
+COPY . /cloe
+RUN make export && \
+    make WITH_VTD=0 package && \
+    make WITH_VTD=0 INSTALL_DIR="/deploy" deploy && \
+    make clean && \
+    conan remove \* -b -f
+
+# Create Deploy Image
+FROM ${DEPLOY_FROM}
+COPY --from=build /deploy /usr/local/
+ENV LD_LIBRARY_PATH=/usr/local/lib
+ENTRYPOINT [ "cloe-engine" ]

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Scenario>
+<Scenario RevMajor="2" RevMinor="2">
+    <Layout Database="Projects/Current/Databases/highway_4lanes_6km_straight.opt.osgb" File="Projects/Current/Databases/highway_4lanes_6km_straight.xodr"/>
+    <VehicleList ConfigFile="Distros/Current/Config/Players/Vehicles"/>
+    <DriverList ConfigFile="Distros/Current/Config/Players/driverCfg.xml">
+        <DriverDef LaneKeeping="5.0000000000000000e-01" SteeringDistance="5.0000000000000000e-01" UseOfIndicator="5.0000000000000000e-01" ObeyTrafficSigns="1" RespondToTailgatingVehicles="0.0000000000000000e+00" SwarmFront="1" DesiredVelocity="5.0000000000000000e-01" UrgeToOvertake="0.0000000000000000e+00" Swarm="1" ObserveSpeedLimits="5.0000000000000000e-01" DesiredAcceleration="5.0000000000000000e-01" ConsiderEnvConditions="5.0000000000000000e-01" ObeyTrafficLights="1" LaneChangingDynamic="5.0000000000000000e-01" ObserveKeepRightRule="0.0000000000000000e+00" ObeyTrafficRules="1" ForesightDistance="5.0000000000000000e-01" DistanceKeeping="5.0000000000000000e-01" Name="DefaultDriver_nolanechange" CurveBehavior="5.0000000000000000e-01" SpeedKeeping="5.0000000000000000e-01" DesiredDeceleration="5.0000000000000000e-01" ReactionTime="5.0000000000000000e-01" SwarmBack="1"/>
+        <DriverDef LaneKeeping="5.0000000000000000e-01" SteeringDistance="5.0000000000000000e-01" UseOfIndicator="5.0000000000000000e-01" ObeyTrafficSigns="1" RespondToTailgatingVehicles="0.0000000000000000e+00" SwarmFront="1" DesiredVelocity="5.0000000000000000e-01" UrgeToOvertake="0.0000000000000000e+00" Swarm="1" ObserveSpeedLimits="5.0000000000000000e-01" DesiredAcceleration="5.0000000000000000e-01" ConsiderEnvConditions="5.0000000000000000e-01" ObeyTrafficLights="1" LaneChangingDynamic="5.0000000000000000e-01" ObserveKeepRightRule="0.0000000000000000e+00" ObeyTrafficRules="1" ForesightDistance="5.0000000000000000e-01" DistanceKeeping="5.0000000000000000e-01" Name="NoLaneChange" CurveBehavior="5.0000000000000000e-01" SpeedKeeping="5.0000000000000000e-01" DesiredDeceleration="5.0000000000000000e-01" ReactionTime="5.0000000000000000e-01" SwarmBack="1"/>
+        <DriverDef LaneKeeping="2.9999999999999999e-01" SteeringDistance="5.0000000000000000e-01" UseOfIndicator="5.0000000000000000e-01" ObeyTrafficSigns="1" RespondToTailgatingVehicles="5.0000000000000000e-01" SwarmFront="1" DesiredVelocity="5.0000000000000000e-01" UrgeToOvertake="1.0000000000000000e+00" Swarm="1" ObserveSpeedLimits="1.0000000000000001e-01" DesiredAcceleration="5.0000000000000000e-01" ConsiderEnvConditions="5.0000000000000000e-01" ObeyTrafficLights="1" LaneChangingDynamic="1.0000000000000000e+00" ObserveKeepRightRule="2.0000000000000001e-01" ObeyTrafficRules="1" ForesightDistance="5.0000000000000000e-01" DistanceKeeping="1.0000000000000001e-01" Name="Draengler" CurveBehavior="5.0000000000000000e-01" SpeedKeeping="1.0000000000000001e-01" DesiredDeceleration="5.0000000000000000e-01" ReactionTime="5.0000000000000000e-01" SwarmBack="1"/>
+        <DriverDef ForesightDistance="1.0000000000000000e+00" Name="InsecureDriver"/>
+        <DriverDef LaneKeeping="5.0000000000000000e-01" SteeringDistance="5.0000000000000000e-01" UseOfIndicator="5.0000000000000000e-01" ObeyTrafficSigns="1" RespondToTailgatingVehicles="5.0000000000000000e-01" SwarmFront="1" DesiredVelocity="5.0000000000000000e-01" UrgeToOvertake="2.9999999999999999e-01" Swarm="1" ObserveSpeedLimits="1.0000000000000000e+00" DesiredAcceleration="5.0000000000000000e-01" ConsiderEnvConditions="5.0000000000000000e-01" ObeyTrafficLights="1" LaneChangingDynamic="5.0000000000000000e-01" ObserveKeepRightRule="5.0000000000000000e-01" ObeyTrafficRules="1" ForesightDistance="2.9999999999999999e-01" DistanceKeeping="5.0000000000000000e-01" Name="ExactDriver" CurveBehavior="5.0000000000000000e-01" SpeedKeeping="5.0000000000000000e-01" DesiredDeceleration="5.0000000000000000e-01" ReactionTime="5.0000000000000000e-01" SwarmBack="1"/>
+    </DriverList>
+    <CharacterList ConfigFile="Distros/Current/Config/Players/Pedestrians"/>
+    <ObjectList ConfigFile="Distros/Current/Config/Players/Objects"/>
+    <DynObjects Path="Distros/Current/Config/DynObjects/Logic"/>
+    <TrafficElements/>
+    <PulkTraffic/>
+    <TrafficControl>
+        <Path Name="path" PathId="1">
+            <Waypoint PathOption="shortest" s="5.0000000000000000e+00" TrackId="2"/>
+            <Waypoint PathOption="shortest" s="5.9950000000000000e+03" TrackId="2"/>
+        </Path>
+        <Player>
+            <Description Driver="DefaultDriver_nolanechange" Control="external" AdaptDriverToVehicleType="false" Type="Audi_S5_2009_white" Name="Ego"/>
+            <Init>
+                <Speed Value="0.0000000000000000e+00"/>
+                <PosRoute/>
+                <PathRef StartS="4.0000000000000000e+01" EndAction="continue" TargetS="5.9900000000000000e+03" StartLane="-3" PathId="1"/>
+            </Init>
+        </Player>
+        <Player>
+            <Description Driver="DefaultDriver_nolanechange" Control="internal" AdaptDriverToVehicleType="true" Type="Audi_S5_2009_black" Name="Opponenet"/>
+            <Init>
+                <Speed Value="0.0000000000000000e+00"/>
+                <PosRoute/>
+                <PathRef StartS="1.1500000000000000e+02" EndAction="continue" TargetS="5.9900000000000000e+03" StartLane="-3" PathId="1"/>
+            </Init>
+        </Player>
+        <PlayerActions Player="Ego"/>
+        <PlayerActions Player="Opponenet">
+            <Action Name="accelerate_when_approached">
+                <PosRelative CounterID="" CounterComp="COMP_EQ" NetDist="false" Distance="2.0000000000000000e+01" CounterVal="0" Pivot="Ego"/>
+                <EditorPos Radius="2.0000000000000000e+01" X="8.4500000000000028e+00" Y="4.5000000000000000e+01"/>
+                <SpeedChange Rate="4.0000000000000000e+00" Target="2.2222222222222221e+01" Force="true" ExecutionTimes="-1" ActiveOnEnter="true" DelayTime="0.0000000000000000e+00"/>
+            </Action>
+            <Action Name="brake_to_stop_reaching_speed_threshold">
+                <Speed CounterID="" CounterComp="COMP_EQ" NetDist="false" CounterVal="0" Pivot="Opponenet" Value="2.1944444444444443e+01" OnExcess="true"/>
+                <EditorPos Radius="2.1944444444444443e+01" X="8.4500000000000064e+00" Y="1.2000000000000000e+02"/>
+                <SpeedChange Rate="1.0000000000000000e+01" Target="0.0000000000000000e+00" Force="true" ExecutionTimes="-1" ActiveOnEnter="true" DelayTime="5.0000000000000000e+00"/>
+            </Action>
+        </PlayerActions>
+    </TrafficControl>
+    <MovingObjectsControl/>
+    <LightSigns>
+        <SignalController Id="1" DelayRef="-1" Delay="0.0000000000000000e+00"/>
+        <SignalController Id="2" DelayRef="-1" Delay="0.0000000000000000e+00"/>
+        <SignalController Id="3" DelayRef="-1" Delay="0.0000000000000000e+00"/>
+        <SignalController Id="4" DelayRef="-1" Delay="0.0000000000000000e+00"/>
+        <Signal Id="2495"/>
+        <Signal Id="2496"/>
+        <Signal Id="2497"/>
+        <Signal Id="2498"/>
+        <Signal Id="2500"/>
+        <Signal Id="2501"/>
+        <Signal Id="2504"/>
+        <Signal Id="2505"/>
+        <Signal Id="2510"/>
+        <Signal Id="2511"/>
+        <Signal Id="2512"/>
+        <Signal Id="2513"/>
+        <Signal Id="2514"/>
+        <Signal Id="2515"/>
+        <Signal Id="2517"/>
+        <Signal Id="2518"/>
+    </LightSigns>
+    <Selections/>
+</Scenario>

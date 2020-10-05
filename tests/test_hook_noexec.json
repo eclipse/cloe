@@ -1,0 +1,15 @@
+{
+  "version": "4",
+  "engine": {
+    "hooks": {
+      "pre_connect": [
+        {
+          "path": "test_hook_noexec.json"
+        }
+      ]
+    }
+  },
+  "include": [
+    "config_nop_smoketest.json"
+  ]
+}

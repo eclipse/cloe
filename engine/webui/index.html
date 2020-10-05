@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link rel="stylesheet" href="/bootstrap.css">
+<link rel="icon" type="image/png" href="/cloe_16x16.png">
+<style type="text/css">
+body {
+  background: #eee;
+}
+
+h1,h2,h3,h4,h5,h6 {
+  color: #005691;
+}
+
+a {
+  color: #005691;
+}
+
+a:hover {
+  color: #1f9bd4;
+}
+
+#background {
+  background-image: url("/cloe.svg");
+  position: fixed;
+  top: 0;
+  left: 0;
+  opacity: 0.1;
+  z-index: 0;
+  background-size: cover;
+  filter: blur(25px);
+  width: 100%;
+  height: 100%;
+}
+
+#main {
+  max-width: 1000px;
+  padding: 2em 0;
+  text-align: left;
+}
+
+.card {
+  background: white;
+  display: block;
+  padding: 1em;
+  border: 1px solid #bbb;
+  border-radius: 3px;
+  box-shadow: 0 19px 38px rgba(0, 0, 0, 0.08), 0 15px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card > h3 {
+  font-weight: bold;
+  text-align: center;
+  margin-top: 0.5em;
+  margin-bottom: 1em;
+}
+
+#intro {
+}
+
+#intro h1 {
+  text-align: center;
+  margin-bottom: 0.5em;
+}
+
+#intro #logo {
+  height: 1.5em;
+}
+
+#nav {
+  background: #f5f5f5;
+  margin-top: 2em;
+}
+
+#sidebar {
+  font-size: 90%;
+  background: #f5f5f5;
+}
+
+#sidebar ul {
+  padding-left: 1em;
+  margin: 0.5em 0;
+}
+
+#sidebar li {
+  list-style-type: none;
+}
+
+#sidebar a {
+  color: black;
+}
+</style>
+
+<title>Cloe</title>
+</head>
+<body>
+<div id="background"></div>
+<div id="main" class="container">
+<div class="row">
+  <div class="col-md-8">
+    <div id="intro" class="card col-md-12">
+      <h1><img id="logo" src="/cloe.svg"></h1>
+      <p>Welcome to Cloe, a simulation kit for testing automated-driving software components.</p>
+
+      <p>
+        Cloe empowers developers of automated-driving software components by
+        providing a unified interface to closed-loop simulation. It achieves
+        this by abstracting over environment and vehicle simulators and building
+        upon these.
+      </p>
+
+      <p>
+        This is the internal Cloe web-server which primarily serves the JSON API, which
+        you can see in the right side-bar. If you want to interact with the simulation,
+        you might be more interested in our proper web user interface.
+      </p>
+
+      <p>
+        Check out our <a href="https://github.com/eclipse/cloe">repository</a>!
+      </p>
+      <br>
+
+      <h5>Getting Help</h5>
+      <p>If you need help, please do not hesitate to contact us at our
+      <a href="mailto:cloe-dev@eclipse.org">mailing list</a>.</p>
+    </div>
+
+    <div id="nav" class="card col-md-12">
+      <h3>Important Links</h3>
+        <ul>
+          <li><a href="https://github.com/eclipse/cloe">Website</a></li>
+          <li><a href="https://github.com/eclipse/cloe">Repository</a></li>
+        </ul>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div id="sidebar" class="card col-md-12">
+      <h3>JSON API</h3>
+      <p>Cloe provides a JSON API for input and output.
+        The following endpoints are currently available:</p>
+      <ul id="endpoints"></ul>
+    </div>
+  </div>
+</div>
+<script>
+  function createLink(name, href) {
+    return "<li><a href=\""+href+"\">" + name + "</a></li>";
+  }
+
+  fetch("/api/endpoints")
+  .then(data => data.json())
+  .then(data => {
+      ul = document.getElementById("endpoints");
+      for (let ep of data) {
+        if (ep.startsWith("/api")) {
+          let link = document.createElement('a')
+          const li = document.createElement('li')
+          link.innerHTML = ep
+          link.href = ep
+          li.append(link)
+          ul.append(li);
+        } else {
+          // ignore
+        }
+      }})
+</script>
+</body>
+</html>
+<!-- vim: set sw=2 ts=2: -->

@@ -1,0 +1,14 @@
+<!-- vIG configuration file, 16.07.2010 by M. Dupuis -->
+
+<IGconfig>
+  <Includes>
+    <Include file="IGLinks/Vig/data/Shadows.xml" />
+    <Include file="IGLinks/Distro/Config/ImageGenerator/IGConfig.xml" />
+    <Include file="IGLinks/Vig/data/Sky/HighContrastSky.xml" />
+    <Include file="IGLinks/Distro/Config/ImageGenerator/MaterialsHCS.xml" />
+    <Include file="IGLinks/Distro/Config/ImageGenerator/SymbolsStd.xml" />
+    <Include file="IGLinks/Distro/Config/ImageGenerator/LightSrcStd.xml" />
+    <Include file="IGLinks/Setup/Config/ImageGenerator/AutoCfgDisplay.xml" />
+    <Include file="IGLinks/Setup/Config/ImageGenerator/AutoCfgDatabase.xml" />
+  </Includes>
+</IGconfig>

@@ -1,0 +1,103 @@
+{
+  "version": "4",
+  "defaults": {
+    "simulators": [
+      {
+        "binding": "vtd",
+        "args": {
+          "label_vehicle": "symbol",
+          "image_generator": false
+        }
+      }
+    ]
+  },
+  "simulators": [
+    {
+      "binding": "vtd",
+      "args": {
+        "rdb_params": {
+          "retry_delay_s": 1.0
+        },
+        "scenario": "multi.xml",
+        "setup": "Cloe.noGUInoIG",
+        "image_generator": false
+      }
+    }
+  ],
+  "vehicles": [
+    {
+      "name": "first",
+      "from": {
+        "simulator": "vtd",
+        "index": 0
+      },
+      "components": {
+        "cloe::speedometer": {
+          "binding": "speedometer",
+          "name": "first_speed",
+          "from": "cloe::gndtruth_ego_sensor"
+        }
+      }
+    },
+    {
+      "name": "second",
+      "from": {
+        "simulator": "vtd",
+        "index": 1
+      },
+      "components": {
+        "cloe::speedometer": {
+          "binding": "speedometer",
+          "name": "second_speed",
+          "from": "cloe::gndtruth_ego_sensor"
+        }
+      }
+    },
+    {
+      "name": "third",
+      "from": {
+        "simulator": "vtd",
+        "index": 2
+      },
+      "components": {
+        "cloe::speedometer": {
+          "binding": "speedometer",
+          "name": "third_speed",
+          "from": "cloe::gndtruth_ego_sensor"
+        }
+      }
+    }
+  ],
+  "controllers": [
+    {
+      "binding": "basic",
+      "name": "basic_first",
+      "vehicle": "first"
+    },
+    {
+      "binding": "virtue",
+      "name": "virtue_first",
+      "vehicle": "first"
+    },
+    {
+      "binding": "basic",
+      "name": "basic_second",
+      "vehicle": "second"
+    },
+    {
+      "binding": "virtue",
+      "name": "virtue_second",
+      "vehicle": "second"
+    },
+    {
+      "binding": "basic",
+      "name": "basic_third",
+      "vehicle": "third"
+    },
+    {
+      "binding": "virtue",
+      "name": "virtue_third",
+      "vehicle": "third"
+    }
+  ]
+}

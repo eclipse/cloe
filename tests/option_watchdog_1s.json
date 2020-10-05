@@ -1,0 +1,10 @@
+{
+  "version": "4",
+  "engine": {
+    "watchdog": {
+      "mode": "kill",
+      "default_timeout": 1000
+    }
+  }
+}
+

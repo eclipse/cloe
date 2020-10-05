@@ -1,0 +1,7 @@
+{
+  "version": "4",
+  "include": [
+    "bootstrap_vtd.json",
+    "config_vtd_smoketest.json"
+  ]
+}

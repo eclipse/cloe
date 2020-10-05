@@ -1,0 +1,90 @@
+{
+  "version": "4",
+  "simulators": [
+    {
+      "binding": "minimator",
+      "args": {
+        "vehicles": [
+          "first",
+          "second",
+          "third"
+        ]}
+    }
+  ],
+  "vehicles": [
+    {
+      "name": "first",
+      "from": {
+        "simulator": "minimator",
+        "name": "first"
+      },
+      "components": {
+        "cloe::speedometer": {
+          "binding": "speedometer",
+          "name": "first_speed",
+          "from": "cloe::gndtruth_ego_sensor"
+        }
+      }
+    },
+    {
+      "name": "second",
+      "from": {
+        "simulator": "minimator",
+        "name": "second"
+      },
+      "components": {
+        "cloe::speedometer": {
+          "binding": "speedometer",
+          "name": "second_speed",
+          "from": "cloe::gndtruth_ego_sensor"
+        }
+      }
+    },
+    {
+      "name": "third",
+      "from": {
+        "simulator": "minimator",
+        "name": "third"
+      },
+      "components": {
+        "cloe::speedometer": {
+          "binding": "speedometer",
+          "name": "third_speed",
+          "from": "cloe::gndtruth_ego_sensor"
+        }
+      }
+    }
+  ],
+  "controllers": [
+    {
+      "binding": "basic",
+      "name": "basic_first",
+      "vehicle": "first"
+    },
+    {
+      "binding": "virtue",
+      "name": "virtue_first",
+      "vehicle": "first"
+    },
+    {
+      "binding": "basic",
+      "name": "basic_second",
+      "vehicle": "second"
+    },
+    {
+      "binding": "virtue",
+      "name": "virtue_second",
+      "vehicle": "second"
+    },
+    {
+      "binding": "basic",
+      "name": "basic_third",
+      "vehicle": "third"
+    },
+    {
+      "binding": "virtue",
+      "name": "virtue_third",
+      "vehicle": "third"
+    }
+  ]
+}

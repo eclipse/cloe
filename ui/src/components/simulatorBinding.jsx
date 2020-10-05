@@ -1,0 +1,59 @@
+/*
+ * Copyright 2020 Robert Bosch GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+import React from "react";
+import Card from "./card";
+import Label from "./label";
+
+// The simulator component includes general information about the simulator.
+// Each information is represented with a Card component.
+function SimulatorBinding(props) {
+  if (!props.simulator) {
+    return <Card>Wait for Simulator Binding data</Card>;
+  }
+  const { simulator } = props;
+  const connected = (
+    <React.Fragment>
+      <span className={simulator.is_connected ? "dotTrue mr-2" : "dotFalse mr-2"} />
+      {simulator.is_connected.toString().toUpperCase()}
+    </React.Fragment>
+  );
+  const running = (
+    <React.Fragment>
+      <span className={simulator.is_operational ? "dotTrue mr-2" : "dotFalse mr-2"} />
+      {(simulator.is_operational || "undefined").toString().toUpperCase()}
+    </React.Fragment>
+  );
+
+  return (
+    <Card>
+      <div className="container ">
+        <div className="row align-items-center">
+          <div className="col-4 border-right">
+            <Label label="CONNECTED" value={connected} />
+          </div>
+          <div className="col-4 border-right">
+            <Label label="RUNNING" value={running} />
+          </div>
+          <div className="col-4">
+            <Label label="VEHICLES" value={simulator.num_vehicles} />
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+export default SimulatorBinding;

@@ -1,0 +1,178 @@
+<!-- SimServer  Master
+    name        SETUP name                                                  (def: Standard                      [-] )
+    comPort     port used internally by the SimServer                       (def: 32512                         [-] )
+    idleRate    SimServer frame rate in IDLE mode                           (def: 20                            [Hz])
+    workRate    SimServer frame rate in WORK mode                           (def: 33                            [Hz])
+    notifyLvl   Notification level, such as DEBUG, INFO, NOTICE, WARN       (def: INFO                          [-] )
+    logDir      Log directory for SimServer Master&Slave                    (def: /tmp                          [-] )
+    logName     Log name for SimServer Master                               (def: taskRec_SimServer.xml         [-] )
+-->
+<SimServer name="Standard" comPort="32512" notifyLvl="INFO">
+
+  <Data>
+
+    <!-- Task settings -->
+    <!-- VTD Runtime -->
+    <EnvVar name="VI_RUNTIME_DIR"       val="$VTD_ROOT/Runtime" />
+    <EnvVar name="VI_CORE_DIR"          val="$VI_RUNTIME_DIR/Core" />
+    <EnvVar name="VI_TOOLS_DIR"         val="$VI_RUNTIME_DIR/Tools" />
+    <EnvVar name="VI_ADDON_DIR"         val="$VI_RUNTIME_DIR/AddOns" />
+
+    <!-- VTD Data -->
+    <EnvVar name="VI_DATA_DIR"          val="$VTD_ROOT/Data" />
+    <EnvVar name="VI_SETUP_DIR"         val="$VI_DATA_DIR/Setups" />
+    <EnvVar name="VI_PROJECT_DIR"       val="$VI_DATA_DIR/Projects" />
+    <EnvVar name="VI_DISTRO_DIR"        val="$VI_DATA_DIR/Distros" />
+    <EnvVar name="VI_CURRENT_SETUP"     val="$VI_SETUP_DIR/Current" />
+    <EnvVar name="VI_CURRENT_PROJECT"   val="$VI_PROJECT_DIR/Current" />
+    <EnvVar name="VI_CURRENT_DISTRO"    val="$VI_DISTRO_DIR/Current" />
+
+
+    <EnvVar name="PATH"                 val=".:$PATH" />
+    <EnvVar name="LD_LIBRARY_PATH"      val="$LD_LIBRARY_PATH:$VI_CORE_DIR/Traffic"              />
+    <EnvVar name="LD_LIBRARY_PATH"      val="$LD_LIBRARY_PATH:$VI_CORE_DIR/Framework/lib"        />
+    <EnvVar name="LD_LIBRARY_PATH"      val="$LD_LIBRARY_PATH:$VI_CORE_DIR/SensorManager/lib"    />
+    <EnvVar name="LD_LIBRARY_PATH"      val="$LD_LIBRARY_PATH:$VI_CORE_DIR/DynamicsManager/lib"  />
+    <EnvVar name="LD_LIBRARY_PATH"      val="$LD_LIBRARY_PATH:$VI_CORE_DIR/ModuleManager/lib"    />
+    <EnvVar name="LD_LIBRARY_PATH"      val=".:$LD_LIBRARY_PATH"                                 />
+
+    <EnvVar name="LANG"                 val="en_US.UTF-8" />
+
+    <EnvVar name="VI_TEMP_DIR"          val="/tmp" />
+
+    <EnvVar name="DIGUY"                val="$VI_ADDON_DIR/DI-Guy-13.1.0" />
+    <EnvVar name="HAS_DIGUY"            val="false" />
+
+    <!-- VTD search path -->
+    <EnvVar name="VI_FILE_PATH"         val=".:$VI_CURRENT_PROJECT:$VI_CURRENT_SETUP:$VI_DATA_DIR/Setups/Common:$VI_CURRENT_DISTRO:$VI_DATA_DIR" />
+    <EnvVar name="VI_FILE_SUB_PATH"     val=".:Databases:Scenarios:Scripts:Recordings:Config/TaskControl:Config/ImageGenerator" />
+    <EnvVar name="VI_FILE_SUB_PATH"     val="$VI_FILE_SUB_PATH:Config/ScenarioEditor:Config/SensorManager:Config/DynamicsManager" />
+    <EnvVar name="VI_FILE_SUB_PATH"     val="$VI_FILE_SUB_PATH:Config/ModuleManager:Config/Players:Plugins/SensorManager:Plugins/DynamicsManager:Plugins/ModuleManager" />
+
+    <!-- import Common/Config/Simulation/projectSettings.cfg in orignal plan, create IGLINKs, to see if could be deleted-->
+
+    <!-- internal COM ports -->
+
+    <EnvVar name="PORT_TC_2_TRAFFIC"    val="50611" />
+    <EnvVar name="PORT_TC_2_IG"         val="50612" />
+    <EnvVar name="PORT_IG_2_TC"         val="50613" />
+    <EnvVar name="PORT_TC_2_OS"         val="50614" />
+    <EnvVar name="PORT_TC_2_SCVIS"      val="50615" />
+    <EnvVar name="PORT_SCVIS_2_TC"      val="50616" />
+    <EnvVar name="PORT_TC_2_SCP"        val="48179" />
+    <EnvVar name="PORT_TC_2_SIMSERVER"  val="32512" />
+    <EnvVar name="PORT_TC_2_PARAMSERVER" val="54345" />
+
+    <EnvVar name="TRAFFIC_VIS_PORT_TC2IG"       val="50612" />
+    <EnvVar name="TRAFFIC_VIS_PORT_IG2TC"       val="50613" />
+    <EnvVar name="PORT_VTGUI"           val="$PORT_TC_2_SCP" />
+    <EnvVar name="PORT_SCP"             val="$PORT_TC_2_SCP" />
+
+    <EnvVar name="OSG_MAX_NUMBER_OF_GRAPHICS_CONTEXTS" val="1" />
+    <EnvVar name="VI_DEBUG_FILE_MAX_SIZE"       val="50000000" />
+    <EnvVar name="OUTPUT_DEST"                  val="both" />
+
+    <!-- internal COM ports end -->
+
+    <Host>
+
+      <Process
+        name="TaskControl"
+        auto="true"
+        persistent="true"
+        path="$VI_CORE_DIR/TaskControl"
+        executable="taskControl"
+        cmdline=""
+        affinitymask="0xFF"
+        useXterm="false"
+        xtermOptions="-fg Black -bg LightCoral -geometry 80x10+0+0"
+        schedPolicy="SCHED_RR"
+        schedPriority="20"
+        workDir="$VI_CURRENT_SETUP/Bin">
+      </Process>
+
+      <Process
+        name="ParamServer"
+        auto="true"
+        persistent="true"
+        path="$VI_CORE_DIR/ParamServer"
+        executable="paramServer"
+        cmdline="-n INFO"
+        affinitymask="0xFF"
+        schedPolicy="SCHED_RR"
+        schedPriority="20"
+        useXterm="false"
+        xtermOptions="-fg Black -bg DarkSlateGray4 -geometry 80x10+508+0"
+        workDir=".">
+      </Process>
+
+      <Process
+        name="Traffic"
+        auto="false"
+        explicitLoad="false"
+        path="$VI_CORE_DIR/Traffic"
+        executable="ghostdriver"
+        cmdline="-interface vt -seed 9"
+        affinitymask="0xFF"
+        schedPolicy="SCHED_RR"
+        schedPriority="20"
+        useXterm="false"
+        xtermOptions="-fg Black -bg LightCyan3 -geometry 80x10+0+163"
+        workDir="$VI_CURRENT_SETUP/Bin">
+        <EnvVar name="LD_LIBRARY_PATH"      val="$VI_CORE_DIR/Lib:$LD_LIBRARY_PATH"                  />
+      </Process>
+
+      <Process
+        name="ModuleManager"
+        auto="false"
+        explicitLoad="false"
+        path="$VI_CORE_DIR/ModuleManager"
+        executable="moduleManager"
+        cmdline="-f moduleManager.xml"
+        affinitymask="0xFF"
+        schedPolicy="SCHED_RR"
+        schedPriority="20"
+        useXterm="false"
+        xtermOptions="-fg Black -bg Orange1 -geometry 80x10+1016+163"
+        workDir="$VI_CURRENT_SETUP/Bin">
+      </Process>
+
+      <Process
+        group="igGroup"
+        name="igCtr"
+        auto="false"
+        explicitLoad="true"
+        path="$VI_CORE_DIR/ImageGenerator/bin"
+        executable="vigcar"
+        cmdline="$VI_CURRENT_SETUP/Config/ImageGenerator/AutoCfg.xml -m 0x01"
+        useXterm="false"
+        xtermOptions="-fg Black -bg LightGoldenRod -geometry 80x10+508+163"
+        affinitymask="0xFF"
+        schedPolicy="SCHED_RR"
+        schedPriority="20"
+        workDir="$VI_CURRENT_SETUP/Bin">
+        <EnvVar name="LD_LIBRARY_PATH"      val="$VI_CORE_DIR/ImageGenerator/bin:$LD_LIBRARY_PATH"   /> 
+      </Process>
+
+      <Process
+        name="ScenarioEditor"
+        auto="false"
+        explicitLoad="true"
+        persistent="true"
+        path="$VI_CORE_DIR/ScenarioEditor"
+        executable="scenarioEditor"
+        cmdline=""
+        useXterm="false"
+        xtermOptions="-fg Black -bg DarkSeaGreen2 -geometry 80x10"
+        detached="true"
+        affinitymask="0xFF"
+        schedPolicy="SCHED_RR"
+        schedPriority="20"
+        workDir="$VI_CURRENT_SETUP/Bin">
+      </Process>
+
+    </Host>
+
+  </Data>
+
+</SimServer>

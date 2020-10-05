@@ -1,0 +1,36 @@
+{
+  "version": "4",
+
+  "include": [
+    "bootstrap_vtd.json",
+    "config_vtd_infinite.json",
+    "controller_gndtruth.json"
+  ],
+
+  "server": {
+    "listen": false,
+    "listen_port": 23456
+  },
+
+  "defaults": {
+    "simulators": [
+      {
+        "binding": "vtd",
+        "args": {
+          "image_generator": false
+        }
+      }
+    ]
+  },
+
+  "triggers": [
+    {"event": "virtue/failure", "action": "fail"},
+    {"event": "start",   "action": "log=info: Running vtd/basic smoketest."},
+    {"event": "start",   "action": "realtime_factor=-1"},
+    {
+      "label": "Vehicle default should not reach 50 km/h with the vtd binding and basic controller.",
+      "event": "default_speed/kmph=>50.0", "action": "fail"
+    },
+    {"event": "time=30", "action": "succeed"}
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "version": "4",
+  "server": {
+    "listen": false,
+    "listen_port": 23456
+  },
+  "triggers": [
+    {"event": "virtue_first/failure", "action": "fail"},
+    {"event": "start",   "action": "log=info: Running multi-agent minimator smoketest."},
+    {"event": "start",   "action": "realtime_factor=-1"},
+    {
+      "event": "start",
+      "action": {
+        "name": "bundle",
+        "actions": [
+          "basic_first/hmi=!enable"
+        ]
+      }
+    },
+    { "event": "next=1",   "action": "basic_first/hmi=enable" },
+    { "event": "time=5",   "action": "basic_first/hmi=resume" },
+    { "event": "time=5.5", "action": "basic_first/hmi=!resume" },
+    {
+      "label": "Push and release basic_first/hmi=plus",
+      "event": "time=4",
+      "action": {
+        "name": "insert",
+        "triggers": [
+          { "event": "next", "action": "basic_first/hmi=plus" },
+          { "event": "next=1", "action": "basic_first/hmi=!plus" }
+        ]
+      }
+    },
+    {
+      "event": "start",
+      "action": {
+        "name": "bundle",
+        "actions": [
+          "basic_second/hmi=!enable"
+        ]
+      }
+    },
+    { "event": "next=1",   "action": "basic_second/hmi=enable" },
+    { "event": "time=5",   "action": "basic_second/hmi=resume" },
+    { "event": "time=5.5", "action": "basic_second/hmi=!resume" },
+    {
+      "label": "Push and release basic_second/hmi=plus",
+      "event": "time=4",
+      "action": {
+        "name": "insert",
+        "triggers": [
+          { "event": "next", "action": "basic_second/hmi=plus" },
+          { "event": "next=1", "action": "basic_second/hmi=!plus" }
+        ]
+      }
+    },
+    {
+      "event": "start",
+      "action": {
+        "name": "bundle",
+        "actions": [
+          "basic_third/hmi=!enable"
+        ]
+      }
+    },
+    { "event": "next=1",   "action": "basic_third/hmi=enable" },
+    { "event": "time=5",   "action": "basic_third/hmi=resume" },
+    { "event": "time=5.5", "action": "basic_third/hmi=!resume" },
+    {
+      "label": "Push and release basic_third/hmi=plus",
+      "event": "time=4",
+      "action": {
+        "name": "insert",
+        "triggers": [
+          { "event": "next", "action": "basic_third/hmi=plus" },
+          { "event": "next=1", "action": "basic_third/hmi=!plus" }
+        ]
+      }
+    },
+    {"event": "time=60", "action": "succeed"}
+  ]
+}

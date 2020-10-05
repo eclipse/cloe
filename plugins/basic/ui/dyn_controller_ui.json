@@ -1,0 +1,223 @@
+{
+    "controller": {
+        "action": "$CONTROLLER/hmi",
+        "title": "Basic Controller",
+        "paths": {
+            "source": "/$CONTROLLER/state"
+        },
+        "elements": [
+            {
+                "id": "sw-power",
+                "title": "ACC",
+                "type": "switch",
+                "action": {
+                    "enable": "$STATE"
+                },
+                "source": {
+                    "endpoint": "/$CONTROLLER/state",
+                    "path": "enabled"
+                },
+                "params": {
+                    "fitted_width": true
+                }
+            },
+            {
+                "id": "l-active",
+                "type": "led_label",
+                "source": {
+                    "path": "active"
+                },
+                "title": "Active",
+                "params": {
+                    "fitted_width": true
+                }
+            },
+            {
+                "id": "l-targetspeed",
+                "type": "label",
+                "source": {
+                    "endpoint": "/$CONTROLLER/state",
+                    "path": "target_speed"
+                },
+                "title": "Target Speed (km/h)"
+            },
+            {
+                "id": "l-timegap",
+                "type": "label",
+                "source": {
+                    "endpoint": "/$CONTROLLER/state",
+                    "path": "distance_algorithm"
+                },
+                "title": "Timegap",
+                "params": {
+                    "fitted_width": true
+                }
+            },
+            {
+                "id": "sw-lka",
+                "title": "LKA",
+                "type": "switch",
+                "action": {
+                    "lka": "$STATE"
+                },
+                "source": {
+                    "endpoint": "/$CONTROLLER/hmi",
+                    "path": "lka"
+                },
+                "params": {
+                    "fitted_width": true
+                }
+            },
+            {
+                "id": "bt-resume",
+                "type": "button",
+                "title": "Resume",
+                "action": {
+                    "resume": "$STATE"
+                },
+                "params": {
+                    "default_style": "success"
+                }
+            },
+            {
+                "id": "bt-cancel",
+                "type": "button",
+                "title": "Cancel",
+                "action": {
+                    "cancel": "$STATE"
+                },
+                "params": {
+                    "default_style": "danger"
+                }
+            },
+            {
+                "id": "bt-plus",
+                "type": "button",
+                "title": "+",
+                "action": {
+                    "plus": "$STATE"
+                },
+                "params": {
+                    "default_style": "info"
+                }
+            },
+            {
+                "id": "bt-minus",
+                "type": "button",
+                "title": "-",
+                "action": {
+                    "minus": "$STATE"
+                },
+                "params": {
+                    "default_style": "info"
+                }
+            },
+            {
+                "id": "bt-timegap",
+                "type": "button",
+                "title": "Change Timegap",
+                "action": {
+                    "distance": "$STATE"
+                },
+                "params": {
+                    "default_style": "info",
+                    "fitted_width": true
+                }
+            },
+            {
+                "id": "tb-active",
+                "title": "Active",
+                "type": "timebar",
+                "source": {
+                    "path": "active"
+                },
+                "params": {
+                    "x_label": "Sim Time",
+                    "color_true": "#7cb342",
+                    "color_false": "#dc3545"
+                }
+            },
+            {
+                "id": "tb-enabled",
+                "type": "timebar",
+                "source": {
+                    "path": "enabled"
+                },
+                "params": {
+                    "x_label": "Sim Time",
+                    "color_true": "#7cb342",
+                    "color_false": "#dc3545"
+                }
+            },
+            {
+                "id": "tb-lka",
+                "type": "timebar",
+                "source": {
+                    "endpoint": "/$CONTROLLER/configuration",
+                    "path": "$.lka.enabled"
+                },
+                "params": {
+                    "x_label": "Sim Time",
+                    "color_true": "#7cb342",
+                    "color_false": "#dc3545"
+                }
+            },
+            {
+                "id": "lc-vehicle",
+                "title": "Vehicle- and Target-Speed (m/s)",
+                "type": "linechart",
+                "source": [
+                    {
+                        "endpoint": "/$CONTROLLER/vehicle",
+                        "path": "$.components['cloe::default_ego_sensor'].sensed_state.velocity_norm",
+                        "name": "Speed (km/h)",
+                        "math": "x * ((60 * 60) / 1000)"
+                    },
+                    {
+                        "path": "$.target_speed_mps",
+                        "name": "Target Speed (km/h)",
+                        "math": "x * ((60 * 60) / 1000)"
+                    }
+                ],
+                "params": {
+                    "colors": ["black", "#8884d7"]
+                }
+            }
+        ],
+        "layout": {
+            "type": "grid",
+            "groups": [
+                {
+                    "columns": 2,
+                    "elements": ["sw-power", "tb-enabled"]
+                },
+                {
+                    "columns": 2,
+                    "elements": ["sw-lka", "tb-lka"]
+                },
+                {
+                    "columns": 2,
+                    "elements": [
+                        "l-active",
+                        "tb-active",
+                        "bt-resume",
+                        "bt-cancel"
+                    ]
+                },
+                {
+                    "columns": 3,
+                    "elements": ["bt-minus", "l-targetspeed", "bt-plus"]
+                },
+                {
+                    "columns": 2,
+                    "elements": ["bt-timegap", "l-timegap"]
+                },
+
+                {
+                    "columns": 1,
+                    "elements": ["lc-vehicle"]
+                }
+            ]
+        }
+    }
+}
