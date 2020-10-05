@@ -119,7 +119,7 @@ Once the `cloe-launch` tool is available, you can do one of the following:
     Profile name: 5990582c3331e43d46d7e40f293a53b76063f1e4
     Configuration:
         ...
-    Runtime directory: /home/mog2abt/.cache/cloe/launcher/5990582c3331e43d46d7e40f293a53b76063f1e4
+    Runtime directory: /home/captain/.cache/cloe/launcher/5990582c3331e43d46d7e40f293a53b76063f1e4
     $ cloe-engine usage
     Cloe 0.18.0-nightly (2020-10-01)
     ...
@@ -131,7 +131,7 @@ Once the `cloe-launch` tool is available, you can do one of the following:
     Profile name: 5990582c3331e43d46d7e40f293a53b76063f1e4
     Configuration:
         ...
-    Runtime directory: /home/mog2abt/.cache/cloe/launcher/5990582c3331e43d46d7e40f293a53b76063f1e4
+    Runtime directory: /home/captain/.cache/cloe/launcher/5990582c3331e43d46d7e40f293a53b76063f1e4
     ---
     Cloe 0.18.0-nightly (2020-10-01)
     ...
