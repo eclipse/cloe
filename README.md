@@ -5,7 +5,7 @@ Cloe empowers developers of automated-driving software components by providing
 a unified interface to closed-loop simulation. It achieves this by abstracting
 over environment and vehicle simulators and building upon these.
 
-![Screenshot of the Cloe UI](doc/images/screenshot.png)
+![Screenshot of the Cloe UI](docs/images/screenshot.png)
 
 Cloe isn't a single tool. It is a set of components written in different
 languages employing different tools that work together:
@@ -125,6 +125,7 @@ Once the `cloe-launch` tool is available, you can do one of the following:
     ...
     ```
  2. Launch `cloe-engine` directly:
+    ```console
     $ cloe-launch -v exec -P conanfile.py -- usage
     Source profile: conanfile.py
     Profile name: 5990582c3331e43d46d7e40f293a53b76063f1e4
