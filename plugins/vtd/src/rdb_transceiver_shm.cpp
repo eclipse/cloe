@@ -64,13 +64,13 @@ RdbTransceiverShm::RdbTransceiverShm(key_t key, uint32_t release_mask)
   // Store pointers to RDB_SHM_BUFFER_INFO_t
   buffer_info_[0] = reinterpret_cast<RDB_SHM_BUFFER_INFO_t *>(
       reinterpret_cast<char *>(rdb_shm_hdr_) + rdb_shm_hdr_->headerSize);
-  for (i = 1; i < rdb_shm_hdr_->noBuffers; ++i) {
+  for (int i = 1; i < rdb_shm_hdr_->noBuffers; ++i) {
     buffer_info_[i] = reinterpret_cast<RDB_SHM_BUFFER_INFO_t *>(
         reinterpret_cast<char *>(buffer_info_[i - 1]) + buffer_info_[i - 1]->thisSize);
   }
 
   // Store pointers to first RDB_MSG_t in each RDB_SHM_BUFFER_INFO_t
-  for (i = 0; i < rdb_shm_hdr_->noBuffers; ++i) {
+  for (int i = 0; i < rdb_shm_hdr_->noBuffers; ++i) {
     rdb_msg_[i] = reinterpret_cast<RDB_MSG_t *>(reinterpret_cast<char *>(rdb_shm_hdr_) +
                                                 buffer_info_[i]->offset);
     buffer_info_[i]->flags = 0;
@@ -83,7 +83,6 @@ RdbTransceiverShm::~RdbTransceiverShm() {
 }
 
 std::vector<std::shared_ptr<RDB_MSG_t>> RdbTransceiverShm::receive() {
-  int i = 0;
   int buffer_id = -1;
 
   std::vector<std::shared_ptr<RDB_MSG_t>> messages;
@@ -95,18 +94,18 @@ std::vector<std::shared_ptr<RDB_MSG_t>> RdbTransceiverShm::receive() {
   // Store pointers to RDB_SHM_BUFFER_INFO_t
   buffer_info_[0] = reinterpret_cast<RDB_SHM_BUFFER_INFO_t *>(
       reinterpret_cast<char *>(rdb_shm_hdr_) + rdb_shm_hdr_->headerSize);
-  for (i = 1; i < rdb_shm_hdr_->noBuffers; ++i) {
+  for (int i = 1; i < rdb_shm_hdr_->noBuffers; ++i) {
     buffer_info_[i] = reinterpret_cast<RDB_SHM_BUFFER_INFO_t *>(
         reinterpret_cast<char *>(buffer_info_[i - 1]) + buffer_info_[i - 1]->thisSize);
   }
 
   // Store pointers to first RDB_MSG_t in each RDB_SHM_BUFFER_INFO_t
-  for (i = 0; i < rdb_shm_hdr_->noBuffers; ++i) {
+  for (int i = 0; i < rdb_shm_hdr_->noBuffers; ++i) {
     rdb_msg_[i] = reinterpret_cast<RDB_MSG_t *>(reinterpret_cast<char *>(rdb_shm_hdr_) +
                                                 buffer_info_[i]->offset);
   }
 
-  for (i = 0; i < rdb_shm_hdr_->noBuffers; ++i) {
+  for (int i = 0; i < rdb_shm_hdr_->noBuffers; ++i) {
     if (RDB_MAGIC_NO != rdb_msg_[i]->hdr.magicNo) {
       rdb_logger()->error("RdbTransceiverShm: magic number does not match: {}",
                           rdb_msg_[i]->hdr.magicNo);
