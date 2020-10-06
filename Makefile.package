@@ -3,7 +3,7 @@
 # Usage:
 #
 #   PROJECT_ROOT := ...
-#   include ${PROJECT_ROOT}/tools/make/conan.mk
+#   include ${PROJECT_ROOT}/Makefile.package
 #
 # This Makefile is used for every Conan package in this project.
 # It expects a conanfile.py to reside in the directory and reads
