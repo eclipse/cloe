@@ -43,6 +43,7 @@ namespace events {
 
 DEFINE_NIL_EVENT(Failure, "failure", "assertion failure in simulation")
 DEFINE_NIL_EVENT(Collision, "collision", "collision detected in simulation")
+DEFINE_NIL_EVENT(Irrational, "irrational", "irrational behavior in simulation")
 
 }  // namespace events
 
@@ -77,11 +78,13 @@ class Checker : public Entity, public Confable {
   explicit Checker(const std::string& name) : Entity("checker/" + name) {}
   virtual ~Checker() noexcept = default;
 
-  void set_fail_callback(std::function<void(const Sync& s)> f) { failure_callback_ = f; }
-
   size_t num_failures() const { return num_failures_; }
 
-  void fail(const Sync& s, std::string&& name, Json&& j) {
+  virtual void set_fail_callback(std::function<void(const Sync& s)> f) { failure_callback_ = f; }
+
+  virtual void enroll(Registrar& r) {}
+
+  virtual void fail(const Sync& s, std::string&& name, Json&& j) {
     num_failures_ += 1;
     j["sync_state"] = s;
     logger()->warn("Check failed: {}: {}", name, j.dump(2));
@@ -106,6 +109,13 @@ using CheckerPtr = std::unique_ptr<Checker>;
 class RationalityChecker : public Checker {
  public:
   RationalityChecker() : Checker("rationality") {}
+
+  void enroll(Registrar& r) override { callback_ = r.register_event<events::IrrationalFactory>(); }
+
+  void fail(const Sync& s, std::string&& name, Json&& j) override {
+    callback_->trigger(s);
+    Checker::fail(s, std::move(name), std::move(j));
+  }
 
   void init(const Sync&, const Vehicle& v) override {
     auto ego =
@@ -140,6 +150,7 @@ class RationalityChecker : public Checker {
 
  private:
   Object original_ego_;
+  std::shared_ptr<events::IrrationalCallback> callback_;
 };
 
 class SafetyChecker : public Checker {
@@ -246,6 +257,9 @@ class Virtue : public Controller {
 
   void enroll(Registrar& r) override {
     callback_failure_ = r.register_event<events::FailureFactory>();
+    for (auto& c : checkers_) {
+      c->enroll(r);
+    }
   }
 
   void start(const Sync& sync) override {
