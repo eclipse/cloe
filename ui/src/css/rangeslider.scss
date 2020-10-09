@@ -54,3 +54,15 @@
   -ms-touch-action: none;
   touch-action: none;
 }
+
+.rangeslider-horizontal-thin .rangeslider-horizontal{
+  height: 10px;
+  border: 0px solid #ccc;
+  margin-top: 8px;
+}
+
+.rangeslider-horizontal-thin .rangeslider__handle {
+  width: 22px;
+  height: 22px;
+  border-radius: 22px;
+}

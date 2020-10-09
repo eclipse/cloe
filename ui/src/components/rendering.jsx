@@ -129,7 +129,7 @@ class Rendering extends Component {
           <div className="m-2" style={{ position: "absolute", textAlign: "left" }}>
             <SettingFilled
               className={`mb-2 ${optionsVisible ? "icon" : "icon-deactive"}`}
-              style={{ fontSize: "22px" }}
+              style={{ fontSize: "16px" }}
               onClick={() => this.toggleOptions()}
             />
 
@@ -142,56 +142,42 @@ class Rendering extends Component {
                   <small className="mr-2 ml-2 mb-1">{currentPerspective}</small>
                 </div>
               </React.Fragment>
-
-              <React.Fragment>
-                <p className="m-0 mt-2 text-light">
-                  <span>3D Frustum</span>
-                </p>
-                <ToggleSwitch
-                  onChange={() => this.setState({ frustum3d: !frustum3d })}
-                  checked={frustum3d}
-                />
-              </React.Fragment>
-              <React.Fragment>
-                <p className="m-0 mt-2 text-light">
-                  <span>Axes</span>
-                </p>
-                <ToggleSwitch
-                  onChange={() => this.toggleHelperAxes()}
-                  checked={helperAxesVisible}
-                />
-              </React.Fragment>
-              <React.Fragment>
-                <p className="m-0 mt-2 text-light">
-                  <span>Grid</span>
-                </p>
-                <ToggleSwitch onChange={() => this.toggleGrid()} checked={gridVisible} />
-              </React.Fragment>
+              {this.renderToggleSwitch(
+                "3D Frustum",
+                () => this.setState({ frustum3d: !frustum3d }),
+                frustum3d
+              )}
+              {this.renderToggleSwitch("Axes", () => this.toggleHelperAxes(), helperAxesVisible)}
+              {this.renderToggleSwitch("Grid", () => this.toggleGrid(), gridVisible)}
               <div className={gridVisible ? "" : "d-none"}>
                 <p className="m-0 mt-2 text-light">
                   <span>
-                    Cellsize:
+                    Grid Cellsize:
                     {` ${gridCellsize}m`}
                   </span>
                 </p>
-                <Slider
-                  tooltip={false}
-                  value={gridCellsize}
-                  onChange={this.handleGridCellsize}
-                  min={0}
-                  max={25}
-                  step={0.5}
-                />
+                <div className="rangeslider-horizontal-thin">
+                  <Slider
+                    tooltip={false}
+                    value={gridCellsize}
+                    onChange={this.handleGridCellsize}
+                    min={0}
+                    max={25}
+                    step={0.5}
+                  />
+                </div>
               </div>
-              <React.Fragment>
-                <p className="m-0 mt-2 text-light">Reset</p>
-                <UndoOutlined
-                  className="m-2 icon-white"
-                  style={{ fontSize: "22px" }}
-                  onClick={() => this.resetRenderOptions()}
-                />
-              </React.Fragment>
             </div>
+          </div>
+          <div
+            className="m-0 mt-2 text-light"
+            style={{ position: "absolute", transform: "translate(25px, -0.5px)" }}
+          >
+            <UndoOutlined
+              className="m-2 icon-white"
+              style={{ color: "#2bbbad", fontSize: "16px" }}
+              onClick={() => this.resetRenderOptions()}
+            />
           </div>
         </div>
         {this.renderSensorSelect(this.sensorType.Object, selectObjSensors)}
@@ -199,6 +185,17 @@ class Rendering extends Component {
       </Card>
     );
   }
+
+  renderToggleSwitch = (label, action, isChecked) => {
+    return (
+      <React.Fragment>
+        <p className="m-0 mt-2 text-light" style={{ fontSize: "16px" }}>
+          <span>{label}</span>
+        </p>
+        <ToggleSwitch onChange={action} checked={isChecked} height={10} />
+      </React.Fragment>
+    );
+  };
 
   renderSensorSelect = (sensorType, selectSensors) => {
     let colors;
