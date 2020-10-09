@@ -62,6 +62,20 @@ class LaneBoundarySensor : public Component {
   }
 };
 
+class NopLaneSensor : public LaneBoundarySensor {
+ public:
+  NopLaneSensor() : LaneBoundarySensor("nop_lane_sensor") {}
+  virtual ~NopLaneSensor() = default;
+  const LaneBoundaries& sensed_lane_boundaries() const override { return lane_boundaries_; }
+  const Frustum& frustum() const override { return frustum_; }
+  const Eigen::Isometry3d& mount_pose() const override { return mount_pose_; }
+
+ private:
+  LaneBoundaries lane_boundaries_;
+  Frustum frustum_;
+  Eigen::Isometry3d mount_pose_;
+};
+
 }  // namespace cloe
 
 #endif  // CLOE_COMPONENT_LANE_SENSOR_HPP_

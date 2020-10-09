@@ -28,6 +28,7 @@
 #include <vector>      // for vector<>
 
 #include <cloe/component/ego_sensor.hpp>        // for NopEgoSensor
+#include <cloe/component/lane_sensor.hpp>       // for NopLaneSensor
 #include <cloe/component/latlong_actuator.hpp>  // for LatLongActuator
 #include <cloe/component/object_sensor.hpp>     // for NopObjectSensor
 #include <cloe/handler.hpp>                     // for ToJson
@@ -51,6 +52,9 @@ struct NopVehicle : public Vehicle {
                         CloeComponent::DEFAULT_WORLD_SENSOR);
     this->new_component(new LatLongActuator(),
                         CloeComponent::DEFAULT_LATLONG_ACTUATOR);
+    this->new_component(new NopLaneSensor(),
+                        CloeComponent::GROUNDTRUTH_LANE_SENSOR,
+                        CloeComponent::DEFAULT_LANE_SENSOR);
     // clang-format on
   }
 };
