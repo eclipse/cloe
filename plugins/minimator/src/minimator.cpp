@@ -54,6 +54,7 @@
 #include <vector>      // for vector<>
 
 #include <cloe/component/ego_sensor.hpp>        // for NopEgoSensor
+#include <cloe/component/lane_sensor.hpp>       // for LaneBoundarySensor
 #include <cloe/component/latlong_actuator.hpp>  // for LatLongActuator
 #include <cloe/component/object_sensor.hpp>     // for NopObjectSensor
 #include <cloe/handler.hpp>                     // for ToJson
@@ -134,6 +135,60 @@ struct MinimatorConfiguration : public cloe::Confable {
 };
 
 /**
+ * MinimatorLaneSensor is a very static lane boundary sensor.
+ *
+ * It returns the 4 lane boundaries of a 3-lane 4m lane-width road of a total
+ * length of 100m. The road is laterally centered at the origin.
+ */
+class MinimatorLaneSensor : public cloe::LaneBoundarySensor {
+ public:
+  MinimatorLaneSensor() : cloe::LaneBoundarySensor("minimator_lane_sensor") {
+    const int n = 4;
+    const double w = 4.0;
+    const double l = 100.0;
+    for (int i = 0; i != n; ++i) {
+      cloe::LaneBoundary lb;
+      lb.id = i;
+      lb.prev_id = -1;
+      lb.next_id = -1;
+      lb.dx_start = 0;
+      lb.dy_start = (n - 1) * w / 2.0 - w * i;
+      lb.heading_start = 0.0;
+      lb.curv_hor_start = 0.0;
+      lb.curv_hor_change = 0.0;
+      lb.dx_end = l;
+      lb.type = i % (n - 1) ? cloe::LaneBoundary::Type::Dashed : cloe::LaneBoundary::Type::Solid;
+      lb.color = cloe::LaneBoundary::Color::White;
+      lb.points.push_back(Eigen::Vector3d(lb.dx_start, lb.dy_start, 0));
+      lb.points.push_back(Eigen::Vector3d(lb.dx_end, lb.dy_start, 0));
+      lane_boundaries_[i] = lb;
+    }
+    mount_pose_.setIdentity();
+  }
+  virtual ~MinimatorLaneSensor() = default;
+
+  /**
+   * Return the static set of lane boundaries.
+   */
+  const cloe::LaneBoundaries& sensed_lane_boundaries() const override { return lane_boundaries_; }
+
+  /**
+   * Return the frustum of the lane sensor.
+   */
+  const cloe::Frustum& frustum() const override { return frustum_; }
+
+  /**
+   * Return the mounting position of the lane sensor.
+   */
+  const Eigen::Isometry3d& mount_pose() const override { return mount_pose_; }
+
+ private:
+  cloe::LaneBoundaries lane_boundaries_;
+  cloe::Frustum frustum_;
+  Eigen::Isometry3d mount_pose_;
+};
+
+/**
  * `MinimatorVehicle` is the implementation of a vehicle that comes from
  * a `Minimator` simulator.
  *
@@ -201,6 +256,10 @@ class MinimatorVehicle : public cloe::Vehicle {
     this->new_component(new cloe::NopObjectSensor(),
                         cloe::CloeComponent::GROUNDTRUTH_WORLD_SENSOR,
                         cloe::CloeComponent::DEFAULT_WORLD_SENSOR);
+
+    this->new_component(new MinimatorLaneSensor(),
+                        cloe::CloeComponent::GROUNDTRUTH_LANE_SENSOR,
+                        cloe::CloeComponent::DEFAULT_LANE_SENSOR);
 
     // The `LatLongActuator` component isn't exactly a dummy component, but we
     // won't be reading from it, so writing to it won't do much good.
@@ -454,7 +513,7 @@ class MinimatorSimulator : public cloe::Simulator {
   }
 
   /**
-   * Deserialize MinimatorSimulator into JSON.
+   * Serialize MinimatorSimulator into JSON.
    *
    * This is required for the `ToJson` handler that is used in the `enroll`
    * method.
