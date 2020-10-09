@@ -42,8 +42,8 @@ namespace controller {
 namespace events {
 
 DEFINE_NIL_EVENT(Failure, "failure", "assertion failure in simulation")
-DEFINE_NIL_EVENT(Collision, "collision", "collision detected in simulation")
 DEFINE_NIL_EVENT(Irrational, "irrational", "irrational behavior in simulation")
+DEFINE_NIL_EVENT(Unsafe, "unsafe", "safety critical behavior in simulation")
 
 }  // namespace events
 
@@ -166,6 +166,13 @@ class SafetyChecker : public Checker {
     prev_step_ = s.step();
   }
 
+  void enroll(Registrar& r) override { callback_ = r.register_event<events::UnsafeFactory>(); }
+
+  void fail(const Sync& s, std::string&& name, Json&& j) override {
+    callback_->trigger(s);
+    Checker::fail(s, std::move(name), std::move(j));
+  }
+
   void check(const Sync& s, const Vehicle& v) override {
     auto ego =
         utility::EgoSensorCanon(v.get<const EgoSensor>(CloeComponent::GROUNDTRUTH_EGO_SENSOR));
@@ -226,6 +233,8 @@ class SafetyChecker : public Checker {
   // State:
   double prev_mps_{0.0};
   size_t prev_step_{0};
+
+  std::shared_ptr<events::UnsafeCallback> callback_;
 };
 
 struct VirtueConfiguration : public Confable {
