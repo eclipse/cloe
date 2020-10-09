@@ -38,7 +38,7 @@ class Rendering extends Component {
       opacity: 0.5
     });
     this.egoVehicleMaterial = new THREE.MeshLambertMaterial({
-      color: 0x00c851,
+      color: 0x129a7d,
       transparent: true,
       opacity: 0.3
     });
@@ -76,8 +76,8 @@ class Rendering extends Component {
     this.defaultCameraPerspective = 0;
     this.currentCameraPerspective = this.defaultCameraPerspective;
     this.defaultColors = {
-      Object: ["#999999", "#1890ff", "#faad14", "#B22222"],
-      Lane: ["#ffc300", "#ff4400", "#00bcff"]
+      Object: ["#999999", "#8ac0de", "#e6b655", "#e58b88", "#70ae98"],
+      Lane: ["#e6b655", "#e58b88", "#8ac0de", "#70ae98"]
     };
     this.sensorType = { Object: "object", Lane: "lane" };
     this.defaultSensor = {
@@ -609,7 +609,10 @@ class Rendering extends Component {
 
   getLaneGeomFromClothoid = (lane, detectedBy, pointsEgoFrame) => {
     const geometry = new THREE.Geometry();
-    const material = new THREE.LineBasicMaterial({ color: this.laneColors[detectedBy] });
+    const material = new THREE.LineBasicMaterial({
+      color: this.laneColors[detectedBy],
+      linewidth: 2
+    });
     const n = pointsEgoFrame.length;
     const lineLengthGT = pointsEgoFrame[n - 1].x - pointsEgoFrame[0].x;
     if (lineLengthGT < 0.01) {
