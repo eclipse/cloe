@@ -26,6 +26,7 @@
 #include <vector>   // for vector<>
 
 #include <cloe/component/ego_sensor.hpp>                // for EgoSensor
+#include <cloe/component/lane_sensor.hpp>               // for LaneBoundarySensor
 #include <cloe/component/object_sensor.hpp>             // for ObjectSensor
 #include <cloe/component/utility/ego_sensor_canon.hpp>  // for EgoSensorCanon
 #include <cloe/controller.hpp>                          // for Controller, ControllerFactory, ...
@@ -44,6 +45,7 @@ namespace events {
 DEFINE_NIL_EVENT(Failure, "failure", "assertion failure in simulation")
 DEFINE_NIL_EVENT(Irrational, "irrational", "irrational behavior in simulation")
 DEFINE_NIL_EVENT(Unsafe, "unsafe", "safety critical behavior in simulation")
+DEFINE_NIL_EVENT(MissingLaneBoundaries, "missing_lane_boundaries", "lane boundaries missing")
 
 }  // namespace events
 
@@ -89,6 +91,7 @@ class Checker : public Entity, public Confable {
     j["sync_state"] = s;
     logger()->warn("Check failed: {}: {}", name, j.dump(2));
     failures_[name].emplace_back(std::make_unique<Failure>(s, std::move(name), std::move(j)));
+    private_fail(s);
     if (failure_callback_) {
       failure_callback_(s);
     }
@@ -99,6 +102,22 @@ class Checker : public Entity, public Confable {
   virtual void check(const Sync& s, const Vehicle& v) = 0;
 
  protected:
+  /**
+   * Trigger any private events on type-specific failure.
+   *
+   * This is called during the `fail()` method and provides a way to add
+   * a private event trigger in addition to the generic `Failure` event.
+   * Using this method instead of overriding `fail()` provides us two
+   * advantages:
+   *
+   *  1. The `fail()` method can print an error message first, then raise
+   *     the type-specific event, followed by the generic failure event.
+   *  2. This approach is less error prone, because implementing `fail()`
+   *     requires the developer to remember to call `Checker::fail()`.
+   */
+  virtual void private_fail(const Sync& s) {}
+
+ protected:
   size_t num_failures_{0};
   std::map<std::string, std::vector<FailurePtr>> failures_{};
   std::function<void(const Sync& s)> failure_callback_;
@@ -106,16 +125,13 @@ class Checker : public Entity, public Confable {
 
 using CheckerPtr = std::unique_ptr<Checker>;
 
+// ------------------------------------------------------------------------------------- Irrational
+
 class RationalityChecker : public Checker {
  public:
   RationalityChecker() : Checker("rationality") {}
 
   void enroll(Registrar& r) override { callback_ = r.register_event<events::IrrationalFactory>(); }
-
-  void fail(const Sync& s, std::string&& name, Json&& j) override {
-    callback_->trigger(s);
-    Checker::fail(s, std::move(name), std::move(j));
-  }
 
   void init(const Sync&, const Vehicle& v) override {
     auto ego =
@@ -148,10 +164,15 @@ class RationalityChecker : public Checker {
     }
   }
 
+ protected:
+  void private_fail(const Sync& s) override { callback_->trigger(s); }
+
  private:
   Object original_ego_;
   std::shared_ptr<events::IrrationalCallback> callback_;
 };
+
+// ----------------------------------------------------------------------------------------- Unsafe
 
 class SafetyChecker : public Checker {
  public:
@@ -167,11 +188,6 @@ class SafetyChecker : public Checker {
   }
 
   void enroll(Registrar& r) override { callback_ = r.register_event<events::UnsafeFactory>(); }
-
-  void fail(const Sync& s, std::string&& name, Json&& j) override {
-    callback_->trigger(s);
-    Checker::fail(s, std::move(name), std::move(j));
-  }
 
   void check(const Sync& s, const Vehicle& v) override {
     auto ego =
@@ -224,6 +240,8 @@ class SafetyChecker : public Checker {
     };
   }
 
+  void private_fail(const Sync& s) override { callback_->trigger(s); }
+
  private:
   /// The maximum plausible acceleration we should experience is 20 m/s^2.
   /// (Consider that the maximum braking achievable with tires is ~13 m/s^2,
@@ -237,22 +255,66 @@ class SafetyChecker : public Checker {
   std::shared_ptr<events::UnsafeCallback> callback_;
 };
 
+// ------------------------------------------------------------------------ Missing Lane Boundaries
+
+class MissingLaneBoundariesChecker : public Checker {
+ public:
+  explicit MissingLaneBoundariesChecker(const std::vector<std::string>& components)
+      : Checker("missing_lane_boundaries"), components_(components) {}
+
+  void enroll(Registrar& r) override {
+    callback_ = r.register_event<events::MissingLaneBoundariesFactory>();
+  }
+
+  void init(const Sync& s, const Vehicle& v) override {
+    for (auto& c : components_) {
+      // Just try to open the component and force an exception to be thrown.
+      v.get<LaneBoundarySensor>(c);
+    }
+  }
+
+  void check(const Sync& s, const Vehicle& v) override {
+    for (auto& comp : components_) {
+      const auto& lbs = v.get<LaneBoundarySensor>(comp);
+      if (lbs->sensed_lane_boundaries().empty()) {
+        fail(s, "missing_lane_boundaries",
+             Json{
+                 {"component", comp},
+             });
+      }
+    }
+  }
+
+ protected:
+  void private_fail(const Sync& s) override { callback_->trigger(s); }
+
+ private:
+  std::shared_ptr<events::MissingLaneBoundariesCallback> callback_;
+  std::vector<std::string> components_;
+};
+
 struct VirtueConfiguration : public Confable {
   Duration init_phase{100'000'000};  // should be 100ms
+  std::vector<std::string> lane_sensor_components = {};
 
   CONFABLE_SCHEMA(VirtueConfiguration) {
     return Schema{
         {"init_phase", Schema(&init_phase, "time during which initialization is performed")},
+        {"lane_sensor_components",
+         Schema(&lane_sensor_components, "array of lane-sensor components to be checked")},
     };
   }
 };
+
+// --------------------------------------------------------------------------------------------- //
 
 class Virtue : public Controller {
  public:
   Virtue(const std::string& name, const VirtueConfiguration& c) : Controller(name), config_(c) {
     checkers_.emplace_back(std::make_unique<RationalityChecker>());
     checkers_.emplace_back(std::make_unique<SafetyChecker>());
-
+    checkers_.emplace_back(
+        std::make_unique<MissingLaneBoundariesChecker>(config_.lane_sensor_components));
     auto f = [this](const Sync& s) { callback_failure_->trigger(s); };
     for (auto& c : checkers_) {
       c->set_fail_callback(f);
@@ -261,7 +323,7 @@ class Virtue : public Controller {
   virtual ~Virtue() noexcept = default;
 
   void abort() override {
-    // Nothing to do here.
+    // We need to override to delete the default behavior of throwing an error.
   }
 
   void enroll(Registrar& r) override {
@@ -286,6 +348,7 @@ class Virtue : public Controller {
         c->check(sync, *veh_);
       }
     }
+
     return sync.time();
   }
 

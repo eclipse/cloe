@@ -12,6 +12,14 @@
           "label_vehicle": "symbol"
         }
       }
+    ],
+    "controllers": [
+      {
+        "binding": "virtue",
+        "args": {
+          "lane_sensor_components": ["cloe::default_lane_sensor"]
+        }
+      }
     ]
   },
   "simulators": [

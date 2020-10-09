@@ -6,6 +6,17 @@
     "controller_basic.json"
   ],
 
+  "defaults": {
+    "controllers": [
+      {
+        "binding": "virtue",
+        "args": {
+          "lane_sensor_components": ["cloe::default_lane_sensor"]
+        }
+      }
+    ]
+  },
+
   "simulators": [
     {
       "binding": "minimator"
