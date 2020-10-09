@@ -29,7 +29,8 @@
     "react-switch": "^5.0.1",
     "serve": "^11.2.0",
     "three": "^0.106.2",
-    "three-orbit-controls": "^82.1.0"
+    "three-orbit-controls": "^82.1.0",
+    "three-spritetext": "^1.5.2"
   },
   "scripts": {
     "start": "react-app-rewired start",

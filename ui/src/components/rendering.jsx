@@ -20,6 +20,7 @@ import * as THREE from "three";
 import Slider from "react-rangeslider";
 import { Select, Tag } from "antd";
 import { SettingFilled, UndoOutlined } from "@ant-design/icons";
+import SpriteText from "three-spritetext";
 
 const OrbitControls = require("three-orbit-controls")(THREE);
 var randomColor = require("randomcolor");
@@ -95,6 +96,7 @@ class Rendering extends Component {
       gridCellsize: 1,
       currentPerspective: "Default",
       frustum3d: false,
+      renderLabels: false,
       objSensorsToRender: [this.defaultSensor.Object],
       laneSensorsToRender: [this.defaultSensor.Lane]
     };
@@ -115,7 +117,8 @@ class Rendering extends Component {
       gridVisible,
       gridCellsize,
       currentPerspective,
-      frustum3d
+      frustum3d,
+      renderLabels
     } = this.state;
     return (
       <Card>
@@ -146,6 +149,11 @@ class Rendering extends Component {
                 "3D Frustum",
                 () => this.setState({ frustum3d: !frustum3d }),
                 frustum3d
+              )}
+              {this.renderToggleSwitch(
+                "Object Labels",
+                () => this.setState({ renderLabels: !renderLabels }),
+                renderLabels
               )}
               {this.renderToggleSwitch("Axes", () => this.toggleHelperAxes(), helperAxesVisible)}
               {this.renderToggleSwitch("Grid", () => this.toggleGrid(), gridVisible)}
@@ -512,6 +520,10 @@ class Rendering extends Component {
     this.updateWorldObjectDimensions(object, vehicle);
     this.updateWorldObjectPosition(sensor, object, vehicle);
     this.updateWorldObjectRotation(sensor, object, vehicle);
+    if (this.state.renderLabels) {
+      const label = this.getObjectLabel(object, vehicle, this.objColors[detectedBy]);
+      this.scene.add(label);
+    }
   };
 
   updateWorldObjectDimensions = (object, vehicle) => {
@@ -563,6 +575,10 @@ class Rendering extends Component {
       const lineC = this.getLaneGeomFromClothoid(lane, detectedBy, pointsEgoFrame);
       this.addLineToScene(line);
       this.addLineToScene(lineC);
+      if (this.state.renderLabels) {
+        const label = this.getLaneBoundaryLabel(lane, pointsEgoFrame, this.laneColors[detectedBy]);
+        this.scene.add(label);
+      }
     }
   };
 
@@ -652,6 +668,44 @@ class Rendering extends Component {
       c.dyStart +
       l * (Math.tan(c.headingStart) + l * (0.5 * c.curvStart + c.oneOvSix * c.curvChange * l));
     return new THREE.Vector3(point.x, yC, point.z);
+  };
+
+  getObjectLabel = (object, vehicle, color) => {
+    const text = this.createDefaultLabelText(object);
+    const label = this.createDefaultLabel(text, color);
+    // Set the label position.
+    const pos = vehicle.position;
+    label.position.set(pos.x, pos.y, pos.z + object.dimensions.z);
+    return label;
+  };
+
+  getLaneBoundaryLabel = (lane, points, color) => {
+    const text = this.createDefaultLabelText(lane);
+    const label = this.createDefaultLabel(text, color);
+    // Set the label position.
+    const ind = points.findIndex((pt) => pt.x > 10);
+    label.position.set(points[ind].x, points[ind].y, points[ind].z + 1.0);
+    return label;
+  };
+
+  createDefaultLabelText = (object) => {
+    let existProb = 1.0;
+    if (object.exist_prob) {
+      existProb = object.exist_prob;
+    }
+    return `ID: ${object.id} \n Prob.: ${existProb.toFixed(1)}`;
+  };
+
+  createDefaultLabel = (text, color) => {
+    const label = new SpriteText(text);
+    label.fontSize = 90;
+    label.textHeight = 0.12;
+    label.borderWidth = 0.5 * label.textHeight;
+    label.padding = [4.0 * label.textHeight, 4.0 * label.textHeight];
+    label.color = color;
+    label.backgroundColor = "#1C2833";
+    label.temporary = true;
+    return label;
   };
 
   createFrustum = (frustum, pose) => {
