@@ -41,9 +41,9 @@
 #include <cloe/core.hpp>      // for logger::get
 #include <fable/utility.hpp>  // for read_conf
 
+#include "main_stack.hpp"  // for Stack, new_stack
 #include "simulation.hpp"  // for Simulation, SimulationResult
-#include "main_stack.hpp"       // for Stack, new_stack
-#include "stack.hpp"     // for Stack
+#include "stack.hpp"       // for Stack
 
 namespace engine {
 
@@ -67,6 +67,19 @@ struct RunOptions {
 
 Simulation* GLOBAL_SIMULATION_INSTANCE{nullptr};
 
+template <typename Func>
+auto handle_cloe_error(std::ostream& out, Func f) -> decltype(f()) {
+  try {
+    return f();
+  } catch (cloe::Error& e) {
+    out << "Error: " << e.what() << std::endl;
+    if (e.has_explanation()) {
+      out << "    Note:\n" << fable::indent_string(e.explanation(), "    ") << std::endl;
+    }
+    throw cloe::ConcludedError(e);
+  }
+}
+
 inline int run(const RunOptions& opt, const std::vector<std::string>& filepaths) {
   cloe::logger::get("cloe")->info("Cloe {}", CLOE_ENGINE_VERSION);
   cloe::StackOptions stack_opt = opt.stack_options;
@@ -85,18 +98,13 @@ inline int run(const RunOptions& opt, const std::vector<std::string>& filepaths)
   // Load the stack file:
   cloe::Stack s;
   try {
-    s = cloe::new_stack(stack_opt, filepaths);
-    if (!opt.allow_empty) {
-      s.check_completeness();
-    }
+    handle_cloe_error(*stack_opt.error, [&]() {
+      s = cloe::new_stack(stack_opt, filepaths);
+      if (!opt.allow_empty) {
+        s.check_completeness();
+      }
+    });
   } catch (cloe::ConcludedError& e) {
-    return EXIT_FAILURE;
-  } catch (cloe::Error& e) {
-    *stack_opt.error << "Error: " << e.what() << std::endl;
-    if (e.has_explanation()) {
-      *stack_opt.error << "    Note:\n"
-                       << fable::indent_string(e.explanation(), "    ") << std::endl;
-    }
     return EXIT_FAILURE;
   }
 
@@ -109,7 +117,7 @@ inline int run(const RunOptions& opt, const std::vector<std::string>& filepaths)
   sim.set_report_progress(opt.report_progress);
 
   // Run simulation:
-  auto result = sim.run();
+  auto result = handle_cloe_error(*stack_opt.error, [&]() { return sim.run(); });
   if (result.outcome == SimulationOutcome::NoStart) {
     // If we didn't get past the initialization phase, don't output any
     // statistics or write any files, just go home.
