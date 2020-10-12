@@ -99,7 +99,7 @@ std::shared_ptr<const Component> Vehicle::at(const std::string& key) const {
   try {
     return components_.at(key);
   } catch (std::out_of_range& e) {
-    throw UnknownComponentError(name(), key, utility::map_keys(components_));
+    throw UnknownComponent(name(), key, utility::map_keys(components_));
   }
 }
 
@@ -107,9 +107,9 @@ std::shared_ptr<Component> Vehicle::at(const std::string& key) {
   return std::const_pointer_cast<Component>(const_cast<const Vehicle&>(*this).at(key));
 }
 
-UnknownComponentError::UnknownComponentError(const std::string& vehicle,
-                                             const std::string& key,
-                                             const std::vector<std::string>& available_components)
+UnknownComponent::UnknownComponent(const std::string& vehicle,
+                                   const std::string& key,
+                                   const std::vector<std::string>& available_components)
     : Error("vehicle {}: no component available with name: {}", vehicle, key)
     , vehicle_(vehicle)
     , unknown_(key)
@@ -132,8 +132,57 @@ UnknownComponentError::UnknownComponentError(const std::string& vehicle,
        i) configuring it in the stackfile at /vehicles/<index>/components/<key>, or
        ii) adding it to the vehicle in the simulator binding plugin.
 
-  Note: You can also use the web API to inspect a vehicle during runtime.
+  Note: You can also use the web API to inspect a vehicle during run-time.
   )", key, utility::join_vector(available_, "\n         "));
+  // clang-format on
+}
+
+BadComponentCast::BadComponentCast(const std::string& vehicle, const std::string& key)
+    : Error("vehicle {}: bad component cast with name: {}", vehicle, key)
+    , vehicle_(vehicle)
+    , component_(key) {
+  // clang-format off
+  this->set_explanation(R"(
+  The dynamic pointer cast returned a nullptr.
+
+  It looks like you are trying to cast a component to a type that does not match
+  the component's actual type.
+
+  This error can have several causes, in order of likelihood:
+
+    a) The component key is incorrect (see the stackfile).
+    b) The developer wrote the wrong type (see the controller source code).
+    c) The component has the correct type, but is a nullptr.
+
+  Note: You can use the web API to inspect a vehicle during run-time.
+  )");
+  // clang-format on
+}
+
+CannotAddComponent::CannotAddComponent(const std::string& msg,
+                                       const std::string& vehicle,
+                                       const std::string& key)
+    : Error("vehicle {}: {}: {}", vehicle, msg, key), vehicle_(vehicle), component_(key) {
+  // clang-format off
+  this->set_explanation(R"(
+  It looks like you are trying to add a component to a vehicle, but the component
+  already exists:
+
+      {}
+
+  This error can have several causes, in order of likelihood:
+
+    a) The component name has been copy-pasted and should be modified (see the
+       stackfile).
+
+    b) The component being added should use the set_component() method to allow
+       overwriting existing components (see the plugin source code).
+
+  Note: The component that already exists could have been added by the simulator
+  binding that originally created the vehicle (see /simulators section), added
+  by the component configuration (see /vehicles section), or even added by a
+  controller added to the vehicle (see /controllers section).
+  )", key);
   // clang-format on
 }
 

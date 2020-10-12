@@ -39,6 +39,55 @@
 namespace cloe {
 
 /**
+ * This error is thrown when an unknown component is accessed at a Vehicle.
+ */
+class UnknownComponent : public Error {
+ public:
+  UnknownComponent(const std::string& vehicle,
+                   const std::string& key,
+                   const std::vector<std::string>& available_components);
+
+  const std::string& vehicle() const { return vehicle_; }
+  const std::string& unknown_component() const { return unknown_; }
+  const std::vector<std::string>& available_components() const;
+
+ private:
+  std::string vehicle_;
+  std::string unknown_;
+  std::vector<std::string> available_;
+};
+
+/**
+ * This error is thrown when a component is cast to an incorrect type.
+ */
+class BadComponentCast : public Error {
+ public:
+  BadComponentCast(const std::string& vehicle, const std::string& key);
+
+  const std::string& vehicle() const { return vehicle_; }
+  const std::string& component_name() const { return component_; }
+
+ private:
+  std::string vehicle_;
+  std::string component_;
+};
+
+/**
+ * This error is thrown when a component cannot be added.
+ */
+class CannotAddComponent : public Error {
+ public:
+  CannotAddComponent(const std::string& msg, const std::string& vehicle, const std::string& key);
+
+  const std::string& vehicle() const { return vehicle_; }
+  const std::string& component_name() const { return component_; }
+
+ private:
+  std::string vehicle_;
+  std::string component_;
+};
+
+/**
  * A Vehicle is a collection of sensor and actuator components.
  *
  * Some of the components are sensors, and some are actuators. From the
@@ -91,36 +140,40 @@ class Vehicle : public Model {
   }
 
   /**
-   * Return the component with the given key if it exists.
+   * Return the component associated with the key.
    *
-   * This may throw std::out_of_range.
+   * This may throw one of:
+   * - UnknownComponent
+   * - BadComponentCast
    */
   template <typename T>
+  std::shared_ptr<const T> get(const std::string& key) const {
+    auto ptr = std::dynamic_pointer_cast<const T>(at(key));
+    if (ptr == nullptr) {
+      throw BadComponentCast(name(), key);
+    }
+    return ptr;
+  }
+
+  template <typename T>
   std::shared_ptr<T> get(const std::string& key) {
-    return std::dynamic_pointer_cast<T>(at(key));
+    return std::const_pointer_cast<T>(const_cast<const Vehicle&>(*this).get<T>(key));
   }
 
   /**
-   * Return the component associated with the standard Cloe enum value.
+   * Return the component associated with the enum value.
    *
    * Under-the-hood, the enum is translated to a string, which is used to fetch
    * the correct component.
-   *
-   * This may throw std::out_of_range.
    */
   template <typename T, typename Enum, std::enable_if_t<std::is_enum<Enum>::value, int> = 0>
-  std::shared_ptr<T> get(Enum c) {
-    return std::dynamic_pointer_cast<T>(at(to_string(c)));
-  }
-
-  template <typename T>
-  std::shared_ptr<const T> get(const std::string& key) const {
-    return std::dynamic_pointer_cast<const T>(at(key));
+  std::shared_ptr<const T> get(Enum c) const {
+    return get<T>(to_string(c));
   }
 
   template <typename T, typename Enum, std::enable_if_t<std::is_enum<Enum>::value, int> = 0>
-  std::shared_ptr<const T> get(Enum c) const {
-    return std::dynamic_pointer_cast<T>(at(to_string(c)));
+  std::shared_ptr<T> get(Enum c) {
+    return get<T>(to_string(c));
   }
 
  public:  // Component Management
@@ -144,8 +197,7 @@ class Vehicle : public Model {
 
   void add_component(std::shared_ptr<Component> sp, const std::string& alias) {
     if (this->has(alias)) {
-      // TODO(ben): Add better error type here with explanation
-      throw std::runtime_error("component already exists in the vehicle");
+      throw CannotAddComponent("component already exists", name(), alias);
     }
     this->set_component(alias, sp);
   }
@@ -228,25 +280,6 @@ class Vehicle : public Model {
    * this to a shared_ptr and deal with the collateral damage.
    */
   std::map<std::string, std::shared_ptr<Component>> components_;
-};
-
-/**
- * This error is thrown when an unknown component is accessed at a Vehicle.
- */
-class UnknownComponentError : public Error {
- public:
-  UnknownComponentError(const std::string& vehicle,
-                        const std::string& key,
-                        const std::vector<std::string>& available_components);
-
-  const std::string& vehicle() const { return vehicle_; }
-  const std::string& unknown_component() const { return unknown_; }
-  const std::vector<std::string>& available_components() const;
-
- private:
-  std::string vehicle_;
-  std::string unknown_;
-  std::vector<std::string> available_;
 };
 
 }  // namespace cloe
