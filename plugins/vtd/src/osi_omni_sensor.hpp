@@ -23,16 +23,17 @@
 #pragma once
 
 #include <map>      // for map<>
-#include <memory>   // for unique_ptr<>
+#include <memory>   // for shared_ptr<>, unique_ptr<>
 #include <string>   // for string
 #include <utility>  // for move
 
 #include <Eigen/Geometry>  // for Isometry3d, Vector3d
 
-#include <cloe/component/object.hpp>  // for Object
-#include <cloe/core.hpp>              // for Json, Duration
-#include <cloe/simulator.hpp>         // for ModelError
-#include <cloe/sync.hpp>              // for Sync
+#include <cloe/component/lane_boundary.hpp>  // for LaneBoundary
+#include <cloe/component/object.hpp>         // for Object
+#include <cloe/core.hpp>                     // for Json, Duration
+#include <cloe/simulator.hpp>                // for ModelError
+#include <cloe/sync.hpp>                     // for Sync
 
 #include "osi_common.pb.h"           // for Timestamp, Identifier, BaseMoving, ..
 #include "osi_detectedobject.pb.h"   // for DetectedMovingObject
@@ -84,6 +85,8 @@ void from_osi_mov_obj_type_classification(
 void from_osi_detected_moving_object_alt(const osi3::DetectedMovingObject& osi_mo,
                                          const OsiGroundTruth& ground_truth, cloe::Object& obj);
 
+void from_osi_boundary_points(const osi3::LaneBoundary& osi_lb, cloe::LaneBoundary& lb);
+
 void transform_ego_coord_from_osi_data(const Eigen::Vector3d& dimensions_gt, cloe::Object& obj);
 
 /**
@@ -106,16 +109,56 @@ Eigen::Vector3d osi_vehicle_attrib_rear_offset_to_vector3d(
  * OSI messages of the listed data types may be overwritten by ground truth
  * information, if requested by the user.
  */
-enum class MockTarget { MountingPosition, DetectedMovingObject };
+enum class SensorMockTarget { MountingPosition, DetectedMovingObject, DetectedLaneBoundary };
 
 /**
- * MockLevel determines to which degree an OSI message of a certain data type
+ * SensorMockLevel determines to which degree an OSI message of a certain data type
  * should be overwritten by ground truth information:
  *  - `Zero` means that the message is not altered (default behavior).
  *  - `MissingData` means that unavailable data fields are filled.
  *  - `All` means that the entire message is overwritten.
  */
-enum class MockLevel { Zero = 0, MissingData, All };
+enum class SensorMockLevel { OverwriteNone, InterpolateMissing, OverwriteAll };
+
+// clang-format off
+ENUM_SERIALIZATION(SensorMockLevel, ({
+  {SensorMockLevel::OverwriteNone, "overwrite_none"},
+  {SensorMockLevel::InterpolateMissing, "interpolate_missing"},
+  {SensorMockLevel::OverwriteAll, "overwrite_all"},
+}))
+// clang-format on
+
+/**
+ * Configure sensor mock level.
+ */
+struct SensorMockConf : public cloe::Confable {
+  using Target = SensorMockTarget;
+  using Level = SensorMockLevel;
+
+  SensorMockConf() = default;
+
+  virtual ~SensorMockConf() noexcept = default;
+
+  std::map<Target, Level> level = {{Target::MountingPosition, Level::OverwriteNone},
+                                   {Target::DetectedMovingObject, Level::OverwriteNone},
+                                   {Target::DetectedLaneBoundary, Level::OverwriteNone}};
+
+  CONFABLE_SCHEMA(SensorMockConf) {
+    return fable::Schema{
+        // clang-format off
+        {"mounting_position", cloe::Schema(&level[Target::MountingPosition], "mock level for sensor mounting position")},
+        {"detected_moving_objects", cloe::Schema(&level[Target::DetectedMovingObject], "mock level for detected moving objects")},
+        {"detected_lane_boundaries", cloe::Schema(&level[Target::DetectedLaneBoundary], "mock level for detected lane boundaries")},
+        // clang-format on
+    };
+  }
+
+  void to_json(cloe::Json& j) const override {
+    j["mounting_position"] = level.at(SensorMockTarget::MountingPosition);
+    j["detected_moving_objects"] = level.at(SensorMockTarget::DetectedMovingObject);
+    j["detected_lane_boundaries"] = level.at(SensorMockTarget::DetectedLaneBoundary);
+  }
+};
 
 /**
  * Base class for an OSI sensor which is connected via TCP.
@@ -190,6 +233,10 @@ class OsiOmniSensor {
                        const osi3::DetectedEntityHeader& osi_eh,
                        const osi3::DetectedMovingObject& osi_mo);
 
+  void mock_detected_lane_boundaries();
+
+  void from_osi_boundary_points(const osi3::LaneBoundary& osi_lb, cloe::LaneBoundary& lb);
+
   /**
    * Store the ego object that should be passed to Cloe.
    *
@@ -203,6 +250,13 @@ class OsiOmniSensor {
    * \param obj Object to be stored.
    */
   virtual void store_object(std::shared_ptr<cloe::Object> obj) = 0;
+
+  /**
+   * Store a detected lane boundary in a map of Cloe data objects.
+   *
+   * \param lb Lane boundary to be stored.
+   */
+  virtual void store_lane_boundary(const cloe::LaneBoundary& lb) = 0;
 
   /**
    * Store the sensor pose etc. in the corresponding Cloe sensor component.
@@ -221,11 +275,10 @@ class OsiOmniSensor {
   virtual Eigen::Isometry3d get_static_mounting_position(
       const Eigen::Vector3d& bbcenter_to_veh_origin, const Eigen::Vector3d& ego_dimensions) = 0;
 
-  virtual void set_mock_level(MockTarget trg_type, uint16_t level) = 0;
+  virtual void set_mock_conf(std::shared_ptr<const SensorMockConf> mock) = 0;
 
-  MockLevel get_mock_level(MockTarget trg_type) {
-    auto it = mock_level_.find(trg_type);
-    return it != mock_level_.end() ? it->second : MockLevel::Zero;
+  SensorMockLevel get_mock_level(SensorMockTarget trg_type) const {
+    return mock_->level.at(trg_type);
   }
 
   friend void to_json(cloe::Json& j, const OsiOmniSensor& c) {
@@ -245,6 +298,9 @@ class OsiOmniSensor {
   /// Id of the sensor's owner (ego).
   uint64_t owner_id_;
 
+  /// Store ego pose (reference point is rear axle center, not ground level).
+  Eigen::Isometry3d osi_ego_pose_;
+
   /// Store sensor pose relative to the ego frame (rear axle center, not ground level).
   Eigen::Isometry3d osi_sensor_pose_;
 
@@ -252,6 +308,6 @@ class OsiOmniSensor {
   cloe::Duration init_time_ = cloe::Duration(-1);
 
   /// Use alternative source for required data or overwrite incoming data, if requested.
-  std::map<MockTarget, MockLevel> mock_level_;
+  std::shared_ptr<const SensorMockConf> mock_{nullptr};
 };
 }  // namespace osii

@@ -23,10 +23,12 @@
 
 #include <chrono>  // for duration<>
 #include <map>     // for map<>
+#include <memory>  // for shared_ptr<>
 #include <string>  // for string
 
 #include <cloe/core.hpp>                            // for Conf, Schema
 #include <cloe/utility/tcp_transceiver_config.hpp>  // for TcpTransceiverConfiguration, ...
+#include "osi_omni_sensor.hpp"                      // for SensorMockLevel
 
 // Connection
 #define VTD_DEFAULT_SCP_PORT 48179
@@ -96,16 +98,10 @@ struct VtdSensorConfig : public cloe::Confable {
   ProtocolConfiguration protocol = ProtocolConfiguration::Rdb;
 
   /**
-   * Overwrite sensor mounting position by ground truth (0 = false, 1 = only data that is unavailable, 2 = true).
+   * Overwrite data by ground truth.
    * Currently supported for OSI protocol only.
    */
-  uint16_t mock_mounting_position{0};
-
-  /**
-   * Overwrite detected moving object attributes by ground truth (0 = false, 1 = only data that is unavailable, 2 = true).
-   * Currently supported for OSI protocol only.
-   */
-  uint16_t mock_detected_moving_objects{0};
+  std::shared_ptr<osii::SensorMockConf> sensor_mock_conf = std::make_shared<osii::SensorMockConf>();
 
  public:
   CONFABLE_SCHEMA(VtdSensorConfig) {
@@ -113,10 +109,7 @@ struct VtdSensorConfig : public cloe::Confable {
     return cloe::Schema{
         {"xml",         cloe::Schema(&xml, "VTD module manager sensor configuration")},
         {"protocol",    cloe::Schema(&protocol, "VTD module manager sensor connection protocol ( rdb | osi )")},
-        {"mock_level",  cloe::Schema({
-          {"mounting_position",       cloe::Schema(&mock_mounting_position, "Sensor mounting position mock level (default=0)")},
-          {"detected_moving_objects", cloe::Schema(&mock_detected_moving_objects, "Detected moving object mock level (default=0)")},
-         })},
+        {"mock_level",  cloe::Schema(sensor_mock_conf.get(), "Sensor data mock level")},
     };
     // clang-format on
   }

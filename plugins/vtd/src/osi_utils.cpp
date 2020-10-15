@@ -114,8 +114,8 @@ void osi_transform_base_moving(const osi3::BaseMoving& base_ref, osi3::BaseMovin
   Eigen::Isometry3d pose = osi_position_orientation_to_pose(base);
 
   // Transform base.position/orientation/velocity/acceleration/orientation_rate:
-  Eigen::Vector3d pos_ref_frame =
-      pose_ref.rotation().inverse() * (pose.translation() - pose_ref.translation());
+  Eigen::Vector3d pos_ref_frame = pose.translation();
+  cloe::utility::transform_to_child_frame(pose_ref, &pos_ref_frame);
   pose.translation() = pos_ref_frame;          // location in reference frame
   pose.rotate(pose_ref.rotation().inverse());  // orientation in reference frame
   // Write new pose to base.

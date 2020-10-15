@@ -47,7 +47,7 @@ struct VehicleData {
 };
 
 // Initialize the optional fields required by the Cloe/OSI interface.
-void init_osi_base(osi3::BaseMoving *b) {
+void init_osi_base(osi3::BaseMoving* b) {
   b->mutable_position();
   b->mutable_orientation();
   b->mutable_dimension();
@@ -56,15 +56,15 @@ void init_osi_base(osi3::BaseMoving *b) {
   b->mutable_orientation_rate();
 }
 
-void init_osi_ground_truth(osi3::GroundTruth *gt, const std::map<std::string, VehicleData> &veh) {
+void init_osi_ground_truth(osi3::GroundTruth* gt, const std::map<std::string, VehicleData>& veh) {
   gt->mutable_host_vehicle_id()->set_value(veh.at("ego").id);
   // Add all players.
   for (int i = 0; i < veh.size(); ++i) {
     gt->add_moving_object();
   }
-  for (auto &kv : veh) {
-    auto &v = kv.second;
-    osi3::MovingObject *gt_obj;
+  for (auto& kv : veh) {
+    auto& v = kv.second;
+    osi3::MovingObject* gt_obj;
     gt_obj = gt->mutable_moving_object(v.id);
     gt_obj->mutable_id()->set_value(v.id);
     init_osi_base(gt_obj->mutable_base());
@@ -74,19 +74,19 @@ void init_osi_ground_truth(osi3::GroundTruth *gt, const std::map<std::string, Ve
   }
 }
 
-void init_osi_detected_objects(osi3::SensorData *data,
-                               const std::map<std::string, VehicleData> &veh) {
-  for (auto &kv : veh) {
+void init_osi_detected_objects(osi3::SensorData* data,
+                               const std::map<std::string, VehicleData>& veh) {
+  for (auto& kv : veh) {
     if (kv.first == "ego") {
       continue;
     }
-    auto &v = kv.second;
-    osi3::DetectedMovingObject *osi_obj;
+    auto& v = kv.second;
+    osi3::DetectedMovingObject* osi_obj;
     osi_obj = data->add_moving_object();
     osi_obj->mutable_header()->add_ground_truth_id()->set_value(v.id);
     init_osi_base(osi_obj->mutable_base());
     osi_obj->add_candidate();
-    osi3::DetectedMovingObject::CandidateMovingObject *cand_obj;
+    osi3::DetectedMovingObject::CandidateMovingObject* cand_obj;
     cand_obj = osi_obj->mutable_candidate(0);
     // Copy object info from ground truth.
     osi3::MovingObject gt_obj;
@@ -107,16 +107,18 @@ TEST(vtd_osi, osi_sensor) {
         osi3::MovingObject_VehicleClassification_Type_TYPE_SMALL_CAR}}};
   vtd::VtdOsiSensor sensor(std::unique_ptr<osii::OsiTransceiver>(nullptr), vehicles.at("ego").id);
   cloe::Duration sim_time{0};
+  std::shared_ptr<osii::SensorMockConf> mock_conf = std::make_shared<osii::SensorMockConf>();
+  sensor.set_mock_conf(mock_conf);
   // Initialize sensor data.
   auto data_shp = std::make_shared<osi3::SensorData>();
-  osi3::SensorData *data = data_shp.get();
+  osi3::SensorData* data = data_shp.get();
   data->mutable_version()->set_version_major(3);
   data->mutable_timestamp()->set_seconds(1);
   data->mutable_last_measurement_time()->set_seconds(0);
   data->mutable_mounting_position()->mutable_position();
   data->mutable_mounting_position()->mutable_orientation();
   // Initialize sensor view.
-  osi3::SensorView *view;
+  osi3::SensorView* view;
   view = data->add_sensor_view();
   // Initialize ground truth.
   init_osi_ground_truth(view->mutable_global_ground_truth(), vehicles);

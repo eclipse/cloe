@@ -63,6 +63,8 @@ class VtdOsiSensor : public osii::OsiOmniSensor, public VtdSensorData {
 
   void store_object(std::shared_ptr<cloe::Object> obj) override { world_objects_.push_back(obj); }
 
+  void store_lane_boundary(const cloe::LaneBoundary& lb) override { lanes_[lb.id] = lb; }
+
   void store_ego_object(std::shared_ptr<cloe::Object> ego_obj) override { ego_object_ = ego_obj; }
 
   void store_sensor_meta_data(const Eigen::Vector3d& bbcenter_to_veh_origin,
@@ -97,13 +99,7 @@ class VtdOsiSensor : public osii::OsiOmniSensor, public VtdSensorData {
   /**
    * Set the mock level for different data types according to user request.
    */
-  void set_mock_level(osii::MockTarget trg_type, uint16_t level) override {
-    if (level < 3) {
-      this->mock_level_[trg_type] = static_cast<osii::MockLevel>(level);
-    } else {
-      throw cloe::ModelError("OSI invalid mock_level input {} for type {}", level, trg_type);
-    }
-  }
+  void set_mock_conf(std::shared_ptr<const osii::SensorMockConf> mock) override { this->mock_ = mock; }
 
   // As defined in `cloe/component.hpp`
   void reset() override {

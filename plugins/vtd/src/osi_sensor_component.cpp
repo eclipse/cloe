@@ -31,7 +31,7 @@
 
 #include <cloe/simulator.hpp>  // for ModelError
 
-#include "osi_omni_sensor.hpp"  // for MockTarget
+#include "osi_omni_sensor.hpp"  // for SensorMockTarget
 #include "vtd_conf.hpp"         // for VtdSensorConfig
 
 namespace vtd {
@@ -76,8 +76,7 @@ void VtdOsiSensor::configure(const VtdSensorConfig& cfg) {
         "(Sensor.Origin type=sensor)");
   }
 
-  set_mock_level(osii::MockTarget::MountingPosition, cfg.mock_mounting_position);
-  set_mock_level(osii::MockTarget::DetectedMovingObject, cfg.mock_detected_moving_objects);
+  set_mock_conf(cfg.sensor_mock_conf);
 }
 
 }  // namespace vtd

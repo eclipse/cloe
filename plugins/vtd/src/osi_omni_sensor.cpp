@@ -22,15 +22,18 @@
 
 #include "osi_omni_sensor.hpp"
 
-#include <cassert>  // for assert
-#include <map>      // for map<>
+#include <math.h>     // for atan
+#include <algorithm>  // for max
+#include <cassert>    // for assert
+#include <map>        // for map<>
 
 #include <Eigen/Geometry>  // for Isometry3d, Vector3d
 
-#include <cloe/component/object.hpp>  // for Object
-#include <cloe/core.hpp>              // for Duration
-#include <cloe/simulator.hpp>         // for ModelError
-#include <cloe/utility/geometry.hpp>  // for quaternion_from_rpy
+#include <cloe/component/lane_boundary.hpp>  // for LaneBoundary
+#include <cloe/component/object.hpp>         // for Object
+#include <cloe/core.hpp>                     // for Duration
+#include <cloe/simulator.hpp>                // for ModelError
+#include <cloe/utility/geometry.hpp>         // for quaternion_from_rpy
 
 #include "osi_common.pb.h"           // for Timestamp, Identifier, BaseMoving, ..
 #include "osi_detectedobject.pb.h"   // for DetectedMovingObject
@@ -99,6 +102,44 @@ const std::map<osi3::MovingObject::VehicleClassification::Type, cloe::Object::Cl
         {osi3::MovingObject_VehicleClassification_Type_TYPE_TRAIN, cloe::Object::Class::Unknown},
         {osi3::MovingObject_VehicleClassification_Type_TYPE_WHEELCHAIR,
          cloe::Object::Class::Unknown},
+};
+
+/**
+ * Convert from OSI lane boundary types to Cloe types.
+ */
+const std::map<osi3::LaneBoundary_Classification_Type, cloe::LaneBoundary::Type>
+    osi_lane_bdry_type_map = {
+        // clang-format off
+        {osi3::LaneBoundary_Classification_Type_TYPE_UNKNOWN, cloe::LaneBoundary::Type::Unknown},
+        {osi3::LaneBoundary_Classification_Type_TYPE_OTHER, cloe::LaneBoundary::Type::Unknown},
+        {osi3::LaneBoundary_Classification_Type_TYPE_NO_LINE, cloe::LaneBoundary::Type::Unknown},
+        {osi3::LaneBoundary_Classification_Type_TYPE_SOLID_LINE, cloe::LaneBoundary::Type::Solid},
+        {osi3::LaneBoundary_Classification_Type_TYPE_DASHED_LINE, cloe::LaneBoundary::Type::Dashed},
+        {osi3::LaneBoundary_Classification_Type_TYPE_BOTTS_DOTS, cloe::LaneBoundary::Type::Unknown},
+        {osi3::LaneBoundary_Classification_Type_TYPE_ROAD_EDGE, cloe::LaneBoundary::Type::Unknown},
+        {osi3::LaneBoundary_Classification_Type_TYPE_SNOW_EDGE, cloe::LaneBoundary::Type::Unknown},
+        {osi3::LaneBoundary_Classification_Type_TYPE_GRASS_EDGE, cloe::LaneBoundary::Type::Grass},
+        {osi3::LaneBoundary_Classification_Type_TYPE_GRAVEL_EDGE, cloe::LaneBoundary::Type::Unknown},
+        {osi3::LaneBoundary_Classification_Type_TYPE_SOIL_EDGE, cloe::LaneBoundary::Type::Unknown},
+        {osi3::LaneBoundary_Classification_Type_TYPE_GUARD_RAIL, cloe::LaneBoundary::Type::Unknown},
+        {osi3::LaneBoundary_Classification_Type_TYPE_CURB, cloe::LaneBoundary::Type::Curb},
+        {osi3::LaneBoundary_Classification_Type_TYPE_STRUCTURE, cloe::LaneBoundary::Type::Unknown},
+        // clang-format on
+};
+
+/**
+ * Convert from OSI lane boundary colors to Cloe colors.
+ */
+const std::map<int, cloe::LaneBoundary::Color> osi_lane_bdry_color_map = {
+    {osi3::LaneBoundary_Classification_Color_COLOR_UNKNOWN, cloe::LaneBoundary::Color::Unknown},
+    {osi3::LaneBoundary_Classification_Color_COLOR_OTHER, cloe::LaneBoundary::Color::Unknown},
+    {osi3::LaneBoundary_Classification_Color_COLOR_NONE, cloe::LaneBoundary::Color::Unknown},
+    {osi3::LaneBoundary_Classification_Color_COLOR_WHITE, cloe::LaneBoundary::Color::White},
+    {osi3::LaneBoundary_Classification_Color_COLOR_YELLOW, cloe::LaneBoundary::Color::Yellow},
+    {osi3::LaneBoundary_Classification_Color_COLOR_RED, cloe::LaneBoundary::Color::Red},
+    {osi3::LaneBoundary_Classification_Color_COLOR_BLUE, cloe::LaneBoundary::Color::Blue},
+    {osi3::LaneBoundary_Classification_Color_COLOR_GREEN, cloe::LaneBoundary::Color::Green},
+    {osi3::LaneBoundary_Classification_Color_COLOR_VIOLET, cloe::LaneBoundary::Color::Unknown},
 };
 
 cloe::Duration osi_timestamp_to_time(const osi3::Timestamp& timestamp) {
@@ -395,7 +436,8 @@ void OsiOmniSensor::process(osi3::SensorData* osi_sd, cloe::Duration& sim_time) 
   if (mnt_pos) {
     osi_sensor_pose_ = osi_position_orientation_to_pose(*mnt_pos);
   } else {
-    if (this->get_mock_level(MockTarget::MountingPosition) != MockLevel::Zero) {
+    if (this->get_mock_level(SensorMockTarget::MountingPosition) !=
+        SensorMockLevel::OverwriteNone) {
       osi_sensor_pose_ =
           get_static_mounting_position(ground_truth_->get_veh_coord_sys_info(owner_id_),
                                        ground_truth_->get_mov_obj_dimensions(owner_id_));
@@ -410,59 +452,31 @@ void OsiOmniSensor::process(osi3::SensorData* osi_sd, cloe::Duration& sim_time) 
     throw cloe::ModelError("OSI host_vehicle_location handling is not yet available");
   }
 
-  // Detected moving objects
+  // Process detected moving objects.
   for (int i_mo = 0; i_mo < osi_sd->moving_object_size(); ++i_mo) {
     this->process(osi_sd->has_moving_object_header(), osi_sd->moving_object_header(),
                   osi_sd->moving_object(i_mo));
   }
 
-#if 0
-    // Detected stationary objects
-    for (int i_so = 0; i_so < osi_sd->stationary_object_size(); ++i_so) {
-      this->process(osi_sd->has_stationary_object_header(), 
-                    osi_sd->stationary_object_header(), osi_sd->stationary_object(i_so));
-    }
-#endif
+  // TODO(tobias): Process detected stationary objects.
 
-#if 0
-    // Detected traffic signs
-    for (int i_ts = 0; i_ts < osi_sd->traffic_sign_size(); ++i_ts) {
-      this->process(osi_sd->has_traffic_sign_header(), 
-                    osi_sd->traffic_sign_header(), osi_sd->traffic_sign(i_ts));
+  // Process lane boundaries.
+  switch (this->get_mock_level(SensorMockTarget::DetectedLaneBoundary)) {
+    case SensorMockLevel::OverwriteAll: {
+      mock_detected_lane_boundaries();
+      break;
     }
-#endif
+    default: {
+      //  TODO(tobias): Detected road marking handling is not yet available.
+      break;
+    }
+  }
 
-#if 0
-    // Detected road markings
-    for (int i_rm = 0; i_rm < osi_sd->road_marking_size(); ++i_rm) {
-      this->process(osi_sd->has_road_marking_header(), 
-                    osi_sd->road_marking_header(), osi_sd->road_marking(i_rm));
-    }
-#endif
+  // TODO(tobias): Process detected lanes once supported by Cloe data model.
 
-#if 0
-    // Detected lane boundaries
-    for (int i_lb = 0; i_lb < osi_sd->lane_boundary_size(); ++i_lb) {
-      this->process(osi_sd->has_lane_boundary_header(), 
-                    osi_sd->lane_boundary_header(), osi_sd->lane_boundary(i_lb));
-    }
-#endif
+  // TODO(tobias): Process detected traffic signs.
 
-#if 0
-    // Detected lanes
-    for (int i_l = 0; i_l < osi_sd->lane_size(); ++i_l) {
-      this->process(osi_sd->has_lane_header(), 
-                    osi_sd->lane_header(), osi_sd->lane(i_l));
-    }
-#endif
-
-#if 0
-    // Detected traffic lights
-    for (int i_tl = 0; i_tl < osi_sd->traffic_light_size(); ++i_tl) {
-      this->process(osi_sd->has_traffic_light_header(), 
-                    osi_sd->traffic_light_header(), osi_sd->traffic_light(i_tl));
-    }
-#endif
+  // TODO(tobias): Process detected traffic lights once supported by Cloe data model.
 
   store_sensor_meta_data(ground_truth_->get_veh_coord_sys_info(owner_id_),
                          ground_truth_->get_mov_obj_dimensions(owner_id_));
@@ -509,7 +523,6 @@ void OsiOmniSensor::process(const bool has_veh_data, const osi3::HostVehicleData
                             const osi3::MovingObject& osi_ego) {
   auto obj = std::make_shared<cloe::Object>();
   obj->exist_prob = 1.0;
-
   // Object id
   from_osi_identifier(osi_ego.id(), obj->id);
   assert(obj->id == static_cast<int>(owner_id_));
@@ -529,6 +542,10 @@ void OsiOmniSensor::process(const bool has_veh_data, const osi3::HostVehicleData
   from_osi_mov_obj_type_classification(osi_ego, obj->classification);
   //  - Offset to vehicle frame origin
   obj->cog_offset = ground_truth_->get_veh_coord_sys_info(obj->id);
+
+  // Store ego pose.
+  osi_ego_pose_ = obj->pose;
+  osi_ego_pose_.translation() = obj->pose.translation() + obj->pose.rotation() * obj->cog_offset;
 
   // Object attributes are all set:
   //  - 1a) osi3::HostVehicleData: "All coordinates and orientations are relative
@@ -560,17 +577,18 @@ void OsiOmniSensor::process(const bool has_eh, const osi3::DetectedEntityHeader&
         "VtdOsiSensor: DetectedEntityHeader not yet handled. measurement_time = {}ns",
         osi_timestamp_to_simtime(osi_eh.measurement_time()).count());
   }
-  switch (this->get_mock_level(MockTarget::DetectedMovingObject)) {
-    case MockLevel::Zero: {
+  switch (this->get_mock_level(SensorMockTarget::DetectedMovingObject)) {
+    case SensorMockLevel::OverwriteNone: {
       from_osi_detected_moving_object(osi_mo, *obj);
       break;
     }
-    case MockLevel::MissingData: {
+    case SensorMockLevel::InterpolateMissing: {
       from_osi_detected_moving_object_alt(osi_mo, *ground_truth_, *obj);
       break;
     }
-    case MockLevel::All: {
-      throw cloe::ModelError("OSI MockLevel All not available for DetectedMovingObject");
+    case SensorMockLevel::OverwriteAll: {
+      throw cloe::ModelError(
+          "OSI SensorMockLevel::OverwriteAll not available for DetectedMovingObject");
       break;
     }
   }
@@ -600,6 +618,59 @@ void OsiOmniSensor::process(const bool has_eh, const osi3::DetectedEntityHeader&
 
   // Fill the object list
   store_object(obj);
+}
+
+void OsiOmniSensor::from_osi_boundary_points(const osi3::LaneBoundary& osi_lb,
+                                             cloe::LaneBoundary& lb) {
+  assert(osi_lb.boundary_line_size() > 0);
+  for (int i = 0; i < osi_lb.boundary_line_size(); ++i) {
+    const auto& osi_pt = osi_lb.boundary_line(i);
+    Eigen::Vector3d position = osi_vector3d_xyz_to_vector3d(osi_pt.position());
+    // Transform points from the inertial into the sensor reference frame.
+    cloe::utility::transform_to_child_frame(osi_ego_pose_, &position);
+    cloe::utility::transform_to_child_frame(osi_sensor_pose_, &position);
+    lb.points.push_back(position);
+  }
+  // Compute clothoid segment. TODO(tobias): implement curved segments.
+  lb.dx_start = lb.points.front()(0);
+  lb.dy_start = lb.points.front()(1);
+  lb.heading_start = std::atan((lb.points.back()(1) - lb.points.front()(1)) /
+                               (lb.points.back()(0) - lb.points.front()(0)));
+  lb.curv_hor_start = 0.0;
+  lb.curv_hor_change = 0.0;
+  lb.dx_end = lb.points.back()(0);
+}
+
+void OsiOmniSensor::mock_detected_lane_boundaries() {
+  const auto& osi_gt = ground_truth_->get_gt();
+  int lb_id = 0;
+  // If some of the OSI data does not have an id, avoid id clashes.
+  for (const auto& osi_lb : osi_gt.lane_boundary()) {
+    if (osi_lb.has_classification() && osi_lb.has_id()) {
+      int id;
+      from_osi_identifier(osi_lb.id(), id);
+      lb_id = std::max(lb_id, id + 1);
+    }
+  }
+  // Set lane boundary data.
+  for (const auto& osi_lb : osi_gt.lane_boundary()) {
+    if (osi_lb.has_classification()) {
+      cloe::LaneBoundary lb;
+      if (osi_lb.has_id()) {
+        from_osi_identifier(osi_lb.id(), lb.id);
+      } else {
+        lb.id = lb_id;
+      }
+      lb.exist_prob = 1.0;
+      lb.prev_id = -1;  // no concatenated line segments for now
+      lb.next_id = -1;
+      ++lb_id;
+      from_osi_boundary_points(osi_lb, lb);
+      lb.type = osi_lane_bdry_type_map.at(osi_lb.classification().type());
+      lb.color = osi_lane_bdry_color_map.at(osi_lb.classification().color());
+      store_lane_boundary(lb);
+    }
+  }
 }
 
 }  // namespace osii

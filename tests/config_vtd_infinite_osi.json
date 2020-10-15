@@ -76,8 +76,9 @@
                 "xml": "<Sensor name='Sensor_[[ sensor_id ]]_[[ sensor_name ]]'><Load lib='libModuleOsi3Fmu.so' path='' persistent='true'/><Port name='RDBout' number='[[ sensor_port ]]' type='TCP' /><File fmuFilePath='../../../Distros/Distro/Plugins/ModuleManager/OSMPDummySensor.so'/><Frustum near='0.0' far='80.0' left='45.0' right='45.0' bottom='45.0' top='45.0'/><Cull maxObjects='50' enable='true' /><Player id=\"[[ player_id ]]\"/><Origin dx='0.0' dy='0.0' dz='0.0' dhDeg='0.0' dpDeg='0.0' drDeg='0.0' type='sensor'/><Position dx='2.0' dy='0.0' dz='1.5' dhDeg='0.0' dpDeg='0.0' drDeg='0.0'/><Database resolveRepeatedObjects='true' continuousObjectTesselation='2.0' /><Filter objectType='pedestrian'/><Filter objectType='vehicle'/><Filter objectType='trafficSign'/><Filter objectType='roadInfo'/><Filter objectType='laneInfo'/><Filter objectType='laneInfoComplete'/><Filter objectType='roadMarks'/><Debug enable='false' detection='false' road='false' position='true' dimensions='false' camera='false' CSV='false' packages='false' culling='true' contactPoints='false' trafficSigns='false'/></Sensor>",
                 "protocol": "osi",
                 "mock_level": {
-                  "mounting_position": 1,
-                  "detected_moving_objects": 0
+                  "mounting_position": "interpolate_missing",
+                  "detected_moving_objects": "overwrite_none",
+                  "detected_lane_boundaries": "overwrite_none"
                 }
               }
             }
