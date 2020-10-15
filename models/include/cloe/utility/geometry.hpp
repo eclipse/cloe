@@ -51,6 +51,14 @@ inline Eigen::Isometry3d pose_from_rotation_translation(const Eigen::Quaterniond
   return pose;
 }
 
+/**
+ * Change a point's frame of reference.
+ * Both the point and the child frame need to have the same parent frame.
+ */
+inline void transform_to_child_frame(const Eigen::Isometry3d& child_frame, Eigen::Vector3d* point) {
+  *point = child_frame.inverse() * (*point);
+}
+
 }  // namespace utility
 }  // namespace cloe
 
