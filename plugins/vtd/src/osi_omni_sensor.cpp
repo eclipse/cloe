@@ -124,7 +124,12 @@ void from_osi_detected_item_header(const osi3::DetectedItemHeader& osi_hdr, cloe
   // supported.
   auto osi_obj_gt_id = osi_hdr.ground_truth_id(0);
   from_osi_identifier(osi_obj_gt_id, obj.id);
-  // TODO(tobias): osi_hdr.existence_probability()
+  // Existence probability
+  if (osi_hdr.has_existence_probability()) {
+    obj.exist_prob = osi_hdr.existence_probability();
+  } else {
+    obj.exist_prob = 1.0;
+  }
 }
 
 void from_osi_detected_moving_object(const osi3::DetectedMovingObject& osi_mo, cloe::Object& obj) {
@@ -503,6 +508,7 @@ void OsiOmniSensor::process(const osi3::SensorView& osi_sv) {
 void OsiOmniSensor::process(const bool has_veh_data, const osi3::HostVehicleData& osi_hv,
                             const osi3::MovingObject& osi_ego) {
   auto obj = std::make_shared<cloe::Object>();
+  obj->exist_prob = 1.0;
 
   // Object id
   from_osi_identifier(osi_ego.id(), obj->id);

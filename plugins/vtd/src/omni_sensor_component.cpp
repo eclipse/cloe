@@ -109,6 +109,7 @@ Eigen::Isometry3d from_vtd_pose(const RDB_COORD_t& x) {
 
 void from_vtd_object_state(const RDB_OBJECT_STATE_t* rdb_os, bool ext, cloe::Object& object) {
   object.id = rdb_os->base.id;
+  object.exist_prob = 1.0;
   object.type = cloe::Object::Type::Static;
   object.classification = vtd_object_class_map.at(rdb_os->base.type);
 
@@ -176,6 +177,8 @@ void from_vtd_roadmark(const RDB_ROADMARK_t* rm, cloe::LaneBoundary& lb) {
   for (int i = 0; i < rm->noDataPoints; ++i, current_point++) {
     lb.points.push_back(Eigen::Vector3d(current_point->x, current_point->y, current_point->z));
   }
+
+  lb.exist_prob = 1.0;
 
   // clang-format off
   lane_logger()->trace(
