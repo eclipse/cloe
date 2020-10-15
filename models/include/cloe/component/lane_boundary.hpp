@@ -65,6 +65,7 @@ class LaneBoundary : public Confable {
   double curv_hor_start;
   double curv_hor_change;
   double dx_end;
+  double exist_prob;
   Type type;
   Color color;
 
@@ -73,6 +74,25 @@ class LaneBoundary : public Confable {
 
 using LaneBoundaries = std::map<int, LaneBoundary>;
 void to_json(Json& j, const LaneBoundaries& lbs);
+
+// clang-format off
+ENUM_SERIALIZATION(LaneBoundary::Type, ({
+    {LaneBoundary::Type::Unknown, "unknown"},
+    {LaneBoundary::Type::Solid, "solid"},
+    {LaneBoundary::Type::Dashed, "dashed"},
+    {LaneBoundary::Type::Grass, "grass"},
+    {LaneBoundary::Type::Curb, "curb"},
+}))
+
+ENUM_SERIALIZATION(LaneBoundary::Color, ({
+    {LaneBoundary::Color::Unknown, "unknown"},
+    {LaneBoundary::Color::White, "white"},
+    {LaneBoundary::Color::Yellow, "yellow"},
+    {LaneBoundary::Color::Red, "red"},
+    {LaneBoundary::Color::Green, "green"},
+    {LaneBoundary::Color::Blue, "blue"},
+}))
+// clang-format on
 
 }  // namespace cloe
 

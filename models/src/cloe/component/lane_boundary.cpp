@@ -33,25 +33,6 @@
 
 namespace cloe {
 
-// clang-format off
-ENUM_SERIALIZATION(LaneBoundary::Type, ({
-    {LaneBoundary::Type::Unknown, "unknown"},
-    {LaneBoundary::Type::Solid, "solid"},
-    {LaneBoundary::Type::Dashed, "dashed"},
-    {LaneBoundary::Type::Grass, "grass"},
-    {LaneBoundary::Type::Curb, "curb"},
-}))
-
-ENUM_SERIALIZATION(LaneBoundary::Color, ({
-    {LaneBoundary::Color::Unknown, "unknown"},
-    {LaneBoundary::Color::White, "white"},
-    {LaneBoundary::Color::Yellow, "yellow"},
-    {LaneBoundary::Color::Red, "red"},
-    {LaneBoundary::Color::Green, "green"},
-    {LaneBoundary::Color::Blue, "blue"},
-}))
-// clang-format on
-
 void LaneBoundary::to_json(Json& j) const {
   j = Json{
       {"id", id},
@@ -63,6 +44,7 @@ void LaneBoundary::to_json(Json& j) const {
       {"curv_hor_start", curv_hor_start},
       {"curv_hor_change", curv_hor_change},
       {"dx_end", dx_end},
+      {"exist_prob", exist_prob},
       {"type", type},
       {"color", color},
       {"points", points},
@@ -71,17 +53,20 @@ void LaneBoundary::to_json(Json& j) const {
 
 Schema LaneBoundary::schema_impl() {
   return schema::Struct{
+      // clang-format off
       {"id", Schema(&id, "unique identifier in scene graph")},
       {"prev_id", Schema(&prev_id, "previous identifier")},
       {"next_id", Schema(&next_id, "next identifier")},
-      {"dx_start", Schema(&dx_start, "")},
-      {"dy_start", Schema(&dy_start, "")},
-      {"heading_start", Schema(&heading_start, "")},
-      {"curv_hor_start", Schema(&curv_hor_start, "")},
-      {"curv_hor_change", Schema(&curv_hor_change, "")},
-      {"dx_end", Schema(&dx_end, "")},
+      {"dx_start", Schema(&dx_start, "start of lane boundary in ego x-direction [m]")},
+      {"dy_start", Schema(&dy_start, "lateral distance to ego vehicle reference point [m]")},
+      {"heading_start", Schema(&heading_start, "yaw angle relative to ego x-direction [rad]")},
+      {"curv_hor_start", Schema(&curv_hor_start, "horizontal curvature at lane boundary start [1/m]")},
+      {"curv_hor_change", Schema(&curv_hor_change, "change of horizontal curvature at lane boundary start [1/m^2]")},
+      {"dx_end", Schema(&dx_end, "end of lane boundary in ego x-direction [m]")},
+      {"exist_prob", Schema(&exist_prob, "existence probability")},
       {"type", Schema(&type, "lane boundary type")},
       {"color", Schema(&color, "lane boundary color")},
+      // clang-format on
   }
       .require_all();
 }

@@ -53,47 +53,42 @@ struct Object {
 
   enum class Class { Unknown, Pedestrian, Bike, Motorbike, Car, Truck, Trailer };
 
-  /// ID of object, should be unique
-  int id;
+  /// ID of object, should be unique.
+  int id{-1};
 
-  /// Type of object
-  Type type;
+  /// Object existence probability.
+  double exist_prob{1.0};
 
-  /// Classification of object
-  Class classification;
+  /// Type of object.
+  Type type{Type::Unknown};
 
-  /// Pose in [m] and [rad]
-  Eigen::Isometry3d pose;
+  /// Classification of object.
+  Class classification{Class::Unknown};
 
-  /// Dimensions in [m]
-  Eigen::Vector3d dimensions;
+  /// Pose in [m] and [rad].
+  Eigen::Isometry3d pose{Eigen::Isometry3d()};
 
-  /// Center of geometry offset in [m]
-  Eigen::Vector3d cog_offset;
+  /// Dimensions in [m].
+  Eigen::Vector3d dimensions{Eigen::Vector3d::Zero()};
 
-  /// Absolute velocity in [m/s]
-  Eigen::Vector3d velocity;
+  /// Center of geometry offset in [m].
+  Eigen::Vector3d cog_offset{Eigen::Vector3d::Zero()};
 
-  /// Absolute acceleration in [m/(s*s)]
-  Eigen::Vector3d acceleration;
+  /// Absolute velocity in [m/s].
+  Eigen::Vector3d velocity{Eigen::Vector3d::Zero()};
 
-  /// Angular velocity in [rad/s]
-  Eigen::Vector3d angular_velocity;
+  /// Absolute acceleration in [m/(s*s)].
+  Eigen::Vector3d acceleration{Eigen::Vector3d::Zero()};
 
-  Object()
-      : id(-1)
-      , type(Type::Unknown)
-      , classification(Class::Unknown)
-      , pose(Eigen::Isometry3d())
-      , dimensions(Eigen::Vector3d::Zero())
-      , cog_offset(Eigen::Vector3d::Zero())
-      , velocity(Eigen::Vector3d::Zero())
-      , acceleration(Eigen::Vector3d::Zero())
-      , angular_velocity(Eigen::Vector3d::Zero()) {}
+  /// Angular velocity in [rad/s].
+  Eigen::Vector3d angular_velocity{Eigen::Vector3d::Zero()};
+
+  Object() = default;
 
   friend void to_json(Json& j, const Object& o) {
     j = Json{
         {"id", o.id},
+        {"exist_prob", o.exist_prob},
         {"type", o.type},
         {"class", o.classification},
         {"pose", o.pose},
