@@ -112,7 +112,7 @@ void FromConf::operator()(const cloe::Request& q, cloe::Response& r) {
         }
         break;
       }
-      // FALLTHROUGH
+      BOOST_FALLTHROUGH;
 
     default:
       r.not_allowed(RequestMethod::POST,
