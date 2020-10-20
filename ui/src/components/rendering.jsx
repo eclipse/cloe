@@ -693,10 +693,10 @@ class Rendering extends Component {
 
   createDefaultLabelText = (object) => {
     let existProb = 1.0;
-    if (object.exist_prob) {
+    if (object.exist_prob !== undefined) {
       existProb = object.exist_prob;
     }
-    return `ID: ${object.id} \n Prob.: ${existProb.toFixed(1)}`;
+    return `ID: ${object.id} \n Prob.: ${existProb.toFixed(2)}`;
   };
 
   createDefaultLabel = (text, color) => {
