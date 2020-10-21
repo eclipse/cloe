@@ -23,9 +23,12 @@ add_library(${target}
 )
 add_library(${alias} ALIAS ${target})
 set_target_properties(${target} PROPERTIES
-  CXX_STANDARD 14
-  CXX_STANDARD_REQUIRED ON
-  VERSION ${CLOE_PROJECT_VERSION}
+    CXX_STANDARD 14
+    CXX_STANDARD_REQUIRED ON
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib
+    VERSION ${CLOE_PROJECT_VERSION}
 )
 set_target_linting(${target})
 target_include_directories(${target}

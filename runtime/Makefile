@@ -1,7 +1,5 @@
 PROJECT_ROOT := ..
 
-override BUILD_LAYOUT := layout.ini
-
 include ${PROJECT_ROOT}/Makefile.package
 
 # If BUILD_TESTS is disabled, we need to use the dependencies that
