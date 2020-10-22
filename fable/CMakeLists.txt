@@ -63,6 +63,10 @@ if(BuildTests)
         src/fable/schema/optional_test.cpp
         src/fable/schema_test.cpp
     )
+    set_target_properties(test-fable PROPERTIES
+        CXX_STANDARD 14
+        CXX_STANDARD_REQUIRED ON
+    )
     target_link_libraries(test-fable
         CONAN_PKG::gtest
         CONAN_PKG::boost

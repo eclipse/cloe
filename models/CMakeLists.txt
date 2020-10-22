@@ -46,19 +46,23 @@ if(BuildTests)
     enable_testing()
     include(GoogleTest)
 
-    add_executable(test_models
+    add_executable(test-models
         # find src -type f -name "*_test.cpp"
         src/cloe/component/latlong_actuator_test.cpp
         src/cloe/utility/actuation_level_test.cpp
     )
-    target_link_libraries(test_models
+    set_target_properties(test-models PROPERTIES
+        CXX_STANDARD 14
+        CXX_STANDARD_REQUIRED ON
+    )
+    target_link_libraries(test-models
       PRIVATE
         CONAN_PKG::gtest
         CONAN_PKG::boost
         CONAN_PKG::cloe-runtime
         ${target}
     )
-    gtest_add_tests(TARGET test_models)
+    gtest_add_tests(TARGET test-models)
 endif()
 
 # Installation -------------------------------------------------------

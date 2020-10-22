@@ -21,6 +21,8 @@ message(STATUS "-> Building ${output} module.")
 add_library(${target} MODULE ${sources})
 set(cloe_lib_dir ${CMAKE_CURRENT_BINARY_DIR}/lib/cloe)
 set_target_properties(${target} PROPERTIES
+    CXX_STANDARD 14
+    CXX_STANDARD_REQUIRED ON
     ARCHIVE_OUTPUT_DIRECTORY ${cloe_lib_dir}
     LIBRARY_OUTPUT_DIRECTORY ${cloe_lib_dir}
     RUNTIME_OUTPUT_DIRECTORY ${cloe_lib_dir}
@@ -51,6 +53,10 @@ if(BuildTests)
 
     add_executable(test-basic-controller
         src/hmi_contact_test.cpp
+    )
+    set_target_properties(test-basic-controller PROPERTIES
+        CXX_STANDARD 14
+        CXX_STANDARD_REQUIRED ON
     )
     target_link_libraries(test-basic-controller
       PRIVATE

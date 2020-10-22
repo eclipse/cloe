@@ -72,6 +72,10 @@ if(BuildTests)
         src/cloe/utility/statistics_test.cpp
         src/cloe/utility/uid_tracker_test.cpp
     )
+    set_target_properties(test-cloe PROPERTIES
+        CXX_STANDARD 14
+        CXX_STANDARD_REQUIRED ON
+    )
     target_link_libraries(test-cloe
       PRIVATE
         CONAN_PKG::gtest

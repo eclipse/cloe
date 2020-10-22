@@ -40,6 +40,7 @@ target_sources(${target}
 set(cloe_lib_dir ${CMAKE_CURRENT_BINARY_DIR}/lib/cloe)
 set_target_properties(${target} PROPERTIES
     CXX_STANDARD 14
+    CXX_STANDARD_REQUIRED ON
     ARCHIVE_OUTPUT_DIRECTORY ${cloe_lib_dir}
     LIBRARY_OUTPUT_DIRECTORY ${cloe_lib_dir}
     RUNTIME_OUTPUT_DIRECTORY ${cloe_lib_dir}
@@ -95,6 +96,10 @@ if(BuildTests)
         src/osi_sensor_component.cpp
         src/osi_test.cpp
         src/vtd_osi_test.cpp
+    )
+    set_target_properties(test-vtd-binding PROPERTIES
+        CXX_STANDARD 14
+        CXX_STANDARD_REQUIRED ON
     )
     target_include_directories(test-vtd-binding
       PRIVATE

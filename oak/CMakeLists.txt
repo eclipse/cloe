@@ -46,6 +46,10 @@ if(BuildTests)
         # find src -type f -name "*_test.cpp"
         src/oak/route_muxer_test.cpp
     )
+    set_target_properties(test-oak PROPERTIES
+        CXX_STANDARD 14
+        CXX_STANDARD_REQUIRED ON
+    )
     target_link_libraries(test-oak
         CONAN_PKG::gtest
         CONAN_PKG::boost

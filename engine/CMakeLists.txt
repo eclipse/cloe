@@ -50,6 +50,10 @@ if(BuildTests)
     add_executable(${test-libstack}
         src/stack_test.cpp
     )
+    set_target_properties(${test-libstack} PROPERTIES
+        CXX_STANDARD 14
+        CXX_STANDARD_REQUIRED ON
+    )
     target_link_libraries(${test-libstack}
         CONAN_PKG::gtest
         CONAN_PKG::boost
@@ -71,6 +75,7 @@ add_executable(${target}
 )
 set_target_properties(${target} PROPERTIES
     CXX_STANDARD 14
+    CXX_STANDARD_REQUIRED ON
     OUTPUT_NAME ${output}
 )
 target_compile_definitions(${target}
