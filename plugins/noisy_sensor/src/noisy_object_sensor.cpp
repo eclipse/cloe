@@ -32,6 +32,7 @@
 #include <cloe/plugin.hpp>                   // for EXPORT_CLOE_PLUGIN
 #include <cloe/registrar.hpp>                // for Registrar
 #include <cloe/sync.hpp>                     // for Sync
+#include <cloe/trigger/set_action.hpp>       // for actions::SetVariableActionFactory
 #include "noise_data.hpp"                    // for NoiseData, NoiseConf
 
 namespace cloe {
@@ -210,6 +211,8 @@ class NoisyObjectSensor : public ObjectSensor {
   void enroll(Registrar& r) override {
     r.register_action(std::make_unique<actions::ConfigureFactory>(
         &config_, "config", "configure noisy object component"));
+    r.register_action<actions::SetVariableActionFactory<bool>>(
+        "noise_activation", "switch sensor noise on/off", "enable", &config_.enabled);
   }
 
  protected:

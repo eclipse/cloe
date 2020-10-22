@@ -92,6 +92,7 @@
           "name": "noisy_object_sensor",
           "from": "cloe::default_world_sensor",
           "args": {
+            "enable": false,
             "noise": [
               {
                 "target": "translation",
@@ -111,6 +112,7 @@
           "name": "noisy_lane_sensor",
           "from": "cloe::default_lane_sensor",
           "args": {
+            "enable": true,
             "noise": [
               {
                 "target": "dy_start",
