@@ -46,7 +46,7 @@ class Cloe(ConanFile):
             "cloe-plugin-gndtruth-extractor",
             "cloe-plugin-speedometer",
             "cloe-plugin-minimator",
-            "cloe-plugin-noisy-object-sensor",
+            "cloe-plugin-noisy-sensor",
             "cloe-plugin-virtue",
         ]
         if self.options.with_vtd:

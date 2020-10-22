@@ -88,13 +88,18 @@
           "name": "noisy_object_sensor",
           "from": "cloe::default_world_sensor",
           "args": {
-            "distribution": {
-              "binding": "normal",
-              "args": {
-                "mean": 0.0,
-                "std_deviation": 0.3
+            "noise": [
+              {
+                "target": "translation",
+                "distribution": {
+                  "binding": "normal",
+                  "args": {
+                    "mean": 0.0,
+                    "std_deviation": 0.3
+                  }
+                }
               }
-            }
+            ]
           }
         }
       }

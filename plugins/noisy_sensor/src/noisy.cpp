@@ -207,7 +207,9 @@ struct NoisyConf : public Confable {
   /**
    * Which distribution to use.
    */
-  DistributionPtr distribution{new NormalDistribution<double>()};
+  DistributionPtr distr_default{new NormalDistribution<double>()};
+
+  DistributionPtr get_distr() const { return distr_default; }
 
   CONFABLE_SCHEMA(NoisyConf) {
     return Schema{
@@ -215,7 +217,7 @@ struct NoisyConf : public Confable {
         {"reuse_seed", Schema(&reuse_seed, "whether to get a new seed on reset")},
         {"seed", Schema(&seed, "set random engine seed (effective on reset)")},
         {"distribution",
-         DistributionSchema<>(&distribution, "set distribution binding and arguments")},
+         DistributionSchema<>(&distr_default, "set distribution binding and arguments")},
     };
   }
 
@@ -224,16 +226,53 @@ struct NoisyConf : public Confable {
         {"enable", enabled},
         {"seed", seed},
         {"reuse_seed", reuse_seed},
-        {"distribution", distribution},
+        {"distribution", distr_default},
     };
   }
-};  // namespace component
+};
+
+template <typename T>
+class Random : public Entity {
+ public:
+  using Entity::Entity;
+  Random(const unsigned long& seed, DistributionPtr dist)
+      : Entity("random"), engine_(seed), d(dist) {}
+
+  virtual ~Random() noexcept = default;
+
+  T get() const { return d->get(engine_); }
+
+  void reset(const unsigned long& seed) { engine_ = std::default_random_engine(seed); }
+
+ protected:
+  mutable std::default_random_engine engine_;
+  DistributionPtr d;
+};
+
+class Noise : public Entity {
+ public:
+  using Entity::Entity;
+  Noise(const NoisyConf& conf) : Entity("noise"), rnd_(conf.seed, conf.get_distr()) {}
+
+  virtual ~Noise() noexcept = default;
+
+  double get() const { return rnd_.get(); }
+
+  virtual void reset(unsigned long seed) {
+    rnd_.reset(seed);
+    // In case of multiple random number generators, a different seed must
+    // be used for each generator (e.g. increment after each rnd_.reset).
+  }
+
+ protected:
+  Random<double> rnd_;
+};
 
 class NoisyObjectSensor : public ObjectSensor {
  public:
   NoisyObjectSensor(const std::string& name, const NoisyConf& conf,
                     std::shared_ptr<ObjectSensor> obs)
-      : ObjectSensor(name), config_(conf), engine_(conf.seed), sensor_(obs) {
+      : ObjectSensor(name), config_(conf), noise_(conf), sensor_(obs) {
     reset_random();
   }
 
@@ -299,21 +338,24 @@ class NoisyObjectSensor : public ObjectSensor {
   std::shared_ptr<Object> apply_noise(const std::shared_ptr<Object>& o) const {
     if (config_.enabled) {
       auto obj = std::make_shared<Object>(*o);
-      obj->pose.translation().x() = obj->pose.translation().x() + getr();
-      obj->pose.translation().y() = obj->pose.translation().y() + getr();
-      obj->velocity.x() = obj->velocity.x() + getr();
-      obj->velocity.y() = obj->velocity.y() + getr();
-      obj->acceleration.x() = obj->acceleration.x() + getr();
-      obj->acceleration.y() = obj->acceleration.y() + getr();
+      Eigen::Vector3d transl = obj->pose.translation();
+      apply_noise_xy(transl, noise_);
+      obj->pose.translation() = transl;
+      apply_noise_xy(obj->velocity, noise_);
+      apply_noise_xy(obj->acceleration, noise_);
       return obj;
     } else {
       return o;
     }
   }
 
-  double getr() const { return config_.distribution->get(engine_); }
+  void apply_noise_xy(Eigen::Vector3d& vec, const Noise& n) const {
+    vec.x() = vec.x() + n.get();
+    vec.y() = vec.y() + n.get();
+  }
 
   void reset_random() {
+    // Reset the sensor's "master" seed, if applicable.
     unsigned long seed = config_.seed;
     if (seed == 0) {
       std::random_device r;
@@ -325,8 +367,7 @@ class NoisyObjectSensor : public ObjectSensor {
         config_.seed = seed;
       }
     }
-
-    engine_ = std::default_random_engine(seed);
+    noise_.reset(seed);
   }
 
   void clear_cache() {
@@ -339,7 +380,7 @@ class NoisyObjectSensor : public ObjectSensor {
   NoisyConf config_;
 
   // State:
-  mutable std::default_random_engine engine_;
+  Noise noise_;
   std::shared_ptr<ObjectSensor> sensor_;
   mutable bool cached_;
   mutable Objects objects_;

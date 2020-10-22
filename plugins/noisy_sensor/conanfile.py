@@ -2,8 +2,8 @@ import os.path
 from conans import ConanFile, CMake, tools
 
 
-class CloeComponentNoisyObjectSensor(ConanFile):
-    name = "cloe-plugin-noisy-object-sensor"
+class CloeComponentNoisySensor(ConanFile):
+    name = "cloe-plugin-noisy-sensor"
     url = "https://github.com/eclipse/cloe"
     description = "Cloe component plugin that adds noise to sensed data"
     license = "Apache-2.0"

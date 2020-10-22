@@ -92,13 +92,47 @@
           "name": "noisy_object_sensor",
           "from": "cloe::default_world_sensor",
           "args": {
-            "distribution": {
-              "binding": "normal",
-              "args": {
-                "mean": 0.0,
-                "std_deviation": 0.3
+            "noise": [
+              {
+                "target": "translation",
+                "distribution": {
+                  "binding": "normal",
+                  "args": {
+                    "mean": 0.0,
+                    "std_deviation": 0.3
+                  }
+                }
               }
-            }
+            ]
+          }
+        },
+        "cloe::default_lane_sensor": {
+          "binding": "noisy_lane_sensor",
+          "name": "noisy_lane_sensor",
+          "from": "cloe::default_lane_sensor",
+          "args": {
+            "noise": [
+              {
+                "target": "dy_start",
+                "distribution": {
+                  "binding": "normal",
+                  "args": {
+                    "mean": 0.0,
+                    "std_deviation": 0.1
+                  }
+                }
+              },
+              {
+                "target": "dx_end",
+                "distribution": {
+                  "binding": "normal",
+                  "args": {
+                    "mean": 0.0,
+                    "std_deviation": 5.0
+                  }
+                }
+              }
+            ]
           }
         }
       }
