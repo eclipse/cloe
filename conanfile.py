@@ -23,9 +23,6 @@ class Cloe(ConanFile):
     }
     generators = "cmake"
     no_copy_source = False
-    exports_sources = [
-        "VERSION",
-    ]
 
     _cmake = None
 
