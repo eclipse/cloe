@@ -34,7 +34,7 @@
 #include <cloe/plugin.hpp>                              // for EXPORT_CLOE_PLUGIN
 #include <cloe/registrar.hpp>                           // for DirectCallback
 #include <cloe/sync.hpp>                                // for Sync
-#include <cloe/trigger/macros.hpp>                      // for DEFINE_NIL_EVENT
+#include <cloe/trigger/nil_event.hpp>                   // for DEFINE_NIL_EVENT
 #include <cloe/vehicle.hpp>                             // for Vehicle
 
 namespace cloe {

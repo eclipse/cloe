@@ -86,7 +86,7 @@
 #include <cloe/core/abort.hpp>                // for AsyncAbort
 #include <cloe/registrar.hpp>                 // for DirectCallback
 #include <cloe/trigger/example_actions.hpp>   // for CommandFactory, BundleFactory, ...
-#include <cloe/trigger/macros.hpp>            // for DEFINE_SIMPLE_ACTION
+#include <cloe/trigger/set_action.hpp>        // for DEFINE_SET_STATE_ACTION, SetDataActionFactory
 #include <cloe/utility/resource_handler.hpp>  // for INCLUDE_RESOURCE, RESOURCE_HANDLER
 #include <fable/utility.hpp>                  // for pretty_print
 
@@ -260,62 +260,26 @@ class SimulationMachine
 namespace actions {
 
 // clang-format off
-DEFINE_SIMPLE_ACTION(Pause, "pause", "pause simulation", SimulationMachine, { ptr_->pause(); })
-DEFINE_SIMPLE_ACTION(Resume, "resume", "resume paused simulation", SimulationMachine, { ptr_->resume(); })
-DEFINE_SIMPLE_ACTION(Stop, "stop", "stop simulation with neither success nor failure", SimulationMachine, { ptr_->stop(); })
-DEFINE_SIMPLE_ACTION(Succeed, "succeed", "stop simulation with success", SimulationMachine, { ptr_->succeed(); })
-DEFINE_SIMPLE_ACTION(Fail, "fail", "stop simulation with failure", SimulationMachine, { ptr_->fail(); })
-DEFINE_SIMPLE_ACTION(Reset, "reset", "attempt to reset simulation", SimulationMachine, { ptr_->reset(); })
+DEFINE_SET_STATE_ACTION(Pause, "pause", "pause simulation", SimulationMachine, { ptr_->pause(); })
+DEFINE_SET_STATE_ACTION(Resume, "resume", "resume paused simulation", SimulationMachine, { ptr_->resume(); })
+DEFINE_SET_STATE_ACTION(Stop, "stop", "stop simulation with neither success nor failure", SimulationMachine, { ptr_->stop(); })
+DEFINE_SET_STATE_ACTION(Succeed, "succeed", "stop simulation with success", SimulationMachine, { ptr_->succeed(); })
+DEFINE_SET_STATE_ACTION(Fail, "fail", "stop simulation with failure", SimulationMachine, { ptr_->fail(); })
+DEFINE_SET_STATE_ACTION(Reset, "reset", "attempt to reset simulation", SimulationMachine, { ptr_->reset(); })
 
-DEFINE_SIMPLE_ACTION(KeepAlive, "keep_alive", "keep simulation alive after termination",
-                     SimulationContext, { ptr_->config.engine.keep_alive = true; })
+DEFINE_SET_STATE_ACTION(KeepAlive, "keep_alive", "keep simulation alive after termination",
+                        SimulationContext, { ptr_->config.engine.keep_alive = true; })
 
-DEFINE_SIMPLE_ACTION(ResetStatistics, "reset_statistics", "reset simulation statistics",
-                     SimulationStatistics, { ptr_->reset(); })
+DEFINE_SET_STATE_ACTION(ResetStatistics, "reset_statistics", "reset simulation statistics",
+                        SimulationStatistics, { ptr_->reset(); })
+
+DEFINE_SET_DATA_ACTION(RealtimeFactor, "realtime_factor", "modify the simulation speed", SimulationSync, "factor", double,
+                        {
+                         logger()->info("Setting target simulation speed: {}", value_);
+                         ptr_->set_realtime_factor(value_);
+                        })
+
 // clang-format on
-
-class RealtimeFactor : public cloe::Action {
- public:
-  explicit RealtimeFactor(const std::string& name, SimulationSync* s, double realtime_factor)
-      : Action(name), sync_(s), realtime_factor_(realtime_factor) {}
-  cloe::ActionPtr clone() const override {
-    return std::make_unique<RealtimeFactor>(name(), sync_, realtime_factor_);
-  }
-  void operator()(const cloe::Sync&, cloe::TriggerRegistrar&) override {
-    logger()->info("Setting target simulation speed: {}", realtime_factor_);
-    sync_->set_realtime_factor(realtime_factor_);
-  }
-  bool is_significant() const override { return false; }
-  void to_json(cloe::Json& j) const override {
-    j = cloe::Json{
-        {"factor", realtime_factor_},
-    };
-  }
-
- private:
-  SimulationSync* sync_;
-  double realtime_factor_;
-};
-
-class RealtimeFactorFactory : public cloe::ActionFactory {
- public:
-  using ActionType = RealtimeFactor;
-  explicit RealtimeFactorFactory(SimulationSync* s)
-      : cloe::ActionFactory("realtime_factor", "modify the simulation speed"), sync_(s) {}
-  cloe::ActionPtr make(const cloe::Conf& c) const override {
-    auto factor = c.get<double>("factor");
-    return std::make_unique<RealtimeFactor>(name(), sync_, factor);
-  }
-  cloe::ActionPtr make(const std::string& s) const override {
-    auto factor = std::stod(s);
-    return make(cloe::Conf{cloe::Json{
-        {"factor", factor},
-    }});
-  }
-
- private:
-  SimulationSync* sync_;
-};
 
 }  // namespace actions
 
@@ -477,8 +441,8 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
       ctx.now_initializing = x.get();
 
       // Configure simulator:
-      auto r = ctx.registrar->with_trigger_prefix(name)
-                   ->with_api_prefix(std::string("/simulators/") + name);
+      auto r = ctx.registrar->with_trigger_prefix(name)->with_api_prefix(
+          std::string("/simulators/") + name);
       x->connect();
       x->enroll(*r);
 
@@ -531,8 +495,8 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
       ctx.now_initializing = x.get();
 
       // Configure component:
-      auto r = ctx.registrar->with_trigger_prefix(name)
-                   ->with_api_prefix(std::string("/components/") + name);
+      auto r = ctx.registrar->with_trigger_prefix(name)->with_api_prefix(
+          std::string("/components/") + name);
       x->connect();
       x->enroll(*r);
 
@@ -625,8 +589,8 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
       }
 
       // Configure vehicle:
-      auto r = ctx.registrar->with_trigger_prefix(c.name)
-                   ->with_api_prefix(std::string("/vehicles/") + c.name);
+      auto r = ctx.registrar->with_trigger_prefix(c.name)->with_api_prefix(
+          std::string("/vehicles/") + c.name);
       x->connect();
       x->enroll(*r);
 
@@ -707,8 +671,8 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
       ctx.now_initializing = x.get();
 
       // Configure
-      auto r = ctx.registrar->with_trigger_prefix(name)
-                   ->with_api_prefix(std::string("/controllers/") + name);
+      auto r = ctx.registrar->with_trigger_prefix(name)->with_api_prefix(
+          std::string("/controllers/") + name);
       x->set_vehicle(ctx.vehicles.at(c.vehicle));
       x->connect();
       x->enroll(*r);

@@ -20,7 +20,8 @@
  * \see  cloe/trigger.cpp
  * \see  cloe/registrar.hpp
  * \see  cloe/trigger/example_actions.hpp
- * \see  cloe/trigger/macros.hpp
+ * \see  cloe/trigger/set_action.hpp
+ * \see  cloe/trigger/nil_event.hpp
  */
 
 #pragma once
@@ -481,7 +482,7 @@ class TriggerRegistrar {
  * interface, in which Triggers with the corresponding event are contained.
  *
  * \see  cloe/registrar.hpp
- * \see  cloe/trigger/macros.hpp
+ * \see  cloe/trigger/nil_event.hpp
  */
 class Event : public Entity {
  public:
@@ -510,7 +511,7 @@ class Event : public Entity {
  * An EventFactory parses a single JSON object or string into an Event.
  *
  * \see  cloe/registrar.hpp
- * \see  cloe/trigger/macros.hpp
+ * \see  cloe/trigger/nil_event.hpp
  */
 using EventFactory = TriggerFactory<Event>;
 using EventFactoryPtr = std::unique_ptr<EventFactory>;

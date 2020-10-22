@@ -36,7 +36,7 @@
 #include <cloe/registrar.hpp>           // for Registrar
 #include <cloe/simulator.hpp>           // for Simulator
 #include <cloe/sync.hpp>                // for Sync
-#include <cloe/trigger/macros.hpp>      // for DEFINE_NIL_EVENT
+#include <cloe/trigger/nil_event.hpp>   // for DEFINE_NIL_EVENT
 #include <cloe/utility/statistics.hpp>  // for Accumulator
 #include <cloe/utility/timer.hpp>       // for DurationTimer
 #include <cloe/vehicle.hpp>             // for Vehicle
