@@ -40,7 +40,7 @@ class CloeRuntime(ConanFile):
 
     def _project_version(self):
         version_file = os.path.join(self.recipe_folder, "..", "VERSION")
-        return tools.load(version_file)
+        return tools.load(version_file).strip()
 
     def set_version(self):
         self.version = self._project_version()
