@@ -105,26 +105,12 @@ class NormalDistribution : public Distribution<T> {
 
 using DistributionPtr = std::shared_ptr<Distribution<double>>;
 
-void to_json(Json& j, const DistributionPtr& p) {
-  if (p) {
-    p->to_json(j);
-  } else {
-    j = Json{nullptr};
-  }
-}
-
-void from_json(const Json& j, DistributionPtr& p) {
-  if (p && j.count("args")) {
-    p->from_conf(Conf{j["args"]});
-  }
-}
-
 template <typename T = double, typename P = std::shared_ptr<Distribution<T>>>
 class DistributionSchema : public schema::Base<DistributionSchema<T, P>> {
   using Base = schema::Base<DistributionSchema<T, P>>;
   using Type = P;
 
-  const std::map<std::string, std::function<Distribution<T>*(const Conf& c)>> DISTRIBUTIONS{
+  const std::map<std::string, std::function<Distribution<T>*(const Conf& c)>> distributions{
       {"normal",
        [](const Conf& c) {
          auto d = new NormalDistribution<T>();
@@ -185,7 +171,7 @@ class DistributionSchema : public schema::Base<DistributionSchema<T, P>> {
 
   Type deserialize(const Conf& c) const {
     auto binding = c.get<std::string>("binding");
-    return Type(DISTRIBUTIONS.at(binding)(c));
+    return Type(distributions.at(binding)(c));
   }
 
   void reset_ptr() override {
