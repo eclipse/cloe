@@ -41,6 +41,8 @@ add_library(${PROJECT_NAME}
     osi_sensorview.proto
 )
 set_target_properties(${PROJECT_NAME} PROPERTIES
+    CXX_STANDARD 11
+    CXX_STANDARD_REQUIRED ON
     VERSION ${PROJECT_VERSION}
 )
 target_include_directories(${PROJECT_NAME}
