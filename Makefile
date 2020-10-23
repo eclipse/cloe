@@ -172,6 +172,7 @@ package:
 	${MAKE} -C runtime package
 	${MAKE} -C models package
 	${MAKE} package-all
+	${MAKE} -f Makefile.package package
 
 package-outdated-all: ${BUILD_PKGS}
 
