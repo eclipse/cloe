@@ -2,10 +2,10 @@ import os.path
 from conans import ConanFile, CMake, tools
 
 
-class CloeControllerDemoPrinter(ConanFile):
-    name = "cloe-plugin-demo-printer"
+class CloeControllerMocks(ConanFile):
+    name = "cloe-plugin-mocks"
     url = "https://github.com/eclipse/cloe"
-    description = "Cloe controller plugin demo that prints sensed objects"
+    description = "Cloe controller plugin mocks mainly used for smoketests"
     license = "Apache-2.0"
     settings = "os", "compiler", "build_type", "arch"
     options = {

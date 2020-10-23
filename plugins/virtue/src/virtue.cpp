@@ -84,7 +84,7 @@ class Checker : public Entity, public Confable {
 
   virtual void set_fail_callback(std::function<void(const Sync& s)> f) { failure_callback_ = f; }
 
-  virtual void enroll(Registrar& r) {}
+  virtual void enroll(Registrar&) {}
 
   virtual void fail(const Sync& s, std::string&& name, Json&& j) {
     num_failures_ += 1;
@@ -115,7 +115,7 @@ class Checker : public Entity, public Confable {
    *  2. This approach is less error prone, because implementing `fail()`
    *     requires the developer to remember to call `Checker::fail()`.
    */
-  virtual void private_fail(const Sync& s) {}
+  virtual void private_fail(const Sync&) {}
 
  protected:
   size_t num_failures_{0};
@@ -266,7 +266,7 @@ class MissingLaneBoundariesChecker : public Checker {
     callback_ = r.register_event<events::MissingLaneBoundariesFactory>();
   }
 
-  void init(const Sync& s, const Vehicle& v) override {
+  void init(const Sync&, const Vehicle& v) override {
     for (auto& c : components_) {
       // Just try to open the component and force an exception to be thrown.
       v.get<LaneBoundarySensor>(c);

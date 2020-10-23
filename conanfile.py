@@ -41,12 +41,11 @@ class Cloe(ConanFile):
             "cloe-runtime",
             "cloe-models",
             "cloe-plugin-basic",
-            "cloe-plugin-demo-printer",
-            "cloe-plugin-demo-stuck",
             "cloe-plugin-gndtruth-extractor",
-            "cloe-plugin-speedometer",
             "cloe-plugin-minimator",
+            "cloe-plugin-mocks",
             "cloe-plugin-noisy-sensor",
+            "cloe-plugin-speedometer",
             "cloe-plugin-virtue",
         ]
         if self.options.with_vtd:

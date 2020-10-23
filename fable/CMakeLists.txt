@@ -10,9 +10,7 @@ set(alias fable::fable)
 
 # Conan / Editor -----------------------------------------------------
 include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS NO_OUTPUT_DIRS)
-
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+conan_basic_setup(TARGETS)
 
 # Library ------------------------------------------------------------
 add_library(${target}
@@ -32,9 +30,6 @@ set_target_properties(${target} PROPERTIES
     CXX_STANDARD 14
     CXX_STANDARD_REQUIRED ON
     VERSION ${PROJECT_VERSION}
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib
 )
 target_include_directories(${target}
   PUBLIC

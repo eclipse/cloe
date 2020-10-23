@@ -2,49 +2,20 @@ cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
 
 project(cloe_plugin_basic LANGUAGES CXX)
 
-set(target controller-basic)
-set(output controller_basic)
-set(sources
-    src/basic.cpp
-)
-
-# Conan / Editor -----------------------------------------------------
 include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS NO_OUTPUT_DIRS)
+conan_basic_setup(TARGETS)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-include(TargetLinting)
-
-# Module -------------------------------------------------------------
-message(STATUS "-> Building ${output} module.")
-add_library(${target} MODULE ${sources})
-set(cloe_lib_dir ${CMAKE_CURRENT_BINARY_DIR}/lib/cloe)
-set_target_properties(${target} PROPERTIES
-    CXX_STANDARD 14
-    CXX_STANDARD_REQUIRED ON
-    ARCHIVE_OUTPUT_DIRECTORY ${cloe_lib_dir}
-    LIBRARY_OUTPUT_DIRECTORY ${cloe_lib_dir}
-    RUNTIME_OUTPUT_DIRECTORY ${cloe_lib_dir}
-    OUTPUT_NAME ${output}
-    PREFIX ""
-)
-set_target_linting(${target})
-target_compile_options(${target}
-  PRIVATE
-    -fvisibility=hidden -fvisibility-inlines-hidden
-)
-target_link_libraries(${target}
-  PRIVATE
-    CONAN_PKG::cloe-runtime
-    CONAN_PKG::cloe-models
-)
-target_compile_definitions(${target}
-  PRIVATE
-    PROJECT_SOURCE_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}\"
+include(CloePluginSetup)
+cloe_add_plugin(
+    TARGET ${PROJECT_NAME}
+    OUTPUT_NAME controller_basic
+    SOURCES
+        src/basic.cpp
+    LINK_LIBRARIES
+        CONAN_PKG::cloe-runtime
+        CONAN_PKG::cloe-models
 )
 
-# Testing ------------------------------------------------------------
 option(BuildTests "Build tests?" ON)
 if(BuildTests)
     message(STATUS "-> Enable testing")
@@ -65,10 +36,3 @@ if(BuildTests)
     )
     gtest_add_tests(TARGET test-basic-controller)
 endif()
-
-# Installation -------------------------------------------------------
-include(GNUInstallDirs)
-install(TARGETS ${target}
-    LIBRARY
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cloe
-)

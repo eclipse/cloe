@@ -7,9 +7,7 @@ set(alias cloe::runtime)
 
 # Conan / Editor -----------------------------------------------------
 include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS NO_OUTPUT_DIRS)
-
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+conan_basic_setup(TARGETS)
 
 include(cmake/TargetLinting.cmake)
 
@@ -38,9 +36,6 @@ add_library(${alias} ALIAS ${target})
 set_target_properties(${target} PROPERTIES
     CXX_STANDARD 14
     CXX_STANDARD_REQUIRED ON
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib
     VERSION ${CLOE_PROJECT_VERSION}
 )
 set_target_linting(${target})

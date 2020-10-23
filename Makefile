@@ -118,8 +118,6 @@ export:
 	conan export vendor/cpp-netlib cloe/stable
 	conan export vendor/incbin cloe/stable
 	conan export vendor/open-simulation-interface cloe/stable
-	conan export fable cloe/develop
-	conan export oak cloe/develop
 
 smoketest:
 	@echo ___________________________________________________________________________________
@@ -169,6 +167,8 @@ package-all: ${BUILD_PKGS}
 package:
 	@echo ___________________________________________________________________________________
 	@echo "Creating Conan packages..."
+	conan export fable cloe/develop
+	conan export oak cloe/develop
 	${MAKE} -C runtime package
 	${MAKE} -C models package
 	${MAKE} package-all

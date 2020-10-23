@@ -10,9 +10,7 @@ option(BuildTests "Build tests?" ON)
 
 # Conan / Editor -----------------------------------------------------
 include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS NO_OUTPUT_DIRS)
-
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+conan_basic_setup(TARGETS)
 
 include(TargetLinting)
 
@@ -76,7 +74,6 @@ add_executable(${target}
 set_target_properties(${target} PROPERTIES
     CXX_STANDARD 14
     CXX_STANDARD_REQUIRED ON
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin
     OUTPUT_NAME ${output}
 )
 target_compile_definitions(${target}
