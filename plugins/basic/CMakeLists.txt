@@ -14,6 +14,8 @@ cloe_add_plugin(
     LINK_LIBRARIES
         CONAN_PKG::cloe-runtime
         CONAN_PKG::cloe-models
+    COMPILE_DEFINITIONS
+        PROJECT_SOURCE_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}\"
 )
 
 option(BuildTests "Build tests?" ON)
