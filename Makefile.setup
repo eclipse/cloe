@@ -65,7 +65,8 @@ install-ubuntu-deps::
 		patchelf \
 		python3-setuptools \
 		python3-pip \
-		time
+		time \
+		tmux
 
 ifndef WITHOUT_DEV_DEPS
 install-ubuntu-deps::
@@ -93,7 +94,8 @@ install-archlinux-deps::
 		jq \
 		patchelf \
 		python-pip \
-		time
+		time \
+		tmux
 
 ifndef WITHOUT_DEV_DEPS
 install-archlinux-deps::
