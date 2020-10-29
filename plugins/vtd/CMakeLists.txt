@@ -45,6 +45,8 @@ target_link_libraries(vtd-object-lib
     CONAN_PKG::open-simulation-interface
 )
 set_target_properties(vtd-object-lib PROPERTIES
+    CXX_STANDARD 14
+    CXX_STANDARD_REQUIRED ON
     POSITION_INDEPENDENT_CODE ON
 )
 
