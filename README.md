@@ -87,10 +87,14 @@ See the Conan documentation for more information on how to do this.
 
 To build all packages, you should run the following:
 
-    make export packages
+    make export VENDOR_ONLY=1
+    make package
 
 This will export Conan recipes for some of our dependencies and build the
-packages that are contained in the repository.
+packages that are contained in the repository. If you want to make use of
+all your 64 CPU cores, you can run the last command like so:
+
+    make package USE_NPROC=1
 
 For more details on how this is done, have a look at the Makefiles in the
 repository root.
@@ -105,6 +109,7 @@ functionality for you in one convenient place.
 
 You can install an editable instance with `pipx` (or `pip`):
 
+    cd cli
     pipx install -e .
 
 This has the advantage that any updates to the repository will be transparently

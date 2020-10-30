@@ -26,7 +26,7 @@ RUN apt-get update && \
 
 RUN pip3 install --upgrade pip && \
     make -f /cloe/Makefile.setup \
-        WITHOUT_DEV_DEPS=yes \
+        WITHOUT_DEV_DEPS=yes PIP_INSTALL_ARGS="" \
         install-python-deps
 
 # Install and Setup Conan
@@ -51,7 +51,7 @@ COPY . /cloe
 RUN \
     # Export our own Conan recipes, in case they are not available in the
     # CONAN_REMOTE specified above.
-    make export && \
+    make VENDOR_ONLY=1 export && \
     # Build all the packages, except for vtd, because that currently requires
     # dependencies we don't have in the Docker container.
     # You can specify more than one package here, see the Makefile for more
@@ -64,7 +64,6 @@ RUN \
     # In the above commands, Conan downloads and creates packages into its
     # local cache. We don't need the build directories, since we have deployed
     # Cloe, so we should clean up to keep the Docker image down.
-    make clean && \
     conan remove \* -b -f
 
 # Create Deploy Image

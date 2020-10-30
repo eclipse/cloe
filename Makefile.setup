@@ -32,12 +32,13 @@ endif
 
 .PHONY: help
 .DEFAULT: help
+.SILENT: help
 help::
-	@echo "Available setup targets:"
-	@echo "  setup                to perform Git repository setup"
-	@echo "  install-system-deps  to install build (and development) system requirements"
-	@echo "  install-python-deps  to install build (and development) Python requirements"
-	@echo
+	echo "Available setup targets:"
+	echo "  setup                to perform Git repository setup"
+	echo "  install-system-deps  to install build (and development) system requirements"
+	echo "  install-python-deps  to install build (and development) Python requirements"
+	echo
 
 .PHONY: setup
 setup:

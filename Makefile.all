@@ -1,0 +1,157 @@
+# Makefile.all
+#
+# This file defines all packages available for building and defines their
+# dependencies, so that make can build them in parallel effectively.
+#
+# Use make USE_NPROC=1 <target> for parallel execution of the targets.
+# Current tests show a ~50% speed-up.
+#
+
+# Make configuration:
+SHELL := /bin/bash
+GNUMAKEFLAGS := --no-print-directory
+SUBMAKEFLAGS :=
+
+USE_NPROC := 0
+ifeq (${USE_NPROC},1)
+	NPROC := $(shell nproc 2>/dev/null)
+	ifdef NPROC
+		SUBMAKEFLAGS += -j${NPROC}
+	endif
+endif
+
+ALL_VENDOR_PKGS := $(wildcard vendor/*)
+ALL_RUNTIME_PKGS := fable runtime models
+ALL_ENGINE_PKGS := oak engine
+ALL_PLUGIN_PKGS := $(wildcard plugins/*)
+ALL_PKGS := ${ALL_RUNTIME_PKGS} ${ALL_ENGINE_PKGS} ${ALL_PLUGIN_PKGS} cloe
+.PHONY: ${ALL_PKGS}
+
+# Define dependencies for each package:
+fable:
+runtime: fable
+models: runtime
+
+oak: runtime
+engine: models oak
+
+${ALL_PLUGIN_PKGS}: runtime models
+
+# This variable contains packages that should not be select for the action.
+# This should only be provided from the command line, for example:
+#     make UNSELECT_PKGS="plugins/vtd plugins/demo_printer" package
+UNSELECT_PKGS :=
+
+CONAN_OPTIONS :=
+
+# Options:
+VENDOR_ONLY := 0
+ifeq (${VENDOR_ONLY},1)
+	ALL_PKGS := ${ALL_VENDOR_PKGS}
+endif
+
+BUILD_TESTS := 1
+ifeq (${BUILD_TESTS},0)
+	CONAN_OPTIONS += -o cloe:test=False
+	CONAN_OPTIONS += -o fable:test=False
+	CONAN_OPTIONS += -o cloe-runtime:test=False
+	CONAN_OPTIONS += -o cloe-models:test=False
+	CONAN_OPTIONS += -o cloe-oak:test=False
+	ifeq (${WITH_ENGINE},1)
+		CONAN_OPTIONS += -o cloe-engine:test=False
+	endif
+	ifeq (${WITH_VTD},1)
+		CONAN_OPTIONS += -o cloe-plugin-vtd:test=False
+	endif
+	CONAN_OPTIONS += -o cloe-plugin-basic:test=False
+endif
+
+WITH_ENGINE := 1
+ifeq (${WITH_ENGINE},0)
+	ALL_PKGS := $(filter-out oak, ${ALL_PKGS})
+	ALL_PKGS := $(filter-out engine, ${ALL_PKGS})
+	CONAN_OPTIONS += -o cloe:with_engine=False
+endif
+
+WITH_VTD := 1
+ifeq (${WITH_VTD},0)
+	ALL_PKGS := $(filter-out plugins/vtd, ${ALL_PKGS})
+	CONAN_OPTIONS += -o cloe:with_vtd=False
+endif
+
+# Take UNSELECT_PKGS into account to assemble a final list of
+# packages that we shall build (in addition to fable, runtime, and models).
+# This can also be provided from the command line.
+SELECT_PKGS := $(filter-out ${UNSELECT_PKGS}, ${ALL_PKGS})
+${SELECT_PKGS}:
+	${MAKE} -C $@ $(shell echo ${MAKECMDGOALS} | sed -re 's/-all//' )
+
+# Re-define cloe target to use Makefile.package, and only run for targets
+# where it makes sense, since "cloe" is a Conan meta-package.
+cloe:
+	for case in export package package-outdated list purge clean; do \
+		if [[ "${MAKECMDGOALS}" == "$${case}-all" ]]; then \
+			${MAKE} -f Makefile.package CONAN_OPTIONS="${CONAN_OPTIONS}" $${case}; \
+		fi \
+	done
+
+define make_rule
+help::
+	@printf "  % -16s to %s\n" ${1} ${2}
+
+${1}-all: ${SELECT_PKGS}
+${1}:
+	@printf "________________________________________"
+	@printf "________________________________________\n"
+	@printf ":: Proceeding to%s\n" "$(shell echo "${2}" | sed -re 's/ +/ /g')"
+	${MAKE} ${SUBMAKEFLAGS} ${1}-all
+endef
+
+define make_target
+	$(eval $(call make_rule,${1},${2}))
+endef
+
+.PHONY: help
+.DEFAULT: help
+.SILENT: help
+help::
+	echo "Available package targets:"
+
+$(call make_target, export,           "export selected package recipes      [conan-cache]")
+$(call make_target, package,          "create selected packages             [conan-cache]")
+$(call make_target, package-outdated, "create selected packages if outdated [conan-cache]")
+$(call make_target, list,             "list selected package install files  [conan-cache]")
+$(call make_target, purge,            "remove selected packages from cache  [conan-cache]")
+
+help::
+	echo
+
+$(call make_target, editable,         "instruct Conan to use in-source build for selected packages")
+$(call make_target, uneditable,       "instruct Conan to use local cache for selected packages")
+
+help::
+	echo
+
+$(call make_target, all,              "build selected packages                [in-source]")
+$(call make_target, conan,            "configure Conan and get dependencies   [in-source]")
+$(call make_target, configure,        "configure CMake packages               [in-source]")
+$(call make_target, test,             "run CMake tests if they are available  [in-source]")
+$(call make_target, export-pkg,       "export build artifacts to Conan cache  [in-source]")
+$(call make_target, clean,            "remove build artifacts                 [in-source]")
+
+help::
+	echo
+	echo "  Options:"
+	echo "    BUILD_TESTS=(0|1)   to build and run unit tests (default=1)"
+	echo "    WITH_ENGINE=(0|1)   to build and deploy cloe-engine (default=1)"
+	echo "    WITH_VTD=(0|1)      to build and deploy cloe-plugin-vtd (default=1)"
+	echo "    WITH_CLOE=(0|1)     to build cloe metapackage (default=0)"
+	echo "    VENDOR_ONLY=(0|1)   to only select vendor packages (default=0)"
+	echo "                        (note that vendor packages are normally unselected)"
+	echo
+	echo "  Defines:"
+	echo "    CONAN_OPTIONS = ${CONAN_OPTIONS}"
+	echo "    UNSELECT_PKGS = ${UNSELECT_PKGS}"
+	echo "    SELECT_PKGS   ="
+	echo "$$(echo "      ${SELECT_PKGS}" | fmt -70)"
+	echo

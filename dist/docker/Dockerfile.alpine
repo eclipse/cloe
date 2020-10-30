@@ -43,10 +43,9 @@ RUN pip3 install --upgrade pip && \
 # Build and Install Cloe
 WORKDIR /cloe
 COPY . /cloe
-RUN make export-deps && \
+RUN make VENDOR_ONLY=1 export && \
     make BUILD_TESTS=0 WITH_ENGINE=0 WITH_VTD=0 package && \
     make BUILD_TESTS=0 WITH_ENGINE=0 WITH_VTD=0 INSTALL_DIR="/deploy" deploy && \
-    make clean && \
     conan remove \* -b -f
 
 # Finalize Image

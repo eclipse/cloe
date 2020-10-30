@@ -18,7 +18,7 @@ RUN pacman -Syu --noconfirm --needed make && \
 
 RUN pip3 install --upgrade pip && \
     make -f /cloe/Makefile.setup \
-        WITHOUT_DEV_DEPS=yes \
+        WITHOUT_DEV_DEPS=yes PIP_INSTALL_ARGS="" \
         install-python-deps
 
 # Install and Setup Conan
@@ -32,10 +32,9 @@ RUN conan profile new --detect default && \
 # Build and Install Cloe
 WORKDIR /cloe
 COPY . /cloe
-RUN make export && \
+RUN make VENDOR_ONLY=1 export && \
     make WITH_VTD=0 package && \
     make WITH_VTD=0 INSTALL_DIR="/deploy" deploy && \
-    make clean && \
     conan remove \* -b -f
 
 # Create Deploy Image
