@@ -22,6 +22,7 @@ set(PROJECT_GIT_REF "unknown")
 # Library ------------------------------------------------------------
 add_library(${libstack}
     src/stack.cpp
+    src/stack_migrations.cpp
     src/plugin.cpp
 )
 set_target_properties(${libstack} PROPERTIES

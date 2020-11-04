@@ -1,0 +1,19 @@
+{
+  "version": "3",
+
+  "include": [
+    "config_nop_smoketest.json"
+  ],
+
+  "app": {
+    "ignore": [
+      "/engine/stack",
+      "/context",
+      "/simulators/0/stack",
+      "/controllers/0/stack"
+    ],
+    "stack": {
+      "image": "something"
+    }
+  }
+}

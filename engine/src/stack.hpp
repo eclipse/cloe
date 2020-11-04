@@ -881,6 +881,7 @@ class Stack : public Confable {
   std::map<std::string, std::shared_ptr<Plugin>> all_plugins_;
   std::vector<Conf> applied_confs_;
   ConfReader conf_reader_func_;
+  bool automigrate_{true};
 
  public:  // Constructors
   Stack();
@@ -1083,5 +1084,9 @@ class Stack : public Confable {
    */
   void from_conf(const Conf& c, size_t depth);
 };
+
+using MigrateFunc = std::function<Conf(Conf)>;
+
+extern std::map<std::string, MigrateFunc> MIGRATIONS;
 
 }  // namespace cloe

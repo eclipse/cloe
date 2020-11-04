@@ -144,7 +144,8 @@ Stack::Stack(const Stack& other)
     , scanned_plugin_paths_(other.scanned_plugin_paths_)
     , all_plugins_(other.all_plugins_)
     , applied_confs_(other.applied_confs_)
-    , conf_reader_func_(other.conf_reader_func_) {
+    , conf_reader_func_(other.conf_reader_func_)
+    , automigrate_(other.automigrate_) {
   // Reset invalidated schema caches.
   Stack::reset_schema();
 }
@@ -188,6 +189,7 @@ void swap(Stack& left, Stack& right) {
   swap(left.all_plugins_, right.all_plugins_);
   swap(left.applied_confs_, right.applied_confs_);
   swap(left.conf_reader_func_, right.conf_reader_func_);
+  swap(left.automigrate_, right.automigrate_);
 
   // Schemas (3)
   // Reset invalidated schema cache.
@@ -405,14 +407,36 @@ void Stack::to_json(Json& j) const {
   }
 }
 
+
 void Stack::from_conf(const Conf& _conf, size_t depth) {
   applied_confs_.emplace_back(_conf);
   Conf c = _conf;
 
   // First check the version so the user gets higher-level errors first.
-  if (c.has("version")) {
+  if (!c.has("version")) {
+    // clang-format off
+    throw Error{"require version property"}.explanation(fmt::format(R"(
+          It looks like you are attempting to load a stack file that does not
+          have a version specified.
+
+          This is required, so that the Cloe runtime knows which schema to use
+          for data deserialization. It is good practice to place the version
+          field at the top of the JSON stack file:
+
+            {{
+              "version": "{}",
+              ...
+            }}
+          )", CLOE_STACK_VERSION));
+    // clang-format on
+  }
+
+  if (c.get<std::string>("version") != CLOE_STACK_VERSION) {
     auto ver = c.get<std::string>("version");
-    if (ver != CLOE_STACK_VERSION) {
+    if (automigrate_ && MIGRATIONS.count(ver)) {
+      logger()->info("Auto-migrate from {} to {}: {}", ver, CLOE_STACK_VERSION, c.file());
+      c = MIGRATIONS.at(ver)(c);
+    } else {
       // If we threw a SchemaError, it would look like this:
       //
       //     throw SchemaError{
@@ -439,22 +463,6 @@ void Stack::from_conf(const Conf& _conf, size_t depth) {
             automated, please see the Cloe CLI for more details.
             )");
     }
-  } else {
-    // clang-format off
-    throw Error{"require version property"}.explanation(fmt::format(R"(
-          It looks like you are attempting to load a stack file that does not
-          have a version specified.
-
-          This is required, so that the Cloe runtime knows which schema to use
-          for data deserialization. It is good practice to place the version
-          field at the top of the JSON stack file:
-
-            {{
-              "version": "{}",
-              ...
-            }}
-          )", CLOE_STACK_VERSION));
-    // clang-format on
   }
 
   if (c.has_pointer("/engine/ignore")) {
