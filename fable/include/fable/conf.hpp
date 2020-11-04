@@ -149,6 +149,30 @@ class Conf {
   size_t erase_pointer(const std::string& key) { return erase(JsonPointer(key)); }
 
   /**
+   * Move a key from the Conf to the specified location in the Conf.
+   *
+   * - Throws a ConfError if the destination exists.
+   */
+  void move(const std::string& from, const std::string& to);
+  void move(const JsonPointer& from, const JsonPointer& to);
+  void erase_pointer(const std::string& from, const std::string& to) {
+    return move(JsonPointer(from), JsonPointer(to));
+  }
+
+  template <typename T>
+  void set(const std::string& key, T&& value) {
+    data_[key] = std::move(value);
+  }
+  template <typename T>
+  void set(const JsonPointer& key, T&& value) {
+    data_[key] = std::move(value);
+  }
+  template <typename T>
+  void set_pointer(const std::string& key, T&& value) {
+    set(JsonPointer(key), std::move(value));
+  }
+
+  /**
    * Return an array of Conf values.
    *
    * - Throws a ConfError if the object is not an array.

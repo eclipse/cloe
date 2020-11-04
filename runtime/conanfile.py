@@ -33,7 +33,7 @@ class CloeRuntime(ConanFile):
         "inja/[~=3.0.0]",
         "spdlog/[~=1.5.0]",
         "incbin/[~=1.74.0]@cloe/stable",
-        "fable/1.0.0@cloe/develop",
+        "fable/1.1.0@cloe/develop",
     ]
 
     _cmake = None

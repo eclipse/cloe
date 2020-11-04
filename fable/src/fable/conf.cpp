@@ -89,6 +89,18 @@ size_t Conf::erase(const JsonPointer& key) {
   return n;
 }
 
+void Conf::move(const std::string& from, const std::string& to) {
+  assert_has_not(to, "destination key already exists");
+  data_[to] = std::move(data_.at(from));
+  erase(from);
+}
+
+void Conf::move(const JsonPointer& from, const JsonPointer& to) {
+  assert_has_not(to, "destination key already exists");
+  data_[to] = std::move(data_.at(from));
+  erase(from);
+}
+
 std::vector<Conf> Conf::to_array() const {
   assert_has_pointer_type("", JsonType::array);
   std::vector<Conf> output;

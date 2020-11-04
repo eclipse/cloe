@@ -5,7 +5,7 @@ from conans import ConanFile, CMake, tools
 
 class Fable(ConanFile):
     name = "fable"
-    version = "1.0.0"
+    version = "1.1.0"
     license = "Apache-2.0"
     url = "https://github.com/eclipse/cloe"
     description = "JSON schema and configuration library"
