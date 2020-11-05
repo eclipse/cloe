@@ -573,9 +573,8 @@ void OsiOmniSensor::process(const bool has_eh, const osi3::DetectedEntityHeader&
   // Get object information. The sensor (model) may not provide all required data.
   if (has_eh) {
     // TODO(tobias): handle entity header, if needed
-    osi_logger()->warn(
-        "VtdOsiSensor: DetectedEntityHeader not yet handled. measurement_time = {}ns",
-        osi_timestamp_to_simtime(osi_eh.measurement_time()).count());
+    osi_logger()->warn("OsiSensor: DetectedEntityHeader not yet handled. measurement_time = {}ns",
+                       osi_timestamp_to_simtime(osi_eh.measurement_time()).count());
   }
   switch (this->get_mock_level(SensorMockTarget::DetectedMovingObject)) {
     case SensorMockLevel::OverwriteNone: {

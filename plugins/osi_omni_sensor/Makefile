@@ -5,7 +5,6 @@ include ../../Makefile.package
 ifeq (${BUILD_TESTS},0)
 	CONAN_OPTIONS += -o test=False
 	CONAN_OPTIONS += -o fable:test=False
-	CONAN_OPTIONS += -o cloe-plugin-osi-omni-sensor:test=False
 	CONAN_OPTIONS += -o cloe-models:test=False
 	CONAN_OPTIONS += -o cloe-runtime:test=False
 endif

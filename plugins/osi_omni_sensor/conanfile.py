@@ -1,11 +1,13 @@
 import os.path
 from conans import ConanFile, CMake, tools
+from conans.errors import ConanInvalidConfiguration
+from shutil import which
 
 
-class CloeSimulatorVTD(ConanFile):
-    name = "cloe-plugin-vtd"
+class CloeOsiOmniSensor(ConanFile):
+    name = "cloe-plugin-osi-omni-sensor"
     url = "https://github.com/eclipse/cloe"
-    description = "Cloe simulator plugin that binds to Vires VTD"
+    description = "Cloe plugin for retrieval and conversion of open simulation interface (OSI) messages"
     license = "Apache-2.0"
     settings = "os", "compiler", "build_type", "arch"
     options = {
@@ -18,15 +20,13 @@ class CloeSimulatorVTD(ConanFile):
     }
     generators = "cmake"
     exports_sources = [
-        "bin/*",
-        "cmake/*",
+        "include/*",
         "src/*",
         "CMakeLists.txt",
-        "module.py",
     ]
     no_copy_source = True
-    build_requires = [
-        "boost/[~=1.69.0]",
+    requires = [
+        "open-simulation-interface/3.2.0@cloe/stable",
     ]
 
     _cmake = None
@@ -41,7 +41,6 @@ class CloeSimulatorVTD(ConanFile):
     def requirements(self):
         self.requires("cloe-runtime/{}@cloe/develop".format(self.version))
         self.requires("cloe-models/{}@cloe/develop".format(self.version))
-        self.requires("cloe-plugin-osi-omni-sensor/{}@cloe/develop".format(self.version))
 
     def build_requirements(self):
         if self.options.test:
@@ -51,11 +50,14 @@ class CloeSimulatorVTD(ConanFile):
         if self._cmake:
             return self._cmake
         self._cmake = CMake(self)
-        self._cmake.definitions["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
         self._cmake.definitions["BuildTests"] = self.options.test
         self._cmake.definitions["TargetLintingExtended"] = self.options.pedantic
         self._cmake.configure()
         return self._cmake
+
+    def configure(self):
+        self.options["open-simulation-interface"].shared = False
+        self.options["open-simulation-interface"].fPIC = True
 
     def build(self):
         cmake = self._configure_cmake()
@@ -66,3 +68,9 @@ class CloeSimulatorVTD(ConanFile):
     def package(self):
         cmake = self._configure_cmake()
         cmake.install()
+
+    def package_info(self):
+        if self.in_local_cache:
+            self.cpp_info.libs = tools.collect_libs(self)
+        else:
+            self.cpp_info.libs = ["osi-object-lib"]

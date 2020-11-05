@@ -30,8 +30,8 @@
 #include <cloe/component/object.hpp>  // for Object
 #include <cloe/utility/geometry.hpp>  // for quaternion_from_rpy
 
-#include "osi_omni_sensor.hpp"  // for OsiOmniSensor
-#include "osi_transceiver.hpp"  // for OsiTransceiver
+#include <cloe/osi_omni_sensor.hpp>  // for OsiOmniSensor
+#include <cloe/osi_transceiver.hpp>  // for OsiTransceiver
 
 #include "vtd_conf.hpp"         // for VtdSensorConfig
 #include "vtd_sensor_data.hpp"  // for VtdSensorData
@@ -99,7 +99,9 @@ class VtdOsiSensor : public osii::OsiOmniSensor, public VtdSensorData {
   /**
    * Set the mock level for different data types according to user request.
    */
-  void set_mock_conf(std::shared_ptr<const osii::SensorMockConf> mock) override { this->mock_ = mock; }
+  void set_mock_conf(std::shared_ptr<const osii::SensorMockConf> mock) override {
+    this->mock_ = mock;
+  }
 
   // As defined in `cloe/component.hpp`
   void reset() override {

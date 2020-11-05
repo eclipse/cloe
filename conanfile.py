@@ -45,6 +45,7 @@ class Cloe(ConanFile):
             "cloe-plugin-minimator",
             "cloe-plugin-mocks",
             "cloe-plugin-noisy-sensor",
+            "cloe-plugin-osi-omni-sensor",
             "cloe-plugin-speedometer",
             "cloe-plugin-virtue",
         ]

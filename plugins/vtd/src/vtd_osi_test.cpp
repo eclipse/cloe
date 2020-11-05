@@ -36,9 +36,9 @@
 #include "osi_sensordata.pb.h"      // for SensorData, DetectedEntityHeader
 #include "osi_sensorview.pb.h"      // for SensorView
 
-#include "osi_omni_sensor.hpp"
+#include <cloe/osi_omni_sensor.hpp>
+#include <cloe/osi_transceiver_tcp.hpp>
 #include "osi_sensor_component.hpp"  // for transform_...
-#include "osi_transceiver_tcp.hpp"
 
 struct VehicleData {
   uint64_t id;

@@ -28,8 +28,9 @@
 #include <thread>     // for this_thread
 
 #include <cloe/component/object_sensor_functional.hpp>  // for ObjectSensorFilter
-#include <cloe/models.hpp> // for CloeComponent
 #include <cloe/core.hpp>                                // for Duration
+#include <cloe/models.hpp>                              // for CloeComponent
+#include <cloe/osi_transceiver_tcp.hpp>                 // for OsiTransceiverTcpFactory
 #include <cloe/sync.hpp>                                // for Sync
 #include <cloe/utility/inja.hpp>                        // for inja
 #include <cloe/utility/tcp_transceiver_config.hpp>      // for TcpTransceiverConfiguration
@@ -38,7 +39,6 @@
 #include "actuator_component.hpp"     // for VtdLatLongActuator
 #include "omni_sensor_component.hpp"  // for VtdOmniSensor
 #include "osi_sensor_component.hpp"   // for VtdOsiSensor
-#include "osi_transceiver_tcp.hpp"    // for OsiTransceiverTcpFactory
 #include "rdb_transceiver_tcp.hpp"    // for RdbTransceiverTcp, RdbTransceiverTcpFactory
 #include "scp_messages.hpp"           // for scp::{LabelVehicle, SensorConfiguration}
 #include "scp_transceiver.hpp"        // for ScpTransceiver
@@ -332,9 +332,7 @@ class VtdVehicleFactory {
             veh->sensors_[name] = osi;
             break;
           }
-          default: {
-            throw cloe::Error("VtdVehicle: unknown sensor protocol");
-          }
+          default: { throw cloe::Error("VtdVehicle: unknown sensor protocol"); }
         }
       }
       veh->configure_components(vcfg.components);

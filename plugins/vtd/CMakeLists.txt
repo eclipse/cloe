@@ -25,11 +25,7 @@ include(CloePluginSetup)
 
 add_library(vtd-object-lib STATIC
     src/omni_sensor_component.cpp
-    src/osi_ground_truth.cpp
-    src/osi_omni_sensor.cpp
     src/osi_sensor_component.cpp
-    src/osi_transceiver_tcp.cpp
-    src/osi_utils.cpp
     src/rdb_codec.cpp
     src/rdb_transceiver_shm.cpp
     src/rdb_transceiver_tcp.cpp
@@ -41,8 +37,8 @@ target_link_libraries(vtd-object-lib
     vtd-rdb-interface
     CONAN_PKG::cloe-runtime
     CONAN_PKG::cloe-models
+    CONAN_PKG::cloe-plugin-osi-omni-sensor
     CONAN_PKG::boost
-    CONAN_PKG::open-simulation-interface
 )
 set_target_properties(vtd-object-lib PROPERTIES
     CXX_STANDARD 14
@@ -68,7 +64,6 @@ if(BuildTests)
 
     add_executable(test-vtd-binding
         src/rdb_transceiver_tcp_test.cpp
-        src/osi_test.cpp
         src/vtd_osi_test.cpp
     )
     set_target_properties(test-vtd-binding PROPERTIES
