@@ -56,7 +56,7 @@ ${PACKAGE_DIR_TARGETS} : PACKAGE_DIR = $(shell \
 	conan info ${PACKAGE_FQN} --package-filter ${PACKAGE_FQN} --paths -n "package_folder" 2>/dev/null \
 	| sed -rn 's/ *package_folder: (.*)/\1/p')
 
-# These options can be set to influence package and configure
+# These options can be set to influence package and configure.
 CONAN_OPTIONS :=
 
 .DEFAULT: help
