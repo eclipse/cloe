@@ -47,6 +47,7 @@ class CloeEngine(ConanFile):
         if self._cmake:
             return self._cmake
         self._cmake = CMake(self)
+        self._cmake.definitions["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
         self._cmake.definitions["BuildTests"] = self.options.test
         self._cmake.definitions["TargetLintingExtended"] = self.options.pedantic
         self._cmake.definitions["CLOE_PROJECT_VERSION"] = self.version

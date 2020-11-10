@@ -45,6 +45,7 @@ class IncbinConan(ConanFile):
         if self._cmake:
             return self._cmake
         self._cmake = CMake(self)
+        self._cmake.definitions["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
         self._cmake.definitions["INCBIN_HEADER_ONLY"] = self.options.header_only
         self._cmake.configure(source_folder=self.git_dir)
         return self._cmake
