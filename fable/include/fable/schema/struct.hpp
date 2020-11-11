@@ -80,25 +80,36 @@ class Struct : public Base<Struct> {
    * - This overwrites any already existing field of the same key.
    * - Meant to be used during construction.
    */
-  Struct property(std::string&& key, Box&& s) &&;
+  void set_property(const std::string& key, Box&& s);
   Struct property(const std::string& key, Box&& s) &&;
-  void set_property(const std::string& key, const Box& s);
+
+  /**
+   * Add the properties from s to this schema.
+   *
+   * - This will overwrite any existing properties.
+   */
+  void set_properties_from(const Struct& s);
+  Struct properties_from(const Struct& s) &&;
+
+  /**
+   * Set which entries are required.
+   *
+   * - Complexity: O(n*m) with n the number of current properties and
+   *   m the number of properties in init.
+   */
+  void set_require(std::initializer_list<std::string> init);
+  Struct require(std::initializer_list<std::string> init) &&;
 
   /**
    * Set whether all entries are required.
    *
    * - The default is false.
    * - Meant to be used during construction.
+   * - This will only act on properties that exist at the time that this is
+   *   called.
    */
+  void set_require_all();
   Struct require_all() &&;
-
-  /**
-   * Set which entries are required.
-   */
-  Struct require(std::initializer_list<std::string> init) {
-    properties_required_ = init;
-    return std::move(*this);
-  }
 
   /**
    * Set whether to tolerate unknown fields in this entry.
@@ -111,11 +122,18 @@ class Struct : public Base<Struct> {
     return std::move(*this);
   }
 
+  // XXX(ben): This does not work!
+  template <typename T, std::enable_if_t<std::is_base_of<Interface, T>::value, int> = 0>
+  void set_additional_properties(const T& s) {
+    additional_properties_ = true;
+    additional_prototype_.reset(s.clone());
+    additional_prototype_->reset_ptr();
+  }
+
+  // XXX(ben): This does not work!
   template <typename T, std::enable_if_t<std::is_base_of<Interface, T>::value, int> = 0>
   Struct additional_properties(const T& s) && {
-    additional_properties_ = true;
-    additional_prototype_ = s.clone();
-    additional_prototype_->reset_ptr();
+    set_additional_properties(s);
     return std::move(*this);
   }
 

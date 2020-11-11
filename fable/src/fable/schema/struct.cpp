@@ -49,15 +49,15 @@ Struct::Struct(std::string&& desc, BoxMap&& props)
 
 Struct::Struct(std::string&& desc, const Struct& base, BoxPairList props) : Struct(base) {
   desc_ = std::move(desc);
-  for (auto&& p : props) {
-    set_property(p.first, p.second);
+  for (auto&& p : std::move(props)) {
+    set_property(p.first, p.second.clone());
   }
 }
 
 Struct::Struct(std::string&& desc, const Struct& inherit, BoxMap&& props) : Struct(inherit) {
   desc_ = std::move(desc);
   for (auto&& p : props) {
-    set_property(p.first, p.second);
+    set_property(p.first, std::move(p.second));
   }
 }
 
@@ -67,21 +67,59 @@ Struct::Struct(std::string&& desc, const Box& base, BoxPairList props)
 Struct::Struct(std::string&& desc, const Box& base, BoxMap&& props)
     : Struct(std::move(desc), dynamic_cast<const Struct&>(*base.clone()), std::move(props)) {}
 
-Struct Struct::property(std::string&& key, Box&& s) && {
-  properties_[std::move(key)] = std::move(s);
-  return std::move(*this);
+void Struct::set_property(const std::string& key, Box&& s) {
+  auto it = std::find(properties_required_.begin(), properties_required_.end(), key);
+  if (s.is_required()) {
+    if (it == properties_required_.end()) {
+      properties_required_.push_back(key);
+    }
+  } else {
+    if (it != properties_required_.end()) {
+      properties_required_.erase(it);
+    }
+  }
+  properties_.insert(std::make_pair(key, std::move(s)));
 }
 
 Struct Struct::property(const std::string& key, Box&& s) && {
-  properties_[key] = std::move(s);
+  set_property(key, std::move(s));
   return std::move(*this);
 }
 
-Struct Struct::require_all() && {
+void Struct::set_properties_from(const Struct& s) {
+  for (auto& kv : s.properties_) {
+    set_property(kv.first, kv.second.clone());
+  }
+}
+
+Struct Struct::properties_from(const Struct& s) && {
+  set_properties_from(s);
+  return std::move(*this);
+}
+
+void Struct::set_require(std::initializer_list<std::string> init) {
+  for (auto& p : init) {
+    if (std::find(properties_required_.cbegin(), properties_required_.cend(), p) ==
+        properties_required_.cend()) {
+      properties_required_.push_back(p);
+    }
+  }
+}
+
+Struct Struct::require(std::initializer_list<std::string> init) && {
+  set_require(init);
+  return std::move(*this);
+}
+
+void Struct::set_require_all() {
   properties_required_.clear();
   for (auto& kv : properties_) {
     properties_required_.push_back(kv.first);
   }
+}
+
+Struct Struct::require_all() && {
+  set_require_all();
   return std::move(*this);
 }
 
@@ -129,20 +167,6 @@ void Struct::validate(const Conf& c) const {
   } catch (ConfError& e) {
     throw SchemaError{e, json_schema()};
   }
-}
-
-void Struct::set_property(const std::string& key, const Box& s) {
-  auto it = std::find(properties_required_.begin(), properties_required_.end(), key);
-  if (s.is_required()) {
-    if (it == properties_required_.end()) {
-      properties_required_.push_back(key);
-    }
-  } else {
-    if (it != properties_required_.end()) {
-      properties_required_.erase(it);
-    }
-  }
-  properties_.insert(std::make_pair(key, s));
 }
 
 void Struct::from_conf(const Conf& c) {
