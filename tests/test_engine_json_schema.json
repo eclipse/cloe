@@ -6,7 +6,7 @@
       "items": {
         "oneOf": [
           {
-            "additionalProperties": true,
+            "additionalProperties": false,
             "properties": {
               "args": {
                 "additionalProperties": false,
@@ -153,10 +153,15 @@
               },
               "binding": {
                 "const": "basic",
-                "description": "name of simulator binding"
+                "description": "name of factory"
               },
               "name": {
-                "description": "identifier of simulator instance",
+                "description": "globally unique identifier for controller",
+                "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+                "type": "string"
+              },
+              "vehicle": {
+                "description": "vehicle controller is assigned to",
                 "type": "string"
               }
             },
@@ -166,15 +171,20 @@
             "type": "object"
           },
           {
-            "additionalProperties": true,
+            "additionalProperties": false,
             "properties": {
               "args": null,
               "binding": {
                 "const": "demo_printer",
-                "description": "name of simulator binding"
+                "description": "name of factory"
               },
               "name": {
-                "description": "identifier of simulator instance",
+                "description": "globally unique identifier for controller",
+                "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+                "type": "string"
+              },
+              "vehicle": {
+                "description": "vehicle controller is assigned to",
                 "type": "string"
               }
             },
@@ -184,7 +194,7 @@
             "type": "object"
           },
           {
-            "additionalProperties": true,
+            "additionalProperties": false,
             "properties": {
               "args": {
                 "additionalProperties": false,
@@ -206,10 +216,15 @@
               },
               "binding": {
                 "const": "demo_stuck",
-                "description": "name of simulator binding"
+                "description": "name of factory"
               },
               "name": {
-                "description": "identifier of simulator instance",
+                "description": "globally unique identifier for controller",
+                "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+                "type": "string"
+              },
+              "vehicle": {
+                "description": "vehicle controller is assigned to",
                 "type": "string"
               }
             },
@@ -219,7 +234,7 @@
             "type": "object"
           },
           {
-            "additionalProperties": true,
+            "additionalProperties": false,
             "properties": {
               "args": {
                 "additionalProperties": false,
@@ -243,10 +258,15 @@
               },
               "binding": {
                 "const": "gndtruth_extractor",
-                "description": "name of simulator binding"
+                "description": "name of factory"
               },
               "name": {
-                "description": "identifier of simulator instance",
+                "description": "globally unique identifier for controller",
+                "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+                "type": "string"
+              },
+              "vehicle": {
+                "description": "vehicle controller is assigned to",
                 "type": "string"
               }
             },
@@ -256,15 +276,20 @@
             "type": "object"
           },
           {
-            "additionalProperties": true,
+            "additionalProperties": false,
             "properties": {
               "args": null,
               "binding": {
                 "const": "nop",
-                "description": "name of simulator binding"
+                "description": "name of factory"
               },
               "name": {
-                "description": "identifier of simulator instance",
+                "description": "globally unique identifier for controller",
+                "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+                "type": "string"
+              },
+              "vehicle": {
+                "description": "vehicle controller is assigned to",
                 "type": "string"
               }
             },
@@ -274,7 +299,7 @@
             "type": "object"
           },
           {
-            "additionalProperties": true,
+            "additionalProperties": false,
             "properties": {
               "args": {
                 "additionalProperties": false,
@@ -297,10 +322,15 @@
               },
               "binding": {
                 "const": "virtue",
-                "description": "name of simulator binding"
+                "description": "name of factory"
               },
               "name": {
-                "description": "identifier of simulator instance",
+                "description": "globally unique identifier for controller",
+                "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+                "type": "string"
+              },
+              "vehicle": {
+                "description": "vehicle controller is assigned to",
                 "type": "string"
               }
             },
@@ -1037,7 +1067,7 @@
       "items": {
         "oneOf": [
           {
-            "additionalProperties": true,
+            "additionalProperties": false,
             "properties": {
               "args": {
                 "additionalProperties": false,
@@ -1054,10 +1084,11 @@
               },
               "binding": {
                 "const": "minimator",
-                "description": "name of simulator binding"
+                "description": "name of factory"
               },
               "name": {
-                "description": "identifier of simulator instance",
+                "description": "globally unique identifier for simulator",
+                "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
                 "type": "string"
               }
             },
@@ -1067,7 +1098,7 @@
             "type": "object"
           },
           {
-            "additionalProperties": true,
+            "additionalProperties": false,
             "properties": {
               "args": {
                 "additionalProperties": false,
@@ -1084,10 +1115,11 @@
               },
               "binding": {
                 "const": "nop",
-                "description": "name of simulator binding"
+                "description": "name of factory"
               },
               "name": {
-                "description": "identifier of simulator instance",
+                "description": "globally unique identifier for simulator",
+                "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
                 "type": "string"
               }
             },
@@ -1185,8 +1217,8 @@
           }
         },
         "required": [
-          "action",
-          "event"
+          "event",
+          "action"
         ],
         "type": "object"
       },
@@ -1201,7 +1233,7 @@
             "additionalProperties": {
               "oneOf": [
                 {
-                  "additionalProperties": true,
+                  "additionalProperties": false,
                   "properties": {
                     "args": {
                       "additionalProperties": false,
@@ -1241,7 +1273,7 @@
                                       },
                                       "binding": {
                                         "const": "normal",
-                                        "description": "identifier of this distribution"
+                                        "description": "name of factory"
                                       }
                                     },
                                     "required": [
@@ -1283,10 +1315,15 @@
                     },
                     "binding": {
                       "const": "noisy_lane_sensor",
-                      "description": "name of simulator binding"
+                      "description": "name of factory"
+                    },
+                    "from": {
+                      "description": "component input for binding",
+                      "type": "string"
                     },
                     "name": {
-                      "description": "identifier of simulator instance",
+                      "description": "globally unique identifier for component",
+                      "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
                       "type": "string"
                     }
                   },
@@ -1296,7 +1333,7 @@
                   "type": "object"
                 },
                 {
-                  "additionalProperties": true,
+                  "additionalProperties": false,
                   "properties": {
                     "args": {
                       "additionalProperties": false,
@@ -1336,7 +1373,7 @@
                                       },
                                       "binding": {
                                         "const": "normal",
-                                        "description": "identifier of this distribution"
+                                        "description": "name of factory"
                                       }
                                     },
                                     "required": [
@@ -1375,10 +1412,15 @@
                     },
                     "binding": {
                       "const": "noisy_object_sensor",
-                      "description": "name of simulator binding"
+                      "description": "name of factory"
+                    },
+                    "from": {
+                      "description": "component input for binding",
+                      "type": "string"
                     },
                     "name": {
-                      "description": "identifier of simulator instance",
+                      "description": "globally unique identifier for component",
+                      "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
                       "type": "string"
                     }
                   },
@@ -1388,15 +1430,20 @@
                   "type": "object"
                 },
                 {
-                  "additionalProperties": true,
+                  "additionalProperties": false,
                   "properties": {
                     "args": null,
                     "binding": {
                       "const": "speedometer",
-                      "description": "name of simulator binding"
+                      "description": "name of factory"
+                    },
+                    "from": {
+                      "description": "component input for binding",
+                      "type": "string"
                     },
                     "name": {
-                      "description": "identifier of simulator instance",
+                      "description": "globally unique identifier for component",
+                      "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
                       "type": "string"
                     }
                   },
@@ -1430,8 +1477,8 @@
                       }
                     },
                     "required": [
-                      "index",
-                      "simulator"
+                      "simulator",
+                      "index"
                     ],
                     "type": "object"
                   },
@@ -1450,8 +1497,8 @@
                       }
                     },
                     "required": [
-                      "name",
-                      "simulator"
+                      "simulator",
+                      "name"
                     ],
                     "type": "object"
                   }
@@ -1472,8 +1519,8 @@
           }
         },
         "required": [
-          "from",
-          "name"
+          "name",
+          "from"
         ],
         "type": "object"
       },
