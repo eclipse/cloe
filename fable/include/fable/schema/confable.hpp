@@ -36,7 +36,6 @@ namespace fable {
 
 // Forward declarations:
 class Confable;
-class Schema;
 
 namespace schema {
 
