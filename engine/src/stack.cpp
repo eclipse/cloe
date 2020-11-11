@@ -101,6 +101,31 @@ std::string PluginConf::canonical() const {
 
 // --------------------------------------------------------------------------------------------- //
 
+SimulatorSchema::SimulatorSchema() {
+  this->set_transform_schema([](fable::schema::Struct&& s) -> fable::schema::Box {
+    s.set_property("name", id_prototype("globally unique identifier for simulator"));
+    return s;
+  });
+}
+
+ControllerSchema::ControllerSchema() {
+  this->set_transform_schema([](fable::schema::Struct&& s) -> fable::schema::Box {
+    s.set_property("name", id_prototype("globally unique identifier for controller"));
+    s.set_property("vehicle", make_prototype<std::string>("vehicle controller is assigned to"));
+    return s;
+  });
+}
+
+ComponentSchema::ComponentSchema() {
+  this->set_transform_schema([](fable::schema::Struct&& s) -> fable::schema::Box {
+    s.set_property("name", id_prototype("globally unique identifier for component"));
+    s.set_property("from", make_prototype<std::string>("component input for binding"));
+    return s;
+  });
+}
+
+// --------------------------------------------------------------------------------------------- //
+
 inline auto include_prototype() { return IncludeSchema(nullptr, "").file_exists(); }
 
 Conf default_conf_reader(const std::string& filepath) { return Conf{filepath}; }
@@ -111,7 +136,6 @@ Stack::Stack()
     , engine_schema(&engine, "engine configuration")
     , include_schema(&include, include_prototype(), "include configurations")
     , plugins_schema(&plugins, "plugin configuration")
-    , vehicle_prototype(nullptr, "")
     , conf_reader_func_(default_conf_reader) {}
 
 Stack::Stack(const Stack& other)
@@ -278,7 +302,7 @@ void Stack::insert_plugin(std::shared_ptr<Plugin> p, const PluginConf& c) {
   all_plugins_[canon] = p;
 
   // Insert into schema
-  auto check_insert = [&](auto& data, auto&& f) {
+  auto check_insert = [&](auto& data) {
     if (data.has_factory(name)) {
       if (c.allow_clobber.value_or(engine.plugins_allow_clobber)) {
         // The plugin is still available by the path, even if clobbered.
@@ -288,16 +312,18 @@ void Stack::insert_plugin(std::shared_ptr<Plugin> p, const PluginConf& c) {
                           fmt::format("{} already exists with name {}", p->type(), name));
       }
     }
-    data.add_factory(name, std::forward<decltype(f)>(f));
   };
 
   const auto type = p->type();
   if (type == "simulator") {
-    check_insert(simulator_prototype, p->make<SimulatorFactory>());
+    check_insert(simulator_prototype);
+    simulator_prototype.add_plugin(name, p);
   } else if (type == "controller") {
-    check_insert(controller_prototype, p->make<ControllerFactory>());
+    check_insert(controller_prototype);
+    controller_prototype.add_plugin(name, p);
   } else if (type == "component") {
-    check_insert(vehicle_prototype, p->make<ComponentFactory>());
+    check_insert(vehicle_prototype);
+    vehicle_prototype.add_plugin(name, p);
   } else {
     throw PluginError(p->path(), "incompatible plugin type, {}", type);
   }
