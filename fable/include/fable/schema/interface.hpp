@@ -34,6 +34,10 @@
 #include <fable/json.hpp>   // for Json
 
 namespace fable {
+
+// Forward declarations:
+class Confable;
+
 namespace schema {
 
 /**
@@ -348,6 +352,14 @@ class Base : public Interface {
   bool required_{false};
   std::string desc_{};
 };
+
+// ------------------------------------------------------------------------- //
+
+template <typename T, std::enable_if_t<std::is_base_of<Confable, T>::value, int> = 0>
+auto make_prototype(std::string&& desc = "");
+
+template <typename T, std::enable_if_t<!std::is_base_of<Confable, T>::value, int> = 0>
+auto make_prototype(std::string&& desc = "");
 
 }  // namespace schema
 }  // namespace fable
