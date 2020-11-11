@@ -259,8 +259,49 @@ class Box : public Interface {
   Box(std::shared_ptr<Interface> i) : impl_(std::move(i)) { assert(impl_); }  // NOLINT
 
  public:  // Special
+  /**
+   * Return this type as a pointer to T.
+   *
+   * This method can be used like so:
+   *
+   *     // In this example, we want a Struct.
+   *     auto ptr = s.template as<Struct>();
+   *
+   */
   template <typename T>
-  std::shared_ptr<const T> as() const {
+  std::shared_ptr<T> as() const {
+    assert(impl_ != nullptr);
+    auto downcast_ptr = std::dynamic_pointer_cast<T>(impl_);
+    if (downcast_ptr == nullptr) {
+      // If you can't figure out the type of this even from this error, set
+      // a breakpoint here in gdb and run:
+      //
+      //     p dynamic_cast<Interface*>(impl_.get())
+      //
+      // That will give you something like:
+      //
+      //     $8 = (fable::schema::Interface *) 0x5555559dfd30 <
+      //          vtable for fable::schema::FromConfable<
+      //            (anonymous namespace)::NormalDistribution<double>, 0
+      //          >
+      //          +16>
+      //
+      // Which is much more specific, since the output of FromConfable and
+      // Struct can be equivalent, for example.
+      throw SchemaError{Conf{}, this->json_schema(),
+                        "cannot dynamic_pointer_cast to type T, got nullptr"};
+    }
+    return downcast_ptr;
+  }
+
+  /**
+   * Return this type as a pointer to T.
+   *
+   * This is unsafe in that you need to check the resulting shared pointer
+   * yourself for whether the dynamic cast was successful or not.
+   */
+  template <typename T>
+  std::shared_ptr<T> as_unsafe() const {
     return std::dynamic_pointer_cast<T>(impl_);
   }
 
