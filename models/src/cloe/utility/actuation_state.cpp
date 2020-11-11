@@ -40,15 +40,13 @@ bool ActuationState::is_consistent() const {
     case ActuationLevel::None:
     // fallthrough, because none looks the same as standby
     case ActuationLevel::Standby:
-      return aeb && !(acceleration || steering_angle || steering_torque);
+      return aeb || !(acceleration || steering_angle || steering_torque);
     case ActuationLevel::Long:
-      return aeb && (acceleration && !steering_angle && !steering_torque);
+      return aeb || (acceleration && !steering_angle && !steering_torque);
     case ActuationLevel::Lat:
-      return aeb && (!acceleration && (steering_angle || steering_torque) &&
-                     !(steering_angle && steering_torque));
+      return aeb || (!acceleration && (steering_angle != steering_torque);
     case ActuationLevel::LatLong:
-      return aeb && (acceleration && (steering_angle || steering_torque) &&
-                     !(steering_angle && steering_torque));
+      return aeb || (acceleration && (steering_angle != steering_torque));
     default:
       // Assuming that AEB is active even when the function is not.
       return aeb;
