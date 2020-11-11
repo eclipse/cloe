@@ -260,6 +260,11 @@ class Box : public Interface {
   void from_conf(const Conf& c) override { impl_->from_conf(c); }
   void reset_ptr() override { impl_->reset_ptr(); }
 
+  template <typename T>
+  std::shared_ptr<const T> as() const {
+    return std::dynamic_pointer_cast<T>(impl_);
+  }
+
   friend void to_json(Json& j, const Box& b) { b.impl_->to_json(j); }
 
  private:
