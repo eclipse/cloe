@@ -157,33 +157,46 @@ using schema::make_const_str;
 using schema::make_prototype;
 using schema::make_schema;
 
+/**
+ * Define the automatically deduced schema class of a given type.
+ *
+ * \example
+ *
+ *     using VecSchema = schema_type<std::vector<int64_t>>::type;
+ */
 template <typename T>
 struct schema_type {
   using type = decltype(make_schema(static_cast<T*>(nullptr), ""));
 };
 
+/**
+ * Schema is a wrapper class for fable schemas that automatically
+ * chooses the correct underlying schema type.
+ *
+ * That is, this class provides an interface that doesn't require you to know
+ * which class to use, but it doesn't cover all use-cases.
+ */
 class Schema : public schema::Interface {
  public:
-  using SchemaMap = std::map<std::string, Schema>;
-  using SchemaVec = std::vector<Schema>;
-
   // Operators
   Schema(const Schema&) = default;
   Schema(Schema&&) = default;
   Schema& operator=(const Schema&) = default;
 
   // Struct
-  Schema(const SchemaMap& props);  // NOLINT(runtime/explicit)
-  Schema(std::string&& desc, const SchemaMap& props);
+  Schema(std::string&& desc, schema::PropertyList<> props)
+      : impl_(new schema::Struct(std::move(desc), props)) {}
 
-  Schema(schema::BoxPairList props);  // NOLINT(runtime/explicit)
-  Schema(std::string&& desc, schema::BoxPairList props);
-  Schema(const Schema& base, schema::BoxPairList props);
-  Schema(std::string&& desc, const Schema& base, schema::BoxPairList props);
+  Schema(schema::PropertyList<> props) : Schema("", props) {}
+
+  Schema(std::string&& desc, const Schema& base, schema::PropertyList<> props)
+      : impl_(new schema::Struct(std::move(desc), base, props)) {}
+
+  Schema(const Schema& base, schema::PropertyList<> props) : Schema("", base, props) {}
 
   // Variant
-  Schema(const SchemaVec& xs);  // NOLINT(runtime/explicit)
-  Schema(std::string&& desc, const SchemaVec& xs);
+  Schema(const std::vector<Schema>& xs);  // NOLINT(runtime/explicit)
+  Schema(std::string&& desc, const std::vector<Schema>& xs);
 
   Schema(schema::BoxList props);  // NOLINT(runtime/explicit)
   Schema(std::string&& desc, schema::BoxList props);
@@ -241,6 +254,11 @@ class Schema : public schema::Interface {
   }
 
   friend void to_json(Json& j, const Schema& s) { s.impl_->to_json(j); }
+
+  template <typename T>
+  std::shared_ptr<const T> as() const {
+    return std::dynamic_pointer_cast<T>(impl_);
+  }
 
  public:  // Overrides
   operator schema::Box() const { return schema::Box{impl_}; }

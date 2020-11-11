@@ -131,7 +131,7 @@ class LaneNoiseConf : public NoiseConf {
   CONFABLE_SCHEMA(LaneNoiseConf) {
     return Schema{
         NoiseConf::schema_impl(),
-        fable::schema::BoxPairList{
+        fable::schema::PropertyList<fable::schema::Box>{
             // clang-format off
             {"target", Schema(&target_, "data field of the lane boundary the noise should be applied to")},
             // clang-format on
@@ -157,7 +157,7 @@ struct NoisyLaneSensorConf : public NoisySensorConf {
   CONFABLE_SCHEMA(NoisyLaneSensorConf) {
     return Schema{
         NoisySensorConf::schema_impl(),
-        fable::schema::BoxPairList{
+        fable::schema::PropertyList<fable::schema::Box>{
             // clang-format off
               {"noise", Schema(&noisy_params, "configure noisy parameters")},
             // clang-format on
