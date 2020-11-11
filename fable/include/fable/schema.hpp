@@ -132,7 +132,6 @@
 #include <fable/schema/const.hpp>      // for Const<>
 #include <fable/schema/duration.hpp>   // for Duration<>
 #include <fable/schema/enum.hpp>       // for Enum<>
-#include <fable/schema/factory.hpp>    // for Factory<>
 #include <fable/schema/ignore.hpp>     // for Ignore
 #include <fable/schema/interface.hpp>  // for Interface, Box
 #include <fable/schema/json.hpp>       // for FromJson<>
