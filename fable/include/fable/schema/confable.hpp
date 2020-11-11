@@ -45,18 +45,21 @@ class FromConfable : public Base<FromConfable<T>> {
   using Type = T;
 
   explicit FromConfable(std::string&& desc = "") {
-    schema_ = T().schema();
+    schema_ = Type().schema();
     schema_.reset_ptr();
     this->type_ = schema_.type();
     this->desc_ = std::move(desc);
   }
 
   FromConfable(Type* ptr, std::string&& desc)
-      : Base<FromConfable<T>>(ptr->schema().type(), std::move(desc))
+      : Base<FromConfable<Type>>(ptr->schema().type(), std::move(desc))
       , schema_(ptr->schema())
       , ptr_(ptr) {
     assert(ptr != nullptr);
   }
+
+ public:  // Special
+  Box get_confable_schema() const { return schema_.clone(); }
 
  public:  // Overrides
   Json json_schema() const override {
@@ -86,7 +89,7 @@ class FromConfable : public Base<FromConfable<T>> {
   Json serialize(const Type& x) const { return x.to_json(); }
 
   Type deserialize(const Conf& c) const {
-    T tmp;
+    Type tmp;
     tmp.from_conf(c);
     return tmp;
   }
