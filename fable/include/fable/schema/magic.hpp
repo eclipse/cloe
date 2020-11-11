@@ -55,12 +55,6 @@ class Confable;
 
 namespace schema {
 
-template <typename T, std::enable_if_t<std::is_base_of<Confable, T>::value, int> = 0>
-auto make_prototype(std::string&& desc = "");
-
-template <typename T, std::enable_if_t<!std::is_base_of<Confable, T>::value, int> = 0>
-auto make_prototype(std::string&& desc = "");
-
 template <typename T, typename P>
 Array<T, P>::Array(std::vector<T>* ptr, std::string&& desc)
     : Array<T, P>(ptr, make_prototype<T>(), std::move(desc)) {}
