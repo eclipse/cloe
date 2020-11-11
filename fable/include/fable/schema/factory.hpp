@@ -17,21 +17,21 @@
  */
 /**
  * \file fable/schema/factory.hpp
- * \see  fable/schema/magic.hpp
- * \see  fable/schema.hpp
- * \see  fable/schema_test.cpp
+ * \see  fable/schema/factory_test.cpp
  */
 
 #pragma once
 #ifndef FABLE_SCHEMA_FACTORY_HPP_
 #define FABLE_SCHEMA_FACTORY_HPP_
 
-#include <limits>   // for numeric_limits<>
-#include <map>      // for map<>
-#include <memory>   // for shared_ptr<>
-#include <string>   // for string
-#include <utility>  // for move
-#include <vector>   // for vector<>
+#include <functional>   // for function<>
+#include <limits>       // for numeric_limits<>
+#include <map>          // for map<>
+#include <memory>       // for shared_ptr<>
+#include <string>       // for string
+#include <type_traits>  // for enable_if_t<>, is_base_of<>
+#include <utility>      // for move
+#include <vector>       // for vector<>
 
 #include <fable/schema/const.hpp>      // for Const
 #include <fable/schema/interface.hpp>  // for Base<>, Box
@@ -43,36 +43,117 @@ namespace fable {
 namespace schema {
 
 /**
- * Factory is a schema of factories.
+ * FactoryBase is the base class for Factory and FactoryPointerless.
  *
- * F is a class with a clone() method and T is a Confable with a constructor
- * with the signature:
+ * It is a schema of schemas that can create different objects based on the
+ * input. This is why there are two versions, since it may be used in
+ * situations where it's not desired to serialize directly into a type via
+ * pointer.
  *
- *    T(const std::string&, std::shared_ptr<F>)
- *
- * This schema cannot serialize or deserialize into pointers, it can only
- * create new instances with the `make` method.
+ * Note that this class should not be used directly, instead use Factory or
+ * FactoryPointerless. However, the interface of FactoryPointerless and Factory
+ * are almost identical, with Factory provided three more constructors with
+ * pointer arguments.
  */
-template <typename T, typename F>
-class Factory : public Base<Factory<T, F>> {
-  std::string BINDING_KEYWORD{"binding"};
-
- public:  // Types and Constructors
+template <typename T, typename CRTP>
+class FactoryBase : public Base<CRTP> {
+ public:  // Types
   using Type = T;
+  using MakeFunc = std::function<T(const Conf& c)>;
+  struct TypeFactory {
+    TypeFactory(const Box& s, MakeFunc f) : schema(s), func(f) { schema.reset_ptr(); }
 
-  explicit Factory(std::string&& desc = "")
-      : Base<Factory<T, F>>(JsonType::object, std::move(desc)) {}
+    Box schema;
+    MakeFunc func;
+  };
+
+  using FactoryMap = std::map<std::string, TypeFactory>;
+  using FactoryPairList = std::initializer_list<std::pair<std::string, TypeFactory>>;
+
+ public:  // Constructors
+  /**
+   * Construct an empty factory.
+   *
+   * This schema is useless until you add some factories with the add_factory
+   * method.
+   *
+   * \see add_factory()
+   */
+  explicit FactoryBase(std::string&& desc = "") : Base<CRTP>(JsonType::object, std::move(desc)) {}
+
+  FactoryBase(std::string&& desc, FactoryPairList fs)
+      : Base<CRTP>(JsonType::object, std::move(desc)), available_(std::move(fs)) {
+    reset_schema();
+  }
+
+  FactoryBase(std::string&& desc, FactoryMap&& fs)
+      : Base<CRTP>(JsonType::object, std::move(desc)), available_(std::move(fs)) {
+    reset_schema();
+  }
+
+  /**
+   * Set the factory key and return this for chaining.
+   *
+   * \see set_factory_key()
+   */
+  CRTP factory_key(const std::string& keyword) && {
+    set_factory_key(keyword);
+    return std::move(*dynamic_cast<CRTP*>(this));
+  }
+
+  /**
+   * Set the args key and return this for chaining.
+   *
+   * \see set_args_key()
+   */
+  CRTP args_key(const std::string& keyword) && {
+    set_args_key(keyword);
+    return std::move(*dynamic_cast<CRTP*>(this));
+  }
 
  public:  // Special
-  const std::map<std::string, std::shared_ptr<F>> factories() const { return available_; }
+  /**
+   * Set the factory key in the input that is used for selecting the
+   * correct factory.
+   *
+   * Common choices could be: factory, type, binding.
+   */
+  void set_factory_key(const std::string& keyword) {
+    assert(keyword != "");
+    factory_key_ = keyword;
+    reset_schema();
+  }
 
-  std::shared_ptr<F> get_factory(const std::string& key) const { return available_.at(key); }
+  /**
+   * Set the args key that is for selecting the input to pass on to the factory
+   * function.
+   *
+   * - This affects the final schema used for validation.
+   * - If the keyword is an empty string, the same object space is used as
+   *   contains the factory keyword, so the factory schema should not use
+   *   that keyword.
+   */
+  void set_args_key(const std::string& keyword) {
+    args_key_ = keyword;
+    reset_schema();
+  }
 
+  /**
+   * Return the schema and factory function associated with the given key.
+   */
+  const TypeFactory& get_factory(const std::string& key) const { return available_.at(key); }
+
+  /**
+   * Return whether a factory with the given key is available.
+   */
   bool has_factory(const std::string& key) const { return available_.count(key); }
 
-  void add_factory(const std::string& key, std::shared_ptr<F> f) {
-    available_.insert(std::make_pair(key, f));
-    schema_.reset(new Variant(factory_schemas()));
+  /**
+   * Add a factory with the given key, schema, and function.
+   */
+  void add_factory(const std::string& key, const Box& s, MakeFunc f) {
+    available_.insert(std::make_pair(key, TypeFactory{s, f}));
+    reset_schema();
   }
 
  public:  // Overrides
@@ -91,10 +172,11 @@ class Factory : public Base<Factory<T, F>> {
 
   void validate(const Conf& c) const override {
     assert(schema_ != nullptr);
-    auto binding = c.get<std::string>(BINDING_KEYWORD);
-    if (!available_.count(binding)) {
-      this->throw_error(c, "unknown binding: {}", binding);
+    auto factory = c.get<std::string>(factory_key_);
+    if (!available_.count(factory)) {
+      this->throw_error(c, "unknown factory: {}", factory);
     }
+
     schema_->validate(c);
   }
 
@@ -102,44 +184,55 @@ class Factory : public Base<Factory<T, F>> {
 
   Type deserialize(const Conf& c) const {
     assert(schema_ != nullptr);
-    auto binding = c.get<std::string>(BINDING_KEYWORD);
-    const auto& f = available_.at(binding);
-    T tmp{binding, f->clone()};
-    tmp.from_conf(c);
-    return tmp;
+    auto factory = c.get<std::string>(factory_key_);
+    if (!available_.count(factory)) {
+      this->throw_error(c, "unknown factory: {}", factory);
+    }
+
+    Conf args;
+    if (args_key_ != "") {
+      if (c.has(args_key_)) {
+        args = c.at(args_key_);
+      }
+    } else {
+      args = c;
+      args.erase(factory_key_);
+    }
+
+    return available_.at(factory).func(args);
   }
 
   Json serialize(const Type& x) const { return x; }
 
-  void from_conf(const Conf&) override {
-    throw std::logic_error("invalid call: Factory cannot modify existing object");
+  void from_conf(const Conf& c) override {
+    throw std::logic_error("FactoryBase::from_conf() should not be used");
   }
 
-  void to_json(Json&) const override {
-    throw std::logic_error("invalid call: Factory does not have any state");
+  void to_json(Json& j) const override {
+    throw std::logic_error("FactoryBase::to_json() should not be used");
   }
 
   void reset_ptr() override {
-    // Factory<T, F> only puts Schemas in schema_ that have already had their
-    // pointer reset to nullptr (see factory_schemas()).
-    // Therefore there is nothing to do here.
+    // No pointer, so nothing to do here.
   }
 
  protected:
-  std::vector<fable::schema::Box> factory_schemas() const {
-    using namespace fable::schema;  // NOLINT(build/namespaces)
+  void reset_schema() { schema_.reset(new Variant(factory_schemas())); }
+
+  std::vector<Box> factory_schemas() const {
     std::vector<Box> out;
     out.reserve(available_.size());
     for (auto& kv : available_) {
-      // clang-format off
-      out.emplace_back(
-        Struct{
-          {BINDING_KEYWORD, make_const_str(kv.first, "name of simulator binding").require()},
-          {"name", String{nullptr, "identifier of simulator instance"}},
-          {"args", kv.second->schema()},
-        }.additional_properties(true).reset_pointer()
-      );
-      // clang-format on
+      Struct base{
+          {factory_key_, make_const_str(kv.first, "name of factory").require()},
+      };
+      if (args_key_ == "") {
+        base.set_properties_from(*kv.second.schema.template as<Struct>());
+      } else {
+        base.set_property(args_key_, kv.second.schema.clone());
+      }
+      base.reset_ptr();
+      out.emplace_back(std::move(base));
     }
     return out;
   }
@@ -154,9 +247,73 @@ class Factory : public Base<Factory<T, F>> {
     return out;
   }
 
- private:
+ protected:
   std::shared_ptr<Variant> schema_;
-  std::map<std::string, std::shared_ptr<F>> available_;
+  std::vector<Box> available_schemas_;
+  FactoryMap available_;
+  std::string factory_key_{"factory"};
+  std::string args_key_{"args"};
+};
+
+/**
+ * FactoryPointerless is a factory schema that does not refer to any variable
+ * instance but is only usable through it's make() method.
+ */
+template <typename T>
+class FactoryPointerless : public FactoryBase<T, FactoryPointerless<T>> {};
+
+/**
+ * Factory is a factory schema that extends FactoryPointerless in that it
+ * can deserialize into a variable through a pointer.
+ *
+ * Apart from the added constructors, the interface is otherwise identical
+ * to FactoryPointerless.
+ */
+template <typename T>
+class Factory : public FactoryBase<T, Factory<T>> {
+ public:  // Types
+  using Type = typename FactoryBase<T, Factory<T>>::Type;
+  using MakeFunc = typename FactoryBase<T, Factory<T>>::MakeFunc;
+  using TypeFactory = typename FactoryBase<T, Factory<T>>::TypeFactory;
+  using FactoryMap = typename FactoryBase<T, Factory<T>>::FactoryMap;
+  using FactoryPairList = typename FactoryBase<T, Factory<T>>::FactoryPairList;
+
+ public:  // Constructors
+  using FactoryBase<T, Factory<T>>::FactoryBase;
+
+  Factory(Type* ptr, std::string&& desc) : FactoryBase<T, Factory<T>>(std::move(desc)), ptr_(ptr) {}
+
+  Factory(Type* ptr, std::string&& desc, FactoryMap&& fs)
+      : FactoryBase<T, Factory<T>>(std::move(desc)), ptr_(ptr) {
+    for (auto&& f : fs) {
+      this->available_.insert(f);
+    }
+    this->reset_schema();
+  }
+
+  Factory(Type* ptr, std::string&& desc, FactoryPairList fs)
+      : FactoryBase<T, Factory<T>>(std::move(desc)), ptr_(ptr) {
+    for (auto&& f : fs) {
+      this->available_.insert(f);
+    }
+    this->reset_schema();
+  }
+
+ public:  // Overrides
+  void from_conf(const Conf& c) override {
+    assert(ptr_ != nullptr);
+    *ptr_ = this->deserialize(c);
+  }
+
+  void to_json(Json& j) const override {
+    assert(ptr_ != nullptr);
+    j = this->serialize(*ptr_);
+  }
+
+  void reset_ptr() override { ptr_ = nullptr; }
+
+ private:
+  Type* ptr_{nullptr};
 };
 
 }  // namespace schema
