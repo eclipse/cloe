@@ -1,0 +1,39 @@
+" .lvimrc
+" This file includes project settings for Vim.
+" See https://github.com/embear/vim-localvimrc
+
+" C++ Style Guidelines
+augroup cppguidelines
+    autocmd!
+    autocmd Filetype cpp set textwidth=79
+    autocmd Filetype cpp set colorcolumn=80,100
+augroup end
+
+" ReStructuredText Settings
+augroup rstsettings
+    autocmd!
+    autocmd Filetype rst set tw=79 cc=80
+augroup end
+
+doau Filetype
+
+" When editing a file, start in project root
+if argc() != 0
+  exe "lcd " . g:localvimrc_script_dir
+endif
+
+" Define AddPackageToPath function that can be used
+" by other .lvimrc as well.
+function AddPackageToPath(pkgpath)
+  for dir in ['include', 'src']
+    let subject = a:pkgpath.'/'.dir
+    if isdirectory(subject)
+      let &path .= subject . ','
+    endif
+  endfor
+endfunction
+
+" Set up the paths for gf and friends
+for pkg in ['fable', 'runtime', 'models', 'oak', 'engine']
+  call AddPackageToPath(g:localvimrc_script_dir.'/'.pkg)
+endfor

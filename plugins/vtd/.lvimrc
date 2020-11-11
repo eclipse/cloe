@@ -1,0 +1,5 @@
+call AddPackageToPath(g:localvimrc_script_dir)
+if !empty($VTD_ROOT)
+    let &path .= $VTD_ROOT.'/Develop/Framework/inc,'
+    let &path .= $VTD_ROOT.'/Develop/Framework/RDBHandler,'
+endif
