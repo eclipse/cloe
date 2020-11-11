@@ -39,6 +39,7 @@
 #include <cloe/simulator.hpp>        // for SimulatorFactory
 #include <cloe/trigger.hpp>          // for Source
 #include <cloe/utility/command.hpp>  // for Command
+#include <fable/schema/factory.hpp>  // for Factory
 
 #include "plugin.hpp"  // for Plugin
 
