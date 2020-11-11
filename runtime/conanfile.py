@@ -33,7 +33,6 @@ class CloeRuntime(ConanFile):
         "inja/[~=3.0.0]",
         "spdlog/[~=1.5.0]",
         "incbin/[~=1.74.0]@cloe/stable",
-        "fable/1.0.0@cloe/develop",
     ]
 
     _cmake = None
@@ -44,6 +43,9 @@ class CloeRuntime(ConanFile):
 
     def set_version(self):
         self.version = self._project_version()
+
+    def requirements(self):
+        self.requires("fable/{}@cloe/develop".format(self.version))
 
     def build_requirements(self):
         if self.options.test:
