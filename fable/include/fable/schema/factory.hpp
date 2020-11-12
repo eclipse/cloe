@@ -156,6 +156,31 @@ class FactoryBase : public Base<CRTP> {
     reset_schema();
   }
 
+  /**
+   * Add a factory which creates a default instance of F and calls from_conf
+   * on F.
+   *
+   * - `F` must be default-constructible.
+   * - `F` must have a `from_conf()` method.
+   * - `F` must have a schema, i.e., `make_prototype<F>()` should be valid.
+   * - `std::unique_ptr<F>` must be convertible to `T`.
+   *   This means that T must be either a `std::unique_ptr<Base>` or
+   *   `std::shared_ptr<Base>`, where `Base` is a base class of F.
+   *
+   * Most types inheriting from `Confable` will fulfill these requirements.
+   */
+  template <typename F,
+            std::enable_if_t<(std::is_default_constructible<F>::value &&
+                              std::is_convertible<std::unique_ptr<F>, T>::value),
+                             int> = 0>
+  void add_default_factory(const std::string& key) {
+    add_factory(key, make_prototype<F>(), [](const Conf& c) -> T {
+      auto ptr = std::make_unique<F>();
+      ptr->from_conf(c);
+      return ptr;
+    });
+  }
+
  public:  // Overrides
   Json json_schema() const override {
     Json j;
@@ -227,6 +252,9 @@ class FactoryBase : public Base<CRTP> {
           {factory_key_, make_const_str(kv.first, "name of factory").require()},
       };
       if (args_key_ == "") {
+        // FIXME(ben): This branch not unit tested and leads to seg-faults in
+        // production code. Not sure if this is because of Struct or Factory
+        // x_x
         base.set_properties_from(*kv.second.schema.template as<Struct>());
       } else {
         base.set_property(args_key_, kv.second.schema.clone());
