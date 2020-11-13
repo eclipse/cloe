@@ -111,6 +111,16 @@ class FactoryBase : public Base<CRTP> {
     return std::move(*dynamic_cast<CRTP*>(this));
   }
 
+  /**
+   * Set whether to return only the args subset and return this for chaining.
+   *
+   * \see set_args_subset()
+   */
+  CRTP args_subset(bool value) && {
+    set_args_subset(value);
+    return std::move(*dynamic_cast<CRTP*>(this));
+  }
+
  public:  // Special
   /**
    * Set the factory key in the input that is used for selecting the
@@ -137,6 +147,19 @@ class FactoryBase : public Base<CRTP> {
     args_key_ = keyword;
     reset_schema();
   }
+
+  /**
+   * Set whether only the args subset of the conf should be passed to the
+   * factory function.
+   *
+   * The default behavior is true.
+   *
+   * - If true, only the args subset of incoming confs will be passed on to
+   *   the factory function. If the args key is empty, then only the factory
+   *   key is erased from the conf.
+   * - If false, the incoming args is passed to the factory function as-is.
+   */
+  void set_args_subset(bool value) { args_subset_ = value; }
 
   /**
    * Return the schema and factory function associated with the given key.
@@ -215,13 +238,17 @@ class FactoryBase : public Base<CRTP> {
     }
 
     Conf args;
-    if (args_key_ != "") {
-      if (c.has(args_key_)) {
-        args = c.at(args_key_);
+    if (args_subset_) {
+      if (args_key_ != "") {
+        if (c.has(args_key_)) {
+          args = c.at(args_key_);
+        }
+      } else {
+        args = c;
+        args.erase(factory_key_);
       }
     } else {
       args = c;
-      args.erase(factory_key_);
     }
 
     return available_.at(factory).func(args);
@@ -252,9 +279,8 @@ class FactoryBase : public Base<CRTP> {
           {factory_key_, make_const_str(kv.first, "name of factory").require()},
       };
       if (args_key_ == "") {
-        // FIXME(ben): This branch not unit tested and leads to seg-faults in
-        // production code. Not sure if this is because of Struct or Factory
-        // x_x
+        // FIXME(ben): This branch leads to seg-faults in production code. Not
+        // sure if this is because of Struct or Factory x_x
         base.set_properties_from(*kv.second.schema.template as<Struct>());
       } else {
         base.set_property(args_key_, kv.second.schema.clone());
@@ -281,6 +307,7 @@ class FactoryBase : public Base<CRTP> {
   FactoryMap available_;
   std::string factory_key_{"factory"};
   std::string args_key_{"args"};
+  bool args_subset_{true};
 };
 
 /**
