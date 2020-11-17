@@ -60,7 +60,7 @@ cloe_engine() {
 
     # Run the prepared command:
     (
-        echo "Running:" "${cloe_launch_exe[@]}" "${cloe_launch_args[@]}" -- "${cloe_engine_args[@]}" "${user_args[@]}"
+        echo "Running:" "${cloe_launch_exe[@]}" "${cloe_launch_args[@]}" -- "${cloe_engine_args[@]}" "${user_args[@]}" >&2
         export PYTHONPATH="${CLOE_ROOT}/cli"
         "${cloe_launch_exe[@]}" "${cloe_launch_args[@]}" -- "${cloe_engine_args[@]}" "${user_args[@]}"
     )

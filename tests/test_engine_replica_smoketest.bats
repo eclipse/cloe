@@ -21,14 +21,14 @@ cloe_engine_with_tmp_registry() {
 }
 
 
-@test "Compare test_replica_smoketest.json replica stack file" {
+@test "Expect exact replication: test_engine_replica_smoketest.json" {
     # Clean up in case temporary registry already exists.
     if [[ -d "$cloe_tmp_registry" ]]; then
         rm -rf "$cloe_tmp_registry"
     fi
 
     # Run our initial smoketest, writing to the temporary registry.
-    cloe_engine_with_tmp_registry run -u smoketest test_replica_smoketest.json
+    cloe_engine_with_tmp_registry run -u smoketest test_engine_replica_smoketest.json
 
     # Rename the result to original, so we can use the config to create
     # the same output again.

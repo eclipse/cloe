@@ -16,7 +16,7 @@ setup() {
     export cloe_plugins
 }
 
-@test "Test plugin usage message output" {
+@test "Expect run success      : cloe-engine usage" {
     for file in "${cloe_plugins[@]}"; do
         echo "Checking: $file"
         run cloe_engine usage $file
@@ -28,7 +28,7 @@ setup() {
     done
 }
 
-@test "Test plugin JSON schema output" {
+@test "Expect run success      : cloe-engine usage -j" {
     if ! type jq &>/dev/null; then
         skip "required program jq not present"
     fi
