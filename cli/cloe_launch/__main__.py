@@ -21,6 +21,7 @@ from typing import List, Dict
 import os
 import sys
 import click
+import logging
 
 from cloe_launch.exec import Engine
 from cloe_launch import Configuration, ConfigurationError
@@ -38,11 +39,19 @@ from cloe_launch import Configuration, ConfigurationError
 def main(ctx, verbose: int):
     """Launch cloe-engine with profiles and manage launch profiles."""
 
+    if verbose == 0:
+        level = logging.WARNING
+    elif verbose == 1:
+        level = logging.INFO
+    else:
+        level = logging.DEBUG
+    logging.basicConfig(format="%(message)s", stream=sys.stderr, level=level)
+
     class Options:
         def __init__(self, verbose):
             self.verbose = verbose
 
-    ctx.obj = Options(verbose=verbose)
+    ctx.obj = Options(verbose > 0)
 
 
 # Common options among engine and profile commands:
@@ -130,7 +139,7 @@ def cli_exec(
     ENGINE_ARGS are passed on to cloe-engine.
     """
     deny_profile_and_path(profile, profile_path)
-    conf = Configuration(profile, opt.verbose)
+    conf = Configuration(profile)
     engine = Engine(conf, conanfile=profile_path)
     engine.preserve_env = preserve_env
     engine.conan_options = conan_option
@@ -178,7 +187,7 @@ def cli_shell(
 ) -> None:
     """Launch shell with the correct environment from a profile."""
     deny_profile_and_path(profile, profile_path)
-    conf = Configuration(profile, opt.verbose)
+    conf = Configuration(profile)
     engine = Engine(conf, conanfile=profile_path)
     engine.preserve_env = preserve_env
     engine.conan_options = conan_option
@@ -196,7 +205,7 @@ def cli_shell(
 def cli_clean(opt, profile: str, profile_path: str) -> None:
     """Clean launcher profile cache."""
     deny_profile_and_path(profile, profile_path)
-    conf = Configuration(profile, opt.verbose)
+    conf = Configuration(profile)
     engine = Engine(conf, conanfile=profile_path)
     engine.clean()
 
@@ -215,7 +224,7 @@ def cli_profile():
 @click.pass_obj
 def cli_profile_show(opt, profile: str) -> None:
     """Show a profile configuration."""
-    conf = Configuration(profile, opt.verbose)
+    conf = Configuration(profile)
     if conf.current_profile is None:
         raise ConfigurationError("no default profile is configured")
     data = conf.read(conf.current_profile)
@@ -228,9 +237,9 @@ def cli_profile_show(opt, profile: str) -> None:
 @click.pass_obj
 def cli_profile_list(opt) -> None:
     """List all available profiles."""
-    conf = Configuration(verbose=opt.verbose)
+    conf = Configuration()
     for profile in conf.all_profiles:
-        if opt.verbose > 0:
+        if opt.verbose:
             if profile == conf.default_profile:
                 print("*", profile)
             else:
@@ -253,7 +262,7 @@ def cli_profile_add(
     opt, profile: str, conanfile: str, force: bool = False, default: bool = False
 ) -> None:
     """Add a new profile."""
-    conf = Configuration(verbose=opt.verbose)
+    conf = Configuration()
     conf.add(profile, conanfile, force=force)
     if default:
         conf.set_default(profile)
@@ -279,7 +288,7 @@ def cli_profile_add(
 @click.pass_obj
 def cli_profile_edit(opt, profile: str, editor: str, create: bool) -> None:
     """Edit a profile."""
-    conf = Configuration(profile, verbose=opt.verbose)
+    conf = Configuration(profile)
     if conf.current_profile is None:
         raise ConfigurationError("no default profile is configured")
     conf.edit(conf.current_profile, create)
@@ -292,7 +301,7 @@ def cli_profile_edit(opt, profile: str, editor: str, create: bool) -> None:
 @click.pass_obj
 def cli_profile_remove(opt, profile: str) -> None:
     """Remove a profile."""
-    conf = Configuration(verbose=opt.verbose)
+    conf = Configuration()
     conf.remove(profile)
 
 
@@ -303,11 +312,11 @@ def cli_profile_remove(opt, profile: str) -> None:
 @click.pass_obj
 def cli_profile_default(opt, profile: str) -> None:
     """Show or set the default profile."""
-    conf = Configuration(profile, verbose=opt.verbose)
+    conf = Configuration(profile)
     if profile is None:
         if conf.default_profile is not None:
             print(conf.default_profile)
-        elif opt.verbose > 0:
+        elif opt.verbose:
             print("Note: no default profile is configured")
     else:
         # Set default to provided value, which must exist already

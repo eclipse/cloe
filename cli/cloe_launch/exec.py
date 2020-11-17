@@ -8,6 +8,7 @@ PluginSetup that each Cloe plugin should implement.
 from typing import List, Union, Optional, Dict, Mapping, Type
 import hashlib
 import importlib.util
+import logging
 import os, os.path
 import sys
 import re
@@ -122,7 +123,7 @@ class Environment:
         cmd = [shell, "-c", "source {} &>/dev/null && env".format(filepath)]
         result = run_cmd(cmd, env=self._shell_env)
         if result.returncode != 0:
-            print("Error: error sourcing file from shell: {}".format(filepath))
+            logging.error("Error: error sourcing file from shell: {}".format(filepath))
         self.init_from_str(result.stdout)
 
     def init_from_env(self) -> None:
@@ -148,7 +149,9 @@ class Environment:
             try:
                 self._data[kv[0]] = kv[1]
             except IndexError:
-                print("Error: cannot interpret environment key-value pair:", line)
+                logging.error(
+                    "Error: cannot interpret environment key-value pair:", line
+                )
 
     def __delitem__(self, key: str):
         self._data.__delitem__(key)
@@ -305,11 +308,8 @@ class Engine:
     anonymous_file_regex = "^(/proc/self|/dev)/fd/[0-9]+$"
     engine_path = "cloe-engine"
 
-    verbose = 0
-
     def __init__(self, conf, conanfile=None):
         # Set options:
-        self.verbose = conf.verbose
         self.conan_path = conf._conf["conan_path"]
         self.shell_path = conf._conf["shell_path"]
         self.relay_anonymous_files = conf._conf["relay_anonymous_files"]
@@ -323,14 +323,12 @@ class Engine:
         self.preserve_env = False
         self.conan_options = []
 
-        if self.verbose > 0:
-            print("Profile name:", self.profile)
-            print("Configuration:")
-            print("   ", "\n    ".join(self.profile_data.split("\n")))
+        logging.info("Profile name:", self.profile)
+        logging.info("Configuration:")
+        logging.info("   ", "\n    ".join(self.profile_data.split("\n")))
 
         # Prepare runtime environment
-        if self.verbose > 0:
-            print("Runtime directory:", self.runtime_dir)
+        logging.info("Runtime directory:", self.runtime_dir)
 
     def _read_conf_profile(self, conf) -> None:
         self.profile = conf.current_profile
@@ -338,8 +336,7 @@ class Engine:
         self.profile_data = conf.read(self.profile)
 
     def _read_anonymous_profile(self, conanfile) -> None:
-        if self.verbose > 0:
-            print("Source profile:", conanfile)
+        logging.info("Source profile:", conanfile)
         self.profile_path = conanfile
         with open(conanfile, "r") as file:
             self.profile_data = file.read()
@@ -353,8 +350,7 @@ class Engine:
     def _prepare_runtime_dir(self) -> None:
         # Clean and create runtime directory
         self.clean()
-        if self.verbose > 1:
-            print("Create:", self.runtime_dir)
+        logging.debug("Create:", self.runtime_dir)
         os.makedirs(self.runtime_dir)
 
     def _prepare_virtualrunenv(self) -> None:
@@ -401,18 +397,15 @@ class Engine:
                 if not file.endswith(".py"):
                     continue
                 path = os.path.join(lib_dir, file)
-                if self.verbose > 0:
-                    print("Loading plugin setup: {}".format(path))
+                logging.info("Loading plugin setup: {}".format(path))
                 _find_plugin_setups(path)
         return PluginSetup.__subclasses__()
 
     def _prepare_runtime_env(self, use_cache: bool = False) -> Environment:
         if os.path.exists(self.runtime_env_path()) and use_cache:
-            if self.verbose > 1:
-                print("Re-using existing runtime directory.")
+            logging.debug("Re-using existing runtime directory.")
         else:
-            if self.verbose > 1:
-                print("Initializing runtime directory ...")
+            logging.debug("Initializing runtime directory ...")
             self._prepare_runtime_dir()
             self._prepare_virtualrunenv()
 
@@ -427,8 +420,7 @@ class Engine:
         return env
 
     def _write_runtime_env(self, env: Environment) -> None:
-        if self.verbose > 1:
-            print("Write:", self.runtime_env_path())
+        logging.debug("Write:", self.runtime_env_path())
         env.export(self.runtime_env_path())
 
     def _process_arg(self, src_path) -> str:
@@ -440,8 +432,7 @@ class Engine:
 
         dst_file = src_path.replace("/", "_")
         dst_path = os.path.join(self.runtime_dir, dst_file)
-        if self.verbose > 0:
-            print("Relay anonymous file {} into {}".format(src_path, dst_path))
+        logging.info("Relay anonymous file {} into {}".format(src_path, dst_path))
         with open(src_path, "r") as src:
             with open(dst_path, "w") as dst:
                 dst.write(src.read())
@@ -480,8 +471,7 @@ class Engine:
     def clean(self) -> None:
         """Clean the runtime directory."""
         if os.path.exists(self.runtime_dir):
-            if self.verbose > 1:
-                print("Remove:", self.runtime_dir)
+            logging.debug("Remove:", self.runtime_dir)
             shutil.rmtree(self.runtime_dir, ignore_errors=True)
 
     def shell(
@@ -492,12 +482,12 @@ class Engine:
 
         env = self._prepare_runtime_env(use_cache)
         if env.has("CLOE_SHELL"):
-            print("Error: recursive cloe shells are not supported.")
-            print("Note:")
-            print(
+            logging.error("Error: recursive cloe shells are not supported.")
+            logging.error("Note:")
+            logging.error(
                 "  It appears you are already in a Cloe shell, since CLOE_SHELL is set."
             )
-            print(
+            logging.error(
                 "  Press [Ctrl-D] or run 'exit' to quit this session and then try again."
             )
             sys.exit(2)
@@ -508,13 +498,18 @@ class Engine:
         plugin_setups = self._prepare_plugin_setups(env)
         shell = os.getenv("SHELL", "/bin/bash")
 
+        # Print the final environment, if desired
+        logging.debug("Environment: {}".format(env))
+
         if len(plugin_setups) > 0:
-            print("Warning:")
-            print("  The following plugin drivers may contain setup() and teardown()")
-            print("  that will not be called automatically within the shell.")
-            print()
+            logging.warning("Warning:")
+            logging.warning(
+                "  The following plugin drivers may contain setup() and teardown()"
+            )
+            logging.warning("  that will not be called automatically within the shell.")
+            logging.warning()
             for plugin in plugin_setups:
-                print("    {}".format(plugin.plugin))
+                logging.warning("    {}".format(plugin.plugin))
 
         # Replace this process with the SHELL now.
         sys.stdout.flush()
@@ -535,12 +530,11 @@ class Engine:
 
         # Initialize plugin setups:
         for plugin in plugin_setups:
-            if self.verbose > 1:
-                print(
-                    "Initializing plugin setup for {} at {}".format(
-                        plugin.name, plugin.plugin
-                    )
+            logging.debug(
+                "Initializing plugin setup for {} at {}".format(
+                    plugin.name, plugin.plugin
                 )
+            )
             plugin.setup()
 
         # Override environment setup.
@@ -549,8 +543,7 @@ class Engine:
                 env[k] = override_env[k]
 
         # Print the final environment, if desired
-        if self.verbose > 1:
-            print("Environment: {}".format(env))
+        logging.debug("Environment: {}".format(env))
 
         # Run cloe engine:
         self.engine_path = env["CLOE_ENGINE"]
@@ -558,9 +551,8 @@ class Engine:
         if debug:
             cmd.insert(0, "gdb")
             cmd.insert(1, "--args")
-        if self.verbose > 0:
-            print("Exec:", " ".join(cmd))
-            print("---")
+        logging.info("Exec:", " ".join(cmd))
+        logging.info("---")
         print(end="", flush=True)
         result = subprocess.run(cmd, check=False, env=env.as_dict())
         for setup in plugin_setups:
@@ -568,4 +560,4 @@ class Engine:
         return result
 
     def _run_cmd(self, cmd, must_succeed=True) -> subprocess.CompletedProcess:
-        return run_cmd(cmd, must_succeed=must_succeed, verbose=self.verbose > 1)
+        return run_cmd(cmd, must_succeed=must_succeed)

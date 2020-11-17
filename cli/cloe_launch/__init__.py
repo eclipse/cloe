@@ -3,6 +3,7 @@ This module contains the launcher configuration data types.
 """
 
 from typing import List, Optional
+import logging
 import os
 import shutil
 import subprocess
@@ -22,35 +23,32 @@ class Configuration:
     profiles_dir = os.path.join(config_dir, "profiles")
     runtime_dir = os.path.expanduser("~/.cache/cloe/launcher")
 
-    verbose = 0
     conf_version = "1"
     _conf = {
         "version": conf_version,
         "shell_path": "/bin/bash",
         "conan_path": "conan",
         "relay_anonymous_files": True,
-        "engine": {"pre_arguments": [], "post_arguments": [],},
+        "engine": {
+            "pre_arguments": [],
+            "post_arguments": [],
+        },
     }
 
     all_profiles: List[str] = []
     default_profile: Optional[str] = None
     current_profile = None
 
-    def __init__(self, profile: str = None, verbose: int = 0):
-        self.verbose = verbose
-
+    def __init__(self, profile: str = None):
         # Make configuration and runtime directories if needed:
         if not os.path.exists(self.config_dir):
-            if self.verbose > 0:
-                print("Create configuration directory:", self.config_dir)
+            logging.info("Create configuration directory:", self.config_dir)
             os.makedirs(self.config_dir)
         if not os.path.exists(self.profiles_dir):
-            if self.verbose > 0:
-                print("Create profile directory:", self.profiles_dir)
+            logging.info("Create profile directory:", self.profiles_dir)
             os.makedirs(self.profiles_dir)
         if not os.path.exists(self.runtime_dir):
-            if self.verbose > 0:
-                print("Create runtime directory:", self.runtime_dir)
+            logging.info("Create runtime directory:", self.runtime_dir)
             os.makedirs(self.runtime_dir)
 
         # Load configuration file:
@@ -95,17 +93,15 @@ class Configuration:
             raise ConfigurationError("profile {} does not exist".format(profile))
         self.default_profile = profile
         self._conf["default_profile"] = profile
-        if self.verbose > 0:
-            print(
-                "Write configuration to {}:\n  {}".format(self.config_file, self._conf)
-            )
+        logging.info(
+            "Write configuration to {}:\n  {}".format(self.config_file, self._conf)
+        )
         with open(self.config_file, "w") as file:
             toml.dump(self._conf, file)
 
     def read(self, profile: str) -> str:
         """Read the specified profile."""
-        if self.verbose > 0:
-            print("Open:", self.profile_path(profile))
+        logging.info("Open:", self.profile_path(profile))
         with open(self.profile_path(profile), "r") as file:
             return file.read()
 
@@ -117,8 +113,7 @@ class Configuration:
         if not create and not os.path.exists(self.profile_path(profile)):
             raise ConfigurationError("profile {} does not exist".format(profile))
         cmd = [editor, self.profile_path(profile)]
-        if self.verbose > 0:
-            print("Exec:", " ".join(cmd))
+        logging.info("Exec:", " ".join(cmd))
         subprocess.call(cmd)
 
     def add(self, profile: str, file: str, force: bool = False) -> None:
@@ -127,8 +122,7 @@ class Configuration:
             raise ConfigurationError(
                 "cannot overwrite profile {} unless forced".format(profile)
             )
-        if self.verbose > 1:
-            print("Copy: {} -> {}".format(file, self.profile_path(profile)))
+        logging.debug("Copy: {} -> {}".format(file, self.profile_path(profile)))
         shutil.copyfile(file, self.profile_path(profile))
         if profile not in self.all_profiles:
             self.all_profiles.append(profile)
@@ -137,8 +131,7 @@ class Configuration:
         """Remove the profile, if it exists."""
         file = os.path.join(self.profiles_dir, profile)
         if os.path.exists(file):
-            if self.verbose > 0:
-                print("Remove:", file)
+            logging.info("Remove:", file)
             os.remove(file)
         if self.default_profile == profile:
             self.set_default(None)
