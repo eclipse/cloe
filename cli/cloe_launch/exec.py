@@ -6,6 +6,7 @@ PluginSetup that each Cloe plugin should implement.
 """
 
 from typing import List, Union, Optional, Dict, Mapping, Type
+from collections import OrderedDict
 import hashlib
 import importlib.util
 import logging
@@ -47,8 +48,11 @@ class Environment:
     Caveats:
     - This is a global namespace, so it's problematic to combine two
       plugins that require different environment variables.
+    - Environment variables that contain ":" separated lists do not take
+      escaping into account.
     """
 
+    _sep = os.pathsep
     _shell_path: str = "/bin/bash"
     _shell_env: Dict[str, str] = {
         "PATH": "/bin:/usr/bin",
@@ -80,7 +84,7 @@ class Environment:
 
     def __init__(
         self,
-        env: Union[str, Dict[str, str], None],
+        env: Union[str, List[str], Dict[str, str], None],
         preserve: List[str] = None,
         source_file: bool = True,
     ):
@@ -91,10 +95,16 @@ class Environment:
 
         # Initialize the environment
         if isinstance(env, str):
-            if source_file:
-                self.init_from_shell(env)
-            else:
-                self.init_from_file(env)
+            env = [env]
+        if isinstance(env, list):
+            self._data = dict()
+            for file in env:
+                if source_file:
+                    self.init_from_shell(file)
+                else:
+                    self.init_from_file(file)
+            if len(env) > 1:
+                self.deduplicate_list("PATH")
         elif isinstance(env, dict):
             self.init_from_dict(env)
         else:
@@ -138,7 +148,6 @@ class Environment:
         - Quotes are not removed.
         - Empty lines and lines starting with # are ignored.
         """
-        self._data = dict()
         for line in data.split("\n"):
             if line.strip() == "":
                 continue
@@ -170,7 +179,7 @@ class Environment:
             buf += indent + k + ": "
             val = self._data[k]
             if k.endswith("PATH"):
-                lst = val.split(":")
+                lst = val.split(self._sep)
                 buf += "[\n"
                 for path in lst:
                     buf += indent + indent + path + "\n"
@@ -188,7 +197,7 @@ class Environment:
         This uses ":" as the separator between multiple values in the path.
         """
         if key in self._data:
-            self._data[key] += ":" + value
+            self._data[key] += self._sep + value
         else:
             self._data[key] = value
 
@@ -199,13 +208,31 @@ class Environment:
         This uses ":" as the separator between multiple values in the path.
         """
         if key in self._data:
-            self._data[key] = ":" + value + self._data[key]
+            self._data[key] = self._sep + value + self._data[key]
         else:
             self._data[key] = value
 
     def path_set(self, key: str, values: List[str]) -> None:
         """Set the key to a :-separated list."""
-        self._data[key] = ":".join(values)
+        self._data[key] = self._sep.join(values)
+
+    def deduplicate_list(self, key: str) -> None:
+        """Remove duplicates from the specified key."""
+        if key not in self._data:
+            return
+        self._data[key] = self._sep.join(
+            list(OrderedDict.fromkeys(self._data[key].split(self._sep)))
+        )
+
+    def get(self, key: str, default: str = None) -> str:
+        """Get the value at key or return default."""
+        self._data.get(key, default)
+
+    def get_list(self, key: str, default: List[str] = None) -> List[str]:
+        """Get the value at key and split or return default."""
+        if key in self._data:
+            return self._data[key].split(self._sep)
+        return default
 
     def set(self, key: str, value: str) -> None:
         """Set the value."""
@@ -353,30 +380,36 @@ class Engine:
         logging.debug("Create: {}".format(self.runtime_dir))
         os.makedirs(self.runtime_dir)
 
-    def _prepare_virtualrunenv(self) -> None:
-        # Get conan to create a virtualrunenv for us:
-        conan_cmd = [
-            self.conan_path,
-            "install",
-            "--install-folder",
-            self.runtime_dir,
-            "-g",
-            "virtualrunenv",
-        ]
-        for option in self.conan_options:
-            conan_cmd.append("-o")
-            conan_cmd.append(option)
-        conan_cmd.append(self.profile_path)
-        self._run_cmd(conan_cmd, must_succeed=True)
+    def _prepare_virtualenv(self) -> None:
+        # Get conan to create a virtualenv AND virtualrunenv for us:
+        # One gives us the LD_LIBRARY_PATH and the other gives us env_info
+        # variables set in packages.
+        for generator in ["virtualenv", "virtualrunenv"]:
+            conan_cmd = [
+                self.conan_path,
+                "install",
+                "--install-folder",
+                self.runtime_dir,
+                "-g",
+                generator,
+            ]
+            for option in self.conan_options:
+                conan_cmd.append("-o")
+                conan_cmd.append(option)
+            conan_cmd.append(self.profile_path)
+            self._run_cmd(conan_cmd, must_succeed=True)
 
     def _read_conan_env(self) -> Environment:
-        env_path = os.path.join(self.runtime_dir, "activate_run.sh")
+        env_paths = [
+            os.path.join(self.runtime_dir, "activate_run.sh"),
+            os.path.join(self.runtime_dir, "activate.sh"),
+        ]
         preserve = None if not self.preserve_env else list(os.environ.keys())
-        return Environment(env_path, preserve=preserve)
+        return Environment(env_paths, preserve=preserve)
 
     def _extract_engine_path(self, env) -> str:
         """Return the first cloe-engine we find in the PATH."""
-        for bindir in env["PATH"].split(":"):
+        for bindir in env.get_list("PATH", default=[]):
             pp = os.path.join(bindir, "cloe-engine")
             if os.path.exists(pp):
                 return pp
@@ -385,7 +418,7 @@ class Engine:
     def _extract_plugin_paths(self, env) -> List[str]:
         """Return all Cloe plugin paths we find in LD_LIBRARY_PATH."""
         plugin_paths = []
-        for libdir in env["LD_LIBRARY_PATH"].split(":"):
+        for libdir in env.get_list("LD_LIBRARY_PATH", default=[]):
             pp = os.path.join(libdir, "cloe")
             if os.path.exists(pp):
                 plugin_paths.append(pp)
@@ -407,7 +440,7 @@ class Engine:
         else:
             logging.debug("Initializing runtime directory ...")
             self._prepare_runtime_dir()
-            self._prepare_virtualrunenv()
+            self._prepare_virtualenv()
 
         # Get environment variables we need:
         env = self._read_conan_env()
