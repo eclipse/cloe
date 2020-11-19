@@ -10,7 +10,7 @@ def run_cmd(
 ) -> subprocess.CompletedProcess:
     """Run a command quietly, only printing stderr if the command fails."""
 
-    logging.info("Exec:", " ".join(cmd))
+    logging.info("Exec: {}".format(" ".join(cmd)))
     result = subprocess.run(
         cmd,
         check=False,

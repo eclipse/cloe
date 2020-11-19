@@ -323,12 +323,12 @@ class Engine:
         self.preserve_env = False
         self.conan_options = []
 
-        logging.info("Profile name:", self.profile)
+        logging.info("Profile name: {}".format(self.profile))
         logging.info("Configuration:")
-        logging.info("   ", "\n    ".join(self.profile_data.split("\n")))
+        logging.info("   {}".format("\n    ".join(self.profile_data.split("\n"))))
 
         # Prepare runtime environment
-        logging.info("Runtime directory:", self.runtime_dir)
+        logging.info("Runtime directory: {}".format(self.runtime_dir))
 
     def _read_conf_profile(self, conf) -> None:
         self.profile = conf.current_profile
@@ -336,7 +336,7 @@ class Engine:
         self.profile_data = conf.read(self.profile)
 
     def _read_anonymous_profile(self, conanfile) -> None:
-        logging.info("Source profile:", conanfile)
+        logging.info("Source profile: {}".format(conanfile))
         self.profile_path = conanfile
         with open(conanfile, "r") as file:
             self.profile_data = file.read()
@@ -350,7 +350,7 @@ class Engine:
     def _prepare_runtime_dir(self) -> None:
         # Clean and create runtime directory
         self.clean()
-        logging.debug("Create:", self.runtime_dir)
+        logging.debug("Create: {}".format(self.runtime_dir))
         os.makedirs(self.runtime_dir)
 
     def _prepare_virtualrunenv(self) -> None:
@@ -420,7 +420,7 @@ class Engine:
         return env
 
     def _write_runtime_env(self, env: Environment) -> None:
-        logging.debug("Write:", self.runtime_env_path())
+        logging.debug("Write: {}".format(self.runtime_env_path()))
         env.export(self.runtime_env_path())
 
     def _process_arg(self, src_path) -> str:
@@ -471,7 +471,7 @@ class Engine:
     def clean(self) -> None:
         """Clean the runtime directory."""
         if os.path.exists(self.runtime_dir):
-            logging.debug("Remove:", self.runtime_dir)
+            logging.debug("Remove: {}".format(self.runtime_dir))
             shutil.rmtree(self.runtime_dir, ignore_errors=True)
 
     def shell(
@@ -507,7 +507,7 @@ class Engine:
                 "  The following plugin drivers may contain setup() and teardown()"
             )
             logging.warning("  that will not be called automatically within the shell.")
-            logging.warning()
+            logging.warning("")
             for plugin in plugin_setups:
                 logging.warning("    {}".format(plugin.plugin))
 
@@ -551,7 +551,7 @@ class Engine:
         if debug:
             cmd.insert(0, "gdb")
             cmd.insert(1, "--args")
-        logging.info("Exec:", " ".join(cmd))
+        logging.info("Exec: {}".format(" ".join(cmd)))
         logging.info("---")
         print(end="", flush=True)
         result = subprocess.run(cmd, check=False, env=env.as_dict())
