@@ -44,7 +44,7 @@ bool ActuationState::is_consistent() const {
     case ActuationLevel::Long:
       return aeb || (acceleration && !steering_angle && !steering_torque);
     case ActuationLevel::Lat:
-      return aeb || (!acceleration && (steering_angle != steering_torque);
+      return aeb || (!acceleration && (steering_angle != steering_torque));
     case ActuationLevel::LatLong:
       return aeb || (acceleration && (steering_angle != steering_torque));
     default:
