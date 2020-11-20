@@ -67,6 +67,7 @@ class FactoryBase : public Base<CRTP> {
     MakeFunc func;
   };
 
+  using TransformFunc = std::function<Box(Struct&&)>;
   using FactoryMap = std::map<std::string, TypeFactory>;
   using FactoryPairList = std::initializer_list<std::pair<std::string, TypeFactory>>;
 
@@ -121,6 +122,16 @@ class FactoryBase : public Base<CRTP> {
     return std::move(*dynamic_cast<CRTP*>(this));
   }
 
+  /**
+   * Set a transform function for the schema and return this for chaining.
+   *
+   * \see set_transform_schema()
+   */
+  CRTP transform_schema(TransformFunc f) && {
+    set_transform_schema(f);
+    return std::move(*dynamic_cast<CRTP*>(this));
+  }
+
  public:  // Special
   /**
    * Set the factory key in the input that is used for selecting the
@@ -160,6 +171,15 @@ class FactoryBase : public Base<CRTP> {
    * - If false, the incoming args is passed to the factory function as-is.
    */
   void set_args_subset(bool value) { args_subset_ = value; }
+
+  /**
+   * Set the schema transform function, which is applied to each factory
+   * schema after taking factory key, args key, and args subset settings
+   * into consideration.
+   *
+   * The default behavior is the identity function.
+   */
+  void set_transform_schema(TransformFunc f) { transform_func_ = f; }
 
   /**
    * Return the schema and factory function associated with the given key.
@@ -286,7 +306,12 @@ class FactoryBase : public Base<CRTP> {
         base.set_property(args_key_, kv.second.schema.clone());
       }
       base.reset_ptr();
-      out.emplace_back(std::move(base));
+
+      if (transform_func_) {
+        out.emplace_back(transform_func_(std::move(base)));
+      } else {
+        out.emplace_back(std::move(base));
+      }
     }
     return out;
   }
@@ -303,6 +328,7 @@ class FactoryBase : public Base<CRTP> {
 
  protected:
   std::shared_ptr<Variant> schema_;
+  TransformFunc transform_func_;
   std::vector<Box> available_schemas_;
   FactoryMap available_;
   std::string factory_key_{"factory"};
