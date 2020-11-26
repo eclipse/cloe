@@ -20,20 +20,19 @@
  * \see  fable/schema/factory.hpp
  */
 
-#include <iostream>   // for cout, endl
-#include <string>     // for string
-using namespace std;  // NOLINT(build/namespaces)
+#include <string>  // for string
 
-#include <gtest/gtest.h>
-#include <boost/optional.hpp>
+#include <gtest/gtest.h>  // for TEST, ...
 
 #include <fable/confable.hpp>        // for Confable
 #include <fable/schema.hpp>          // for Schema, Struct, ...
 #include <fable/schema/factory.hpp>  // for Factory
 #include <fable/utility.hpp>         // for pretty_print
 
+namespace {
+
 struct MyFactoryStruct : public fable::Confable {
-  int number;
+  int number = -1;
 
   CONFABLE_SCHEMA(MyFactoryStruct) {
     // clang-format off
@@ -72,6 +71,8 @@ struct MyFactoryStruct : public fable::Confable {
 inline void assert_json_eq(const fable::Json& j, const fable::Json& k) {
   ASSERT_EQ(std::string(j.dump()), std::string(k.dump()));
 }
+
+}  // anonymous namespace
 
 TEST(fable_schema_factory, schema) {
   MyFactoryStruct tmp;
@@ -190,6 +191,8 @@ TEST(fable_schema_factory, from_json) {
 
 // ------------------------------------------------------------------------- //
 
+namespace {
+
 struct MyFactoryStructWithoutArgs : public fable::Confable {
   int number;
 
@@ -226,6 +229,8 @@ struct MyFactoryStructWithoutArgs : public fable::Confable {
     // clang-format on
   }
 };
+
+}  // anonymous namespace
 
 TEST(fable_schema_factory, without_args_schema) {
   MyFactoryStructWithoutArgs tmp;
@@ -305,7 +310,7 @@ TEST(fable_schema_factory, without_args_to_json) {
   assert_json_eq(tmp1.to_json(), expect1);
 }
 
-TEST(fable_schema_factory, without_args_from_json) {
+TEST(fable_schema_factory, without_args_from_conf) {
   MyFactoryStructWithoutArgs tmp1;
   fable::Conf input1{R"({
     "number": {

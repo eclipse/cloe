@@ -54,6 +54,7 @@ if(BuildTests)
         src/fable/schema/factory_test.cpp
         src/fable/schema/number_test.cpp
         src/fable/schema/optional_test.cpp
+        src/fable/schema/struct_test.cpp
         src/fable/schema_test.cpp
     )
     set_target_properties(test-fable PROPERTIES

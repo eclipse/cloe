@@ -104,7 +104,7 @@ class ObjectNoiseConf : public NoiseConf {
   CONFABLE_SCHEMA(ObjectNoiseConf) {
     return Schema{
         NoiseConf::schema_impl(),
-        fable::schema::BoxPairList{
+        fable::schema::PropertyList<fable::schema::Box>{
             // clang-format off
             {"target", Schema(&target_, "data field of the object the noise should be applied to")},
             // clang-format on
@@ -130,7 +130,7 @@ struct NoisyObjectSensorConf : public NoisySensorConf {
   CONFABLE_SCHEMA(NoisyObjectSensorConf) {
     return Schema{
         NoisySensorConf::schema_impl(),
-        fable::schema::BoxPairList{
+        fable::schema::PropertyList<fable::schema::Box>{
             // clang-format off
               {"noise", Schema(&noisy_params, "configure noisy parameters")},
             // clang-format on

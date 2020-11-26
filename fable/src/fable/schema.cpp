@@ -26,10 +26,6 @@
 
 namespace fable {
 
-using schema::BoxMap;
-using schema::BoxPairList;
-using schema::Struct;
-
 using schema::BoxList;
 using schema::BoxVec;
 using schema::Variant;
@@ -38,14 +34,6 @@ using SchemaMap = Schema::SchemaMap;
 using SchemaVec = Schema::SchemaVec;
 
 namespace {
-
-BoxMap to_box_map(const SchemaMap& m) {
-  BoxMap out;
-  for (const auto& kv : m) {
-    out.insert(std::make_pair(kv.first, kv.second));
-  }
-  return out;
-}
 
 BoxVec to_box_vec(const SchemaVec& xs) {
   BoxVec out;
@@ -57,17 +45,6 @@ BoxVec to_box_vec(const SchemaVec& xs) {
 }
 
 }  // anonymous namespace
-
-// Struct constructions:
-Schema::Schema(const SchemaMap& props) : Schema("", std::move(props)) {}
-Schema::Schema(std::string&& desc, const SchemaMap& props)
-    : impl_(new Struct(std::move(desc), to_box_map(props))) {}
-Schema::Schema(BoxPairList props) : Schema("", std::move(props)) {}
-Schema::Schema(std::string&& desc, BoxPairList props)
-    : impl_(new Struct(std::move(desc), std::move(props))) {}
-Schema::Schema(const Schema& base, BoxPairList props) : Schema("", base, std::move(props)) {}
-Schema::Schema(std::string&& desc, const Schema& base, BoxPairList props)
-    : impl_(new Struct(std::move(desc), base, std::move(props))) {}
 
 // Variant constructions:
 Schema::Schema(const SchemaVec& xs) : impl_(new Variant(to_box_vec(xs))) {}

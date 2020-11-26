@@ -20,6 +20,7 @@
  * \see  fable/schema/struct.hpp
  */
 
+#include <fable/schema.hpp>
 #include <fable/schema/struct.hpp>
 
 #include <algorithm>  // for find
@@ -28,44 +29,6 @@
 
 namespace fable {
 namespace schema {
-
-Struct::Struct(std::string&& desc, BoxPairList props)
-    : Base(JsonType::object, std::move(desc)), properties_(std::move(props)) {
-  for (const auto& kv : properties_) {
-    if (kv.second.is_required()) {
-      properties_required_.emplace_back(kv.first);
-    }
-  }
-}
-
-Struct::Struct(std::string&& desc, BoxMap&& props)
-    : Base(JsonType::object, std::move(desc)), properties_(std::move(props)) {
-  for (const auto& kv : properties_) {
-    if (kv.second.is_required()) {
-      properties_required_.emplace_back(kv.first);
-    }
-  }
-}
-
-Struct::Struct(std::string&& desc, const Struct& base, BoxPairList props) : Struct(base) {
-  desc_ = std::move(desc);
-  for (auto&& p : std::move(props)) {
-    set_property(p.first, p.second.clone());
-  }
-}
-
-Struct::Struct(std::string&& desc, const Struct& inherit, BoxMap&& props) : Struct(inherit) {
-  desc_ = std::move(desc);
-  for (auto&& p : props) {
-    set_property(p.first, std::move(p.second));
-  }
-}
-
-Struct::Struct(std::string&& desc, const Box& base, BoxPairList props)
-    : Struct(std::move(desc), dynamic_cast<const Struct&>(*base.clone()), std::move(props)) {}
-
-Struct::Struct(std::string&& desc, const Box& base, BoxMap&& props)
-    : Struct(std::move(desc), dynamic_cast<const Struct&>(*base.clone()), std::move(props)) {}
 
 void Struct::set_property(const std::string& key, Box&& s) {
   auto it = std::find(properties_required_.begin(), properties_required_.end(), key);
@@ -81,20 +44,22 @@ void Struct::set_property(const std::string& key, Box&& s) {
   properties_.insert(std::make_pair(key, std::move(s)));
 }
 
-Struct Struct::property(const std::string& key, Box&& s) && {
-  set_property(key, std::move(s));
-  return std::move(*this);
-}
-
-void Struct::set_properties_from(const Struct& s) {
-  for (auto& kv : s.properties_) {
-    set_property(kv.first, kv.second.clone());
+void Struct::set_properties(PropertyList<Box> props) {
+  for (auto& p : props) {
+    set_property(p.first, p.second.clone());
   }
 }
 
-Struct Struct::properties_from(const Struct& s) && {
-  set_properties_from(s);
-  return std::move(*this);
+void Struct::set_properties(PropertyList<Schema> props) {
+  for (auto& p : props) {
+    set_property(p.first, p.second.clone());
+  }
+}
+
+void Struct::set_properties(const std::map<std::string, Box>& props) {
+  for (auto& p : props) {
+    set_property(p.first, p.second.clone());
+  }
 }
 
 void Struct::set_require(std::initializer_list<std::string> init) {
@@ -141,6 +106,9 @@ Json Struct::json_schema() const {
       {"properties", props},
       {"additionalProperties", additional_properties_},
   };
+  if (additional_prototype_ != nullptr) {
+    j["additionalProperties"] = additional_prototype_->json_schema();
+  }
   if (!properties_required_.empty()) {
     j["required"] = properties_required_;
   }
@@ -158,7 +126,11 @@ void Struct::validate(const Conf& c) const {
       auto key = kv.key();
       if (properties_.count(key)) {
         properties_.at(key).validate(c.at(key));
-      } else if (!additional_properties_) {
+      } else if (additional_prototype_ != nullptr) {
+        additional_prototype_->validate(c.at(key));
+      } else if (additional_properties_) {
+        continue;
+      } else {
         throw SchemaError{error::UnexpectedProperty(c, key), json_schema()};
       }
     }
@@ -178,7 +150,11 @@ void Struct::from_conf(const Conf& c) {
       auto key = kv.key();
       if (properties_.count(key)) {
         properties_[key].from_conf(c.at(key));
-      } else if (!additional_properties_) {
+      } else if (additional_prototype_ != nullptr) {
+        additional_prototype_->validate(c.at(key));
+      } else if (additional_properties_) {
+        continue;
+      } else {
         throw SchemaError{error::UnexpectedProperty(c, key), json_schema()};
       }
     }

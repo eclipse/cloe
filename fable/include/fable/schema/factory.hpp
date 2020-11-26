@@ -301,7 +301,7 @@ class FactoryBase : public Base<CRTP> {
       if (args_key_ == "") {
         // FIXME(ben): This branch leads to seg-faults in production code. Not
         // sure if this is because of Struct or Factory x_x
-        base.set_properties_from(*kv.second.schema.template as<Struct>());
+        base.set_properties_from(kv.second.schema);
       } else {
         base.set_property(args_key_, kv.second.schema.clone());
       }

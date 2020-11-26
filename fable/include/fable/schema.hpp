@@ -172,13 +172,15 @@ class Schema : public schema::Interface {
   Schema& operator=(const Schema&) = default;
 
   // Struct
-  Schema(const SchemaMap& props);  // NOLINT(runtime/explicit)
-  Schema(std::string&& desc, const SchemaMap& props);
+  Schema(std::string&& desc, schema::PropertyList<> props)
+      : impl_(new schema::Struct(std::move(desc), props)) {}
 
-  Schema(schema::BoxPairList props);  // NOLINT(runtime/explicit)
-  Schema(std::string&& desc, schema::BoxPairList props);
-  Schema(const Schema& base, schema::BoxPairList props);
-  Schema(std::string&& desc, const Schema& base, schema::BoxPairList props);
+  Schema(schema::PropertyList<> props) : Schema("", props) {}
+
+  Schema(std::string&& desc, const Schema& base, schema::PropertyList<> props)
+      : impl_(new schema::Struct(std::move(desc), base, props)) {}
+
+  Schema(const Schema& base, schema::PropertyList<> props) : Schema("", base, props) {}
 
   // Variant
   Schema(const SchemaVec& xs);  // NOLINT(runtime/explicit)
@@ -240,6 +242,11 @@ class Schema : public schema::Interface {
   }
 
   friend void to_json(Json& j, const Schema& s) { s.impl_->to_json(j); }
+
+  template <typename T>
+  std::shared_ptr<const T> as() const {
+    return std::dynamic_pointer_cast<T>(impl_);
+  }
 
  public:  // Overrides
   operator schema::Box() const { return schema::Box{impl_}; }
