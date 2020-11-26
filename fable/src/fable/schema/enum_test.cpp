@@ -22,9 +22,9 @@
 
 #include <gtest/gtest.h>
 
-#include <fable/confable.hpp>
-#include <fable/schema.hpp>
-using namespace fable;  // NOLINT(build/namespaces)
+#include <fable/confable.hpp>       // for Confable
+#include <fable/schema.hpp>         // for Struct, ...
+#include <fable/utility/gtest.hpp>  // for assert_to_json, ...
 
 namespace logger {
 enum LogLevel {
@@ -44,11 +44,11 @@ FABLE_ENUM_SERIALIZATION(logger::LogLevel, ({
 
 using LogLevel = logger::LogLevel;
 
-struct LoggerStruct : public Confable {
+struct LoggerStruct : public fable::Confable {
   boost::optional<LogLevel> level;
 
   CONFABLE_SCHEMA(LoggerStruct) {
-    using namespace schema;  // NOLINT(build/namespaces)
+    using namespace fable::schema;  // NOLINT(build/namespaces)
     return Struct{
         {"level", make_schema(&level, "")},
     };
@@ -56,41 +56,29 @@ struct LoggerStruct : public Confable {
 };
 
 TEST(fable_schema_enum, struct_enum) {
-  LoggerStruct s;
-  Json empty = R"({
-  })"_json;
-  Json input = R"({
-    "level": "info"
-  })"_json;
-  Json filled = R"({
-    "level": "info"
-  })"_json;
-
-  ASSERT_NO_THROW({
-    ASSERT_EQ(s.to_json().dump(2), empty.dump(2));
-    s.from_conf(Conf{input});
-    ASSERT_EQ(s.to_json().dump(2), filled.dump(2));
-  });
+  LoggerStruct l;
+  fable::assert_to_json(l, "{}");
+  fable::assert_from_eq_to(l, fable::Json{{"level", "info"}});
 }
 
 TEST(fable_schema_enum, vector_enum_ok) {
-  using namespace schema;  // NOLINT(build/namespaces)
+  using namespace fable::schema;  // NOLINT(build/namespaces)
   std::vector<LogLevel> xs;
   Array<LogLevel, Enum<LogLevel>> s{&xs, ""};
 
-  Json empty = R"([])"_json;
-  Json input = R"([
+  fable::Json empty = R"([])"_json;
+  fable::Json input = R"([
     "info"
   ])"_json;
-  Json filled = R"([
+  fable::Json filled = R"([
     "info"
   ])"_json;
 
-  Json j;
+  fable::Json j;
   s.to_json(j);
   ASSERT_EQ(j.dump(2), empty.dump(2));
 
-  s.from_conf(Conf{input});
+  s.from_conf(fable::Conf{input});
   ASSERT_EQ(xs.size(), 1);
   ASSERT_EQ(xs[0], LogLevel::info);
   ASSERT_NO_THROW({
@@ -100,26 +88,26 @@ TEST(fable_schema_enum, vector_enum_ok) {
 }
 
 TEST(fable_schema_enum, vector_struct_enum) {
-  using namespace schema;  // NOLINT(build/namespaces)
+  using namespace fable::schema;  // NOLINT(build/namespaces)
   std::vector<LoggerStruct> xs;
   Array<LoggerStruct, FromConfable<LoggerStruct>> s{&xs, ""};
 
-  Json empty = R"([])"_json;
-  Json input = R"([{
+  fable::Json empty = R"([])"_json;
+  fable::Json input = R"([{
     "level": "info"
   }])"_json;
-  Json filled = R"([{
+  fable::Json filled = R"([{
     "level": "info"
   }])"_json;
 
-  Json j;
+  fable::Json j;
   s.to_json(j);
   ASSERT_EQ(j.dump(2), empty.dump(2));
 
-  s.from_conf(Conf{input});
+  s.from_conf(fable::Conf{input});
   ASSERT_EQ(xs.size(), 1);
   ASSERT_EQ(*(xs[0].level), LogLevel::info);
-  ASSERT_EQ(Json(xs).dump(2), filled.dump(2));
+  ASSERT_EQ(fable::Json(xs).dump(2), filled.dump(2));
   ASSERT_NO_THROW({
     s.to_json(j);
     ASSERT_EQ(j.dump(2), filled.dump(2));
