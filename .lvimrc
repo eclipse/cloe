@@ -17,11 +17,6 @@ augroup end
 
 doau Filetype
 
-" When editing a file, start in project root
-if argc() != 0
-  exe "lcd " . g:localvimrc_script_dir
-endif
-
 " Define AddPackageToPath function that can be used
 " by other .lvimrc as well.
 function AddPackageToPath(pkgpath)
