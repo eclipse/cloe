@@ -28,6 +28,8 @@
 #include <fable/schema.hpp>    // for Schema
 using namespace fable;         // NOLINT(build/namespaces)
 
+namespace {
+
 enum class MyEnum { Enable, Disable };
 
 // clang-format off
@@ -105,6 +107,8 @@ struct MyStruct : public Confable {
     }
   }
 };
+
+}  // anonymous namespace
 
 TEST(fable_schema, schema_wrapper) {
   bool my_required = false;

@@ -24,6 +24,7 @@
 
 #include <fable/confable.hpp>
 #include <fable/schema.hpp>
+#include <fable/utility/gtest.hpp>
 using namespace fable;  // NOLINT(build/namespaces)
 
 namespace logger {
@@ -56,21 +57,9 @@ struct LoggerStruct : public Confable {
 };
 
 TEST(fable_schema_enum, struct_enum) {
-  LoggerStruct s;
-  Json empty = R"({
-  })"_json;
-  Json input = R"({
-    "level": "info"
-  })"_json;
-  Json filled = R"({
-    "level": "info"
-  })"_json;
-
-  ASSERT_NO_THROW({
-    ASSERT_EQ(s.to_json().dump(2), empty.dump(2));
-    s.from_conf(Conf{input});
-    ASSERT_EQ(s.to_json().dump(2), filled.dump(2));
-  });
+  LoggerStruct l;
+  fable::assert_to_json(l, "{}");
+  fable::assert_from_eq_to(l, Json{{"level", "info"}});
 }
 
 TEST(fable_schema_enum, vector_enum_ok) {
