@@ -20,14 +20,13 @@
  * \see  fable/schema/const.hpp
  */
 
-#include <iostream>   // for cout, endl
-#include <string>     // for string
-using namespace std;  // NOLINT(build/namespaces)
+#include <gtest/gtest.h>  // for TEST
 
-#include <gtest/gtest.h>
+#include <fable/confable.hpp>       // for Confable
+#include <fable/schema.hpp>         // for Const
+#include <fable/utility/gtest.hpp>  // for assert_validate
 
-#include <fable/confable.hpp>  // for Confable
-#include <fable/schema.hpp>    // for Const
+namespace {
 
 struct MyConstStruct : public fable::Confable {
   CONFABLE_SCHEMA(MyConstStruct) {
@@ -39,14 +38,11 @@ struct MyConstStruct : public fable::Confable {
   }
 };
 
-inline void assert_json_eq(const fable::Json& j, const fable::Json& k) {
-  ASSERT_EQ(std::string(j.dump()), std::string(k.dump()));
-}
+}  // anonymous namespace
 
 TEST(fable_schema_const, schema) {
   MyConstStruct tmp;
-
-  fable::Json expect = R"({
+  fable::assert_schema_eq(tmp, R"({
     "type": "object",
     "properties": {
       "release": {
@@ -60,34 +56,30 @@ TEST(fable_schema_const, schema) {
     },
     "required": ["release"],
     "additionalProperties": false
-  })"_json;
-
-  assert_json_eq(tmp.schema().json_schema(), expect);
+  })");
 }
 
 TEST(fable_schema_const, validate) {
   MyConstStruct tmp;
 
-  tmp.schema().validate(fable::Conf{R"({
+  fable::assert_validate(tmp, R"({
     "release": "2"
-  })"_json});
+  })");
 
-  tmp.schema().validate(fable::Conf{R"({
+  fable::assert_validate(tmp, R"({
     "release": "2",
     "major": 2
-  })"_json});
+  })");
 
-  fable::Conf wrong{R"({
+  fable::assert_invalidate(tmp, R"({
     "release": "wrong"
-  })"_json};
-  ASSERT_ANY_THROW(tmp.schema().validate(wrong));
+  })");
 }
 
 TEST(fable_schema_const, to_json) {
   MyConstStruct tmp;
-  fable::Json expect = R"({
+  fable::assert_to_json(tmp, R"({
     "release": "2",
     "major": 2
-  })"_json;
-  assert_json_eq(tmp.schema().to_json(), expect);
+  })");
 }

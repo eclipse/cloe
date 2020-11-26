@@ -27,8 +27,9 @@ using namespace std;  // NOLINT(build/namespaces)
 #include <gtest/gtest.h>
 #include <boost/optional.hpp>
 
-#include <fable/confable.hpp>  // for Confable
-#include <fable/schema.hpp>    // for Optional
+#include <fable/confable.hpp>       // for Confable
+#include <fable/schema.hpp>         // for Optional
+#include <fable/utility/gtest.hpp>  // for assert_schema_eq, ...
 
 struct MyOptionalStruct : public fable::Confable {
   boost::optional<std::string> str;
@@ -41,14 +42,10 @@ struct MyOptionalStruct : public fable::Confable {
   }
 };
 
-inline void assert_json_eq(const fable::Json& j, const fable::Json& k) {
-  ASSERT_EQ(std::string(j.dump()), std::string(k.dump()));
-}
-
 TEST(fable_schema_optional, schema) {
   MyOptionalStruct tmp;
 
-  fable::Json expect = R"({
+  fable::assert_schema_eq(tmp, R"({
     "type": "object",
     "properties": {
       "str": {
@@ -60,51 +57,47 @@ TEST(fable_schema_optional, schema) {
       }
     },
     "additionalProperties": false
-  })"_json;
-
-  assert_json_eq(tmp.schema().json_schema(), expect);
+  })");
 }
 
 TEST(fable_schema_optional, validate) {
   MyOptionalStruct tmp;
-  auto s = tmp.schema();
 
-  s.validate(fable::Conf{R"({
+  fable::assert_validate(tmp, R"({
     "str": null
-  })"_json});
+  })");
   ASSERT_FALSE(tmp.str);
 
-  s.validate(fable::Conf{R"({
+  fable::assert_validate(tmp, R"({
     "str": "hello"
-  })"_json});
+  })");
+  ASSERT_FALSE(tmp.str);
 
-  s.from_conf(fable::Conf{R"({
+  fable::assert_from_conf(tmp, R"({
     "str": "hello"
-  })"_json});
+  })");
   ASSERT_TRUE(tmp.str);
   ASSERT_EQ(*(tmp.str), "hello");
 }
 
 TEST(fable_schema_optional, to_json) {
   MyOptionalStruct tmp1;
-  fable::Json expect1 = R"({})"_json;
-  assert_json_eq(tmp1.to_json(), expect1);
+
+  fable::assert_to_json(tmp1, "{}");
 
   MyOptionalStruct tmp2;
   tmp2.str = "hello";
-  fable::Json expect2 = R"({
+  fable::assert_to_json(tmp2, R"({
     "str": "hello"
-  })"_json;
-  assert_json_eq(tmp2.to_json(), expect2);
+  })");
 }
 
 TEST(fable_schema_optional, from_json) {
-  MyOptionalStruct tmp1;
-  fable::Conf input1{R"({
+  MyOptionalStruct tmp;
+  fable::assert_from_conf(tmp, R"({
     "str": "hello"
-  })"_json};
-  tmp1.from_conf(input1);
-  ASSERT_EQ(*tmp1.str, "hello");
+  })");
+  ASSERT_EQ(*tmp.str, "hello");
 }
 
 TEST(fable_schema_optional, make_prototype) {
