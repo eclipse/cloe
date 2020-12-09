@@ -292,11 +292,11 @@ class Rendering extends Component {
     // Create needed THREE objects.
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 10000);
+    camera.up.set(0, 0, 1);
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableKeys = false;
 
     // Move and rotate camera to viewing position.
-    camera.up.set(0, 0, 1);
     this.cameraSetPosition(camera, this.defaultCameraPerspective);
     controls.update();
 
