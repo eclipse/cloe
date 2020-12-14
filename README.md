@@ -100,6 +100,12 @@ Run `make help` to get an overview of the available targets we expect you to
 use. For more details on how this is done, have a look at the Makefiles in the
 repository root or the Dockerfiles in `dist/docker` directory.
 
+If you experience timeout issues waiting for Conan Center, the reason is likely
+the boost dependency's hundreds of binary packages. You can then slightly
+increase Conan's timeout configuration like so:
+
+    export CONAN_REQUEST_TIMEOUT=320
+
 ### Running Cloe
 
 Since Cloe is made up of many packages, running the Cloe engine directly is
