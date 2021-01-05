@@ -26,9 +26,11 @@
 #include <string>   // for string
 #include <utility>  // for move
 
-#include <cloe/component.hpp>  // for Component, ComponentFactory, ...
-#include <cloe/core.hpp>       // for Confable, Schema
-#include <cloe/entity.hpp>     // for Entity
+#include <cloe/component.hpp>        // for Component, ComponentFactory, ...
+#include <cloe/core.hpp>             // for Confable, Schema
+#include <cloe/entity.hpp>           // for Entity
+#include <cloe/simulator.hpp>        // for ModelError
+#include <fable/schema/factory.hpp>  // for Factory
 
 namespace cloe {
 namespace component {
@@ -81,11 +83,8 @@ class NormalDistribution : public Distribution<T> {
   Schema schema_impl() override {
     // clang-format off
     return Schema{
-      {"binding", make_const_schema(this->name(), "identifier of this distribution").require()},
-      {"args", Schema{
-        {"mean", make_schema(&mean, "mean value of normal distribution")},
-        {"std_deviation", make_schema(&std_deviation, "standard deviation of normal distribution")},
-      }},
+      {"mean", make_schema(&mean, "mean value of normal distribution")},
+      {"std_deviation", make_schema(&std_deviation, "standard deviation of normal distribution")},
     };
     // clang-format on
   }
@@ -101,85 +100,6 @@ class NormalDistribution : public Distribution<T> {
 
 using DistributionPtr = std::shared_ptr<Distribution<double>>;
 
-template <typename T = double, typename P = std::shared_ptr<Distribution<T>>>
-class DistributionSchema : public schema::Base<DistributionSchema<T, P>> {
-  using Base = schema::Base<DistributionSchema<T, P>>;
-  using Type = P;
-
-  const std::map<std::string, std::function<Distribution<T>*(const Conf& c)>> distributions{
-      {"normal",
-       [](const Conf& c) {
-         auto d = new NormalDistribution<T>();
-         if (c.has("args")) {
-           d->from_conf(c);
-         }
-         return d;
-       }},
-  };
-
- public:  // Constructors
-  DistributionSchema(Type* ptr, std::string&& desc)
-      : Base(JsonType::object, std::move(desc)), ptr_(ptr) {}
-
- public:  // Special
-  const std::vector<Schema>& schemas() const { return schemas_; }
-  Json json_schemas() const {
-    Json vec = Json::array();
-    for (const auto& s : schemas_) {
-      vec.push_back(s.json_schema());
-    }
-    return vec;
-  }
-
- public:  // Overrides
-  Json json_schema() const override {
-    Json j{
-        {"oneOf", json_schemas()},
-    };
-    this->augment_schema(j);
-    return j;
-  }
-
-  void validate(const Conf& c) const override {
-    size_t valid = 0;
-    for (const auto& s : schemas_) {
-      if (s.is_valid(c)) {
-        valid++;
-      }
-    }
-    if (valid != 1) {
-      this->throw_error(c, "require exactly one sub-schema to match");
-    }
-  }
-
-  void to_json(Json& j) const override { j = serialize(*ptr_); }
-
-  void from_conf(const Conf& c) override {
-    assert(ptr_ != nullptr);
-    *ptr_ = deserialize(c);
-  }
-
-  Json serialize(const Type& x) const { return x; }
-
-  Type deserialize(const Conf& c) const {
-    auto binding = c.get<std::string>("binding");
-    return Type(distributions.at(binding)(c));
-  }
-
-  void reset_ptr() override {
-    ptr_ = nullptr;
-    for (auto& s : schemas_) {
-      s.reset_ptr();
-    }
-  }
-
- private:
-  Type* ptr_{nullptr};
-  std::vector<Schema> schemas_{
-      NormalDistribution<T>().schema(),
-  };
-};
-
 template <typename T>
 class Random {
  public:
@@ -191,11 +111,27 @@ class Random {
 
   void reset(const unsigned long& seed) { engine_ = std::default_random_engine(seed); }
 
-  void reset(DistributionPtr dist) { d = dist; }
+  void reset(DistributionPtr dist) {
+    if (dist) {
+      d = dist;
+    } else {
+      throw cloe::ModelError("noisy_sensor: empty distribution assignment.");
+    }
+  }
 
  private:
   mutable std::default_random_engine engine_;
-  DistributionPtr d;
+  DistributionPtr d{nullptr};
+};
+
+class DistributionFactory : public fable::schema::Factory<DistributionPtr> {
+ public:
+  DistributionFactory(DistributionPtr* ptr, std::string&& desc)
+      : fable::schema::Factory<DistributionPtr>(ptr, std::move(desc)) {
+    this->set_factory_key("binding");
+    this->add_default_factory<NormalDistribution<double>>("normal");
+  };
+  virtual ~DistributionFactory() = default;
 };
 
 class NoiseConf : public Confable {
@@ -216,7 +152,7 @@ class NoiseConf : public Confable {
   CONFABLE_SCHEMA(NoiseConf) {
     return Schema{
         // clang-format off
-        {"distribution", DistributionSchema<>(&distr_default, "set distribution binding and arguments")},
+        {"distribution", DistributionFactory(&distr_default, "set distribution binding and arguments")},
         // clang-format on
     };
   }
