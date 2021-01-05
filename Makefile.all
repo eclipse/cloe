@@ -158,6 +158,7 @@ ifeq (${WITH_VTD},1)
 CONAN_OPTIONS += -o cloe-plugin-vtd:test=False
 endif
 CONAN_OPTIONS += -o cloe-plugin-basic:test=False
+CONAN_OPTIONS += -o cloe-plugin-noisy-sensor:test=False
 endif
 
 SELECT_PKGS := $(filter-out ${UNSELECT_PKGS}, ${ALL_PKGS})
