@@ -1,0 +1,61 @@
+#!/bin/bash
+
+source $(readlink -f "$(dirname ${BASH_SOURCE[0]})/../scripts/setup.sh")
+cloe_assert_vtd
+
+tmux_session="vtd"
+vtd_setup="Cloe.Default"
+vtd_project="cloe_tests"
+vtd_args=""
+
+while [ $# -ne 0 ]; do
+    case $1 in
+        -t)
+            tmux_session=$2
+            shift 1
+            ;;
+        --setup)
+            vtd_setup=$2
+            shift 1
+            ;;
+        --project)
+            vtd_project=$2
+            shift 1
+            ;;
+        --args)
+            vtd_args=$2
+            shift 1
+            ;;
+        start)
+            if [[ $vtd_project == "cloe_tests" ]]; then
+                cloe_link_projects
+            fi
+            if tmux has-session -t $tmux_session >/dev/null 2>&1; then
+                errorf "tmux session $tmux_session already exists."
+                exit 1
+            fi
+            cloe_check_vtd_setup_path
+            cloe_check_vtd_project_path
+	        cloe_check_osi_vtd
+            tmux new-session -d -s $tmux_session
+            tmux rename-window -t $tmux_session "vtd"
+            tmux send-keys -t $tmux_session " cd $VTD_ROOT" C-m
+            tmux send-keys -t $tmux_session " bin/vtdStart.sh '-setup=$vtd_setup' '-project=$vtd_project' $vtd_args" C-m
+            ;;
+        stop)
+            cd ${VTD_ROOT}
+            bin/vtdStop.sh
+            if tmux has-session -t $tmux_session >/dev/null 2>&1; then
+                tmux kill-session -t $tmux_session
+            fi
+            ;;
+        attach)
+            tmux attach -t $tmux_session
+            ;;
+        *)
+            echo "Usage: $0 [-t TMUX_SESSION] [--args] <start|stop|attach>"
+            exit 1
+            ;;
+    esac
+    shift 1
+done

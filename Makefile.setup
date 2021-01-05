@@ -67,14 +67,16 @@ install-ubuntu-deps::
 		python3-setuptools \
 		python3-pip \
 		time \
-		tmux
+		tmux \
+		;
 
 ifndef WITHOUT_DEV_DEPS
 install-ubuntu-deps::
 	command -v ${APT} >/dev/null 2>&1
 	${APT} install ${APT_ARGS} \
 		clang-format \
-        python3-venv
+        python3-venv \
+		;
 endif
 
 # Archlinux -------------------------------------------------------------------
@@ -96,14 +98,16 @@ install-archlinux-deps::
 		patchelf \
 		python-pip \
 		time \
-		tmux
+		tmux \
+		;
 
 ifndef WITHOUT_DEV_DEPS
 install-archlinux-deps::
 	command -v ${PACMAN} >/dev/null 2>&1
 	${PACMAN} -S ${PACMAN_ARGS} \
 		clang \
-		python-virtualenv
+		python-virtualenv \
+		;
 endif
 
 # Python ----------------------------------------------------------------------
@@ -113,7 +117,10 @@ endif
 
 install-python-deps::
 	command -v ${PIP} >/dev/null 2>&1
-	${PIP} install ${PIP_INSTALL_ARGS} conan
+	${PIP} install ${PIP_INSTALL_ARGS} \
+		conan \
+		libtmux \
+		;
 
 ifndef WITHOUT_DEV_DEPS
 install-python-deps::

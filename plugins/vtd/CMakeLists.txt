@@ -5,21 +5,6 @@ project(cloe_plugin_vtd LANGUAGES CXX)
 include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup(TARGETS)
 
-# VTD Interface Library ----------------------------------------------
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-find_package(VTD)
-add_library(vtd-rdb-interface STATIC
-    ${VTD_RDBHANDLER_SOURCES}
-)
-target_include_directories(vtd-rdb-interface
-  PUBLIC
-    ${VTD_INCLUDE_DIRS}
-    ${VTD_RDBHANDLER_INCLUDE_DIRS}
-)
-set_target_properties(vtd-rdb-interface PROPERTIES
-    POSITION_INDEPENDENT_CODE ON
-)
-
 # Cloe Plugin --------------------------------------------------------
 include(CloePluginSetup)
 
@@ -38,7 +23,7 @@ add_library(vtd-object-lib STATIC
 )
 target_link_libraries(vtd-object-lib
   PUBLIC
-    vtd-rdb-interface
+    CONAN_PKG::vtd-api
     CONAN_PKG::cloe-runtime
     CONAN_PKG::cloe-models
     CONAN_PKG::boost
