@@ -1,61 +1,268 @@
-#!/bin/bash
+#!/usr/bin/env python3
 
-source $(readlink -f "$(dirname ${BASH_SOURCE[0]})/../scripts/setup.sh")
-cloe_assert_vtd
+import subprocess
+import click
+import os
+import logging
+import libtmux
+import sys
+import shutil
+import shlex
 
-tmux_session="vtd"
-vtd_setup="Cloe.Default"
-vtd_project="cloe_tests"
-vtd_args=""
+from pathlib import Path
+from typing import Dict, List, Optional
 
-while [ $# -ne 0 ]; do
-    case $1 in
-        -t)
-            tmux_session=$2
-            shift 1
-            ;;
-        --setup)
-            vtd_setup=$2
-            shift 1
-            ;;
-        --project)
-            vtd_project=$2
-            shift 1
-            ;;
-        --args)
-            vtd_args=$2
-            shift 1
-            ;;
-        start)
-            if [[ $vtd_project == "cloe_tests" ]]; then
-                cloe_link_projects
-            fi
-            if tmux has-session -t $tmux_session >/dev/null 2>&1; then
-                errorf "tmux session $tmux_session already exists."
-                exit 1
-            fi
-            cloe_check_vtd_setup_path
-            cloe_check_vtd_project_path
-	        cloe_check_osi_vtd
-            tmux new-session -d -s $tmux_session
-            tmux rename-window -t $tmux_session "vtd"
-            tmux send-keys -t $tmux_session " cd $VTD_ROOT" C-m
-            tmux send-keys -t $tmux_session " bin/vtdStart.sh '-setup=$vtd_setup' '-project=$vtd_project' $vtd_args" C-m
-            ;;
-        stop)
-            cd ${VTD_ROOT}
-            bin/vtdStop.sh
-            if tmux has-session -t $tmux_session >/dev/null 2>&1; then
-                tmux kill-session -t $tmux_session
-            fi
-            ;;
-        attach)
-            tmux attach -t $tmux_session
-            ;;
-        *)
-            echo "Usage: $0 [-t TMUX_SESSION] [--args] <start|stop|attach>"
-            exit 1
-            ;;
-    esac
-    shift 1
-done
+
+@click.group()
+@click.option(
+    "-v",
+    "--verbose",
+    envvar="CLOE_VERBOSE",
+    count=True,
+    help="Print more information (env: $CLOE_VERBOSE).",
+)
+@click.option(
+    "-r",
+    "--vtd-root",
+    envvar="VTD_ROOT",
+    type=click.Path(exists=True, file_okay=False, dir_okay=True),
+    required=True,
+    help="VTD installation directory (env: $VTD_ROOT).",
+)
+@click.option(
+    "--runtime-dir",
+    envvar="VTD_RUNTIME_DIR",
+    type=click.Path(file_okay=False, dir_okay=True),
+    required=True,
+    default="/tmp/vtd-runtime",
+    help="VTD runtime directory (env: $VTD_RUNTIME_DIR).",
+)
+@click.option(
+    "--tmux-session",
+    type=str,
+    default="vtd",
+    required=True,
+    help="The tmux session name to use.",
+)
+@click.pass_context
+def main(
+    ctx,
+    verbose: int,
+    vtd_root: str,
+    runtime_dir: str,
+    tmux_session: str,
+):
+    """Start and stop a VTD simulation."""
+
+    if verbose == 0:
+        level = logging.WARNING
+    elif verbose == 1:
+        level = logging.INFO
+    else:
+        level = logging.DEBUG
+    logging.basicConfig(format="%(message)s", stream=sys.stderr, level=level)
+
+    class Options:
+        def __init__(self, root: str, runtime: str, session_name: str):
+            self.root_dir = Path(root)
+            self.runtime_dir = Path(runtime)
+            self.tmux = libtmux.Server()
+            self.session_name = session_name
+
+        def get_session(self) -> Optional[libtmux.Session]:
+            return self.tmux.find_where({"session_name": self.session_name})
+
+        def has_session(self) -> bool:
+            return self.tmux.has_session(self.session_name)
+
+        def new_session(self) -> libtmux.Session:
+            return self.tmux.new_session(self.session_name)
+
+    ctx.obj = Options(vtd_root, runtime_dir, tmux_session)
+
+
+# _________________________________________________________________________
+# Command: setup
+@main.command("setup")
+@click.pass_obj
+def setup(opt):
+    """Set up a fake VTD installation directory, containing links for all
+    files from the VTD installation.
+
+    This creates a fake installation of VTD in a temporary directory by creating
+    symlinks to the original installation, and allows us to use different
+    VTD setups and projects without modifying the original VTD installation.
+    """
+
+    logging.info("Set up VTD installation facade: {}".format(opt.runtime_dir))
+    teardown_runtime(opt.runtime_dir)
+    setup_runtime(opt.root_dir, opt.runtime_dir)
+
+
+def setup_runtime(vtd_root: Path, runtime_dir: Path) -> None:
+    logging.debug("Create directory: {}".format(runtime_dir))
+    os.makedirs(runtime_dir)
+
+    for file in ["bin", "Develop", "Runtime"]:
+        src = vtd_root / file
+        dst = runtime_dir / file
+        logging.debug("Create symlink: {} -> {}".format(dst, src))
+        os.symlink(src, dst)
+
+    for file in ["Distros", "Projects", "Setups"]:
+        srcdir = vtd_root / "Data" / file
+        dstdir = runtime_dir / "Data" / file
+        logging.debug("Create directory: {}".format(dstdir))
+        os.makedirs(dstdir)
+
+        for file in os.listdir(srcdir):
+            srcfile = srcdir / file
+            dstfile = dstdir / file
+            logging.debug("Create symlink: {} -> {}".format(dstfile, srcfile))
+            os.symlink(srcfile, dstfile)
+
+
+# _________________________________________________________________________
+# Command: teardown
+@main.command("teardown")
+@click.pass_obj
+def teardown(opt):
+    """Tear down a fake VTD installation directory."""
+
+    logging.info("Tear down VTD installation facade: {}".format(opt.runtime_dir))
+    teardown_runtime(opt.runtime_dir)
+
+
+def teardown_runtime(runtime_dir: Path) -> None:
+    if runtime_dir.exists():
+        logging.debug("Remove VTD installation facade: {}".format(runtime_dir))
+        shutil.rmtree(runtime_dir, ignore_errors=False)
+
+
+# _________________________________________________________________________
+# Command: start [--skip-setup]
+@main.command("start")
+@click.option(
+    "--skip-setup",
+    is_flag=True,
+    help="Skip (re-)creation of VTD installation facade.",
+)
+@click.option(
+    "-s",
+    "--vtd-setup",
+    type=click.Path(exists=True, file_okay=True, dir_okay=True),
+    help="VTD setup to use, default to currently symlinked.",
+)
+@click.option(
+    "--copy-setup",
+    is_flag=True,
+    help="Copy VTD setup in facade installation, instead of linking.",
+)
+@click.option(
+    "-p",
+    "--vtd-project",
+    type=click.Path(exists=True, file_okay=True, dir_okay=True),
+    help="VTD project to use, default to currently symlinked.",
+)
+@click.option(
+    "--copy-project",
+    is_flag=True,
+    help="Copy VTD project in facade installation, instead of linking.",
+)
+@click.option(
+    "-a",
+    "--vtd-args",
+    type=str,
+    default="",
+    help="Extra arguments to pass to VTD.",
+)
+@click.pass_obj
+def start(
+    opt,
+    skip_setup: bool,
+    vtd_setup: str,
+    copy_setup: bool,
+    vtd_project: str,
+    copy_project: bool,
+    vtd_args: str,
+):
+    """Start a new VTD simulation in a fake VTD installation directory.
+
+    This creates a fake installation of VTD in a temporary directory by creating
+    symlinks to the original installation, and allows us to use different
+    VTD setups and projects without modifying the original VTD installation.
+    This step can be skipped with --skip-setup, if you already have a setup
+    created.
+
+    Then a VTD simulation is started in this fake installation.
+    """
+
+    if not skip_setup:
+        logging.info("Set up VTD installation facade: {}".format(opt.runtime_dir))
+        teardown_runtime(opt.runtime_dir)
+        setup_runtime(opt.root_dir, opt.runtime_dir)
+
+    if opt.has_session():
+        raise click.UsageError(
+            "tmux session already exists: {}".format(opt.session_name)
+        )
+
+    session = opt.new_session()
+    window = session.attached_window
+    window.rename_window("vtd")
+    pane = window.attached_pane
+    pane.clear()
+
+    if vtd_setup is not None:
+        logging.info("Select setup: {}".format(vtd_setup))
+        if Path(vtd_setup).exists():
+            vtd_setup = Path(vtd_setup).resolve()
+        dst = opt.runtime_dir / "Data" / "Setups" / "Current"
+        if dst.exists():
+            os.remove(dst)
+        if copy_setup:
+            shutil.copytree(vtd_setup, dst)
+        else:
+            os.symlink(vtd_setup, dst)
+
+    if vtd_project is not None:
+        logging.info("Select project: {}".format(vtd_project))
+        if Path(vtd_project).exists():
+            vtd_project = Path(vtd_project).resolve()
+        dst = opt.runtime_dir / "Data" / "Projects" / "Current"
+        if dst.exists():
+            os.remove(dst)
+        if copy_project:
+            shutil.copytree(vtd_project, dst)
+        else:
+            os.symlink(vtd_project, dst)
+
+    runtime_dir = shlex.quote(str(opt.runtime_dir))
+    pane.send_keys("cd {}".format(runtime_dir))
+    pane.send_keys("export VTD_ROOT={}".format(runtime_dir))
+    pane.send_keys("bin/vtdStart.sh {}".format(vtd_args))
+
+
+# _________________________________________________________________________
+# Command: stop [--skip-teardown]
+@main.command("stop")
+@click.option(
+    "--skip-teardown",
+    is_flag=True,
+    help="Skip removal of VTD installation facade.",
+)
+@click.pass_obj
+def stop(opt, skip_teardown: bool):
+    """Stop a currently running VTD simulation."""
+
+    if opt.has_session():
+        session = opt.get_session()
+        subprocess.call([opt.runtime_dir / "bin" / "vtdStop.sh"])
+        session.kill_session()
+
+    if not skip_teardown:
+        teardown_runtime(opt.runtime_dir)
+
+
+if __name__ == "__main__":
+    main()

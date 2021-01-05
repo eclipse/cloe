@@ -66,6 +66,26 @@ cloe_engine() {
     )
 }
 
+cloe_shell() {
+    local cloe_log_level="${CLOE_LOG_LEVEL-debug}"
+    local cloe_profile_file="${CLOE_PROFILE_FILE-${CLOE_ROOT}/conanfile.py}"
+    local cloe_launch_exe=(python3 -m cloe_launch)
+    local cloe_launch_args=(-vv shell -c -P "${cloe_profile_file}")
+
+    for var in ${CLOE_OVERRIDE_ENV[@]}; do
+        cloe_launch_args+=(--override-env=${var})
+    done
+
+    local user_args=("$@")
+
+    # Run the prepared command:
+    (
+        echo "Running:" "${cloe_launch_exe[@]}" "${cloe_launch_args[@]}" -- "${user_args[@]}" >&2
+        export PYTHONPATH="${CLOE_ROOT}/cli"
+        "${cloe_launch_exe[@]}" "${cloe_launch_args[@]}" -- "${user_args[@]}"
+    )
+}
+
 assert_not_empty() {
     [[ $(echo "${@}" | tr -d '[:space:]') != "" ]]
 }
