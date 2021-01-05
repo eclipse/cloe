@@ -98,10 +98,8 @@
                 "target": "translation",
                 "distribution": {
                   "binding": "normal",
-                  "args": {
-                    "mean": 0.0,
-                    "std_deviation": 0.3
-                  }
+                  "mean": 0.0,
+                  "std_deviation": 0.3
                 }
               }
             ]
@@ -118,20 +116,16 @@
                 "target": "dy_start",
                 "distribution": {
                   "binding": "normal",
-                  "args": {
-                    "mean": 0.0,
-                    "std_deviation": 0.1
-                  }
+                  "mean": 0.0,
+                  "std_deviation": 0.1
                 }
               },
               {
                 "target": "dx_end",
                 "distribution": {
                   "binding": "normal",
-                  "args": {
-                    "mean": 0.0,
-                    "std_deviation": 5.0
-                  }
+                  "mean": 0.0,
+                  "std_deviation": 5.0
                 }
               }
             ]

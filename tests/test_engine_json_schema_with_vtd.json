@@ -1518,27 +1518,21 @@
                                   {
                                     "additionalProperties": false,
                                     "properties": {
-                                      "args": {
-                                        "additionalProperties": false,
-                                        "properties": {
-                                          "mean": {
-                                            "description": "mean value of normal distribution",
-                                            "maximum": 1.7976931348623157e+308,
-                                            "minimum": -1.7976931348623157e+308,
-                                            "type": "number"
-                                          },
-                                          "std_deviation": {
-                                            "description": "standard deviation of normal distribution",
-                                            "maximum": 1.7976931348623157e+308,
-                                            "minimum": -1.7976931348623157e+308,
-                                            "type": "number"
-                                          }
-                                        },
-                                        "type": "object"
-                                      },
                                       "binding": {
                                         "const": "normal",
                                         "description": "name of factory"
+                                      },
+                                      "mean": {
+                                        "description": "mean value of normal distribution",
+                                        "maximum": 1.7976931348623157e+308,
+                                        "minimum": -1.7976931348623157e+308,
+                                        "type": "number"
+                                      },
+                                      "std_deviation": {
+                                        "description": "standard deviation of normal distribution",
+                                        "maximum": 1.7976931348623157e+308,
+                                        "minimum": -1.7976931348623157e+308,
+                                        "type": "number"
                                       }
                                     },
                                     "required": [
@@ -1618,27 +1612,21 @@
                                   {
                                     "additionalProperties": false,
                                     "properties": {
-                                      "args": {
-                                        "additionalProperties": false,
-                                        "properties": {
-                                          "mean": {
-                                            "description": "mean value of normal distribution",
-                                            "maximum": 1.7976931348623157e+308,
-                                            "minimum": -1.7976931348623157e+308,
-                                            "type": "number"
-                                          },
-                                          "std_deviation": {
-                                            "description": "standard deviation of normal distribution",
-                                            "maximum": 1.7976931348623157e+308,
-                                            "minimum": -1.7976931348623157e+308,
-                                            "type": "number"
-                                          }
-                                        },
-                                        "type": "object"
-                                      },
                                       "binding": {
                                         "const": "normal",
                                         "description": "name of factory"
+                                      },
+                                      "mean": {
+                                        "description": "mean value of normal distribution",
+                                        "maximum": 1.7976931348623157e+308,
+                                        "minimum": -1.7976931348623157e+308,
+                                        "type": "number"
+                                      },
+                                      "std_deviation": {
+                                        "description": "standard deviation of normal distribution",
+                                        "maximum": 1.7976931348623157e+308,
+                                        "minimum": -1.7976931348623157e+308,
+                                        "type": "number"
                                       }
                                     },
                                     "required": [
