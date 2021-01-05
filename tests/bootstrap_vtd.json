@@ -6,7 +6,15 @@
         {
           "path": "../plugins/vtd/bin/vtd",
           "args": [
-            "stop", "--setup", "Cloe.noGUInoIG", "--project", "cloe_tests", "start"
+            "stop"
+          ]
+        },
+        {
+          "path": "../plugins/vtd/bin/vtd",
+          "args": [
+            "start",
+            "--vtd-setup", "${THIS_STACKFILE_DIR}/../plugins/vtd/contrib/setups/Cloe.noGUInoIG",
+            "--vtd-project", "${THIS_STACKFILE_DIR}/../plugins/vtd/contrib/projects/cloe_tests"
           ]
         }
       ],

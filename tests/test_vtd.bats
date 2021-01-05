@@ -2,17 +2,14 @@
 
 load setup_bats
 
-source "${CLOE_ROOT}/plugins/vtd/scripts/setup.sh"
-cloe_find_vtd quiet
-
 teardown_vtd() {
-    "${CLOE_ROOT}/plugins/vtd/bin/vtd" stop
+    # CLOE_ROOT is only available outside the shell.
+    cloe_shell -c "${CLOE_ROOT}/plugins/vtd/bin/vtd stop"
 }
 
 test_vtd_plugin_exists() {
-    test ! -z ${VTD_ROOT}
-    test -d ${VTD_ROOT}/bin
-    test_plugin_exists vtd
+    # VTD_ROOT is only available in the shell.
+    cloe_shell -c 'test -d ${VTD_ROOT}'
 }
 
 
