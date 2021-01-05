@@ -126,7 +126,13 @@ teardown() {
 # container.
 
 test_vtd_osi_plugin_exists() {
-    test -f ${VTD_ROOT}/Data/Distros/Distro/Plugins/ModuleManager/libModuleOsi3Fmu.so
+    # VTD_ROOT is only available in the shell.
+    cloe_shell -c 'test -f ${VTD_ROOT}/Data/Distros/Distro/Plugins/ModuleManager/libModuleOsi3Fmu.so'
+}
+
+test_vtd_osi_model_exists() {
+    # VTD_ROOT is only available in the shell.
+    cloe_shell -c 'test -f ${VTD_ROOT}/Data/Distros/Distro/Plugins/ModuleManager/OSMPDummySensor.so'
 }
 
 @test "Expect check/run success: test_vtd_smoketest_osi.json" {
@@ -135,6 +141,9 @@ test_vtd_osi_plugin_exists() {
     fi
     if ! test_vtd_osi_plugin_exists; then
         skip "required osi plugin for simulator vtd not present"
+    fi
+    if ! test_vtd_osi_model_exists; then
+        skip "required osi sensor model for simulator vtd not present"
     fi
     cloe_engine check test_vtd_smoketest_osi.json
     cloe_engine run test_vtd_smoketest_osi.json
