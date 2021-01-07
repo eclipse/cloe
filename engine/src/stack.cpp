@@ -34,7 +34,6 @@
 namespace fs = boost::filesystem;
 
 #include <cloe/utility/std_extensions.hpp>  // for join_vector
-#include <fable/utility.hpp>                // for read_conf_with_interpolation
 
 namespace cloe {
 

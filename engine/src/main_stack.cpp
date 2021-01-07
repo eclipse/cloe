@@ -31,6 +31,7 @@
 
 #include <cloe/utility/std_extensions.hpp>  // for split_string
 #include <cloe/utility/xdg.hpp>             // for merge_config
+#include <fable/environment.hpp>            // for Environment
 #include <fable/utility.hpp>                // for pretty_print, read_conf_from_file
 
 #include "plugins/nop_controller.hpp"  // for NopFactory
@@ -41,14 +42,24 @@
 
 namespace cloe {
 
+Conf read_conf(const StackOptions& opt, const std::string& filepath) {
+  if (!opt.interpolate_vars) {
+    return fable::read_conf(filepath);
+  }
+
+  // Prepare environment with extra variables:
+  fable::Environment env(*opt.environment);
+  if (!filepath.empty() && filepath != "-") {
+    std::string dirpath = boost::filesystem::canonical(filepath).parent_path().native();
+    env.set("THIS_STACKFILE_FILE", filepath);
+    env.set("THIS_STACKFILE_DIR", dirpath);
+  }
+  return fable::read_conf_with_interpolation(filepath, &env);
+}
+
 void merge_stack(const StackOptions& opt, Stack& s, const std::string& filepath) {
   auto merge = [&]() {
-    Conf c;
-    if (opt.interpolate_vars) {
-      c = fable::read_conf_with_interpolation(filepath, opt.environment.get());
-    } else {
-      c = fable::read_conf(filepath);
-    }
+    Conf c = read_conf(opt, filepath);
 
     if (opt.no_hooks) {
       // Removing hooks from the config allows the stack to validate even if
@@ -95,9 +106,8 @@ Stack new_stack(const StackOptions& opt) {
     };
     interpolate_path(s.engine.registry_path);
     interpolate_path(s.engine.output_path);
-    s.set_conf_reader([&opt](const std::string& filepath) -> cloe::Conf {
-      return fable::read_conf_with_interpolation(filepath, opt.environment.get());
-    });
+    s.set_conf_reader(
+        [&opt](const std::string& filepath) -> cloe::Conf { return read_conf(opt, filepath); });
   }
 
   // Insert ignored sections
