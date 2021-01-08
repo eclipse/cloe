@@ -176,9 +176,11 @@ def cli_exec(
     multiple=True,
     help="Options to pass to Conan for virtualrunenv generation",
 )
+@click.argument("shell_args", nargs=-1)
 @click.pass_obj
 def cli_shell(
     opt,
+    shell_args: List[str],
     profile: str,
     profile_path: str,
     preserve_env: bool,
@@ -193,7 +195,7 @@ def cli_shell(
     engine.conan_options = conan_option
 
     # Replace process with shell.
-    engine.shell(use_cache=cache)
+    engine.shell(shell_args, use_cache=cache)
 
 
 # _________________________________________________________________________
