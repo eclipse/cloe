@@ -20,7 +20,7 @@ class CppNetlib(ConanFile):
     generators = "cmake"
     requires = [
         # CppNetlib does not work with a boost that is newer than 1.69
-        "boost/1.69.0",
+        "boost/[>=1.65.0 <1.70]",
         "openssl/1.1.1g",
     ]
 
