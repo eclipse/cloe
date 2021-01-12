@@ -1268,7 +1268,7 @@
                                 "type": "string"
                               },
                               "override": {
-                                "description": "Override an exisiting component with the same name",
+                                "description": "Override an existing component with the same name",
                                 "type": "boolean"
                               },
                               "type": {
