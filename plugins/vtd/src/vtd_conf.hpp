@@ -153,7 +153,7 @@ struct VtdComponentConfig : public cloe::Confable {
     return cloe::Schema{
         {"from", cloe::Schema(&from, "VTD sensor to retrieve the component data from")},
         {"type", cloe::Schema(&type, "Component type to register")},
-        {"override", cloe::Schema(&override, "Override an exisiting component with the same name")},
+        {"override", cloe::Schema(&override, "Override an existing component with the same name")},
     };
   };
 };
