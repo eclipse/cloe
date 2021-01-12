@@ -428,7 +428,7 @@ struct EngineConf : public Confable {
         {"polling_interval", make_schema(&polling_interval, "milliseconds to sleep when polling for next state")},
         {"watchdog", Struct{
            {"mode", make_schema(&watchdog_mode, "modus operandi of watchdog [one of: off, log, abort, kill]")},
-           {"default_timeout", make_schema(&watchdog_default_timeout, "default timeout if not overriden, 0 for no timeout")},
+           {"default_timeout", make_schema(&watchdog_default_timeout, "default timeout if not overridden, 0 for no timeout")},
            {"state_timeouts", make_schema(&watchdog_state_timeouts, "timeout specific to a given state, 0 for no timeout").unique_properties(false)},
         }},
         {"keep_alive", make_schema(&keep_alive, "keep simulation alive after termination")},

@@ -788,7 +788,7 @@
           "additionalProperties": false,
           "properties": {
             "default_timeout": {
-              "description": "default timeout if not overriden, 0 for no timeout",
+              "description": "default timeout if not overridden, 0 for no timeout",
               "maximum": 9223372036854775807,
               "minimum": -9223372036854775808,
               "type": "integer"
