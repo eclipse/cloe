@@ -26,7 +26,6 @@ class CloeSimulatorVTD(ConanFile):
     ]
     no_copy_source = True
     build_requires = [
-        "boost/[~=1.69.0]",
         "open-simulation-interface/3.2.0@cloe/stable",
     ]
 
