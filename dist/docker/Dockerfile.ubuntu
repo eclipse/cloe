@@ -38,6 +38,7 @@ ARG CONAN_REMOTE=https://conan.bintray.com
 ARG CONAN_REMOTE_VERIFY_SSL=true
 RUN conan profile new --detect default && \
     conan profile update settings.compiler.libcxx=libstdc++11 default && \
+    conan config set general.request_timeout=360 && \
     conan remote clean && \
     conan remote add default ${CONAN_REMOTE} ${CONAN_REMOTE_VERIFY_SSL}
 
@@ -51,12 +52,12 @@ COPY . /cloe
 RUN \
     # Export our own Conan recipes, in case they are not available in the
     # CONAN_REMOTE specified above.
-    make VENDOR_ONLY=1 export && \
+    make export-vendor export && \
     # Build all the packages, except for vtd, because that currently requires
     # dependencies we don't have in the Docker container.
     # You can specify more than one package here, see the Makefile for more
     # information on the WITH_*, PACKAGES, NOBUILD_PKGS, and BUILD_PKGS variables.
-    make WITH_VTD=0 package && \
+    make WITH_VTD=0 package-all && \
     # Deploy all the Cloe packages to INSTALL_DIR, which is /usr/local by
     # default. This will also populate BUILD_DIR, so that should be removed
     # afterwards to prevent this image from getting too big.

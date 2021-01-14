@@ -25,6 +25,7 @@ RUN apk add \
       linux-headers \
       make \
       musl-dev \
+      perl \
       py3-pip \
     && \
     rm -rf /var/cache/apk/*
@@ -37,15 +38,16 @@ RUN pip3 install --upgrade pip && \
     python3 -m pip install conan && \
     conan profile new --detect default && \
     conan profile update settings.compiler.libcxx=libstdc++11 default && \
+    conan config set general.request_timeout=360 && \
     conan remote clean && \
     conan remote add default ${CONAN_REMOTE} ${CONAN_REMOTE_VERIFY_SSL}
 
 # Build and Install Cloe
 WORKDIR /cloe
 COPY . /cloe
-RUN make VENDOR_ONLY=1 export && \
-    make BUILD_TESTS=0 WITH_ENGINE=0 WITH_VTD=0 package && \
-    make BUILD_TESTS=0 WITH_ENGINE=0 WITH_VTD=0 INSTALL_DIR="/deploy" deploy && \
+RUN make export-vendor export && \
+    make WITH_VTD=0 package-all && \
+    make WITH_VTD=0 INSTALL_DIR="/deploy" deploy && \
     conan remove \* -b -f
 
 # Finalize Image

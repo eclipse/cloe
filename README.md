@@ -29,16 +29,16 @@ backfiring with increased support issues.
 Getting Started
 ---------------
 
-For building, deploying, and running the runtime and engine we use
-[Conan](https://conan.io), a modern C++ package manager. We currently have not
-published any Conan packages that can be downloaded directly.
-Building them yourself is pretty straightforward.
+For building, deploying, and running the runtime and engine we use [Conan][1],
+a modern C++ package manager. We currently have not published any Conan
+packages that can be downloaded directly. Building them yourself is pretty
+straightforward.
 
-Currently, we only support Linux or WSL.
+Currently, we only support Linux or [WSL][2].
 
 ### Installing Dependencies
 
-We provide automatic dependency installation for Ubuntu und Archlinux
+We provide automatic dependency installation for [Ubuntu][3] und [Archlinux][4]
 via the `Makefile.setup` Makefile. You should inspect it before
 running the targets, as these will modify your system.
 Other distributions may work, if the packages are available.
@@ -52,22 +52,16 @@ You may need to setup your Conan profile before continuing on to the next
 point. In a pinch, the following steps should suffice:
 
  1. Install Conan with Python.
-    ```console
-    $ pip3 install --user --upgrade conan
-    Collecting conan
-    ...
-    Successfully built conan
-    Installing collected packages: conan
-      Attempting uninstall: conan
-        Found existing installation: conan 1.28.1
-        Uninstalling conan-1.28.1:
-          Successfully uninstalled conan-1.28.1
-    Successfully installed conan-1.29.0
+    ```
+    pip3 install --user --upgrade conan
     ```
  2. Define a Conan profile, which defines the machine configuration.
+    ```
+    conan profile new --detect default
+    conan profile update settings.compiler.libcxx=libstdc++11 default
+    ```
+    If everything works out, your Conan profile should look something like this.
     ```console
-    $ conan profile new --detect default
-    $ conan profile update settings.compiler.libcxx=libstdc++11 default
     $ conan profile show default
     Configuration for profile default:
     [settings]
@@ -81,23 +75,30 @@ point. In a pinch, the following steps should suffice:
       build_type       = Release
     ```
 
-See the Conan documentation for more information on how to do this.
+3. Increase the request timeout to work around performance [issues][5] with the
+   Conan Center.
+   ```
+   conan config set general.request_timeout=360
+   ```
+See the Conan [documentation][6] for more information on how to do this.
 
 ### Building the Cloe Packages
 
 To build all packages, you should run the following:
 
-    make export VENDOR_ONLY=1
+    make export-vendor export
     make package
 
-This will export Conan recipes for some of our dependencies and build the
-packages that are contained in the repository. If you want to make use of
-all your 64 CPU cores, you can run the last command like so:
-
-    make package USE_NPROC=1
-
-For more details on how this is done, have a look at the Makefiles in the
-repository root.
+This will export all Conan recipes from this repository and create the cloe
+package. Conan will download and build all necessary dependencies. Should
+any errors occur during the build, you may have to force Conan to build
+all packages instead of re-using packages it finds:
+```
+    make package-all
+```
+Run `make help` to get an overview of the available targets we expect you to
+use. For more details on how this is done, have a look at the Makefiles in the
+repository root or the Dockerfiles in `dist/docker` directory.
 
 ### Running Cloe
 
@@ -141,3 +142,10 @@ Once the `cloe-launch` tool is available, you can do one of the following:
     Cloe 0.18.0-nightly (2020-10-01)
     ...
     ```
+
+[1]: https://conan.io
+[2]: https://docs.microsoft.com/en-us/windows/wsl/about
+[3]: https://ubuntu.com
+[4]: https://archlinux.org
+[5]: https://github.com/conan-io/conan-center-index/issues/950
+[6]: https://docs.conan.io/en/latest/

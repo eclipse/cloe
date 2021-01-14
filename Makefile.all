@@ -29,34 +29,6 @@ SUBMAKEFLAGS += -j${NPROC}
 endif
 endif
 
-## VENDOR_ONLY
-##   Usage: make VENDOR_ONLY=1 export
-##   Default: 0
-##
-##   This is somewhat of a misleading option, since it may imply that vendor
-##   packages are normally selected, which they are not. This is mainly useful
-##   for exporting the vendor recipes should they not already be available
-##   through an Artifactory or Conan server.
-##
-VENDOR_ONLY := 0
-
-## RECURSIVE
-##   Usage: make RECURSIVE=1 SELECT_PKGS="pkg1 ..." <targets>
-##   Default: 0
-##
-##   If set to 1, you can specify with SELECT_PKG a single package, but the
-##   dependencies will also be included. This allows us to do the following:
-##
-##       make RECURSIVE=1 SELECT_PKGS="engine" purge editable clean all
-##
-##   This command would then build engine with all its dependencies in-source,
-##   which is useful when making changes to, say fable and engine at the same
-##   time.
-##
-##   Note that this bypasses UNSELECT_PGKS, which is why it is off by default.
-##
-RECURSIVE := 0
-
 ## UNSELECT_PKGS
 ##   Usage: make UNSELECT_PKGS="pkg1 pkg2 ..." <targets>
 ##   Default: ""
@@ -65,9 +37,6 @@ RECURSIVE := 0
 ##   This should only be provided from the command line, for example:
 ##
 ##       make UNSELECT_PKGS="plugins/vtd plugins/demo_printer" package
-##
-##   Note that if RECURSIVE=1, then it is not possible to unselect packages
-##   that are depended upon by selected packages.
 ##
 UNSELECT_PKGS :=
 
@@ -79,6 +48,14 @@ UNSELECT_PKGS :=
 ##   overrides UNSELECT_PKG.
 ##
 SELECT_PKGS :=
+
+## BUILD_POLICY
+##   Usage: make BUILD_POLICY="outdated"
+##   Default: "missing"
+##
+##   This variable contains the default Conan build policy for package targets.
+##
+BUILD_POLICY := missing
 
 ## CONAN_OPTIONS
 ##   Usage: make CONAN_OPTIONS="..."
@@ -122,7 +99,6 @@ BUILD_TESTS := 1
 # --------------------------------------------------------------------------- #
 
 # Define all packages with their dependencies:
-# - Ensure RECURSIVE=1 works.
 # - Ensure USE_NPROC=1 works.
 # - Ensure packages are built in correct order.
 ALL_VENDOR_PKGS := $(wildcard vendor/*)
@@ -131,6 +107,19 @@ ALL_ENGINE_PKGS := oak engine
 ALL_PLUGIN_PKGS := $(wildcard plugins/*)
 ALL_PKGS := ${ALL_RUNTIME_PKGS} ${ALL_ENGINE_PKGS} ${ALL_PLUGIN_PKGS} cloe
 .PHONY: ${ALL_VENDOR_PKGS} ${ALL_PKGS}
+
+REGEX_TARGET := 's/(-vendor|-select)?-each//'
+$(filter-out cloe, ${ALL_PKGS} ${ALL_VENDOR_PKGS}):
+	${MAKE} -C $@ $(shell echo ${MAKECMDGOALS} | sed -re ${REGEX_TARGET})
+
+# Re-define cloe target to use Makefile.package, and only run for targets
+# where it makes sense, since "cloe" is a Conan meta-package.
+cloe:
+	for case in export package package-outdated list purge clean; do \
+		if [[ "$$(echo '${MAKECMDGOALS}' | sed -re ${REGEX_TARGET})" == "$${case}" ]]; then \
+			${MAKE} -f Makefile.package CONAN_OPTIONS="${CONAN_OPTIONS}" $${case}; \
+		fi \
+	done
 
 fable:
 runtime: fable
@@ -141,17 +130,8 @@ ${ALL_PLUGIN_PKGS}: runtime models
 
 # Select packages to use:
 # - Define recipes only for selected packages.
-# - Ensure RECURSIVE=1 works.
 # - Ensure CONAN_OPTIONS are correct for cloe metapackage.
 # - SELECT_PKGS contains final list of selected packages.
-ifeq (${VENDOR_ONLY},1)
-ALL_PKGS := ${ALL_VENDOR_PKGS}
-endif
-
-ifeq (${RECURSIVE},1)
-$(filter-out cloe, ${ALL_PKGS}):
-	${MAKE} -C $@ $(shell echo ${MAKECMDGOALS} | sed -re 's/-all//')
-endif
 
 ifeq (${WITH_ENGINE},0)
 ALL_PKGS := $(filter-out oak, ${ALL_PKGS})
@@ -180,78 +160,103 @@ CONAN_OPTIONS += -o cloe-plugin-basic:test=False
 endif
 
 SELECT_PKGS := $(filter-out ${UNSELECT_PKGS}, ${ALL_PKGS})
-ifeq (${RECURSIVE},0)
-$(filter-out cloe, ${SELECT_PKGS}):
-	${MAKE} -C $@ $(shell echo ${MAKECMDGOALS} | sed -re 's/-all//')
-endif
 
-define make_rule
+define make_target_help
 help::
-	@printf "  % -16s to %s\n" ${1} ${2}
+	@printf "  % -20s to %s\n" ${1} ${2}
+endef
 
-${1}-all: ${SELECT_PKGS}
+define make_target_rule
 ${1}:
 	@printf "________________________________________"
 	@printf "________________________________________\n"
-	@printf ":: Proceeding to%s\n" "$(shell echo "${2}" | sed -re 's/ +/ /g')"
-	${MAKE} ${SUBMAKEFLAGS} ${1}-all
+	@printf ":: Proceeding to%s\n" "$(shell echo "${3}" | sed -re 's/ +/ /g')"
+	${MAKE} ${SUBMAKEFLAGS} ${4} ${2}
 endef
 
-define make_target
-$(eval $(call make_rule,${1},${2}))
+define make_target_rules
+$(call make_target_help,${1},${2})
+$(call make_target_rule,${1},${1}-each,${2},)
+${1}-each: ${3}
 endef
 
-# Re-define cloe target to use Makefile.package, and only run for targets
-# where it makes sense, since "cloe" is a Conan meta-package.
-cloe:
-	for case in export package package-outdated list purge clean; do \
-		if [[ "${MAKECMDGOALS}" == "$${case}-all" ]]; then \
-			${MAKE} -f Makefile.package CONAN_OPTIONS="${CONAN_OPTIONS}" $${case}; \
-		fi \
-	done
+define make_vendor_target
+$(eval $(call make_target_rules,${1},${2},${ALL_VENDOR_PKGS}))
+endef
+
+define make_every_target
+$(eval $(call make_target_rules,${1},${2},${ALL_PKGS}))
+endef
+
+define make_select_target
+$(eval $(call make_target_rules,${1},${2},${SELECT_PKGS}))
+endef
+
+define make_cloe_rules
+$(call make_target_help,${1},${2})
+$(call make_target_rule,${1},${1},${2},-f Makefile.package CONAN_OPTIONS="${CONAN_OPTIONS}")
+endef
+
+define make_cloe_target
+$(eval $(call make_cloe_rules,${1},${2}))
+endef
+
+# --------------------------------------------------------------------------- #
 
 .PHONY: help
 .DEFAULT: help
 .SILENT: help
 help::
-	echo "Available package targets:"
+	echo "Available build targets:"
 
-$(call make_target, export,           "export selected package recipes      [conan-cache]")
-$(call make_target, package,          "create selected packages             [conan-cache]")
-$(call make_target, package-outdated, "create selected packages if outdated [conan-cache]")
-$(call make_target, list,             "list selected package install files  [conan-cache]")
-$(call make_target, purge,            "remove selected packages from cache  [conan-cache]")
+$(call make_vendor_target, export-vendor,      "export all vendor packages                  [conan-cache]")
+$(call make_vendor_target, package-vendor,     "create all vendor packages                  [conan-cache]")
 
 help::
 	echo
 
-$(call make_target, editable,         "instruct Conan to use in-source build for selected packages")
-$(call make_target, uneditable,       "instruct Conan to use local cache for selected packages")
+$(call make_every_target, export,              "export all package recipes                  [conan-cache]")
+$(call make_cloe_target, package,              "create cloe package with build policy       [conan-cache]")
+$(call make_cloe_target, package-all,          "create cloe package and all dependencies    [conan-cache]")
+$(call make_cloe_target, package-outdated,     "create cloe package if outdated             [conan-cache]")
 
 help::
 	echo
 
-$(call make_target, all,              "build selected packages                [in-source]")
-$(call make_target, conan,            "configure Conan and get dependencies   [in-source]")
-$(call make_target, configure,        "configure CMake packages               [in-source]")
-$(call make_target, test,             "run CMake tests if they are available  [in-source]")
-$(call make_target, export-pkg,       "export build artifacts to Conan cache  [in-source]")
-$(call make_target, clean,            "remove build artifacts                 [in-source]")
+$(call make_select_target, export-select,      "export selected packages                    [conan-cache]")
+$(call make_select_target, package-select,     "create selected packages with policy        [conan-cache]")
+$(call make_select_target, list-select,        "list selected package install files         [conan-cache]")
+$(call make_select_target, purge-select,       "remove selected packages from cache         [conan-cache]")
+
+help::
+	echo
+
+$(call make_select_target, editable-select,    "toggle [in-source] build for selected packages")
+$(call make_select_target, uneditable-select,  "toggle [conan-cache] build for selected packages")
+
+help::
+	echo
+
+$(call make_select_target, all-select,         "build selected packages                     [in-source]")
+$(call make_select_target, conan-select,       "configure Conan and get dependencies        [in-source]")
+$(call make_select_target, configure-select,   "configure CMake packages                    [in-source]")
+$(call make_select_target, test-select,        "run CMake tests if they are available       [in-source]")
+$(call make_select_target, export-pkg-select,  "export build artifacts to Conan cache       [in-source]")
+$(call make_select_target, clean-select,       "remove build artifacts                      [in-source]")
 
 help::
 	echo
 	echo "  Options:"
-	echo "    USE_NPROC=(0|1)     to build $(shell nproc) packages simultaneously (default=0)"
-	echo "    RECURSIVE=(0|1)     to recursively select dependent packages (default=0)"
-	echo "    VENDOR_ONLY=(0|1)   to only select vendor packages (default=0)"
-	echo "    WITH_ENGINE=(0|1)   to build and deploy cloe-engine (default=1)"
-	echo "    WITH_VTD=(0|1)      to build and deploy cloe-plugin-vtd (default=1)"
-	echo "    BUILD_TESTS=(0|1)   to build and run unit tests (default=1)"
+	echo "    USE_NPROC=(0|1)    to build $(shell nproc) packages simultaneously (default=0)"
+	echo "    WITH_ENGINE=(0|1)  to build and deploy cloe-engine (default=1)"
+	echo "    WITH_VTD=(0|1)     to build and deploy cloe-plugin-vtd (default=1)"
+	echo "    BUILD_TESTS=(0|1)  to build and run unit tests (default=1)"
 	echo
 	echo "  Defines:"
-	echo "    CONAN_OPTIONS = ${CONAN_OPTIONS}"
-	echo "    UNSELECT_PKGS = ${UNSELECT_PKGS}"
-	echo "    SELECT_PKGS   = \\"
+	echo "    BUILD_POLICY:  ${BUILD_POLICY}"
+	echo "    CONAN_OPTIONS: ${CONAN_OPTIONS}"
+	echo "    UNSELECT_PKGS: ${UNSELECT_PKGS}"
+	echo "    SELECT_PKGS:   \\"
 	echo "$$(echo "      ${SELECT_PKGS}" | fmt -70)"
 	echo
 	echo "  Please see Makefile.all for more details and usage tips."
