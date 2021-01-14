@@ -72,7 +72,8 @@ help:
 	echo "  help        to show this help"
 	echo
 	echo "  export            to export recipe and sources        [conan-cache]"
-	echo "  package           to create package                   [conan-cache]"
+	echo "  package           to create package with build policy [conan-cache]"
+	echo "  package-all       to create package and dependencies  [conan-cache]"
 	echo "  package-outdated  to create package if outdated       [conan-cache]"
 	echo "  list              to list installed package files     [conan-cache]"
 	echo "  purge             to remove package from cache        [conan-cache]"
@@ -90,6 +91,7 @@ help:
 	echo "Configuration:"
 	echo "  SOURCE_DIR:      ${SOURCE_DIR}"
 	echo "  BUILD_DIR:       ${BUILD_DIR}"
+	echo "  BUILD_POLICY:    ${BUILD_POLICY}"
 	echo "  CONAN_OPTIONS:   ${CONAN_OPTIONS}"
 	echo
 	echo "Package information:"
@@ -125,7 +127,7 @@ uneditable:
 	conan editable remove ${PACKAGE_FQN}
 
 # CONAN TARGETS ---------------------------------------------------------------
-.PHONY: export package package-outdated purge list
+.PHONY: export package package-all package-missing package-outdated purge list
 
 export:
 	# Export sources to Conan cache.
@@ -138,10 +140,20 @@ export:
 package:
 	# Build the package in Conan cache unconditionally.
 	#
-	#   Conan will retrieve (and build, if necessary) any missing dependencies.
+	#   Conan will retrieve and build all dependencies based on the build policy.
 	#   Note that this cannot be called if the package is currently in editable mode.
 	#
+	#   See: https://docs.conan.io/en/latest/mastering/policies.html
+	#
 	conan create . ${PACKAGE_CHANNEL} --build=${BUILD_POLICY} --build=${PACKAGE_NAME} ${CONAN_OPTIONS}
+
+package-all:
+	# Build the package in Conan cache unconditionally.
+	#
+	#   Conan will retrieve and build all dependencies unconditionally.
+	#   Note that this cannot be called if the package is currently in editable mode.
+	#
+	conan create . ${PACKAGE_CHANNEL} --build ${CONAN_OPTIONS}
 
 package-outdated:
 	# Build the package in Conan cache if it is outdated.

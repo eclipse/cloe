@@ -26,14 +26,15 @@ ARG CONAN_REMOTE=https://conan.bintray.com
 ARG CONAN_REMOTE_VERIFY_SSL=true
 RUN conan profile new --detect default && \
     conan profile update settings.compiler.libcxx=libstdc++11 default && \
+    conan config set general.request_timeout=360 && \
     conan remote clean && \
     conan remote add default ${CONAN_REMOTE} ${CONAN_REMOTE_VERIFY_SSL}
 
 # Build and Install Cloe
 WORKDIR /cloe
 COPY . /cloe
-RUN make VENDOR_ONLY=1 export && \
-    make WITH_VTD=0 package && \
+RUN make export-vtd export && \
+    make WITH_VTD=0 package-all && \
     make WITH_VTD=0 INSTALL_DIR="/deploy" deploy && \
     conan remove \* -b -f
 
