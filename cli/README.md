@@ -3,6 +3,19 @@
 The `cloe-launch` script is a stop-gap till the Cloe CLI (run as just `cloe`)
 makes it into the repository.
 
+## Installation
+
+We recommend the use of [pipx][1] for installation, but you can also use
+pip.
+```
+pipx install .
+```
+If you want to install in editable mode, you unfortunately need to disable
+use of PEP-517 temporarily, which you can do by renaming `pyproject.toml`:
+```
+mv pyproject.toml{,.bak} && pipx install -e . && mv pyproject.toml{.bak,}
+```
+
 ## Design Considerations
 
 The CLI interface to `cloe-engine` should do as little as possible and as much
@@ -37,3 +50,5 @@ module without resorting to installing it first. This is possible by setting
 the `PYTHONPATH` variable and using the `cloe_launch` module:
 
     PYTHONPATH="${CLOE_ROOT}/cli" cloe_launch
+
+[1]: https://pipxproject.github.io/pipx/
