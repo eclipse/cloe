@@ -22,10 +22,14 @@
  */
 
 #include <gtest/gtest.h>
+#include <string>
+#include <vector>
 
-#include <cloe/core.hpp>  // for Json
-#include "stack.hpp"      // for Stack
-using namespace cloe;     // NOLINT(build/namespaces)
+#include <cloe/component.hpp>                // for DEFINE_COMPONENT_FACTORY
+#include <cloe/component/object_sensor.hpp>  // for ObjectSensor
+#include <cloe/core.hpp>                     // for Json
+#include "stack.hpp"                         // for Stack
+using namespace cloe;                        // NOLINT(build/namespaces)
 
 TEST(cloe_stack, serialization_of_empty_stack) {
   Stack s;
@@ -209,4 +213,64 @@ TEST(cloe_stack, serialization_with_logging) {
 
   Conf c{expect};
   ASSERT_TRUE(c.has_pointer("/engine/registry_path"));
+}
+
+struct DummySensorConf : public Confable {
+  uint64_t freq;
+
+  CONFABLE_SCHEMA(DummySensorConf) {
+    using namespace schema;  // NOLINT(build/namespaces)
+    return Schema{
+        {"freq", Schema(&freq, "some frequency")},
+    };
+  }
+
+  void to_json(Json& j) const override {
+    j = Json{
+        {"freq", freq},
+    };
+  }
+};
+
+class DummySensor : public NopObjectSensor {
+ public:
+  DummySensor(const std::string& name, const DummySensorConf& conf,
+              std::shared_ptr<ObjectSensor> obs)
+      : NopObjectSensor(), config_(conf), sensor_(obs) {}
+
+  virtual ~DummySensor() noexcept = default;
+
+  uint64_t get_freq() const { return config_.freq; }
+
+ private:
+  DummySensorConf config_;
+  std::shared_ptr<ObjectSensor> sensor_;
+};
+
+DEFINE_COMPONENT_FACTORY(DummySensorFactory, DummySensorConf, "dummy_object_sensor",
+                         "test component config")
+
+DEFINE_COMPONENT_FACTORY_MAKE(DummySensorFactory, DummySensor, cloe::ObjectSensor)
+
+TEST(cloe_stack, deserialization_of_component) {
+  Json input = R"({
+    "binding": "dummy_sensor",
+    "name": "my_dummy_sensor",
+    "from": "some_obj_sensor",
+    "args" : {
+      "freq" : 9
+    }
+  })"_json;
+
+  {
+    std::shared_ptr<DummySensorFactory> cf = std::make_shared<DummySensorFactory>();
+    ComponentConf cc = ComponentConf("dummy_sensor", cf);
+    // Create a sensor component from the given configuration.
+    cc.from_conf(Conf{input});
+    // In production code, "some_obj_sensor" would be fetched from a list of all available sensors. Skip this step here.
+    std::shared_ptr<cloe::Component> from = std::shared_ptr<cloe::NopObjectSensor>();
+    auto d = std::dynamic_pointer_cast<DummySensor>(
+        std::shared_ptr<cloe::Component>(std::move(cf->make(cc.args, from))));
+    ASSERT_EQ(d->get_freq(), 9);
+  }
 }
