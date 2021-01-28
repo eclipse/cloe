@@ -55,6 +55,8 @@ if(BuildTests)
     target_link_libraries(${test-libstack}
         CONAN_PKG::gtest
         CONAN_PKG::boost
+        CONAN_PKG::cloe-models
+        CONAN_PKG::cloe-runtime
         ${libstack}
     )
     gtest_add_tests(TARGET ${test-libstack})
