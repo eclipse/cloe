@@ -40,6 +40,9 @@ extern const char* Pause;
 extern const char* Restart;
 extern const char* Apply;
 extern const char* Config;
+extern const char* QueryInit;
+extern const char* AckInit;
+extern const char* InitOperation;
 
 struct ParamServerConfig : public ScpMessage {
   std::string sync_source = "RDB";
@@ -47,7 +50,7 @@ struct ParamServerConfig : public ScpMessage {
   std::string to_scp() const override;
 };
 
-struct ScenarioStartConfig : public ScpMessage {
+struct ScenarioConfig : public ScpMessage {
   std::string filename;
   std::string to_scp() const override;
 };
@@ -63,6 +66,11 @@ struct SensorConfiguration : public ScpMessage {
   int port;
   int player_id;
   int sensor_id;
+  std::string to_scp() const override;
+};
+
+struct DynamicsPluginConfig : public ScpMessage {
+  std::string name;
   std::string to_scp() const override;
 };
 
@@ -82,6 +90,11 @@ struct LabelVehicle : public ScpMessage {
 
 struct RecordDat : public ScpMessage {
   boost::filesystem::path datfile_path;
+  std::string to_scp() const override;
+};
+
+struct QueryScenario : public ScpMessage {
+  std::string scenario;
   std::string to_scp() const override;
 };
 

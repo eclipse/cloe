@@ -22,11 +22,14 @@
 #include <iostream>  // for istringstream
 #include <memory>    // for unique_ptr<>, shared_ptr<>
 #include <numeric>   // for accumulate
+#include <set>       // for set<>
 #include <string>    // for string
 #include <thread>    // for this_thread::sleep_for
 #include <utility>   // for move
 #include <vector>    // for vector<>
 
+#include <fmt/format.h>                        // for fmt::format
+#include <boost/filesystem/path.hpp>           // for path
 #include <boost/optional.hpp>                  // for optional<>
 #include <boost/property_tree/ptree.hpp>       // for ptree
 #include <boost/property_tree/xml_parser.hpp>  // for read_xml
@@ -42,33 +45,35 @@
 #include <cloe/vehicle.hpp>             // for Vehicle
 
 #include "rdb_transceiver_tcp.hpp"  // for RdbTransceiverTcpFactory
-#include "scp_messages.hpp"         // for ScenarioStartConfig
+#include "scp_messages.hpp"         // for ScenarioConfig
 #include "scp_transceiver.hpp"      // for ScpTransceiver
 #include "task_control.hpp"         // for TaskControl
 #include "vtd_conf.hpp"             // for VtdConfiguration
 #include "vtd_vehicle.hpp"          // for VtdVehicle
 
+namespace fs = boost::filesystem;
+
 namespace vtd {
 
 /**
-   * The VtdStatistics struct contains all nominal statistics of the VTD binding.
-   */
+ * The VtdStatistics struct contains all nominal statistics of the VTD binding.
+ */
 struct VtdStatistics {
   cloe::utility::Accumulator frame_time_ms;
   cloe::utility::Accumulator clock_drift_ns;
 
   /**
-     * Writes the JSON representation into j.
-     *
-     * # JSON Output
-     * ```json
-     * {
-     *   {"connection_tries": number},
-     *   {"frame_time_ms", Accumulator},
-     *   {"clock_drift_ns", Accumulator}
-     * }
-     * ```
-     */
+   * Writes the JSON representation into j.
+   *
+   * # JSON Output
+   * ```json
+   * {
+   *   {"connection_tries": number},
+   *   {"frame_time_ms", Accumulator},
+   *   {"clock_drift_ns", Accumulator}
+   * }
+   * ```
+   */
   friend void to_json(cloe::Json& j, const VtdStatistics& s) {
     j = cloe::Json{
         {"frame_time_ms", s.frame_time_ms},
@@ -124,7 +129,7 @@ class VtdBinding : public cloe::Simulator {
     }
 
     logger()->info("Connected.");
-    assert(is_operational());
+    assert(operational_);
   }
 
   void disconnect() final {
@@ -160,20 +165,23 @@ class VtdBinding : public cloe::Simulator {
       throw cloe::ModelError("cannot connect to VTD");
     }
 
-    // Try to configure VTD.
+    // Try to configure VTD and start a simulation.
     {
-      // FIXME(henning): Replace sleep with waiting for a proper handshake.
-      // That requires a reliable signal from VTD that acknowledges Apply
-      // being successful and done. Currently this is only indicated by
-      // debug level info messages, containing taskcontrol and modulemanager
-      // state indication. Debug messages are not reliable as they might be
-      // configured away. Second indication available is Messages from the
-      // ImageGenerator. These are not available in headless mode.
-      // So currently sleeping is the only available workaround.
+      // Ensure VTD configure mode (required by param server config)
       //
-      // NOTE: This workaround might fail in situations with heavy load when
-      //       'apply' takes much longer than usual.
+      // Note: If the simulation is already in apply-mode, the following config
+      // command will reset the SCP connection. This will cause an exception
+      // and we will re-try. As VTD is now in the config state, the next try
+      // will work because the config command has no effect in config state, so
+      // it's not shutting down the SCP connection.
       scp_client_->send(scp::Config);
+
+      // Configure VTD parameters after sleeping a while
+      //
+      // Note: There's no way to be sure we're in configure state, so we need
+      // to give VTD some time for state switching. Be aware that this could
+      // result in a race condition and thus indeterministically fail depending
+      // on the amount of time we sleep and system performance and load!
       scp::ParamServerConfig pc;
       pc.sync_source = "RDB";
       pc.no_image_generator = (!config_.image_generator || config_.setup == "Cloe.noGUInoIG" ||
@@ -186,8 +194,45 @@ class VtdBinding : public cloe::Simulator {
 
       sleep_awhile();
       paramserver_client_->send(pc);
+
+      // Apply the configuration
       scp_client_->send(scp::Apply);
 
+      // Lock initialization so VTD waits with the Run state until we're ready
+      scp_client_->send(scp::QueryInit);
+
+      // Wait for creation of TaskControl client
+      logger()->info("Wait for task control...");
+      // Expect task_control_ to be initialized in VtdBinding::apply_scp_rdb
+      scp_try_read_until([this]() { return task_control_ != nullptr; });
+
+      // Wait for selection of scenario (by GUI if not configured)
+      if (config_.scenario == "") {
+        logger()->info("Wait for scenario...");
+        // Expect the scenario to be initialized in VtdBinding::apply_scenario_filename()
+        scp_try_read_until([this]() { return config_.scenario != ""; });
+        // Stop to neutralize GUI's Init command sent along with LoadScenario
+        scp_client_->send(scp::Stop);
+      }
+
+      // Get agents from scenario (works only before LoadScenario!)
+      scp::QueryScenario query;
+      query.scenario = config_.scenario;
+      scp_client_->send(query);
+      // Expect the agents_expected_ array to be initialized in
+      // VtdBinding::apply_scp_scenario_response()
+      scp_try_read_until([this]() { return !agents_expected_.empty(); });
+
+      // Load the scenario
+      if (config_.scenario != "") {
+        logger()->info("Starting scenario: {}", config_.scenario);
+        sleep_awhile();
+        scp::ScenarioConfig vtd_scenario;
+        vtd_scenario.filename = config_.scenario;
+        scp_client_->send(vtd_scenario);
+      }
+
+      // Start dat file recording
       if (config_.dat_file.size()) {
         logger()->info("Recording data file: {}", config_.dat_file);
         sleep_awhile();
@@ -196,45 +241,26 @@ class VtdBinding : public cloe::Simulator {
         scp_client_->send(recdat);
       }
 
-      if (config_.scenario.size()) {
-        logger()->info("Starting scenario: {}", config_.scenario);
-        sleep_awhile();
-        scp::ScenarioStartConfig vtd_scenario;
-        vtd_scenario.filename = config_.scenario;
-        scp_client_->send(vtd_scenario);
-      }
-    }
+      // Send init command
+      scp_client_->send(scp::InitOperation);
 
-    {
-      logger()->info("Wait for scenario...");
-      int tries_left = VTD_INIT_WAIT_RETRIES;
+      // Wait for all agents' initialization
+      // Expect vehicles_ to be initialized in VtdBinding::apply_scp_set()
+      scp_try_read_until([this]() { return agents_expected_.size() == vehicles_.size(); });
 
-      while (!is_operational() || !task_control_) {
-        // Expect following to happen:
-        // 1. TaskControl client created
-        // 2. Vehicles created and connected
-        // 3. Simulator starts running
+      // Start the simulation
+      scp_client_->send(scp::Start);
 
-        // FIXME(ben): This could fail with a runtime error:
-        //
-        //   terminate called after throwing an instance of 'std::runtime_error'
-        //     what():  ScpTransceiver: error during read: Broken pipe
-        //
-        // In this case, we probably need to reconnect to SCP and try again.
-        this->readall_scp();
-        std::this_thread::sleep_for(cloe::Milliseconds{VTD_INIT_WAIT_SLEEP_MS});
+      // Release the init lock so VTD can proceed to run state
+      scp_client_->send(scp::AckInit);
 
-        // TODO(henning): Every scp message that is not ending the while loop
-        //                is a missed try. Just assume VTD or anyone connected
-        //                to the SCP channel to write 300 individual messages
-        //                and this will fail. So we need to use a true timeout
-        //                here (or elsewhere as pointed out above).
-        if (!tries_left--) {
-          throw cloe::ModelError("timeout waiting for SCP message");
-        }
-      }
+      // Continue reading until VTD is running
+      // Expect init_done_ to be set to true in VtdBinding::apply_scp_init_done()
+      scp_try_read_until([this]() { return init_done_; });
+      // Expect the operational_ flag to be set to true in VtdBinding::apply_scp_run()
+      scp_try_read_until([this]() { return operational_; });
 
-      logger()->info("Scenario loaded.");
+      logger()->info("VTD Started.");
     }
 
     if (num_vehicles() == 0) {
@@ -289,11 +315,12 @@ class VtdBinding : public cloe::Simulator {
    * scenario will start over from 0.
    */
   void reset() final {
+    operational_ = false;
+
     // send a restart to VTD as reset request didn't come from VTD
     scp_client_->send(scp::Restart);
 
     // If in reset, block until VTD sends "Run" again then start next cycle
-    operational_ = false;
     while (!operational_) {
       readall_scp();
     }
@@ -318,7 +345,7 @@ class VtdBinding : public cloe::Simulator {
 
   void start(const cloe::Sync&) final {
     // operational_ is set by connect() not start().
-    assert(is_operational());
+    assert(operational_);
   }
 
   /**
@@ -334,7 +361,7 @@ class VtdBinding : public cloe::Simulator {
     // Preconditions:
     assert(task_control_);
     assert(is_connected());
-    assert(is_operational());
+    assert(operational_);
 
     // Statistics:
     timer::DurationTimer<timer::Milliseconds> t(
@@ -369,10 +396,7 @@ class VtdBinding : public cloe::Simulator {
     return sync.time();
   }
 
-  void stop(const cloe::Sync&) final {
-    scp_client_->send(scp::Stop);
-    scp_client_->send(scp::Config);
-  }
+  void stop(const cloe::Sync&) final { scp_client_->send(scp::Stop); }
 
  protected:
   std::shared_ptr<VtdVehicle> get_vehicle_by_id(uint64_t id) const {
@@ -438,6 +462,22 @@ class VtdBinding : public cloe::Simulator {
     }
   }
 
+  /*
+   * Waits for a predicate to become true while processing SCP input.
+   *
+   * Waiting is limited to a number of retries until timeout.
+   */
+  void scp_try_read_until(std::function<bool(void)> pred) {
+    int tries_left = config_.connection.retry_attempts;
+    while (!pred()) {
+      this->readall_scp();
+      std::this_thread::sleep_for(cloe::Milliseconds{VTD_INIT_WAIT_SLEEP_MS});
+      if (!tries_left--) {
+        throw cloe::ModelError("timeout waiting for SCP message");
+      }
+    }
+  }
+
   /**
    * Parse selected VTD SCP messages and call the relevant apply methods.
    */
@@ -446,17 +486,22 @@ class VtdBinding : public cloe::Simulator {
     std::istringstream is(scp_message);
     boost::property_tree::read_xml(is, pt);
     boost::optional<boost::property_tree::ptree&> child;
-    // TODO(ben): Incorrect, we need to iterate over all children. There could be multiple!
     if ((child = pt.get_child_optional("TaskControl.RDB"))) {
       this->apply_scp_rdb(*child);
     } else if ((child = pt.get_child_optional("Set"))) {
       this->apply_scp_set(*child);
+    } else if ((child = pt.get_child_optional("SimCtrl.InitDone"))) {
+      this->apply_scp_init_done(*child);
     } else if ((child = pt.get_child_optional("SimCtrl.Run"))) {
       this->apply_scp_run(*child);
     } else if ((child = pt.get_child_optional("SimCtrl.Stop"))) {
       this->apply_scp_stop(*child);
     } else if ((child = pt.get_child_optional("SimCtrl.Restart"))) {
       this->apply_scp_restart(*child);
+    } else if ((child = pt.get_child_optional("SimCtrl.LoadScenario"))) {
+      this->apply_scenario_filename(*child);
+    } else if ((child = pt.get_child_optional("Reply.GetScenario"))) {
+      this->apply_scp_scenario_response(*child);
     }
   }
 
@@ -514,6 +559,13 @@ class VtdBinding : public cloe::Simulator {
     vehicles_.push_back(veh);
   }
 
+  void apply_scp_init_done(boost::property_tree::ptree& xml) {
+    auto place = xml.get("<xmlattr>.place", "default");
+    if (place == "checkInitConfirmation") {
+      init_done_ = true;
+    }
+  }
+
   void apply_scp_run(boost::property_tree::ptree&) { operational_ = true; }
 
   void apply_scp_restart(boost::property_tree::ptree&) {
@@ -535,6 +587,60 @@ class VtdBinding : public cloe::Simulator {
 
   void apply_scp_stop(boost::property_tree::ptree&) { operational_ = false; }
 
+  void apply_scenario_filename(boost::property_tree::ptree& xml) {
+    auto scenario = xml.get<std::string>("<xmlattr>.filename", "none");
+    scenario = relative_scenario_path(fs::path(scenario)).generic_string();
+    if (config_.scenario != "" && config_.scenario != scenario) {
+      throw cloe::ModelError(
+          fmt::format("Loaded scenario {} doesn't match the configured scenario {}", scenario,
+                      config_.scenario));
+    }
+    // configure scenario in case it's selected/loaded externally to Cloe (e.g. VTD-GUI)
+    config_.scenario = scenario;
+  }
+
+  void apply_scp_scenario_response(boost::property_tree::ptree& xml) {
+    auto trafficcontrol = xml.get_child("Scenario").get_child("TrafficControl");
+    for (auto& it : trafficcontrol) {
+      if (it.first != "Player") continue;
+      auto p = it.second;
+      std::string control = p.get("Description.<xmlattr>.Control", "default");
+      if (control == "external") {
+        auto name = p.get("Description.<xmlattr>.Name", "unspecified");
+        agents_expected_.insert(name);
+
+        // Ask VTD to create a vehicle dynamics instance for this vehicle
+        scp::DynamicsPluginConfig cfg;
+        cfg.name = name;
+        scp_client_->send(cfg);
+      }
+    }
+  }
+
+  fs::path relative_scenario_path(const fs::path& p) {
+    if (p.is_absolute()) {
+      // make relative to first subdirectory called "Scenarios"
+      auto s = std::find(p.begin(), p.end(), "Scenarios");
+      if (s == p.end()) {
+        throw cloe::ModelError(
+            fmt::format("Can't derive VTD Scenario directory from path: {}", p.generic_string()));
+      }
+      fs::path r;
+      for (auto it = ++s; it != p.end(); ++it) {
+        r /= *it;
+      }
+      if (std::find(s, p.end(), "Scenarios") != p.end()) {
+        logger()->warn(
+            "Cannot determine the scenario directory unambiguously because "
+            "the chosen scenario path contains multiple 'Scenario/' elements: "
+            "{}",
+            p.native());
+      }
+      return r;
+    }
+    return p;
+  }
+
  private:
   VtdConfiguration config_{};
 
@@ -542,6 +648,16 @@ class VtdBinding : public cloe::Simulator {
    * The vehicle factory has most everything required for creating vehicles.
    */
   VtdVehicleFactory vehicle_factory_;
+
+  /**
+   * Inidcate whether VTD is done initializing.
+   */
+  bool init_done_{false};
+
+  /**
+   * Expected agents' names due to queried scenario.
+   */
+  std::set<std::string> agents_expected_{};
 
   /**
    * SCP client for configuring the parameter server
@@ -595,7 +711,7 @@ class VtdBinding : public cloe::Simulator {
         {"vehicles", b.vehicles_},
     };
   }
-};
+};  // namespace vtd
 
 DEFINE_SIMULATOR_FACTORY(VtdFactory, VtdConfiguration, "vtd", "VIRES Virtual Test Drive")
 DEFINE_SIMULATOR_FACTORY_MAKE(VtdFactory, VtdBinding)

@@ -28,8 +28,8 @@
 #include <thread>     // for this_thread
 
 #include <cloe/component/object_sensor_functional.hpp>  // for ObjectSensorFilter
-#include <cloe/models.hpp> // for CloeComponent
 #include <cloe/core.hpp>                                // for Duration
+#include <cloe/models.hpp>                              // for CloeComponent
 #include <cloe/sync.hpp>                                // for Sync
 #include <cloe/utility/inja.hpp>                        // for inja
 #include <cloe/utility/tcp_transceiver_config.hpp>      // for TcpTransceiverConfiguration
@@ -332,9 +332,7 @@ class VtdVehicleFactory {
             veh->sensors_[name] = osi;
             break;
           }
-          default: {
-            throw cloe::Error("VtdVehicle: unknown sensor protocol");
-          }
+          default: { throw cloe::Error("VtdVehicle: unknown sensor protocol"); }
         }
       }
       veh->configure_components(vcfg.components);
