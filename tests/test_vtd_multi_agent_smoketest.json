@@ -7,18 +7,18 @@
   ],
   "triggers": [
     {
-      "label": "Vehicle first should not reach 100 km/h with the vtd binding and basic controller.",
-      "event": "first_speed/kmph=>100.0", "action": "fail"
+      "label": "Vehicle first should not reach 50 km/h with the vtd binding and basic controller.",
+      "event": "first_speed/kmph=>50.0", "action": "fail"
     },
     {"event": "virtue_second/failure", "action": "fail"},
     {
-      "label": "Vehicle second should not reach 100 km/h with the vtd binding and basic controller.",
-      "event": "second_speed/kmph=>100.0", "action": "fail"
+      "label": "Vehicle second should not reach 50 km/h with the vtd binding and basic controller.",
+      "event": "second_speed/kmph=>50.0", "action": "fail"
     },
     {"event": "virtue_third/failure", "action": "fail"},
     {
-      "label": "Vehicle third should not reach 100 km/h with the vtd binding and basic controller.",
-      "event": "third_speed/kmph=>100.0", "action": "fail"
+      "label": "Vehicle third should not reach 50 km/h with the vtd binding and basic controller.",
+      "event": "third_speed/kmph=>50.0", "action": "fail"
     }
   ]
 }
