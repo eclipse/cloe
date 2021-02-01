@@ -6,7 +6,7 @@
   },
   "triggers": [
     {"event": "virtue_first/failure", "action": "fail"},
-    {"event": "start",   "action": "log=info: Running multi-agent minimator smoketest."},
+    {"event": "start",   "action": "log=info: Running multi-agent smoketest."},
     {"event": "start",   "action": "realtime_factor=-1"},
     {
       "event": "start",
