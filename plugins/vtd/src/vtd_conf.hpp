@@ -30,14 +30,11 @@
 #include <cloe/utility/tcp_transceiver_config.hpp>  // for TcpTransceiverConfiguration, ...
 #include "osi_omni_sensor.hpp"                      // for SensorMockLevel
 
-// Connection
+// Connection / Initialization
 #define VTD_DEFAULT_SCP_PORT 48179
 #define VTD_PARAMSERVER_PORT 54345
 #define VTD_INIT_SYNC_SLEEP_MS 3000
-
-// Scenario Loading
 #define VTD_INIT_WAIT_SLEEP_MS 200
-#define VTD_INIT_WAIT_RETRIES 300
 
 namespace vtd {
 
