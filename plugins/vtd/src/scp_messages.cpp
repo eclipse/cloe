@@ -34,6 +34,9 @@ const char* Pause = "<SimCtrl><Pause/></SimCtrl>";
 const char* Restart = "<SimCtrl><Restart/></SimCtrl>";
 const char* Apply = "<SimCtrl><Apply/></SimCtrl>";
 const char* Config = "<SimCtrl><Config/></SimCtrl>";
+const char* QueryInit = "<Query entity=\"taskControl\"><Init source=\"cloe\" /></Query>";
+const char* AckInit = "<SimCtrl><InitDone source=\"cloe\" /></SimCtrl>";
+const char* InitOperation = "<SimCtrl><Init mode=\"operation\" /></SimCtrl>";
 
 std::string ParamServerConfig::to_scp() const {
   std::string tc_config = fmt::format(R"SCP(
@@ -64,12 +67,11 @@ std::string ParamServerConfig::to_scp() const {
     )SCP", tc_config);
 }
 
-std::string ScenarioStartConfig::to_scp() const {
+std::string ScenarioConfig::to_scp() const {
   return fmt::format(R"SCP(
     <SimCtrl>
       <UnloadSensors />
       <LoadScenario filename="{}" />
-      <Start mode="operation" />
     </SimCtrl>
     )SCP", filename);
 }
@@ -153,6 +155,15 @@ std::string SensorConfiguration::to_scp() const {
     </Sensor>)SCP", sensor_id, port, player_id);
 }
 
+std::string DynamicsPluginConfig::to_scp() const {
+  return fmt::format(R"SCP(
+    <DynamicsPlugin name="viTrafficDyn_{0}" enable="true">
+      <Load     lib="libModuleTrafficDyn.so" path=""/>
+      <Player   name="{0}" />
+      <Debug    enable="false" />
+    </DynamicsPlugin>)SCP", name);
+}
+
 std::string LabelVehicle::to_scp() const {
   return fmt::format(R"SCP(
   <Symbol name="{0}">
@@ -167,6 +178,13 @@ std::string RecordDat::to_scp() const {
     <File path="{0}" name="{1}" overwrite="true"/>
     <Start/>
   </Record>)SCP", datfile_path.parent_path().string(), datfile_path.filename().string());
+}
+
+std::string QueryScenario::to_scp() const {
+  return fmt::format(R"SCP(
+    <Query entity="traffic">
+      <GetScenario filename="{0}"/>
+    </Query>)SCP", scenario);
 }
 
 // clang-format on
