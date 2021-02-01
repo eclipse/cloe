@@ -78,6 +78,7 @@
 #include <cstdint>  // for uint64_t
 #include <fstream>  // for ofstream
 #include <future>   // for future<>, async
+#include <map>      // for map
 #include <sstream>  // for stringstream
 #include <string>   // for string
 
@@ -478,19 +479,29 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
      */
     auto new_component = [&ctx](cloe::Vehicle& v,
                                 const cloe::ComponentConf& c) -> std::shared_ptr<cloe::Component> {
+      // Create a copy of the component factory prototype and initialize it with the default stack arguments.
       auto f = c.factory->clone();
       auto name = c.name.value_or(c.binding);
       for (auto d : ctx.config.get_component_defaults(name, f->name())) {
         f->from_conf(d.args);
       }
-      std::shared_ptr<cloe::Component> from;
-      if (c.from) {
-        if (v.has(*c.from)) {
-          from = v.get<cloe::Component>(*c.from);
-        } else {
-          return nullptr;
-        }
+      // Get source components, if applicable.
+      if (!c.from.size()) {
+        return nullptr;
       }
+
+      std::map<std::string, std::shared_ptr<cloe::Component>> from;
+      for (const auto& kv : c.from) {
+        if (!v.has(kv.second)) {
+          continue;
+        }
+        from[kv.first] = v.get<cloe::Component>(kv.second);
+      }
+      if (!from.size()) {
+        return nullptr;
+      }
+
+      // Create the new component.
       auto x = f->make(c.args, std::move(from));
       ctx.now_initializing = x.get();
 
@@ -571,19 +582,27 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
           // We have configured.size() != n and has not grown since going
           // through all Component configs. This means that we have some unresolved
           // dependencies. Find out which and abort.
-          for (const auto& kv : c.components) {
-            if (configured.count(kv.first)) {
+          for (const auto& kv_conf : c.components) {
+            auto comp_name = kv_conf.first;
+            if (configured.count(comp_name)) {
               continue;
             }
 
             // We now have a component that has not been configured, and this
             // can only be the case if the dependency is not found.
-            assert(kv.second.from);
-            throw cloe::ModelError{
-                "cannot configure component '{}': cannot resolve dependency '{}'",
-                kv.first,
-                *kv.second.from,
-            };
+            auto& conf = kv_conf.second;
+            assert(conf.from.size() > 0);
+            for (const auto& kv_from : conf.from) {
+              auto from_name = kv_from.second;
+              if (x->has(from_name)) {
+                continue;
+              }
+              throw cloe::ModelError{
+                  "cannot configure component '{}': cannot resolve dependency '{}'",
+                  comp_name,
+                  from_name,
+              };
+            }
           }
         }
       }

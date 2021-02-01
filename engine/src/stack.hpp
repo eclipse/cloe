@@ -583,7 +583,8 @@ struct FromSimulator : public Confable {
 struct ComponentConf : public Confable {
   const std::string binding;
   boost::optional<std::string> name;
-  boost::optional<std::string> from;
+  boost::optional<std::string> from_tmp;
+  std::map<std::string, std::string> from;
   std::shared_ptr<ComponentFactory> factory;
   Conf args;
 
@@ -592,12 +593,21 @@ struct ComponentConf : public Confable {
       : binding(b), factory(std::move(f)) {}
 
  public:  // Confable Overrides
+  void from_conf(const Conf& c) override {
+    Confable::from_conf(c);
+    if (from_tmp) {
+      from["component"] = *from_tmp;
+      from_tmp = boost::none;
+    }
+  }
+
   CONFABLE_SCHEMA(ComponentConf) {
     using namespace schema;  // NOLINT(build/namespaces)
     return Struct{
         {"binding", make_const_str(binding, "name of binding").require()},
         {"name", make_schema(&name, id_prototype(), "globally unique identifier for component")},
-        {"from", make_schema(&from, "component input for binding")},
+        {"from", Variant{make_schema(&from_tmp, "component input for binding"),
+                         make_schema(&from, "component input map for binding")}},
         {"args", make_schema(&args, factory->schema(), "factory-specific args")},
     };
   }

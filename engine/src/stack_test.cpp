@@ -22,8 +22,12 @@
  */
 
 #include <gtest/gtest.h>
+#include <map>
+#include <string>
+#include <vector>
 
 #include <cloe/component.hpp>                // for DEFINE_COMPONENT_FACTORY
+#include <cloe/component/ego_sensor.hpp>     // for EgoSensor
 #include <cloe/component/object_sensor.hpp>  // for ObjectSensor
 #include <cloe/core.hpp>                     // for Json
 #include <fable/utility.hpp>                 // for pretty_print
@@ -265,7 +269,12 @@ TEST(cloe_stack, deserialization_of_component) {
     ComponentConf cc = ComponentConf("dummy_sensor", cf);
     // Create a sensor component from the given configuration.
     cc.from_conf(Conf{input});
-    std::shared_ptr<cloe::Component> from = std::shared_ptr<cloe::Component>{nullptr};
+    std::map<std::string, std::shared_ptr<cloe::Component>> vehicle_sensors = {
+        {"cloe::default_world_sensor", std::shared_ptr<ObjectSensor>{nullptr}}};
+    std::map<std::string, std::shared_ptr<cloe::Component>> from;
+    for (const auto& kv : cc.from) {
+      from[kv.first] = vehicle_sensors.find(kv.second)->second;
+    }
     auto d = std::dynamic_pointer_cast<DummySensor>(
         std::shared_ptr<cloe::Component>(std::move(cf->make(cc.args, from))));
     ASSERT_EQ(d->get_freq(), 9);
@@ -296,9 +305,90 @@ TEST(cloe_stack, deserialization_of_component) {
     VehicleConf vc{cs};
     // Create a sensor component from the given configuration.
     vc.from_conf(Conf{input});
-    std::shared_ptr<cloe::Component> from = std::shared_ptr<cloe::Component>{nullptr};
-    auto d = std::dynamic_pointer_cast<DummySensor>(std::shared_ptr<cloe::Component>(
-        std::move(cf->make(vc.components.find("cloe::default_world_sensor")->second.args, from))));
+    auto cc = vc.components.find("cloe::default_world_sensor")->second;
+    std::map<std::string, std::shared_ptr<cloe::Component>> vehicle_sensors = {
+        {"cloe::default_world_sensor", std::shared_ptr<ObjectSensor>{nullptr}}};
+    std::map<std::string, std::shared_ptr<cloe::Component>> from;
+    for (const auto& kv : cc.from) {
+      from[kv.first] = vehicle_sensors.find(kv.second)->second;
+    }
+    auto d = std::dynamic_pointer_cast<DummySensor>(
+        std::shared_ptr<cloe::Component>(std::move(cf->make(cc.args, from))));
     ASSERT_EQ(d->get_freq(), 10);
+  }
+}
+
+class FusionSensor : public NopObjectSensor {
+ public:
+  FusionSensor(const std::string& name, const DummySensorConf& conf,
+               std::shared_ptr<ObjectSensor> obs1, std::shared_ptr<ObjectSensor> obs2,
+               std::shared_ptr<EgoSensor> egos)
+      : NopObjectSensor(), config_(conf), obj_src_a_(obs1), obj_src_b_(obs2), ego_sensor_(egos) {}
+
+  virtual ~FusionSensor() noexcept = default;
+
+  uint64_t get_freq() const { return config_.freq; }
+
+ private:
+  DummySensorConf config_;
+  std::shared_ptr<ObjectSensor> obj_src_a_;
+  std::shared_ptr<ObjectSensor> obj_src_b_;
+  std::shared_ptr<EgoSensor> ego_sensor_;
+};
+
+DEFINE_COMPONENT_FACTORY(FusionSensorFactory, DummySensorConf, "fusion_object_sensor",
+                         "test component config")
+
+std::unique_ptr<::cloe::Component> FusionSensorFactory::make(
+    const ::cloe::Conf& c,
+    const std::map<std::string, std::shared_ptr<cloe::Component>>& comp) const {
+  decltype(config_) conf{config_};
+  if (!c->is_null()) {
+    conf.from_conf(c);
+  }
+  std::vector<std::string> comp_bindings{"object_sensor_1", "object_sensor_2", "ego_sensor"};
+  for (const auto& cb : comp_bindings) {
+    if (comp.find(cb) != comp.end()) {
+      continue;
+    }
+    throw Error("FusionSensorFactory: Source component configuration not found: from {}", cb);
+  }
+  return std::make_unique<FusionSensor>(
+      this->name(), conf,
+      std::dynamic_pointer_cast<ObjectSensor>(comp.find(comp_bindings.at(0))->second),
+      std::dynamic_pointer_cast<ObjectSensor>(comp.find(comp_bindings.at(1))->second),
+      std::dynamic_pointer_cast<EgoSensor>(comp.find(comp_bindings.at(2))->second));
+}
+
+TEST(cloe_stack, deserialization_of_fusion_component) {
+  Json input = R"({
+      "binding": "fusion_sensor",
+      "name": "dummy_fusion_sensor",
+      "from": {
+        "object_sensor_1": "left_corner_sensor",
+        "object_sensor_2": "right_corner_sensor",
+        "ego_sensor": "cloe::default_ego_sensor"
+      },
+      "args" : {
+        "freq" : 11
+      }
+  })"_json;
+
+  {
+    std::shared_ptr<FusionSensorFactory> cf = std::make_shared<FusionSensorFactory>();
+    ComponentConf cc = ComponentConf("fusion_sensor", cf);
+    // Create a sensor component from the given configuration.
+    cc.from_conf(Conf{input});
+    std::map<std::string, std::shared_ptr<cloe::Component>> vehicle_sensors = {
+        {"left_corner_sensor", std::shared_ptr<ObjectSensor>{nullptr}},
+        {"right_corner_sensor", std::shared_ptr<ObjectSensor>{nullptr}},
+        {"cloe::default_ego_sensor", std::shared_ptr<EgoSensor>{nullptr}}};
+    std::map<std::string, std::shared_ptr<cloe::Component>> from;
+    for (const auto& kv : cc.from) {
+      from[kv.first] = vehicle_sensors.find(kv.second)->second;
+    }
+    auto f = std::dynamic_pointer_cast<FusionSensor>(
+        std::shared_ptr<cloe::Component>(std::move(cf->make(cc.args, from))));
+    ASSERT_EQ(f->get_freq(), 11);
   }
 }
