@@ -35,6 +35,8 @@
 #include "rdb_transceiver.hpp"  // for RdbTransceiver
 #include "vtd_logger.hpp"       // for rdb_logger
 
+#define VTD_RDB_WAIT_SLEEP_MS 1
+
 namespace vtd {
 
 /**
@@ -50,6 +52,9 @@ class RdbTransceiverTcp : public RdbTransceiver, public cloe::utility::TcpTransc
 
   std::vector<std::shared_ptr<RDB_MSG_t>> receive() override {
     std::vector<std::shared_ptr<RDB_MSG_t>> msgs;
+    while (!this->has()) {
+      std::this_thread::sleep_for(cloe::Milliseconds{VTD_RDB_WAIT_SLEEP_MS});
+    }
     while (this->has()) {
       num_received_++;
       msgs.push_back(this->receive_wait());

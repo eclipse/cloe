@@ -288,10 +288,6 @@ void RdbCodec::process(RDB_MSG_t* msg, bool& restart, cloe::Duration& sim_time) 
 }
 
 void RdbCodec::step(uint64_t frame_number, bool& restart, cloe::Duration& sim_time) {
-  // TODO(ben): For some reason, this loop here goes round and round with zero
-  // messages received. Either we should stop dumping the log message when
-  // there are no messages to process, or we should have the receive function
-  // only return when there are messages?
   while (processing_frame_ || frame_number_ < frame_number || restart) {
     auto messages = rdb_->receive();
     rdb_logger()->trace("RdbCodec: processing {} messages [frame={}]", messages.size(),
