@@ -53,7 +53,7 @@ install-system-deps:: install-ubuntu-deps
 endif
 
 install-ubuntu-deps::
-	command -v ${APT} &>/dev/null
+	command -v ${APT} >/dev/null 2>&1
 	${APT} install ${APT_ARGS} \
 		bats \
 		build-essential \
@@ -71,7 +71,7 @@ install-ubuntu-deps::
 
 ifndef WITHOUT_DEV_DEPS
 install-ubuntu-deps::
-	command -v ${APT} &>/dev/null
+	command -v ${APT} >/dev/null 2>&1
 	${APT} install ${APT_ARGS} \
 		clang-format \
         python3-venv
@@ -83,7 +83,7 @@ install-system-deps:: install-archlinux-deps
 endif
 
 install-archlinux-deps::
-	command -v ${PACMAN} &>/dev/null
+	command -v ${PACMAN} >/dev/null 2>&1
 	${PACMAN} -S ${PACMAN_ARGS} \
 		base-devel \
 		bash \
@@ -100,7 +100,7 @@ install-archlinux-deps::
 
 ifndef WITHOUT_DEV_DEPS
 install-archlinux-deps::
-	command -v ${PACMAN} &>/dev/null
+	command -v ${PACMAN} >/dev/null 2>&1
 	${PACMAN} -S ${PACMAN_ARGS} \
 		clang \
 		python-virtualenv
@@ -112,12 +112,12 @@ install-deps:: install-python-deps
 endif
 
 install-python-deps::
-	command -v ${PIP} &>/dev/null
+	command -v ${PIP} >/dev/null 2>&1
 	${PIP} install ${PIP_INSTALL_ARGS} conan
 
 ifndef WITHOUT_DEV_DEPS
 install-python-deps::
-	command -v ${PIP} &>/dev/null
+	command -v ${PIP} >/dev/null 2>&1
 	for pkg in \
 		black \
 		mypy \
