@@ -18,7 +18,7 @@ class Cloe(ConanFile):
     default_options = {
         "test": True,
         "pedantic": True,
-        "with_vtd": True,
+        "with_vtd": False,
         "with_engine": True,
     }
     generators = "cmake"

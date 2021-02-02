@@ -2,12 +2,21 @@
 
 load setup_bats
 
+test_vtd_plugin_exists() {
+    # VTD_ROOT is only available in the shell.
+    cloe_shell -c 'test -d "${VTD_ROOT}"'
+}
+
 @test "Expect schema equality  : test_engine_json_schema.json" {
     if ! type diff &>/dev/null; then
         skip "required program diff not present"
     fi
 
-    diff <(cloe_engine usage -j 2>/dev/null) test_engine_json_schema.json
+    if test_vtd_plugin_exists; then
+        diff <(cloe_engine usage -j 2>/dev/null) test_engine_json_schema_with_vtd.json
+    else
+        diff <(cloe_engine usage -j 2>/dev/null) test_engine_json_schema.json
+    fi
 }
 
 @test "Expect check success    : test_engine_smoketest.json" {

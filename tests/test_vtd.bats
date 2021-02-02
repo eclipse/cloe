@@ -9,9 +9,8 @@ teardown_vtd() {
 
 test_vtd_plugin_exists() {
     # VTD_ROOT is only available in the shell.
-    cloe_shell -c 'test -d ${VTD_ROOT}'
+    cloe_shell -c 'test -d "${VTD_ROOT}"'
 }
-
 
 teardown() {
     # It's harmless to stop vtd multiple times, so do it in case something goes wrong.

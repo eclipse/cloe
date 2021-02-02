@@ -81,10 +81,10 @@ CONAN_OPTIONS :=
 WITH_ENGINE := 1
 
 ## WITH_VTD
-##   Usage: make WITH_VTD=0 <targets>
-##   Default: 1
+##   Usage: make WITH_VTD=1 <targets>
+##   Default: 0
 ##
-WITH_VTD := 1
+WITH_VTD := 0
 
 ## BUILD_TESTS
 ##   Usage: make BUILD_TESTS=0 package
@@ -139,9 +139,9 @@ ALL_PKGS := $(filter-out engine, ${ALL_PKGS})
 CONAN_OPTIONS += -o cloe:with_engine=False
 endif
 
-ifeq (${WITH_VTD},0)
+ifeq (${WITH_VTD},1)
 ALL_PKGS := $(filter-out plugins/vtd, ${ALL_PKGS})
-CONAN_OPTIONS += -o cloe:with_vtd=False
+CONAN_OPTIONS += -o cloe:with_vtd=True
 endif
 
 ifeq (${BUILD_TESTS},0)
