@@ -37,6 +37,13 @@ cloe_engine() {
     for var in ${CLOE_OVERRIDE_ENV[@]}; do
         cloe_launch_args+=(--override-env=${var})
     done
+    if [[ "${WITH_VTD}" -eq "1" ]]; then
+        cloe_launch_args+=(-o)
+        cloe_launch_args+=("with_vtd=True")
+    fi
+    for var in ${CLOE_LAUNCH_ARGS[@]}; do
+        cloe_launch_args+=(${var})
+    done
 
     local user_args=()
     while [[ $# -ne 0 ]]; do
@@ -74,6 +81,13 @@ cloe_shell() {
 
     for var in ${CLOE_OVERRIDE_ENV[@]}; do
         cloe_launch_args+=(--override-env=${var})
+    done
+    if [[ "${WITH_VTD}" -eq "1" ]]; then
+        cloe_launch_args+=(-o)
+        cloe_launch_args+=("with_vtd=True")
+    fi
+    for var in ${CLOE_LAUNCH_ARGS[@]}; do
+        cloe_launch_args+=(${var})
     done
 
     local user_args=("$@")

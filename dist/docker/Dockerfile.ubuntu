@@ -26,7 +26,7 @@ RUN apt-get update && \
 
 RUN pip3 install --upgrade pip && \
     make -f /cloe/Makefile.setup \
-        WITHOUT_DEV_DEPS=yes PIP_INSTALL_ARGS="" \
+        PIP_INSTALL_ARGS="" \
         install-python-deps
 
 # Install and Setup Conan
@@ -58,6 +58,9 @@ RUN \
     # You can specify more than one package here, see the Makefile for more
     # information on the WITH_*, PACKAGES, NOBUILD_PKGS, and BUILD_PKGS variables.
     make WITH_VTD=0 package-all && \
+    # Run smoketests.
+    export LC_ALL=C.UTF-8 LANG=C.UTF-8 && \
+    make WITH_VTD=0 smoketest && \
     # Deploy all the Cloe packages to INSTALL_DIR, which is /usr/local by
     # default. This will also populate BUILD_DIR, so that should be removed
     # afterwards to prevent this image from getting too big.
