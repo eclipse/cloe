@@ -16,18 +16,21 @@ APT_ARGS := --no-install-recommends -y
 PACMAN := $(shell command -v pacman 2>/dev/null)
 PACMAN_ARGS := --noconfirm --needed
 
-PIPX := $(shell command -v pipx 2>/dev/null)
-PIPX_INSTALL_ARGS :=
-
 PIP := $(or \
-	$(shell command -v pipx 2>/dev/null), \
 	$(shell command -v pip3 2>/dev/null), \
 	$(shell command -v pip 2>/dev/null) \
 )
-ifndef PIPX
+ifeq (${VIRTUAL_ENV}, )
 PIP_INSTALL_ARGS := --user --upgrade
 else
-PIP_INSTALL_ARGS := ${PIPX_INSTALL_ARGS}
+PIP_INSTALL_ARGS := --upgrade
+endif
+
+PIPX := $(shell command -v pipx 2>/dev/null)
+PIPX_INSTALL_ARGS :=
+ifndef PIPX
+PIPX := ${PIP}
+PIPX_INSTALL_ARGS := ${PIP_INSTALL_ARGS}
 endif
 
 .PHONY: help
@@ -35,16 +38,17 @@ endif
 .SILENT: help
 help::
 	echo "Available setup targets:"
-	echo "  setup                to perform Git repository setup"
-	echo "  install-system-deps  to install build (and development) system requirements"
-	echo "  install-python-deps  to install build (and development) Python requirements"
+	echo "  setup                 to perform Git repository setup"
+	echo "  install-system-deps   to install build (and development) system requirements"
+	echo "  install-python-deps   to install Python runtime requirements with ${PIP}"
+	echo "  install-python-tools  to install Python development tools with ${PIPX}"
 	echo
 
 .PHONY: setup
 setup:
 	git config --local core.hooksPath .git-hooks/
 
-.PHONY: install-system-deps install-ubuntu-deps install-archlinux-deps install-python-deps
+.PHONY: install-system-deps install-ubuntu-deps install-archlinux-deps install-python-deps install-python-tools
 install-system-deps::
 
 # Ubuntu ----------------------------------------------------------------------
@@ -112,19 +116,20 @@ endif
 
 # Python ----------------------------------------------------------------------
 ifdef PIP
-install-deps:: install-python-deps
+install-deps:: install-python-deps install-python-tools
 endif
 
 install-python-deps::
 	command -v ${PIP} >/dev/null 2>&1
 	${PIP} install ${PIP_INSTALL_ARGS} \
+		click \
 		conan \
 		libtmux \
+		toml \
 		;
 
-ifndef WITHOUT_DEV_DEPS
-install-python-deps::
-	command -v ${PIP} >/dev/null 2>&1
+install-python-tools::
+	command -v ${PIPX} >/dev/null 2>&1
 	for pkg in \
 		black \
 		mypy \
@@ -134,6 +139,5 @@ install-python-deps::
 		yq \
 		; \
 	do \
-		${PIP} install ${PIP_INSTALL_ARGS} $${pkg}; \
+		${PIPX} install ${PIPX_INSTALL_ARGS} $${pkg}; \
 	done
-endif
