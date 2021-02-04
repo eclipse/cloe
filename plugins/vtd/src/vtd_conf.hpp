@@ -279,7 +279,7 @@ struct VtdConfiguration : public cloe::Confable {
         {"rdb_params",          Schema(&rdb_params, "rdb connection parameters")},
         {"sensor_initial_port", Schema(&sensor_initial_port, "initial port for sensor communication")},
         {"vehicles",            Schema(&vehicles, "vehicle configuration like sensors and component mapping")},
-        {"configuration_rety_attempts", Schema(&configuration_retry_attempts, "attempts to retry connection on broken pipe")},
+        {"configuration_retry_attempts", Schema(&configuration_retry_attempts, "attempts to retry connection on broken pipe")},
         {"setup",               Schema(&setup, "indicate which setup you are using")},
         {"image_generator",     Schema(&image_generator, "switch whether VTD should use image generator")},
         {"scenario",            Schema(&scenario, "VTD scenario to use (project must already be loaded)")},
