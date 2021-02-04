@@ -129,7 +129,7 @@ class VtdBinding : public cloe::Simulator {
     }
 
     logger()->info("Connected.");
-    assert(is_operational());
+    assert(operational_);
   }
 
   void disconnect() final {
@@ -207,7 +207,7 @@ class VtdBinding : public cloe::Simulator {
       scp_try_read_until([this]() { return task_control_ != nullptr; });
 
       // Wait for selection of scenario (by GUI if not configured)
-      if (!config_.scenario.size()) {
+      if (config_.scenario == "") {
         logger()->info("Wait for scenario...");
         // Expect the scenario to be initialized in VtdBinding::apply_scenario_filename()
         scp_try_read_until([this]() { return config_.scenario != ""; });
@@ -224,7 +224,7 @@ class VtdBinding : public cloe::Simulator {
       scp_try_read_until([this]() { return !agents_expected_.empty(); });
 
       // Load the scenario
-      if (config_.scenario.size()) {
+      if (config_.scenario != "") {
         logger()->info("Starting scenario: {}", config_.scenario);
         sleep_awhile();
         scp::ScenarioConfig vtd_scenario;
@@ -258,7 +258,7 @@ class VtdBinding : public cloe::Simulator {
       // Expect init_done_ to be set to true in VtdBinding::apply_scp_init_done()
       scp_try_read_until([this]() { return init_done_; });
       // Expect the operational_ flag to be set to true in VtdBinding::apply_scp_run()
-      scp_try_read_until([this]() { return is_operational(); });
+      scp_try_read_until([this]() { return operational_; });
 
       logger()->info("VTD Started.");
     }
@@ -345,7 +345,7 @@ class VtdBinding : public cloe::Simulator {
 
   void start(const cloe::Sync&) final {
     // operational_ is set by connect() not start().
-    assert(is_operational());
+    assert(operational_);
   }
 
   /**
@@ -361,7 +361,7 @@ class VtdBinding : public cloe::Simulator {
     // Preconditions:
     assert(task_control_);
     assert(is_connected());
-    assert(is_operational());
+    assert(operational_);
 
     // Statistics:
     timer::DurationTimer<timer::Milliseconds> t(
@@ -590,7 +590,7 @@ class VtdBinding : public cloe::Simulator {
   void apply_scenario_filename(boost::property_tree::ptree& xml) {
     auto scenario = xml.get<std::string>("<xmlattr>.filename", "none");
     scenario = relative_scenario_path(fs::path(scenario)).generic_string();
-    if (config_.scenario.size() && config_.scenario != scenario) {
+    if (config_.scenario != "" && config_.scenario != scenario) {
       throw cloe::ModelError(
           fmt::format("Loaded scenario {} doesn't match the configured scenario {}", scenario,
                       config_.scenario));
