@@ -203,13 +203,15 @@ class VtdBinding : public cloe::Simulator {
 
       // Wait for creation of TaskControl client
       logger()->info("Wait for task control...");
-      scp_try_read_until([this]() { return static_cast<bool>(task_control_); });
+      // Expect task_control_ to be initialized in VtdBinding::apply_scp_rdb
+      scp_try_read_until([this]() { return task_control_ != nullptr; });
 
       // Wait for selection of scenario (by GUI if not configured)
       if (!config_.scenario.size()) {
         logger()->info("Wait for scenario...");
-        scp_try_read_until([this]() { return config_.scenario.size(); });
-        // Stop to neutralize GUI's Init command sendt along with LoadScenario
+        // Expect the scenario to be initialized in VtdBiniding::apply_scenario_filename()
+        scp_try_read_until([this]() { return config_.scenario != ""; });
+        // Stop to neutralize GUI's Init command sent along with LoadScenario
         scp_client_->send(scp::Stop);
       }
 
@@ -217,6 +219,8 @@ class VtdBinding : public cloe::Simulator {
       scp::QueryScenario query;
       query.scenario = config_.scenario;
       scp_client_->send(query);
+      // Expect the agents_expected_ array to be initialized in
+      // VtdBinding::apply_scp_scenario_response()
       scp_try_read_until([this]() { return !agents_expected_.empty(); });
 
       // Load the scenario
@@ -241,6 +245,7 @@ class VtdBinding : public cloe::Simulator {
       scp_client_->send(scp::InitOperation);
 
       // Wait for all agents' initialization
+      // Expect vehicles_ to be initialized in VtdBinding::apply_scp_set()
       scp_try_read_until([this]() { return agents_expected_.size() == vehicles_.size(); });
 
       // Start the simulation
@@ -250,7 +255,9 @@ class VtdBinding : public cloe::Simulator {
       scp_client_->send(scp::AckInit);
 
       // Continue reading until VTD is running
+      // Expect init_done_ to be set to true in VtdBinding::apply_scp_init_done()
       scp_try_read_until([this]() { return init_done_; });
+      // Expect the operational_ flag to be set to true in VtdBinding::apply_scp_run()
       scp_try_read_until([this]() { return is_operational(); });
 
       logger()->info("VTD Started.");
@@ -461,7 +468,7 @@ class VtdBinding : public cloe::Simulator {
    * Waiting is limited to a number of retries until timeout.
    */
   void scp_try_read_until(std::function<bool(void)> pred) {
-    int tries_left = VTD_INIT_WAIT_RETRIES;
+    int tries_left = config_.connection.retry_attempts;
     while (!pred()) {
       this->readall_scp();
       std::this_thread::sleep_for(cloe::Milliseconds{VTD_INIT_WAIT_SLEEP_MS});
