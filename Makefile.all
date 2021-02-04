@@ -140,8 +140,9 @@ CONAN_OPTIONS += -o cloe:with_engine=False
 endif
 
 ifeq (${WITH_VTD},1)
-ALL_PKGS := $(filter-out plugins/vtd, ${ALL_PKGS})
 CONAN_OPTIONS += -o cloe:with_vtd=True
+else
+ALL_PKGS := $(filter-out plugins/vtd, ${ALL_PKGS})
 endif
 
 ifeq (${BUILD_TESTS},0)
@@ -249,7 +250,7 @@ help::
 	echo "  Options:"
 	echo "    USE_NPROC=(0|1)    to build $(shell nproc) packages simultaneously (default=0)"
 	echo "    WITH_ENGINE=(0|1)  to build and deploy cloe-engine (default=1)"
-	echo "    WITH_VTD=(0|1)     to build and deploy cloe-plugin-vtd (default=1)"
+	echo "    WITH_VTD=(0|1)     to build and deploy cloe-plugin-vtd (default=0)"
 	echo "    BUILD_TESTS=(0|1)  to build and run unit tests (default=1)"
 	echo
 	echo "  Defines:"
