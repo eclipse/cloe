@@ -30,7 +30,7 @@ teardown() {
 
 @test "Expect check/run success: test_vtd_watchdog.json" {
     if ! test_vtd_plugin_exists; then
-        skip "required simulator VTD not present"
+        skip "required simulator vtd not present"
     fi
     if ! type killall &>/dev/null; then
         skip "required program killall not present"

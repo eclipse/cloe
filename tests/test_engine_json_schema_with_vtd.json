@@ -1116,7 +1116,7 @@
                     },
                     "type": "object"
                   },
-                  "configuration_rety_attempts": {
+                  "configuration_retry_attempts": {
                     "description": "attempts to retry connection on broken pipe",
                     "maximum": 65535,
                     "minimum": 0,
