@@ -11,10 +11,12 @@ class CloeEngine(ConanFile):
     options = {
         "test": [True, False],
         "pedantic": [True, False],
+        "boost_version": "ANY",
     }
     default_options = {
         "test": True,
         "pedantic": True,
+        "boost_version": "[>=1.65.0 <1.70]",
     }
     generators = "cmake"
     no_copy_source = True
@@ -37,11 +39,16 @@ class CloeEngine(ConanFile):
         self.version = self._project_version()
 
     def build_requirements(self):
-        self.build_requires("cloe-runtime/{}@cloe/develop".format(self.version))
-        self.build_requires("cloe-models/{}@cloe/develop".format(self.version))
-        self.build_requires("cloe-oak/{}@cloe/develop".format(self.version))
         if self.options.test:
             self.build_requires("gtest/[~1.10]")
+
+    def requirements(self):
+        # Enforce CppNetlib boost requirement for all upstream packages.
+        # Note that boost is not interpreted as an actual requirement of cloe-engine.
+        self.requires("boost/{}".format(self.options.boost_version), override=True)
+        self.requires("cloe-runtime/{}@cloe/develop".format(self.version),private=True)
+        self.requires("cloe-models/{}@cloe/develop".format(self.version),private=True)
+        self.requires("cloe-oak/{}@cloe/develop".format(self.version),private=True)
 
     def _configure_cmake(self):
         if self._cmake:
