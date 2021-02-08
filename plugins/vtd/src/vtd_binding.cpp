@@ -45,7 +45,7 @@
 #include <cloe/vehicle.hpp>             // for Vehicle
 
 #include "rdb_transceiver_tcp.hpp"  // for RdbTransceiverTcpFactory
-#include "scp_messages.hpp"         // for ScenarioConfig
+#include "scp_messages.hpp"         // for scp::*
 #include "scp_transceiver.hpp"      // for ScpTransceiver
 #include "task_control.hpp"         // for TaskControl
 #include "vtd_conf.hpp"             // for VtdConfiguration

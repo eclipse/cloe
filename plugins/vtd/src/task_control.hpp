@@ -28,7 +28,6 @@
 #include <RDBHandler.hh>
 
 #include <cloe/core.hpp>  // for Json
-#include <cloe/models.hpp> // for CloeComponent
 
 #include "omni_sensor_component.hpp"  // for VtdOmniSensor
 #include "rdb_codec.hpp"              // for RdbCodec

@@ -77,7 +77,7 @@ class VtdOsiSensor : public osii::OsiOmniSensor, public VtdSensorData {
   }
 
   /**
-   * Return the sensor pose in the vehicle reference frame as defined by OSI 
+   * Return the sensor pose in the vehicle reference frame as defined by OSI
    * (rear axle center, _not_ street level as in VTD).
    */
   Eigen::Isometry3d get_static_mounting_position(const Eigen::Vector3d& bbcenter_to_veh_origin,
@@ -99,7 +99,9 @@ class VtdOsiSensor : public osii::OsiOmniSensor, public VtdSensorData {
   /**
    * Set the mock level for different data types according to user request.
    */
-  void set_mock_conf(std::shared_ptr<const osii::SensorMockConf> mock) override { this->mock_ = mock; }
+  void set_mock_conf(std::shared_ptr<const osii::SensorMockConf> mock) override {
+    this->mock_ = mock;
+  }
 
   // As defined in `cloe/component.hpp`
   void reset() override {

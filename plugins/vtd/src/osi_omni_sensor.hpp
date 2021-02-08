@@ -55,13 +55,13 @@ cloe::Duration osi_timestamp_to_time(const osi3::Timestamp& timestamp);
 void from_osi_identifier(const osi3::Identifier& osi_id, int& id);
 
 /**
- * OSI host vehicle coordinates/orientations are relative to the global ground 
+ * OSI host vehicle coordinates/orientations are relative to the global ground
  * truth coordinate system. Here, this data is stored in a Cloe object.
  */
 void from_osi_host_vehicle_data(const osi3::HostVehicleData& osi_hv, cloe::Object& obj);
 
 /**
- * Map the OSI data fields without taking care of transformations to the Cloe 
+ * Map the OSI data fields without taking care of transformations to the Cloe
  * reference frame convention.
  * Note that the OSI reference frame may differ for different object data types.
  */
@@ -90,7 +90,7 @@ void from_osi_boundary_points(const osi3::LaneBoundary& osi_lb, cloe::LaneBounda
 void transform_ego_coord_from_osi_data(const Eigen::Vector3d& dimensions_gt, cloe::Object& obj);
 
 /**
- * \param sensor_pose: Relation between the sensor frame and the ego vehicle 
+ * \param sensor_pose: Relation between the sensor frame and the ego vehicle
  *                     frame, expressed in the ego vehicle frame.
  * \param obj When enter: Geometric information in ego vehicle frame.
  *            When return: Geometric information in sensor frame.
@@ -214,7 +214,7 @@ class OsiOmniSensor {
   virtual void process(const osi3::SensorView& osi_sv);
 
   /**
-   * Translate OSI ego base information made available to the sensor model 
+   * Translate OSI ego base information made available to the sensor model
    * from other components, or use ground truth.
    * \param osi_hv HostVehicleData message to be processed (if available).
    * \param osi_mo MovingObject (ground truth) used as fallback.

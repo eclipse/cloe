@@ -34,7 +34,7 @@
 namespace osii {
 
 /**
- * OsiGroundTruth provides convenient access to auxiliary ground truth 
+ * OsiGroundTruth provides convenient access to auxiliary ground truth
  * information while processing an OSI message.
  */
 class OsiGroundTruth {
@@ -44,7 +44,7 @@ class OsiGroundTruth {
   virtual ~OsiGroundTruth() = default;
 
   /**
-   * Store address of the GroundTruth object belonging to the OSI message 
+   * Store address of the GroundTruth object belonging to the OSI message
    * that is to be processed.
    */
   void set(const osi3::GroundTruth& osi_gt) { gt_ptr_ = &osi_gt; }
@@ -60,7 +60,7 @@ class OsiGroundTruth {
   }
 
   /**
-   * Get the offset between coordinate reference frames of a vehicle (rear axle 
+   * Get the offset between coordinate reference frames of a vehicle (rear axle
    * center) and the bounding box center, e.g. for coordinate transformations.
    */
   const Eigen::Vector3d& get_veh_coord_sys_info(int obj_id) const {
