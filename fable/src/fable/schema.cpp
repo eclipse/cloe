@@ -30,12 +30,9 @@ using schema::BoxList;
 using schema::BoxVec;
 using schema::Variant;
 
-using SchemaMap = Schema::SchemaMap;
-using SchemaVec = Schema::SchemaVec;
-
 namespace {
 
-BoxVec to_box_vec(const SchemaVec& xs) {
+BoxVec to_box_vec(const std::vector<Schema>& xs) {
   BoxVec out;
   out.reserve(xs.size());
   for (const auto& x : xs) {
@@ -47,8 +44,8 @@ BoxVec to_box_vec(const SchemaVec& xs) {
 }  // anonymous namespace
 
 // Variant constructions:
-Schema::Schema(const SchemaVec& xs) : impl_(new Variant(to_box_vec(xs))) {}
-Schema::Schema(std::string&& desc, const SchemaVec& xs)
+Schema::Schema(const std::vector<Schema>& xs) : impl_(new Variant(to_box_vec(xs))) {}
+Schema::Schema(std::string&& desc, const std::vector<Schema>& xs)
     : impl_(new Variant(std::move(desc), to_box_vec(xs))) {}
 Schema::Schema(schema::BoxList props) : impl_(new Variant(props)) {}
 Schema::Schema(std::string&& desc, schema::BoxList props)
