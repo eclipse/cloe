@@ -25,9 +25,10 @@
 #ifndef FABLE_SCHEMA_INTERFACE_HPP_
 #define FABLE_SCHEMA_INTERFACE_HPP_
 
-#include <memory>   // for shared_ptr<>
-#include <string>   // for string
-#include <utility>  // for move
+#include <memory>       // for shared_ptr<>
+#include <string>       // for string
+#include <type_traits>  // for enable_if_t<>, is_base_of<>
+#include <utility>      // for move
 
 #include <fable/conf.hpp>   // for Conf
 #include <fable/error.hpp>  // for SchemaError
@@ -234,10 +235,21 @@ class Interface {
   virtual void reset_ptr() = 0;
 };
 
+/**
+ * Use SFINAE mechanism to disable a template function when S is not a subclass
+ * of Interface, hence not a schema.
+ *
+ * \example
+ *     template<typename S, typename = enable_if_schema_t<S>>
+ *     void foobar(S schema);
+ */
+template <typename S>
+using enable_if_schema_t = std::enable_if_t<std::is_base_of<Interface, S>::value>;
+
 // ------------------------------------------------------------------------- //
 
 class Box : public Interface {
- public:
+ public:  // Constructors
   Box() = default;
   Box(const Box&) = default;
   Box(Box&&) = default;
@@ -246,7 +258,13 @@ class Box : public Interface {
   Box(Interface* i) : impl_(i) { assert(impl_); }                             // NOLINT
   Box(std::shared_ptr<Interface> i) : impl_(std::move(i)) { assert(impl_); }  // NOLINT
 
- public:
+ public:  // Special
+  template <typename T>
+  std::shared_ptr<const T> as() const {
+    return std::dynamic_pointer_cast<T>(impl_);
+  }
+
+ public:  // Overrides
   Interface* clone() const override { return impl_->clone(); }
   JsonType type() const override { return impl_->type(); }
   std::string type_string() const override { return impl_->type_string(); }
@@ -354,6 +372,28 @@ class Base : public Interface {
 };
 
 // ------------------------------------------------------------------------- //
+
+/**
+ * Use SFINAE mechanism to disable a template function when S is not a subclass
+ * of Confable.
+ *
+ * \example
+ *     template<typename T, typename = enable_if_confable_t<T>>
+ *     void foobar(T x);
+ */
+template <typename T>
+using enable_if_confable_t = std::enable_if_t<std::is_base_of<Confable, T>::value>;
+
+/**
+ * Use SFINAE mechanism to disable a template function when S is a subclass
+ * of Confable.
+ *
+ * \example
+ *     template<typename T, typename = enable_if_not_confable_t<T>>
+ *     void foobar(T x);
+ */
+template <typename T>
+using enable_if_not_confable_t = std::enable_if_t<!std::is_base_of<Confable, T>::value>;
 
 template <typename T, std::enable_if_t<std::is_base_of<Confable, T>::value, int> = 0>
 auto make_prototype(std::string&& desc = "");
