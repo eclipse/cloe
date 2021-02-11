@@ -37,6 +37,7 @@ class Cloe(ConanFile):
         self.requires("{}/{}@cloe/develop".format(name, self.version))
 
     def requirements(self):
+        self.requires("boost/[<1.70]", override=True)
         requires = [
             "cloe-runtime",
             "cloe-models",

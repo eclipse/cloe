@@ -27,8 +27,6 @@ class CloeSimulatorVTD(ConanFile):
     no_copy_source = True
     requires = [
         "vtd/2.2.0@cloe/stable",
-    ]
-    build_requires = [
         "open-simulation-interface/3.2.0@cloe/stable",
         "vtd-api/2.2.0@cloe/stable",
     ]

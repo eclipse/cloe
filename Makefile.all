@@ -50,12 +50,12 @@ UNSELECT_PKGS :=
 SELECT_PKGS :=
 
 ## BUILD_POLICY
-##   Usage: make BUILD_POLICY="outdated"
-##   Default: "missing"
+##   Usage: make BUILD_POLICY="missing"
+##   Default: "outdated"
 ##
 ##   This variable contains the default Conan build policy for package targets.
 ##
-BUILD_POLICY := missing
+BUILD_POLICY := outdated
 
 ## CONAN_OPTIONS
 ##   Usage: make CONAN_OPTIONS="..."
