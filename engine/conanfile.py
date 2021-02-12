@@ -23,9 +23,6 @@ class CloeEngine(ConanFile):
         "webui/*",
         "CMakeLists.txt",
     ]
-    build_requires = [
-        "cli11/1.9.1",
-    ]
 
     _cmake = None
 
@@ -36,10 +33,13 @@ class CloeEngine(ConanFile):
     def set_version(self):
         self.version = self._project_version()
 
+    def requirements(self):
+        self.requires("cloe-runtime/{}@cloe/develop".format(self.version))
+        self.requires("cloe-models/{}@cloe/develop".format(self.version))
+        self.requires("cloe-oak/{}@cloe/develop".format(self.version), private=True)
+        self.requires("cli11/1.9.1", private=True),
+
     def build_requirements(self):
-        self.build_requires("cloe-runtime/{}@cloe/develop".format(self.version))
-        self.build_requires("cloe-models/{}@cloe/develop".format(self.version))
-        self.build_requires("cloe-oak/{}@cloe/develop".format(self.version))
         if self.options.test:
             self.build_requires("gtest/[~1.10]")
 
