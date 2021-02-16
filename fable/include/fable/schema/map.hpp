@@ -140,6 +140,7 @@ class Map : public Base<Map<T, P>> {
     }
   }
 
+  using Interface::to_json;
   void to_json(Json& j) const override {
     assert(ptr_ != nullptr);
     j = serialize(*ptr_);

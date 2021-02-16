@@ -76,6 +76,7 @@ class FromConfable : public Base<FromConfable<T>> {
     }
   }
 
+  using Interface::to_json;
   void to_json(Json& j) const override {
     assert(ptr_ != nullptr);
     ptr_->to_json(j);

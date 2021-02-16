@@ -56,6 +56,7 @@ class Ignore : public Base<Ignore> {
   }
 
   void validate(const Conf&) const override {}
+  using Interface::to_json;
   void to_json(Json& j) const override { j = nullptr; }
   void from_conf(const Conf&) override {}
   void reset_ptr() override {}

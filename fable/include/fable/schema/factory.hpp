@@ -280,6 +280,7 @@ class FactoryBase : public Base<CRTP> {
     throw std::logic_error("FactoryBase::from_conf() should not be used");
   }
 
+  using Interface::to_json;
   void to_json(Json& j) const override {
     throw std::logic_error("FactoryBase::to_json() should not be used");
   }

@@ -71,6 +71,7 @@ class Const : public Base<Const<T, P>> {
     }
   }
 
+  using Interface::to_json;
   void to_json(Json& j) const override { j = serialize(constant_); }
 
   void from_conf(const Conf& c) override { validate(c); }

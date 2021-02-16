@@ -217,6 +217,18 @@ class Interface {
    * Warning: This is NOT an efficient operation, but it can be useful for
    * cases where speed is not important.
    */
+  virtual Json to_json() const {
+    Json j;
+    to_json(j);
+    return j;
+  }
+
+  /**
+   * Return the current value of the destination.
+   *
+   * Warning: This is NOT an efficient operation, but it can be useful for
+   * cases where speed is not important.
+   */
   virtual void to_json(Json&) const = 0;
 
   /**
@@ -306,6 +318,7 @@ class Box : public Interface {
   }
 
  public:  // Overrides
+  using Interface::to_json;
   Interface* clone() const override { return impl_->clone(); }
   JsonType type() const override { return impl_->type(); }
   std::string type_string() const override { return impl_->type_string(); }

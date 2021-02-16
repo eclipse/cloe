@@ -246,15 +246,10 @@ class Schema : public schema::Interface {
     return j;
   }
 
-  Json to_json() const {
-    Json j;
-    to_json(j);
-    return j;
-  }
-
   friend void to_json(Json& j, const Schema& s) { s.impl_->to_json(j); }
 
  public:  // Overrides
+  using Interface::to_json;
   operator schema::Box() const { return schema::Box{impl_}; }
   Interface* clone() const override { return impl_->clone(); }
   JsonType type() const override { return impl_->type(); }

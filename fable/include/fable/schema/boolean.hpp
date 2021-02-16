@@ -50,6 +50,7 @@ class Boolean : public Base<Boolean> {
 
   void validate(const Conf& c) const override { this->validate_type(c); }
 
+  using Interface::to_json;
   void to_json(Json& j) const override {
     assert(ptr_ != nullptr);
     j = serialize(*ptr_);
