@@ -128,7 +128,7 @@ test_vtd_osi_plugin_exists() {
 
 test_vtd_osi_model_exists() {
     # VTD_ROOT is only available in the shell.
-    cloe_shell -c 'test -f ${VTD_ROOT}/Data/Distros/Distro/Plugins/ModuleManager/OSMPDummySensor.so'
+    cloe_shell -c 'test -n "$(echo "${VTD_EXTERNAL_MODELS}" | grep -o "OSMPDummySensor.so")"'
 }
 
 @test "Expect check/run success: test_vtd_smoketest_osi.json" {
