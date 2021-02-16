@@ -51,6 +51,8 @@ class Cloe(ConanFile):
         ]
         if self.options.with_vtd:
             requires.append("cloe-plugin-vtd")
+            self.requires("vtd-osi-sensor/1.0.0@cloe/vtd2p2")
+
         if self.options.with_engine:
             requires.append("cloe-engine")
 
