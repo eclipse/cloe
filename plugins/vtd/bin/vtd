@@ -160,6 +160,16 @@ def teardown_runtime(runtime_dir: Path) -> None:
     help="VTD project to use, default to currently symlinked.",
 )
 @click.option(
+    "-m",
+    "--vtd-external-models",
+    envvar="VTD_EXTERNAL_MODELS",
+    multiple=True,
+    type=click.Path(file_okay=True, dir_okay=False),
+    default = [],
+    required=False,
+    help="VTD external models (env: $VTD_EXTERNAL_MODELS).",
+)
+@click.option(
     "-n",
     "--no-start",
     is_flag=True,
@@ -178,6 +188,7 @@ def start(
     skip_setup: bool,
     vtd_setup: str,
     vtd_project: str,
+    vtd_external_models : str,
     no_start: bool,
     vtd_args: str,
 ):
@@ -219,6 +230,14 @@ def start(
         if dst.exists():
             os.remove(dst)
         os.symlink(vtd_project, dst)
+
+    for srcfile in vtd_external_models:
+        srcfile = Path(srcfile)
+        dstdir = opt.runtime_dir / "Data" / "Setups" / "Current" / "Bin"
+        dstfile = dstdir / srcfile.name
+        if not dstfile.is_file():
+            logging.debug("Create symlink: {} -> {}".format(dstfile, srcfile))
+            os.symlink(srcfile, dstfile)
 
     if no_start:
         return
