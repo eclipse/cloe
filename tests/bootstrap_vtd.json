@@ -14,6 +14,7 @@
           "args": [
             "start",
             "--vtd-setup", "${THIS_STACKFILE_DIR}/../plugins/vtd/contrib/setups/Cloe.noGUInoIG",
+            "--copy-setup",
             "--vtd-project", "${THIS_STACKFILE_DIR}/../plugins/vtd/contrib/projects/cloe_tests"
           ]
         }
