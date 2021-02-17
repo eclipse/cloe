@@ -1,21 +1,22 @@
 cmake_minimum_required(VERSION 3.7)
 
 project(open_simulation_interface
-    VERSION 3.2.0
     LANGUAGES CXX
 )
 
 include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup(TARGETS NO_OUTPUT_DIRS)
 
-find_package(protoc CONFIG REQUIRED)
+find_package(Protobuf REQUIRED)
+# make sure that protobuf_generate_cpp finds the protobuf headers
+set(Protobuf_IMPORT_DIRS ${Protobuf_INCLUDE_DIRS})
 
 set(VERSION_MAJOR 3)
 set(VERSION_MINOR 2)
 set(VERSION_PATCH 0)
 configure_file(osi_version.proto.in ${CMAKE_CURRENT_SOURCE_DIR}/osi_version.proto)
 
-add_library(${PROJECT_NAME}
+set(OSI_SOURCE_FILES
     osi_version.proto
     osi_common.proto
     osi_datarecording.proto
@@ -40,10 +41,14 @@ add_library(${PROJECT_NAME}
     osi_sensorspecific.proto
     osi_sensorview.proto
 )
+protobuf_generate_cpp(OSI_PROTO_SRCS OSI_PROTO_HDRS ${OSI_SOURCE_FILES})
+
+add_library(${PROJECT_NAME}
+    ${OSI_PROTO_SRCS}
+)
 set_target_properties(${PROJECT_NAME} PROPERTIES
     CXX_STANDARD 11
     CXX_STANDARD_REQUIRED ON
-    VERSION ${PROJECT_VERSION}
 )
 target_include_directories(${PROJECT_NAME}
     PUBLIC
@@ -55,10 +60,6 @@ target_link_libraries(${PROJECT_NAME}
     PUBLIC
         CONAN_PKG::protobuf
 )
-protobuf_generate(TARGET ${PROJECT_NAME}
-    OUT_VAR protobuf_generated_files
-    IMPORT_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
-)
 
 include(GNUInstallDirs)
 install(TARGETS ${PROJECT_NAME}
@@ -69,12 +70,7 @@ install(TARGETS ${PROJECT_NAME}
 )
 
 # Install generated headers
-foreach(_file ${protobuf_generated_files})
-    if(_file MATCHES "h$")
-        list(APPEND protobuf_generated_headers ${_file})
-    endif()
-endforeach()
 install(
-    FILES ${protobuf_generated_headers}
+    FILES ${OSI_PROTO_HDRS}
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )

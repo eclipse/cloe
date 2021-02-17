@@ -5,7 +5,6 @@ import os
 
 class OpenSimulationInterfaceConan(ConanFile):
     name = "open-simulation-interface"
-    version = "3.2.0"
     license = "Mozilla Public License 2.0"
     url = "https://github.com/OpenSimulationInterface/open-simulation-interface"
     description = "A generic interface for the environmental perception of automated driving functions in virtual scenarios."
@@ -14,18 +13,18 @@ class OpenSimulationInterfaceConan(ConanFile):
     options = {
         "shared": [True, False],
         "fPIC": [True, False],
+        "protoc_from_protobuf": [True, False],
     }
     default_options = {
         "shared": True,
         "fPIC": True,
+        "protoc_from_protobuf": False,
     }
     generators = "cmake"
+    build_policy = "missing"
     no_copy_source = False
     exports_sources = [
         "CMakeLists.txt",
-    ]
-    build_requires = [
-        "protoc_installer/[>=2.6.1]@bincrafters/stable",
     ]
     requires = [
         "protobuf/[>=2.6.1]@bincrafters/stable",
@@ -35,13 +34,25 @@ class OpenSimulationInterfaceConan(ConanFile):
         "https://github.com/OpenSimulationInterface/open-simulation-interface.git"
     )
     _git_dir = "osi"
-    _git_ref = "v{}".format(version)
 
     _cmake = None
 
+    def _project_version(self):
+        version_file = os.path.join(self.recipe_folder, "VERSION")
+        return tools.load(version_file).strip()
+
+    def set_version(self):
+        self.version = self._project_version()
+
+    def build_requirements(self):
+        if not self.options.protoc_from_protobuf:
+            self.build_requires(
+                "protoc_installer/[>=2.6.1]@bincrafters/stable")
+
     def source(self):
         git = tools.Git(folder=self._git_dir)
-        git.clone(self._git_url, self._git_ref, shallow=True)
+        git_ref = "v{}".format(self.version)
+        git.clone(self._git_url, git_ref, shallow=True)
         dst = os.path.join(self.source_folder, self._git_dir)
         shutil.copy("CMakeLists.txt", dst)
 
@@ -49,6 +60,7 @@ class OpenSimulationInterfaceConan(ConanFile):
         if self._cmake:
             return self._cmake
         self._cmake = CMake(self)
+        self._cmake.definitions["CMAKE_PROJECT_VERSION"] = self.version
         self._cmake.definitions["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
         self._cmake.configure(source_folder=self._git_dir)
         return self._cmake
