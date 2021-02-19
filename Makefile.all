@@ -136,29 +136,29 @@ ${ALL_PLUGIN_PKGS}: runtime models
 ifeq (${WITH_ENGINE},0)
 ALL_PKGS := $(filter-out oak, ${ALL_PKGS})
 ALL_PKGS := $(filter-out engine, ${ALL_PKGS})
-CONAN_OPTIONS += -o cloe:with_engine=False
+override CONAN_OPTIONS += -o cloe:with_engine=False
 endif
 
 ifeq (${WITH_VTD},1)
-CONAN_OPTIONS += -o cloe:with_vtd=True
+override CONAN_OPTIONS += -o cloe:with_vtd=True
 else
 ALL_PKGS := $(filter-out plugins/vtd, ${ALL_PKGS})
 endif
 
 ifeq (${BUILD_TESTS},0)
-CONAN_OPTIONS += -o cloe:test=False
-CONAN_OPTIONS += -o fable:test=False
-CONAN_OPTIONS += -o cloe-runtime:test=False
-CONAN_OPTIONS += -o cloe-models:test=False
-CONAN_OPTIONS += -o cloe-oak:test=False
+override CONAN_OPTIONS += -o cloe:test=False
+override CONAN_OPTIONS += -o fable:test=False
+override CONAN_OPTIONS += -o cloe-runtime:test=False
+override CONAN_OPTIONS += -o cloe-models:test=False
+override CONAN_OPTIONS += -o cloe-oak:test=False
 ifeq (${WITH_ENGINE},1)
-CONAN_OPTIONS += -o cloe-engine:test=False
+override CONAN_OPTIONS += -o cloe-engine:test=False
 endif
 ifeq (${WITH_VTD},1)
-CONAN_OPTIONS += -o cloe-plugin-vtd:test=False
+override CONAN_OPTIONS += -o cloe-plugin-vtd:test=False
 endif
-CONAN_OPTIONS += -o cloe-plugin-basic:test=False
-CONAN_OPTIONS += -o cloe-plugin-noisy-sensor:test=False
+override CONAN_OPTIONS += -o cloe-plugin-basic:test=False
+override CONAN_OPTIONS += -o cloe-plugin-noisy-sensor:test=False
 endif
 
 SELECT_PKGS := $(filter-out ${UNSELECT_PKGS}, ${ALL_PKGS})
