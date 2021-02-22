@@ -45,9 +45,9 @@ RUN pip3 install --upgrade pip && \
 # Build and Install Cloe
 WORKDIR /cloe
 COPY . /cloe
-RUN make export-vendor export && \
-    make WITH_VTD=0 package-all && \
-    make WITH_VTD=0 INSTALL_DIR="/deploy" deploy && \
+RUN make export-vendor && \
+    make export package-all && \
+    make INSTALL_DIR="/deploy" deploy && \
     conan remove \* -b -f
 
 # Finalize Image

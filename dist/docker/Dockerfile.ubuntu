@@ -52,19 +52,19 @@ COPY . /cloe
 RUN \
     # Export our own Conan recipes, in case they are not available in the
     # CONAN_REMOTE specified above.
-    make export-vendor export && \
+    make export-vendor && \
     # Build all the packages, except for vtd, because that currently requires
     # dependencies we don't have in the Docker container.
     # You can specify more than one package here, see the Makefile for more
     # information on the WITH_*, PACKAGES, NOBUILD_PKGS, and BUILD_PKGS variables.
-    make WITH_VTD=0 package-all && \
+    make package-select && \
     # Run smoketests.
     export LC_ALL=C.UTF-8 LANG=C.UTF-8 && \
-    make WITH_VTD=0 smoketest && \
+    make smoketest && \
     # Deploy all the Cloe packages to INSTALL_DIR, which is /usr/local by
     # default. This will also populate BUILD_DIR, so that should be removed
     # afterwards to prevent this image from getting too big.
-    make WITH_VTD=0 INSTALL_DIR="/deploy" deploy && \
+    make INSTALL_DIR="/deploy" deploy && \
     # In the above commands, Conan downloads and creates packages into its
     # local cache. We don't need the build directories, since we have deployed
     # Cloe, so we should clean up to keep the Docker image down.

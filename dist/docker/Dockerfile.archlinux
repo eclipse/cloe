@@ -33,11 +33,11 @@ RUN conan profile new --detect default && \
 # Build and Install Cloe
 WORKDIR /cloe
 COPY . /cloe
-RUN make export-vendor export && \
-    make WITH_VTD=0 package-all && \
+RUN make export-vendor && \
+    make package-select && \
     export LC_ALL=C.UTF-8 LANG=C.UTF-8 && \
-    make WITH_VTD=0 smoketest && \
-    make WITH_VTD=0 INSTALL_DIR="/deploy" deploy && \
+    make smoketest && \
+    make INSTALL_DIR="/deploy" deploy && \
     conan remove \* -b -f
 
 # Create Deploy Image
