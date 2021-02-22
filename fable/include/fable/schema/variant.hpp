@@ -104,6 +104,7 @@ class Variant : public Interface {
   }
 
  public:  // Overrides
+  using Interface::to_json;
   Json json_schema() const override;
   void validate(const Conf& c) const override { validate_index(c); }
   void to_json(Json& j) const override { schemas_[0].to_json(j); }

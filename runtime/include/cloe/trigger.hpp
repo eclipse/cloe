@@ -229,8 +229,8 @@ struct TriggerSchema {
    * but no inline format.
    */
   TriggerSchema(const std::string& name, const std::string& desc,
-                std::initializer_list<std::pair<std::string const, Schema>> init)
-      : name_(name), schema_(std::string(desc), std::move(init)), inline_(false) {}
+                fable::schema::PropertyList<> props)
+      : name_(name), schema_(std::string(desc), props), inline_(false) {}
 
   /**
    * Construct a TriggerSchema that describes a trigger with the given Schema
@@ -246,8 +246,8 @@ struct TriggerSchema {
    * and a specified inline format.
    */
   TriggerSchema(const std::string& name, const std::string& desc, InlineSchema&& usage,
-                std::initializer_list<std::pair<std::string const, Schema>> init)
-      : name_(name), schema_(std::string(desc), std::move(init)), inline_(std::move(usage)) {}
+                fable::schema::PropertyList<> props)
+      : name_(name), schema_(std::string(desc), props), inline_(std::move(usage)) {}
 
   /**
    * Construct a TriggerSchema that describes a trigger with the given Schema

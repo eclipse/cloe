@@ -196,6 +196,7 @@ class Number : public Base<Number<T>> {
     }
   }
 
+  using Interface::to_json;
   void to_json(Json& j) const override {
     assert(ptr_ != nullptr);
     j = serialize(*ptr_);

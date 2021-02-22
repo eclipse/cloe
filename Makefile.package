@@ -40,6 +40,12 @@ BUILD_CMAKECACHE := ${BUILD_DIR}/CMakeCache.txt
 BUILD_LAYOUT     := ${PROJECT_ROOT}/.conan-layout.ini
 BUILD_POLICY     := missing
 
+# Normally, you should set this in your profile, but if you just want to build
+# the package in debug mode once, you can do it this way.
+#
+# This can be one of: None, Debug, Release, RelWithDebInfo, MinSizeRel
+DEBUG_BUILD_TYPE := Debug
+
 PACKAGE_NAME    := $(shell sed -rn 's/.*name\s*=\s*"([^"]+)"$$/\1/p' ${SOURCE_CONANFILE})
 PACKAGE_VERSION := $(or \
 	$(shell sed -rn 's/\s+version\s*=\s*"([^"]+)"$$/\1/p' ${SOURCE_CONANFILE}), \
@@ -163,6 +169,17 @@ package-outdated:
 	#   code changes. Timestamps are not taken into account.
 	#
 	conan create . ${PACKAGE_CHANNEL} --build=outdated ${CONAN_OPTIONS}
+
+package-debug:
+	# Build the package in Conan cache unconditionally in debug mode.
+	#
+	#   Conan will retrieve and build all dependencies based on the build policy.
+	#   Note that this cannot be called if the package is currently in editable mode.
+	#
+	#   See: https://docs.conan.io/en/latest/mastering/policies.html
+	#   See: https://docs.conan.io/en/latest/using_packages/debugging.html
+	#
+	conan create . ${PACKAGE_CHANNEL} -s build_type=${DEBUG_BUILD_TYPE} --build=${BUILD_POLICY} --build=${PACKAGE_NAME} ${CONAN_OPTIONS}
 
 purge:
 	# Remove all instances of this package in the Conan cache.

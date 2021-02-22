@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
 
-project(fable
-    VERSION 1.0.0
-    LANGUAGES CXX
-)
+project(fable LANGUAGES CXX)
 
 set(target fable)
 set(alias fable::fable)
@@ -29,7 +26,7 @@ add_library(${alias} ALIAS ${target})
 set_target_properties(${target} PROPERTIES
     CXX_STANDARD 14
     CXX_STANDARD_REQUIRED ON
-    VERSION ${PROJECT_VERSION}
+    VERSION ${FABLE_VERSION}
 )
 target_include_directories(${target}
   PUBLIC
@@ -54,8 +51,11 @@ if(BuildTests)
         src/fable/environment_test.cpp
         src/fable/schema/const_test.cpp
         src/fable/schema/enum_test.cpp
+        src/fable/schema/factory_test.cpp
+        src/fable/schema/factory_advanced_test.cpp
         src/fable/schema/number_test.cpp
         src/fable/schema/optional_test.cpp
+        src/fable/schema/struct_test.cpp
         src/fable/schema_test.cpp
     )
     set_target_properties(test-fable PROPERTIES

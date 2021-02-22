@@ -72,6 +72,7 @@ class Passthru : public Base<Passthru<P>> {
     prototype_.validate(c);
   }
 
+  using Interface::to_json;
   void to_json(Json& j) const override {
     assert(ptr_ != nullptr);
     j = **ptr_;

@@ -1,11 +1,9 @@
-import os
-
+import os.path
 from conans import ConanFile, CMake, tools
 
 
 class Fable(ConanFile):
     name = "fable"
-    version = "1.0.0"
     license = "Apache-2.0"
     url = "https://github.com/eclipse/cloe"
     description = "JSON schema and configuration library"
@@ -35,6 +33,13 @@ class Fable(ConanFile):
 
     _cmake = None
 
+    def _project_version(self):
+        version_file = os.path.join(self.recipe_folder, "..", "VERSION")
+        return tools.load(version_file).strip()
+
+    def set_version(self):
+        self.version = self._project_version()
+
     def build_requirements(self):
         if self.options.test:
             self.build_requires("gtest/[~1.10]")
@@ -44,6 +49,7 @@ class Fable(ConanFile):
             return self._cmake
         self._cmake = CMake(self)
         self._cmake.definitions["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
+        self._cmake.definitions["FABLE_VERSION"] = self.version
         self._cmake.definitions["BuildTests"] = self.options.test
         self._cmake.configure()
         return self._cmake

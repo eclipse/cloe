@@ -16,42 +16,35 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
- * \file noise_data.hpp
+ * \file fable/schema/factory_advanced_test.cpp
+ * \see  fable/schema/factory.hpp
+ * \see  fable/schema/struct.hpp
  */
-
-#pragma once
 
 #include <memory>   // for shared_ptr<>
 #include <random>   // for default_random_engine, normal_distribution<>
 #include <string>   // for string
 #include <utility>  // for move
 
-#include <cloe/component.hpp>        // for Component, ComponentFactory, ...
-#include <cloe/core.hpp>             // for Confable, Schema
-#include <cloe/entity.hpp>           // for Entity
-#include <cloe/simulator.hpp>        // for ModelError
+#include <fable/json/with_std.hpp>   // for to_json
+#include <fable/schema.hpp>          // for Confable, Schema
 #include <fable/schema/factory.hpp>  // for Factory
+#include <fable/utility/gtest.hpp>   // for assert_validate
 
-namespace cloe {
-namespace component {
+namespace {
+
+using namespace fable;
 
 using Generator = std::default_random_engine;
 
 template <typename T>
-class Distribution : public Confable, public Entity {
+class Distribution : public Confable {
  public:
-  using Entity::Entity;
   virtual ~Distribution() noexcept = default;
 
+  virtual std::string name() const = 0;
   virtual T get(Generator&) const = 0;
-
-  void to_json(Json& j) const override {
-    j = Json{
-        {"binding", name()},
-    };
-  }
-
-  virtual void reset() {}
+  virtual void reset() = 0;
 
   CONFABLE_FRIENDS(Distribution)
 };
@@ -59,17 +52,19 @@ class Distribution : public Confable, public Entity {
 template <typename T>
 class NormalDistribution : public Distribution<T> {
  public:
-  NormalDistribution() : Distribution<T>("normal") {}
   virtual ~NormalDistribution() noexcept = default;
 
+  std::string name() const override { return "normal"; }
   T get(Generator& g) const override { return distribution(g); }
 
   void reset() override { distribution = std::normal_distribution<T>{mean, std_deviation}; }
 
   void to_json(Json& j) const override {
-    Distribution<T>::to_json(j);
-    j["mean"] = mean;
-    j["std_deviation"] = std_deviation;
+    j = Json{
+        {"binding", "normal"},
+        {"mean", mean},
+        {"std_deviation", std_deviation},
+    };
   }
 
   void from_conf(const Conf& c) override {
@@ -113,7 +108,7 @@ class Random {
     if (dist) {
       d = dist;
     } else {
-      throw cloe::ModelError("noisy_sensor: empty distribution assignment.");
+      throw std::runtime_error("empty distribution assignment");
     }
   }
 
@@ -136,29 +131,21 @@ class DistributionFactory : public fable::schema::Factory<DistributionPtr> {
 class NoiseConf : public Confable {
  public:
   NoiseConf() = default;
-
   virtual ~NoiseConf() noexcept = default;
 
   double get() const { return rnd_.get(); }
 
   virtual void reset(unsigned long seed) {
-    rnd_.reset(distr_default);
-    rnd_.reset(seed);
     // In case of multiple random number generators, a different seed must
     // be used for each generator (e.g. increment after each rnd_.reset).
+    rnd_.reset(distr_default);
+    rnd_.reset(seed);
   }
 
   CONFABLE_SCHEMA(NoiseConf) {
     return Schema{
-        // clang-format off
-        {"distribution", DistributionFactory(&distr_default, "set distribution binding and arguments")},
-        // clang-format on
-    };
-  }
-
-  void to_json(Json& j) const override {
-    j = Json{
-        {"distribution", distr_default},
+        {"distribution",
+         DistributionFactory(&distr_default, "set distribution binding and arguments")},
     };
   }
 
@@ -167,40 +154,16 @@ class NoiseConf : public Confable {
   Random<double> rnd_ = Random<double>(0, distr_default);
 };
 
-struct NoisySensorConf : public Confable {
-  /**
-   * This flag exists so that an action can modify it at runtime.
-   */
-  bool enabled = true;
+}  // anonymous namespace
 
-  /**
-   * If reuse_seed is true, then in every reset we want to use the same
-   * random seed. This is generally the behavior that we want when
-   * restarting a simulation, as this preserves the same noise pattern.
-   */
-  bool reuse_seed = true;
+TEST(fable_schema_factory_advanced, deserialize_distribution) {
+  NoiseConf tmp;
 
-  /**
-   * When set to 0, a new random seed is retrieved.
-   */
-  unsigned long seed = 0;
-
-  CONFABLE_SCHEMA(NoisySensorConf) {
-    return Schema{
-        {"enable", Schema(&enabled, "enable or disable component")},
-        {"reuse_seed", Schema(&reuse_seed, "whether to get a new seed on reset")},
-        {"seed", Schema(&seed, "set random engine seed (effective on reset)")},
-    };
-  }
-
-  void to_json(Json& j) const override {
-    j = Json{
-        {"enable", enabled},
-        {"reuse_seed", reuse_seed},
-        {"seed", seed},
-    };
-  }
-};
-
-}  // namespace component
-}  // namespace cloe
+  fable::assert_validate(tmp, R"({
+    "distribution": {
+        "binding": "normal",
+        "mean": 1.0,
+        "std_deviation": 0.1
+    }
+  })");
+}

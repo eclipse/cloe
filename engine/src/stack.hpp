@@ -39,6 +39,7 @@
 #include <cloe/simulator.hpp>        // for SimulatorFactory
 #include <cloe/trigger.hpp>          // for Source
 #include <cloe/utility/command.hpp>  // for Command
+#include <fable/schema/factory.hpp>  // for Factory
 
 #include "plugin.hpp"  // for Plugin
 
@@ -81,9 +82,13 @@ class PersistentConfable : public Confable {
   Conf conf_;
 };
 
-inline auto id_prototype() { return schema::make_prototype<std::string>().c_identifier(); }
-inline auto id_path_prototype() {
-  return schema::make_prototype<std::string>().pattern("^([a-zA-Z_][a-zA-Z0-9_]*/?)+$");
+inline auto id_prototype(std::string&& desc = "") {
+  return schema::make_prototype<std::string>(std::move(desc)).c_identifier();
+}
+
+inline auto id_path_prototype(std::string&& desc = "") {
+  return schema::make_prototype<std::string>(std::move(desc))
+      .pattern("^([a-zA-Z_][a-zA-Z0-9_]*/?)+$");
 }
 
 // --------------------------------------------------------------------------------------------- //
@@ -469,6 +474,26 @@ struct DefaultConf : public Confable {
 
 // --------------------------------------------------------------------------------------------- //
 
+template <typename C, typename F>
+class FactoryPlugin : public fable::schema::FactoryPointerless<C> {
+ public:
+  FactoryPlugin() {
+    this->set_factory_key("binding");
+    this->set_args_subset(false);
+  }
+  virtual ~FactoryPlugin() = default;
+
+  void add_plugin(const std::string& name, std::shared_ptr<Plugin> p) {
+    this->add_factory(name, p->make<F>()->schema(), [p, name](const Conf& c) {
+      C tmp{name, p->make<F>()};
+      tmp.from_conf(c);
+      return tmp;
+    });
+  }
+};
+
+// --------------------------------------------------------------------------------------------- //
+
 /**
  * SimulatorConf contains the configuration for a specific simulator.
  */
@@ -493,7 +518,11 @@ struct SimulatorConf : public Confable {
   }
 };
 
-using SimulatorSchema = fable::schema::Factory<SimulatorConf, SimulatorFactory>;
+class SimulatorSchema : public FactoryPlugin<SimulatorConf, SimulatorFactory> {
+ public:
+  SimulatorSchema();
+  virtual ~SimulatorSchema() = default;
+};
 
 // --------------------------------------------------------------------------------------------- //
 
@@ -525,7 +554,11 @@ struct ControllerConf : public Confable {
   }
 };
 
-using ControllerSchema = fable::schema::Factory<ControllerConf, ControllerFactory>;
+class ControllerSchema : public FactoryPlugin<ControllerConf, ControllerFactory> {
+ public:
+  ControllerSchema();
+  virtual ~ControllerSchema() = default;
+};
 
 // --------------------------------------------------------------------------------------------- //
 
@@ -603,11 +636,13 @@ struct ComponentConf : public Confable {
   }
 };
 
-using ComponentSchema = fable::schema::Factory<ComponentConf, ComponentFactory>;
+class ComponentSchema : public FactoryPlugin<ComponentConf, ComponentFactory> {
+ public:
+  ComponentSchema();
+  virtual ~ComponentSchema() = default;
+};
 
 // TODO(ben): Add AliasConf as alternative to ComponentConf.
-
-class VehicleSchema;
 
 /**
  * VehicleConf contains the configuration for instantiating a vehicle.
@@ -638,7 +673,6 @@ struct VehicleConf : public Confable {
 
  private:  // Schemas
   ComponentSchema component_schema;
-  friend VehicleSchema;
 
  public:  // Constructors
   explicit VehicleConf(const ComponentSchema& s) : component_schema(s) {}
@@ -682,49 +716,34 @@ struct VehicleConf : public Confable {
   }
 };
 
-class VehicleSchema : public schema::Base<VehicleSchema> {
-  using Type = VehicleConf;
-  using F = ComponentFactory;
-
+class VehicleSchema : public fable::schema::Base<VehicleSchema> {
  public:  // Constructors
-  explicit VehicleSchema(Type* ptr, std::string&& desc = "")
-      : Base(JsonType::object, std::move(desc)), ptr_(ptr) {}
+  using Type = VehicleConf;
+  using MakeFunc = ComponentSchema::MakeFunc;
+  using TypeFactory = ComponentSchema::TypeFactory;
+
+  explicit VehicleSchema(std::string&& desc = "") : Base(std::move(desc)) {}
 
  public:  // Special
-  const std::map<std::string, std::shared_ptr<F>> factories() const {
-    return components_.factories();
-  }
-  std::shared_ptr<F> get_factory(const std::string& key) const {
-    return components_.get_factory(key);
-  }
-  bool has_factory(const std::string& key) const { return components_.has_factory(key); }
-  void add_factory(const std::string& key, std::shared_ptr<F> f) {
-    components_.add_factory(key, std::move(f));
-    if (ptr_ != nullptr) {
-      ptr_->component_schema = components_;
-    }
+  bool has_factory(const std::string& name) const { return components_.has_factory(name); }
+  void add_plugin(const std::string& name, std::shared_ptr<Plugin> p) {
+    components_.add_plugin(name, p);
   }
 
  public:  // Overrides
   Json json_schema() const override {
-    if (ptr_ != nullptr) {
-      return ptr_->schema().json_schema();
-    } else {
-      VehicleConf v{components_};
-      return v.schema().json_schema();
-    }
+    VehicleConf v{components_};
+    return v.schema().json_schema();
   }
 
   void validate(const Conf& c) const override {
-    if (ptr_ != nullptr) {
-      ptr_->schema().validate(c);
-    } else {
-      VehicleConf v{components_};
-      v.schema().validate(c);
-    }
+    VehicleConf v{components_};
+    v.schema().validate(c);
   }
 
   Json serialize(const Type& x) const { return x.to_json(); }
+
+  Type make(const Conf& c) const { return deserialize(c); }
 
   Type deserialize(const Conf& c) const {
     VehicleConf v{components_};
@@ -732,21 +751,18 @@ class VehicleSchema : public schema::Base<VehicleSchema> {
     return v;
   }
 
-  void from_conf(const Conf& c) override {
-    assert(ptr_ != nullptr);
-    ptr_->from_conf(c);
+  void from_conf(const Conf&) override {
+    throw std::logic_error("VehicleSchema does not implement from_conf");
   }
 
-  void to_json(Json& j) const override {
-    assert(ptr_ != nullptr);
-    ptr_->to_json(j);
+  void to_json(Json&) const override {
+    throw std::logic_error("VehicleSchema does not implement to_json");
   }
 
-  void reset_ptr() override { ptr_ = nullptr; }
+  void reset_ptr() override {}
 
  private:  // State
   ComponentSchema components_;
-  Type* ptr_;
 };
 
 // --------------------------------------------------------------------------------------------- //

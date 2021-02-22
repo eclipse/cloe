@@ -34,10 +34,8 @@
                 "target": "translation",
                 "distribution": {
                   "binding": "normal",
-                  "args": {
-                    "mean": 0.0,
-                    "std_deviation": 0.3
-                  }
+                  "mean": 0.0,
+                  "std_deviation": 0.3
                 }
               }
             ]

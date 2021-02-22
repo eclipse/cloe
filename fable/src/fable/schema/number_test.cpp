@@ -26,8 +26,9 @@ using namespace std;  // NOLINT(build/namespaces)
 
 #include <gtest/gtest.h>
 
-#include <fable/confable.hpp>  // for Confable
-#include <fable/schema.hpp>    // for Number
+#include <fable/confable.hpp>       // for Confable
+#include <fable/schema.hpp>         // for Number
+#include <fable/utility/gtest.hpp>  // for assert_validate
 
 struct MyNumberStruct : public fable::Confable {
   uint8_t number;
@@ -39,13 +40,9 @@ struct MyNumberStruct : public fable::Confable {
   }
 };
 
-inline void assert_json_eq(const fable::Json& j, const fable::Json& k) {
-  ASSERT_EQ(std::string(j.dump()), std::string(k.dump()));
-}
-
 TEST(fable_schema_number, schema) {
   MyNumberStruct tmp;
-  fable::Json expect = R"({
+  fable::assert_schema_eq(tmp, R"({
     "type": "object",
     "properties": {
       "number": {
@@ -59,9 +56,7 @@ TEST(fable_schema_number, schema) {
       }
     },
     "additionalProperties": false
-  })"_json;
-
-  assert_json_eq(tmp.schema().json_schema(), expect);
+  })");
 }
 
 TEST(fable_schema_number, validate) {
@@ -69,13 +64,15 @@ TEST(fable_schema_number, validate) {
 
   std::vector<uint8_t> ok{0, 1, 2, 3, 4, 5, 6, 7, 15};
   for (auto x : ok) {
-    fable::Conf c{fable::Json{{"number", x}}};
-    ASSERT_NO_THROW(tmp.schema().validate(c));
+    fable::assert_validate(tmp, fable::Json{
+                                    {"number", x},
+                                });
   };
 
   std::vector<uint8_t> wrong{8, 16, 32, 255};
   for (auto x : wrong) {
-    fable::Conf c{fable::Json{{"number", x}}};
-    ASSERT_ANY_THROW(tmp.schema().validate(c));
+    fable::assert_invalidate(tmp, fable::Json{
+                                      {"number", x},
+                                  });
   }
 }

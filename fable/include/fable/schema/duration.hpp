@@ -125,6 +125,7 @@ class Duration : public Base<Duration<T, Period>> {
     }
   }
 
+  using Interface::to_json;
   void to_json(Json& j) const override {
     assert(ptr_ != nullptr);
     j = serialize(*ptr_);

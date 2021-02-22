@@ -97,6 +97,7 @@ class String : public Base<String> {
   Json json_schema() const override;
   void validate(const Conf& c) const override;
 
+  using Interface::to_json;
   void to_json(Json& j) const override {
     assert(ptr_ != nullptr);
     j = serialize(*ptr_);

@@ -24,9 +24,11 @@
 
 #include <gtest/gtest.h>
 
-#include <fable/confable.hpp>  // for Confable
-#include <fable/schema.hpp>    // for Schema
-using namespace fable;         // NOLINT(build/namespaces)
+#include <fable/confable.hpp>       // for Confable
+#include <fable/schema.hpp>         // for Schema
+#include <fable/utility/gtest.hpp>  // for schema_eq, ...
+
+namespace {
 
 enum class MyEnum { Enable, Disable };
 
@@ -37,17 +39,17 @@ ENUM_SERIALIZATION(MyEnum, ({
 }))
 // clang-format on
 
-struct ShouldCompile : public Confable {
+struct ShouldCompile : public fable::Confable {
   std::vector<std::string> vehicles;
 
   CONFABLE_SCHEMA(ShouldCompile) {
-    return Schema{
-        {"vehicles", Schema(&vehicles, "")},
+    return fable::Schema{
+        {"vehicles", fable::Schema(&vehicles, "")},
     };
   };
 };
 
-struct MyStruct : public Confable {
+struct MyStruct : public fable::Confable {
   bool my_required = false;
   std::string my_string = "";
   int my_int = 0;
@@ -86,8 +88,8 @@ struct MyStruct : public Confable {
     };
   };
 
-  void to_json(Json& j) const override {
-    j = Json{
+  void to_json(fable::Json& j) const override {
+    j = fable::Json{
         {"author", "me"},
         {"required", my_required},
         {"string", my_string},
@@ -106,7 +108,12 @@ struct MyStruct : public Confable {
   }
 };
 
+}  // anonymous namespace
+
 TEST(fable_schema, schema_wrapper) {
+  using namespace fable;          // NOLINT(build/namespaces)
+  using namespace fable::schema;  // NOLINT(build/namespaces)
+
   bool my_required = false;
   std::string my_string = "";
   int my_int = 0;
@@ -143,19 +150,19 @@ TEST(fable_schema, schema_wrapper) {
 
   MyStruct s2;
 
-  ASSERT_EQ(s1.json_schema().dump(), s2.schema().json_schema().dump());
+  fable::assert_eq(s1.json_schema(), s2.schema().json_schema());
 }
 
 TEST(fable_schema, json_schema) {
-  MyStruct s;
-  ASSERT_FALSE(s.my_required);
-  ASSERT_EQ(s.my_string, "");
-  ASSERT_EQ(s.my_int, 0);
-  ASSERT_EQ(s.my_enum, MyEnum::Disable);
-  ASSERT_EQ(s.my_object_field, "");
-  ASSERT_FALSE(s.my_object_bool);
+  MyStruct tmp;
+  ASSERT_FALSE(tmp.my_required);
+  ASSERT_EQ(tmp.my_string, "");
+  ASSERT_EQ(tmp.my_int, 0);
+  ASSERT_EQ(tmp.my_enum, MyEnum::Disable);
+  ASSERT_EQ(tmp.my_object_field, "");
+  ASSERT_FALSE(tmp.my_object_bool);
 
-  Json schema = R"({
+  fable::assert_schema_eq(tmp, R"({
     "additionalProperties": false,
     "properties": {
       "args": {
@@ -216,56 +223,44 @@ TEST(fable_schema, json_schema) {
       "required"
     ],
     "type": "object"
-  })"_json;
+  })");
 
-  auto j1 = s.schema().to_json().dump();
-  auto j2 = s.to_json().dump();
-  ASSERT_EQ(j1, j2);
-
-  auto s1 = schema.dump();
-  auto s2 = s.schema().json_schema().dump();
-  ASSERT_EQ(s1, s2);
+  fable::assert_eq(tmp.schema().to_json(), tmp.to_json());
 }
 
 TEST(fable_schema, require_false) {
-  MyStruct s;
-  Conf input{R"(
+  MyStruct tmp;
+  fable::assert_from_conf_throw(tmp, R"(
     {
       "int": 5
     }
-  )"_json};
-
-  ASSERT_ANY_THROW(s.from_conf(input));
-  ASSERT_EQ(s.my_int, 0);
+  )");
+  ASSERT_EQ(tmp.my_int, 0);
 }
 
 TEST(fable_schema, require_true) {
-  MyStruct s;
-  Conf input{R"(
+  MyStruct tmp;
+  fable::assert_from_conf(tmp, R"(
     {
       "required": true
     }
-  )"_json};
-
-  s.from_conf(input);
-  ASSERT_TRUE(s.my_required);
+  )");
+  ASSERT_TRUE(tmp.my_required);
 }
 
 TEST(fable_schema, tolerate_false) {
-  MyStruct s;
-  Conf input{R"(
+  MyStruct tmp;
+  fable::assert_from_conf_throw(tmp, R"(
     {
       "required": false,
       "unknown": false
     }
-  )"_json};
-
-  ASSERT_ANY_THROW(s.from_conf(input));
+  )");
 }
 
 TEST(fable_schema, tolerate_true) {
-  MyStruct s;
-  Conf input{R"(
+  MyStruct tmp;
+  fable::assert_from_conf(tmp, R"(
     {
       "required": false,
       "args": {
@@ -274,68 +269,58 @@ TEST(fable_schema, tolerate_true) {
         "ok": true
       }
     }
-  )"_json};
-
-  s.from_conf(input);
+  )");
 }
 
 TEST(fable_schema, set_primitive_bool) {
-  MyStruct s;
-  Conf input{R"(
+  MyStruct tmp;
+  fable::assert_from_conf(tmp, R"(
     {
       "required": true
     }
-  )"_json};
-
-  s.from_conf(input);
-  ASSERT_TRUE(s.my_required);
+  )");
+  ASSERT_TRUE(tmp.my_required);
 }
 
 TEST(fable_schema, set_primitive_int) {
-  MyStruct s;
-  Conf input{R"(
+  MyStruct tmp;
+  fable::assert_from_conf(tmp, R"(
     {
       "required": true,
       "int": 42
     }
-  )"_json};
-
-  s.from_conf(input);
-  ASSERT_TRUE(s.my_required);
-  ASSERT_EQ(s.my_int, 42);
+  )");
+  ASSERT_TRUE(tmp.my_required);
+  ASSERT_EQ(tmp.my_int, 42);
 }
 
 TEST(fable_schema, set_primitive_string) {
-  MyStruct s;
-  Conf input{R"(
+  MyStruct tmp;
+  fable::assert_from_conf(tmp, R"(
     {
       "required": true,
       "string": "string"
     }
-  )"_json};
-
-  s.from_conf(input);
-  ASSERT_TRUE(s.my_required);
-  ASSERT_EQ(s.my_string, "string");
+  )");
+  ASSERT_TRUE(tmp.my_required);
+  ASSERT_EQ(tmp.my_string, "string");
 }
 
 TEST(fable_schema, set_primitive_enum) {
-  MyStruct s;
-  Conf input{R"(
+  MyStruct tmp;
+  fable::assert_from_conf(tmp, R"(
     {
       "required": true,
       "enum": "enable"
     }
-  )"_json};
-
-  s.from_conf(input);
-  ASSERT_TRUE(s.my_required);
-  ASSERT_EQ(s.my_enum, MyEnum::Enable);
+  )");
+  ASSERT_TRUE(tmp.my_required);
+  ASSERT_EQ(tmp.my_enum, MyEnum::Enable);
 }
 
 TEST(fable_schema, set_object) {
-  MyStruct s;
-  Conf input{R"(
+  MyStruct tmp;
+  fable::assert_from_conf(tmp, R"(
     {
       "required": true,
       "object": {
@@ -343,19 +328,17 @@ TEST(fable_schema, set_object) {
         "bool": true
       }
     }
-  )"_json};
-
-  s.schema().validate(input);
-  s.from_conf(input);
-  ASSERT_TRUE(s.my_required);
-  ASSERT_EQ(s.my_object_field, "field");
-  ASSERT_TRUE(s.my_object_bool);
+  )");
+  ASSERT_TRUE(tmp.my_required);
+  ASSERT_EQ(tmp.my_object_field, "field");
+  ASSERT_TRUE(tmp.my_object_bool);
 }
 
 TEST(fable_schema, set_copy_object) {
-  MyStruct t;
-  MyStruct s = t;
-  Conf input{R"(
+  MyStruct original;
+  MyStruct copy = original;
+
+  fable::assert_from_conf(copy, R"(
     {
       "required": true,
       "object": {
@@ -363,16 +346,17 @@ TEST(fable_schema, set_copy_object) {
         "bool": true
       }
     }
-  )"_json};
+  )");
 
-  // When modifying s, only s should be modified, not t.
-  s.schema().validate(input);
-  s.from_conf(input);
-  ASSERT_TRUE(s.my_required);
-  ASSERT_EQ(s.my_object_field, "field");
-  ASSERT_TRUE(s.my_object_bool);
-  ASSERT_FALSE(t.my_required);
+  // When modifying copy, only copy should be modified, not original.
+  fable::assert_ne(original.to_json(), copy.to_json());
+  ASSERT_TRUE(copy.my_required);
+  ASSERT_EQ(copy.my_object_field, "field");
+  ASSERT_TRUE(copy.my_object_bool);
+  ASSERT_FALSE(original.my_required);
 }
+
+namespace {
 
 struct MyDerived : public MyStruct {
   bool my_derived = false;
@@ -388,9 +372,11 @@ struct MyDerived : public MyStruct {
   }
 };
 
+}  // namespace
+
 TEST(fable_schema, set_derived_object) {
-  MyDerived s;
-  Conf input{R"(
+  MyDerived tmp;
+  fable::assert_from_conf(tmp, R"(
     {
       "required": true,
       "derived": true,
@@ -399,11 +385,10 @@ TEST(fable_schema, set_derived_object) {
         "bool": true
       }
     }
-  )"_json};
+  )");
 
-  s.from_conf(input);
-  ASSERT_TRUE(s.my_required);
-  ASSERT_TRUE(s.my_derived);
-  ASSERT_EQ(s.my_object_field, "field");
-  ASSERT_TRUE(s.my_object_bool);
+  ASSERT_TRUE(tmp.my_required);
+  ASSERT_TRUE(tmp.my_derived);
+  ASSERT_EQ(tmp.my_object_field, "field");
+  ASSERT_TRUE(tmp.my_object_bool);
 }
