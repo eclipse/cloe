@@ -143,6 +143,7 @@ ifeq (${WITH_VTD},1)
 override CONAN_OPTIONS += -o cloe:with_vtd=True
 else
 ALL_PKGS := $(filter-out plugins/vtd, ${ALL_PKGS})
+ALL_VENDOR_PKGS := $(filter-out vendor/vtd*, ${ALL_PKGS})
 endif
 
 ifeq (${BUILD_TESTS},0)
