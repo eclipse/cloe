@@ -188,7 +188,7 @@ def start(
     skip_setup: bool,
     vtd_setup: str,
     vtd_project: str,
-    vtd_external_models : str,
+    vtd_external_models : List[str],
     no_start: bool,
     vtd_args: str,
 ):
