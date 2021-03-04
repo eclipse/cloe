@@ -5,10 +5,8 @@ import os
 
 
 class VtdSensorConan(ConanFile):
-    name = "vtd-osi-sensor"
-    version = "1.0.0"
-    default_user = "cloe"
-    default_channel = "vtd2p2"
+    name = "osi-sensor"
+    version = "1.0.0-vtd2.2"
     license = "Mozilla Public License 2.0"
     url = "https://github.com/OpenSimulationInterface/osi-sensor-model-packaging"
     description = "Example of a sensor model using OSI with FMI 2.0."
@@ -21,17 +19,18 @@ class VtdSensorConan(ConanFile):
         _patch_vtd2p2,
         "CMakeLists.txt",
     ]
-    _git_url = "https://github.com/OpenSimulationInterface/osi-sensor-model-packaging.git"
-    _git_ref = "v{}".format(version)
+    _git_url = (
+        "https://github.com/OpenSimulationInterface/osi-sensor-model-packaging.git"
+    )
+    _git_ref = "v{}".format(version.split("-")[0])
     _git_dir = "osmp"
     _rel_src_dir = os.path.join(_git_dir, "examples/OSMPDummySensor")
     _pkg_lib = "OSMPDummySensor.so"
     _cmake = None
 
     def requirements(self):
-        self.requires("open-simulation-interface/[=3.0.*]@cloe/vtd2p2",
-                      private=True)
-        self.requires("protobuf/2.6.1@cloe/vtd2p2", override=True)
+        self.requires("open-simulation-interface/[=3.0.*]@cloe/stable", private=True)
+        self.requires("protobuf/2.6.1@cloe/stable", override=True)
         self.requires("vtd/2.2.0@cloe/stable")
 
     def source(self):
@@ -45,6 +44,7 @@ class VtdSensorConan(ConanFile):
         self.options["open-simulation-interface"].shared = True
         self.options["open-simulation-interface"].protoc_from_protobuf = True
         # package options
+        self.settings.compiler.cppstd = "11"
         self.settings.compiler.libcxx = "libstdc++"
 
     def _configure_cmake(self):
@@ -53,19 +53,19 @@ class VtdSensorConan(ConanFile):
         self._cmake = CMake(self)
         self._cmake.definitions["CMAKE_PROJECT_VERSION"] = self.version
         self._cmake.definitions["CMAKE_BUILD_TYPE"] = self.settings.get_safe(
-            "build_type")
+            "build_type"
+        )
         self._cmake.definitions["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
         self._cmake.configure(source_folder=self._rel_src_dir)
         return self._cmake
 
     def build(self):
         # find VTD osi library
-        osi_lib_dir = Path(self.deps_env_info["vtd"].VTD_ROOT +
-                           "/Data/Setups/Standard.OSI3/Bin/")
-        if not Path(str(osi_lib_dir) +
-                    "/libopen_simulation_interface.so").is_file():
-            self.output.warn(
-                "VTD OSI library not found: {}".format(osi_lib_dir))
+        osi_lib_dir = Path(
+            self.deps_env_info["vtd"].VTD_ROOT + "/Data/Setups/Standard.OSI3/Bin/"
+        )
+        if not Path(str(osi_lib_dir) + "/libopen_simulation_interface.so").is_file():
+            self.output.warn("VTD OSI library not found: {}".format(osi_lib_dir))
         # apply patch for compatibility with VTD osi plugin
         tools.patch(base_path=self._git_dir, patch_file=self._patch_vtd2p2)
         # configure and build

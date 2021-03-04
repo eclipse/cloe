@@ -5,8 +5,6 @@ import os
 class ProtobufConan(ConanFile):
     name = "protobuf"
     version = "2.6.1"
-    default_user = "cloe"
-    default_channel = "vtd2p2"
     license = "BSD-3-Clause"
     url = "https://github.com/protocolbuffers/protobuf.git"
     description = "Google Protocol Buffers."
@@ -32,11 +30,6 @@ class ProtobufConan(ConanFile):
     def source(self):
         git = tools.Git(folder=self._git_dir)
         git.clone(self._git_url, branch=self._git_ref, shallow=True)
-
-    def configure(self):
-        if self.channel == "vtd2p2":
-            self.settings.compiler.cppstd = "11"
-            self.settings.compiler.libcxx = "libstdc++"
 
     def build(self):
         # change googletest version
