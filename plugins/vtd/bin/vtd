@@ -154,20 +154,20 @@ def teardown_runtime(runtime_dir: Path) -> None:
     help="VTD setup to use, default to currently symlinked.",
 )
 @click.option(
-    "--copy-setup",
-    is_flag=True,
-    help="Copy VTD setup in facade installation, instead of linking.",
-)
-@click.option(
     "-p",
     "--vtd-project",
     type=click.Path(exists=True, file_okay=True, dir_okay=True),
     help="VTD project to use, default to currently symlinked.",
 )
 @click.option(
-    "--copy-project",
-    is_flag=True,
-    help="Copy VTD project in facade installation, instead of linking.",
+    "-m",
+    "--vtd-external-models",
+    envvar="VTD_EXTERNAL_MODELS",
+    multiple=True,
+    type=click.Path(file_okay=True, dir_okay=False),
+    default = [],
+    required=False,
+    help="VTD external models (env: $VTD_EXTERNAL_MODELS).",
 )
 @click.option(
     "-n",
@@ -187,9 +187,8 @@ def start(
     opt,
     skip_setup: bool,
     vtd_setup: str,
-    copy_setup: bool,
     vtd_project: str,
-    copy_project: bool,
+    vtd_external_models : List[str],
     no_start: bool,
     vtd_args: str,
 ):
@@ -221,10 +220,7 @@ def start(
         dst = opt.runtime_dir / "Data" / "Setups" / "Current"
         if dst.exists():
             os.remove(dst)
-        if copy_setup:
-            shutil.copytree(vtd_setup, dst, symlinks=True)
-        else:
-            os.symlink(vtd_setup, dst)
+        shutil.copytree(vtd_setup, dst, symlinks=True)
 
     if vtd_project is not None:
         logging.info("Select project: {}".format(vtd_project))
@@ -233,10 +229,15 @@ def start(
         dst = opt.runtime_dir / "Data" / "Projects" / "Current"
         if dst.exists():
             os.remove(dst)
-        if copy_project:
-            shutil.copytree(vtd_project, dst, symlinks=True)
-        else:
-            os.symlink(vtd_project, dst)
+        os.symlink(vtd_project, dst)
+
+    for srcfile in vtd_external_models:
+        srcfile = Path(srcfile)
+        dstdir = opt.runtime_dir / "Data" / "Setups" / "Current" / "Bin"
+        dstfile = dstdir / srcfile.name
+        if not dstfile.is_file():
+            logging.debug("Create symlink: {} -> {}".format(dstfile, srcfile))
+            os.symlink(srcfile, dstfile)
 
     if no_start:
         return

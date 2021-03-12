@@ -25,7 +25,7 @@ class VtdConan(ConanFile):
     }
 
     _archive_base = "vtd.2.2.0.Base.20181231.tgz"
-    _archive_osi = "vtd.2.2.0.addOns.OSI.20190513.tgz"
+    _archive_osi = "vtd.2.2.0.addOns.OSI.20210120.tgz"
     _archive_rod = "vtd.2.2.0.addOns.ROD.Base.20190313.tgz"
     _root_dir = "VTD.2.2"
 

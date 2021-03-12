@@ -1,37 +1,3 @@
-From 8bacbe93a5a919cd73716f82630edd9b14aa0a3a Mon Sep 17 00:00:00 2001
-Date: Tue, 19 May 2020 11:09:07 +0200
-Subject: [PATCH 1/2] Modify cmake setting for better control by conan recipe
-
----
- examples/OSMPDummySensor/CMakeLists.txt | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/examples/OSMPDummySensor/CMakeLists.txt b/examples/OSMPDummySensor/CMakeLists.txt
-index 155a96c..9719e3c 100644
---- a/examples/OSMPDummySensor/CMakeLists.txt
-+++ b/examples/OSMPDummySensor/CMakeLists.txt
-@@ -3,7 +3,7 @@ project(OSMPDummySensor)
- 
- set(CMAKE_CXX_STANDARD 11)
- set(CMAKE_CXX_STANDARD_REQUIRED ON)
--set(LINK_WITH_SHARED_OSI OFF CACHE BOOL "Link FMU with shared OSI library instead of statically linking")
-+#set(LINK_WITH_SHARED_OSI OFF CACHE BOOL "Link FMU with shared OSI library instead of statically linking")
- set(PUBLIC_LOGGING OFF CACHE BOOL "Enable logging via FMI logger")
- set(PRIVATE_LOGGING OFF CACHE BOOL "Enable private logging to file")
- if(WIN32)
-@@ -18,7 +18,7 @@ string(TIMESTAMP FMUTIMESTAMP UTC)
- string(MD5 FMUGUID modelDescription.in.xml)
- configure_file(modelDescription.in.xml modelDescription.xml @ONLY)
- 
--find_package(Protobuf 2.6.1 REQUIRED)
-+#find_package(Protobuf 2.6.1 REQUIRED) # TODO: replace by find_osi
- add_library(OSMPDummySensor SHARED OSMPDummySensor.cpp)
- set_target_properties(OSMPDummySensor PROPERTIES PREFIX "")
- target_compile_definitions(OSMPDummySensor PRIVATE "FMU_SHARED_OBJECT")
--- 
-2.7.4
-
-
 From 89e232aa639bc4d48b7c1ddb70e9d617aa3500f4 Mon Sep 17 00:00:00 2001
 Date: Wed, 20 May 2020 19:29:24 +0200
 Subject: [PATCH 2/2] Changes for vtd v2.2
