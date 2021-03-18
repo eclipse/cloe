@@ -39,6 +39,7 @@
 #include <cloe/simulator.hpp>        // for SimulatorFactory
 #include <cloe/trigger.hpp>          // for Source
 #include <cloe/utility/command.hpp>  // for Command
+#include <fable/schema/custom.hpp>   // for CustomDeserializer
 #include <fable/schema/factory.hpp>  // for Factory
 
 #include "plugin.hpp"  // for Plugin
@@ -616,7 +617,7 @@ struct FromSimulator : public Confable {
 struct ComponentConf : public Confable {
   const std::string binding;
   boost::optional<std::string> name;
-  boost::optional<std::string> from;
+  std::vector<std::string> from;
   std::shared_ptr<ComponentFactory> factory;
   Conf args;
 
@@ -626,13 +627,28 @@ struct ComponentConf : public Confable {
 
  public:  // Confable Overrides
   CONFABLE_SCHEMA(ComponentConf) {
+    // clang-format off
     using namespace schema;  // NOLINT(build/namespaces)
     return Struct{
         {"binding", make_const_str(binding, "name of binding").require()},
         {"name", make_schema(&name, id_prototype(), "globally unique identifier for component")},
-        {"from", make_schema(&from, "component input for binding")},
+        {"from", Variant{
+             CustomDeserializer(
+                 make_prototype<std::string>("component input for binding"),
+                 [this](CustomDeserializer*, const Conf& c) {
+                   this->from.push_back(c.get<std::string>());
+                 }
+             ),
+             CustomDeserializer(
+                 make_prototype<std::vector<std::string>>("component inputs for binding"),
+                 [this](CustomDeserializer*, const Conf& c) {
+                   this->from = c.get<std::vector<std::string>>();
+                 }
+             ),
+        }},
         {"args", make_schema(&args, factory->schema(), "factory-specific args")},
     };
+    // clang-format on
   }
 };
 

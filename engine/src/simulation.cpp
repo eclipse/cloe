@@ -478,19 +478,27 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
      */
     auto new_component = [&ctx](cloe::Vehicle& v,
                                 const cloe::ComponentConf& c) -> std::shared_ptr<cloe::Component> {
+      // Create a copy of the component factory prototype and initialize it with the default stack arguments.
       auto f = c.factory->clone();
       auto name = c.name.value_or(c.binding);
       for (auto d : ctx.config.get_component_defaults(name, f->name())) {
         f->from_conf(d.args);
       }
-      std::shared_ptr<cloe::Component> from;
-      if (c.from) {
-        if (v.has(*c.from)) {
-          from = v.get<cloe::Component>(*c.from);
-        } else {
-          return nullptr;
-        }
+      // Get input components, if applicable.
+      if (c.from.size() == 0) {
+        return nullptr;
       }
+      std::vector<std::shared_ptr<cloe::Component>> from;
+      for (const auto& from_comp_name : c.from) {
+        if (!v.has(from_comp_name)) {
+          continue;
+        }
+        from.push_back(v.get<cloe::Component>(from_comp_name));
+      }
+      if (from.size() == 0) {
+        return nullptr;
+      }
+      // Create the new component.
       auto x = f->make(c.args, std::move(from));
       ctx.now_initializing = x.get();
 
@@ -578,12 +586,17 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
 
             // We now have a component that has not been configured, and this
             // can only be the case if the dependency is not found.
-            assert(kv.second.from);
-            throw cloe::ModelError{
-                "cannot configure component '{}': cannot resolve dependency '{}'",
-                kv.first,
-                *kv.second.from,
-            };
+            assert(kv.second.from.size() > 0);
+            for (const auto& from_comp_name : kv.second.from) {
+              if (x->has(from_comp_name)) {
+                continue;
+              }
+              throw cloe::ModelError{
+                  "cannot configure component '{}': cannot resolve dependency '{}'",
+                  kv.first,
+                  from_comp_name,
+              };
+            }
           }
         }
       }
