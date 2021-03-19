@@ -272,6 +272,11 @@ class Box : public Interface {
 
  public:  // Special
   /**
+   * Return the underlying Interface.
+   */
+  std::shared_ptr<Interface> get() { return impl_; }
+
+  /**
    * Return this type as a pointer to T.
    *
    * This method can be used like so:
@@ -315,6 +320,11 @@ class Box : public Interface {
   template <typename T>
   std::shared_ptr<T> as_unsafe() const {
     return std::dynamic_pointer_cast<T>(impl_);
+  }
+
+  Box reset_pointer() && {
+    reset_ptr();
+    return std::move(*this);
   }
 
  public:  // Overrides
