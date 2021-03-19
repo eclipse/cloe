@@ -104,7 +104,7 @@ class Array : public Base<Array<T, P>> {
       j["minItems"] = min_items_;
     }
     if (max_items_ != std::numeric_limits<size_t>::max()) {
-      j["maxitems"] = max_items_;
+      j["maxItems"] = max_items_;
     }
     this->augment_schema(j);
     return j;

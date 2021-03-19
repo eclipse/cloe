@@ -50,6 +50,7 @@ if(BuildTests)
         # find src -type f -name "*_test.cpp"
         src/fable/environment_test.cpp
         src/fable/schema/const_test.cpp
+        src/fable/schema/custom_test.cpp
         src/fable/schema/enum_test.cpp
         src/fable/schema/factory_test.cpp
         src/fable/schema/factory_advanced_test.cpp
