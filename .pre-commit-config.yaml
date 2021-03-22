@@ -1,0 +1,92 @@
+repos:
+  # Everything:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.3.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-executables-have-shebangs
+      - id: check-json
+        exclude: ^.vscode/.+\.json$
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: check-xml
+      - id: check-yaml
+      - id: end-of-file-fixer
+        exclude: .+\.patch$
+      - id: forbid-new-submodules
+      - id: no-commit-to-branch
+        args: [--branch=master]
+      - id: trailing-whitespace
+        exclude: .+\.patch$
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.0.0
+    hooks:
+      - id: codespell
+        args:
+          - --ignore-words-list=
+          - --skip="./.*"
+          - --quiet-level=2
+
+  # C++:
+  - repo: local
+    hooks:
+      - id: generate-compilation-database
+        name: Generate compilation database
+        language: system
+        pass_filenames: false
+        entry: bash -c 'make configure-select; find -name compile_commands.json -exec cat {} \; | jq -s ".[]" > compile_commands.json'
+        files: .*\.(c|cpp|h|hpp)$
+  - repo: https://github.com/pocc/pre-commit-hooks
+    rev: v1.1.1
+    hooks:
+      - id: clang-format
+      - id: clang-tidy
+
+  # Python:
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v2.7.4
+    hooks:
+      - id: pyupgrade
+        args: [--py3-only, --py36-plus]
+        types: [python]
+        files: ^cli/
+  - repo: https://github.com/psf/black
+    rev: 20.8b1
+    hooks:
+      - id: black
+        args:
+          - --quiet
+          - --safe
+        types: [python]
+        files: ^cli/
+  - repo: https://gitlab.com/pycqa/flake8
+    rev: 3.7.9
+    hooks:
+      - id: flake8
+        additional_dependencies:
+          - flake8-docstrings==1.5.0
+          - pydocstyle==5.0.2
+        args: [--max-line-length=160, --ignore=D102]
+        types: [python]
+        files: ^cli/
+  - repo: https://github.com/pycqa/bandit
+    rev: 1.6.2
+    hooks:
+      - id: bandit
+        args:
+          - --quiet
+        types: [python]
+        files: ^cli/
+  - repo: https://github.com/pycqa/isort
+    rev: 5.6.4
+    hooks:
+      - id: isort
+        types: [python]
+        files: ^cli/
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v0.812
+    hooks:
+      - id: mypy
+        types: [python]
+        files: ^cli/
