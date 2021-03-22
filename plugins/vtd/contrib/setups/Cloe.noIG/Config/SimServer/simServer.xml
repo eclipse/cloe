@@ -76,7 +76,7 @@
 
     <Host>
 
-      <Process 
+      <Process
         name="VtGui"
         auto="true"
         persistent="true"

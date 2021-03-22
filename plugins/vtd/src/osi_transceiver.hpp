@@ -52,7 +52,7 @@ class OsiTransceiver {
   virtual ~OsiTransceiver() = default;
 
   /**
-   * Return true when the transceiver has a SensorData message that 
+   * Return true when the transceiver has a SensorData message that
    * can be received.
    *
    * That is, if true, then a call to receive() will return a vector

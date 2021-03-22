@@ -76,7 +76,7 @@
 
     <Host>
 
-      <Process 
+      <Process
         name="VtGui"
         auto="true"
         persistent="true"
@@ -165,7 +165,7 @@
         schedPolicy="SCHED_RR"
         schedPriority="20"
         workDir="$VI_CURRENT_SETUP/Bin">
-        <EnvVar name="LD_LIBRARY_PATH"      val="$VI_CORE_DIR/ImageGenerator/bin:$LD_LIBRARY_PATH"   /> 
+        <EnvVar name="LD_LIBRARY_PATH"      val="$VI_CORE_DIR/ImageGenerator/bin:$LD_LIBRARY_PATH"   />
       </Process>
 
       <Process
