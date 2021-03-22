@@ -1,6 +1,6 @@
-from pathlib import Path
-import shutil
 import os.path
+import shutil
+from pathlib import Path
 
 from conans import CMake, ConanFile, tools
 from conans.errors import ConanInvalidConfiguration
@@ -45,7 +45,7 @@ class VtdConan(ConanFile):
         dst = Path(self.build_folder)
 
         def extract_archive(archive):
-            print("Extracting: {}".format(archive))
+            print(f"Extracting: {archive}")
             tools.untargz(src / archive, dst)
 
         extract_archive(self._archive_base)
@@ -59,7 +59,7 @@ class VtdConan(ConanFile):
 
     def package_info(self):
         bindir = Path(self.package_folder) / "bin"
-        self.output.info("Appending PATH environment variable: {}".format(bindir))
+        self.output.info(f"Appending PATH environment variable: {bindir}")
         self.env_info.PATH.append(str(bindir))
         self.env_info.VTD_ROOT = self.package_folder
         if self.options.with_osi:

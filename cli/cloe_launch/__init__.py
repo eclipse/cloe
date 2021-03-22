@@ -2,11 +2,14 @@
 This module contains the launcher configuration data types.
 """
 
-from typing import List, Optional
 import logging
 import os
 import shutil
 import subprocess
+
+from typing import List
+from typing import Optional
+
 import toml
 
 
@@ -90,19 +93,17 @@ class Configuration:
     def set_default(self, profile: str) -> None:
         """Set the default profile and write it to the configuration."""
         if profile is not None and profile not in self.all_profiles:
-            raise ConfigurationError("profile {} does not exist".format(profile))
+            raise ConfigurationError(f"profile {profile} does not exist")
         self.default_profile = profile
         self._conf["default_profile"] = profile
-        logging.info(
-            "Write configuration to {}:\n  {}".format(self.config_file, self._conf)
-        )
+        logging.info(f"Write configuration to {self.config_file}:\n  {self._conf}")
         with open(self.config_file, "w") as file:
             toml.dump(self._conf, file)
 
     def read(self, profile: str) -> str:
         """Read the specified profile."""
         logging.info("Open:", self.profile_path(profile))
-        with open(self.profile_path(profile), "r") as file:
+        with open(self.profile_path(profile)) as file:
             return file.read()
 
     def edit(self, profile: str, create: bool = False) -> None:
@@ -111,7 +112,7 @@ class Configuration:
         if editor is None:
             raise ConfigurationError("environment variable EDITOR is unset")
         if not create and not os.path.exists(self.profile_path(profile)):
-            raise ConfigurationError("profile {} does not exist".format(profile))
+            raise ConfigurationError(f"profile {profile} does not exist")
         cmd = [editor, self.profile_path(profile)]
         logging.info("Exec:", " ".join(cmd))
         subprocess.call(cmd)
@@ -120,7 +121,7 @@ class Configuration:
         """Add the file as a profile."""
         if profile in self.all_profiles and not force:
             raise ConfigurationError(
-                "cannot overwrite profile {} unless forced".format(profile)
+                f"cannot overwrite profile {profile} unless forced"
             )
         logging.debug("Copy: {} -> {}".format(file, self.profile_path(profile)))
         shutil.copyfile(file, self.profile_path(profile))

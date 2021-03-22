@@ -1,6 +1,9 @@
-from typing import List, Optional, Dict
 import logging
 import subprocess
+
+from typing import Dict
+from typing import List
+from typing import Optional
 
 
 def run_cmd(

@@ -1,5 +1,6 @@
 import os.path
-from conans import ConanFile, CMake, tools
+
+from conans import CMake, ConanFile, tools
 
 
 class CloeRuntime(ConanFile):
@@ -45,7 +46,7 @@ class CloeRuntime(ConanFile):
         self.version = self._project_version()
 
     def requirements(self):
-        self.requires("fable/{}@cloe/develop".format(self.version))
+        self.requires(f"fable/{self.version}@cloe/develop")
 
     def build_requirements(self):
         if self.options.test:
