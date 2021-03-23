@@ -62,3 +62,11 @@ class VtdConan(ConanFile):
         self.output.info("Appending PATH environment variable: {}".format(bindir))
         self.env_info.PATH.append(str(bindir))
         self.env_info.VTD_ROOT = self.package_folder
+        if self.options.with_osi:
+            osi_path = (
+                Path(self.package_folder)
+                / "Data/Setups/Standard.OSI3/Bin/libopen_simulation_interface.so"
+            )
+            if not os.path.isfile(osi_path):
+                raise ConanInvalidConfiguration("VTD OSI library not found.")
+            self.env_info.VTD_EXTERNAL_MODELS.append(f"{osi_path}")
