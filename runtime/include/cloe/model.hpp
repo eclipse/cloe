@@ -190,7 +190,7 @@ class Model : public Entity {
    * Construct a model.
    *
    * Construction must specify a name and optionally a description.
-   * The name must adhere to the regulations layed down in the Entity class.
+   * The name must adhere to the regulations laid down in the Entity class.
    *
    * A model should be considered disconnected after construction, that is
    * `is_connected()` should return false.

@@ -87,7 +87,7 @@ class Conf {
    *   a) stdin
    *   b) command line
    *   c) network
-   * - This method hould not throw.
+   * - This method should not throw.
    */
   bool is_from_file() const { return !file_.empty(); }
 

@@ -13,7 +13,7 @@ Eclipse Cloe is a trademark of the Eclipse Foundation.
 
 All content is the property of the respective authors or their employers.
 For more information regarding authorship of content, please consult the
-listed source code respository logs.
+listed source code repository logs.
 
 ## Declared Project Licenses
 

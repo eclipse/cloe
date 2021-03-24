@@ -154,7 +154,7 @@ class Interface {
    *
    * When describing the schema of a primitive array, we can represent that as
    * a single string. But when the array contains an object, we wrap a single
-   * object in an array. This isn't awefully consistent, but it's the best we
+   * object in an array. This isn't awfully consistent, but it's the best we
    * can do.
    */
   virtual Json usage() const = 0;

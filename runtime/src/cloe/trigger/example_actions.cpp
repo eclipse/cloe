@@ -215,7 +215,7 @@ ActionPtr PushReleaseFactory::make(const Conf& c) const {
     throw TriggerInvalid(c, "refuse to create action push_release with no buttons");
   }
 
-  auto creat = [&](bool val) -> ActionPtr {
+  auto create = [&](bool val) -> ActionPtr {
     auto j = Json{
         {"name", action},
     };
@@ -231,7 +231,7 @@ ActionPtr PushReleaseFactory::make(const Conf& c) const {
       {"buttons", buttons},
   };
 
-  return std::make_unique<PushRelease>(name(), dur, creat(true), creat(false), repr);
+  return std::make_unique<PushRelease>(name(), dur, create(true), create(false), repr);
 }
 
 }  // namespace actions

@@ -154,7 +154,7 @@ class Simulator : public Model {
    * Return a pointer to a Vehicle.
    *
    * - The argument i should be between [0, n), where n = num_vehicles().
-   * - If a vehicle index is accesed that is out-of-bounds, behaviour is
+   * - If a vehicle index is accessed that is out-of-bounds, behaviour is
    *   undefined.
    * - The simulator binding must manage the memory of the Vehicle.
    * - The pointer to the vehicle is guaranteed to be valid for the duration of

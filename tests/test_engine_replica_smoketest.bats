@@ -42,7 +42,7 @@ cloe_engine_with_tmp_registry() {
     test -d $cloe_tmp_registry/smoketest
     mv "$cloe_tmp_registry/smoketest" "$cloe_tmp_registry/replica-1"
 
-    # Run the replica smoketest, writing to the same location as the inital
+    # Run the replica smoketest, writing to the same location as the initial
     # one.
     #
     # We have to include the config file from stdin so that the paths

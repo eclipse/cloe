@@ -14,7 +14,7 @@ USER := $(shell id -un)
 .PHONY: help update add-group
 help:
 	@echo "Usage: make <target>"
-	@echo "Availabale targets:"
+	@echo "Available targets:"
 	@echo "  update     update permissions of files"
 	@echo "  add-group  add ${VOLUME_GROUP} for handling data"
 

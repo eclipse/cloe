@@ -294,7 +294,7 @@ struct TriggerSchema {
  *
  * The default schema is an implicit one; that is, the factory takes no
  * configuration but can be called with the name only. An inline format
- * is therefore also implicitely supported.
+ * is therefore also implicitly supported.
  */
 template <typename T>
 class TriggerFactory : public Entity {
@@ -607,8 +607,8 @@ class AliasCallback : public Callback {
  * any further state is represented. This allows a new identical Action to be
  * created.
  *
- * The execution is achived through the function operator of the Action.
- * Any futher state required within the Action must be passed through
+ * The execution is achieved through the function operator of the Action.
+ * Any further state required within the Action must be passed through
  * the constructor of the Action.
  *
  * \see  cloe/trigger/example_actions.hpp
@@ -631,7 +631,7 @@ class Action : public Entity {
   virtual void operator()(const Sync&, TriggerRegistrar&) = 0;
 
   /**
-   * Return whether this action is a signficant action.
+   * Return whether this action is a significant action.
    *
    * All actions that have an effect on the result of a simulation are
    * significant. Actions that are not significant are:

@@ -21,7 +21,7 @@ import Slider from "react-rangeslider";
 
 // The Simulation component displays general Information about the simulation.
 // Each Information is represented by a Label component.
-// Aside from that, the Simulation commponent includes triggers to set the simulation speed.
+// Aside from that, the Simulation component includes triggers to set the simulation speed.
 class Simulation extends Component {
   state = {
     simSpeed: 100,
@@ -32,7 +32,7 @@ class Simulation extends Component {
     // Initial simSpeed has to be fetched from api by parent component,
     // so it is not available at mounting time.
     // Because of that, this function loops until the necessary prop
-    // is definied by the parent component.
+    // is defined by the parent component.
     if (!this.props.simulation) {
       window.setTimeout(this.setInitialSimSpeed, 100);
     } else {

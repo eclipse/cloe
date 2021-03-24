@@ -54,7 +54,7 @@ class BimapBase1 {
 /// Remarks:
 /// The methods defined by this class are not possible for a pair of identical template-arguments
 /// Therefore
-/// - a partial template specialization of this class exsits
+/// - a partial template specialization of this class exists
 /// - are BimapBase1 & BimapBase2 split into two classes
 template <typename Type1, typename Type2, typename CRTP>
 class BimapBase2 : public BimapBase1<Type1, Type2, CRTP> {

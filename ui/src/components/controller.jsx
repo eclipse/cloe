@@ -52,8 +52,8 @@ class Controller extends Component {
         return <React.Fragment />;
       }
     } else {
-      // Fetch all definied api endpoints to update the
-      // data, generate the elements out of it.
+      // Fetch all defined API endpoints to update the data, generate the
+      // elements out of it.
       this.updateData();
       this.generateJSXComponent();
       return (

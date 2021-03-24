@@ -49,7 +49,7 @@
     <EnvVar name="VI_FILE_SUB_PATH"     val="$VI_FILE_SUB_PATH:Config/ScenarioEditor:Config/SensorManager:Config/DynamicsManager" />
     <EnvVar name="VI_FILE_SUB_PATH"     val="$VI_FILE_SUB_PATH:Config/ModuleManager:Config/Players:Plugins/SensorManager:Plugins/DynamicsManager:Plugins/ModuleManager" />
 
-    <!-- import Common/Config/Simulation/projectSettings.cfg in orignal plan, create IGLINKs, to see if could be deleted-->
+    <!-- import Common/Config/Simulation/projectSettings.cfg in original plan, create IGLINKs, to see if could be deleted-->
 
     <!-- internal COM ports -->
 

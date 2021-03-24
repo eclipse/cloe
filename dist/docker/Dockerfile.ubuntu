@@ -3,7 +3,7 @@
 # This file acts partly as a Docker recipe for building Cloe on Ubuntu.
 # It is currently only tested with Ubuntu 18.04 and 20.04.
 #
-# If you are behing a proxy, make sure to pass in the respective HTTP_PROXY,
+# If you are behind a proxy, make sure to pass in the respective HTTP_PROXY,
 # HTTPS_PROXY, and NO_PROXY variables.
 ARG BUILD_FROM=ubuntu:18.04
 ARG DEPLOY_FROM=${BUILD_FROM}
@@ -73,7 +73,7 @@ RUN \
 # Create Deploy Image
 #
 # Unfortunately, there are still some issues with cloe-engine not finding
-# libcloe-runtime.so, so we need to explicitely set LD_LIBRARY_PATH.
+# libcloe-runtime.so, so we need to explicitly set LD_LIBRARY_PATH.
 #
 # This image can now be used to work with stack files. You should mount in
 # whatever directory contains your stack files for best results, otherwise

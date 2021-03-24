@@ -65,7 +65,7 @@ class Environment:
         "PATH": "/bin:/usr/bin",
     }
     _preserve: List[str] = [
-        # Requried for XDG compliance:
+        # Required for XDG compliance:
         "XDG_.*",
         "HOME",
         "USER",
