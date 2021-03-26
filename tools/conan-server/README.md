@@ -5,7 +5,7 @@ This directory contains a Dockerized Conan server which can be used for testing
 and development of the Cloe Conan packages.
 
 It is possible to take this and use it as a Conan repository for production
-purposes, but it is explicitely discouraged by the Conan documentation.
+purposes, but it is explicitly discouraged by the Conan documentation.
 Instead, you should use Artifactory for this purpose.
 
 Usage
@@ -40,7 +40,7 @@ Now you can upload all the packages you want with:
     ...
 
 Because this can be an arduous task if you want to upload many packages,
-I recommand something along the lines of the following procedure:
+I recommend something along the lines of the following procedure:
 
     conan search --raw > packages.txt
     $EDITOR packages.txt

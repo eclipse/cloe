@@ -222,14 +222,14 @@ struct AdaptiveCruiseControl {
       deviation_last = deviation;
       return (ukp + ukd + uki);
     };
-    // Implementation of the PID controll to control the speed
+    // Implementation of the PID control to control the speed
     double acc = pid_control(deviation, config.kp, config.kd, config.ki, deviation_last, uki_last);
     if (rabbit) {
       double target_distance = get_distance_algorithm().second(ego);
       double deviation_m = utility::distance_forward(*rabbit) - target_distance;
       double rabbit_m_s = vel + rabbit->velocity.sum();  // absolute rabbit velocity
       if (deviation_m < (fac_to_switch_control * target_distance) && rabbit_m_s < *target_speed) {
-        // Implementation of the PID controll to control the distance
+        // Implementation of the PID control to control the distance
         acc = pid_control(deviation_m, config.kp_m, config.kd_m, config.ki_m, deviation_m_last,
                           uki_m_last);
       }

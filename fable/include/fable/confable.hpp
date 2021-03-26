@@ -122,7 +122,7 @@ class Confable {
   /**
    * Serialize a Confable to Json.
    *
-   * Note: If you implment this type, make sure to either use CONFABLE_FRIENDS
+   * Note: If you implement this type, make sure to either use CONFABLE_FRIENDS
    * or a using Confable::to_json statement in your derived type.
    */
   virtual void to_json(Json& j) const { schema().to_json(j); }

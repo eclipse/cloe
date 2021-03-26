@@ -1,5 +1,6 @@
 import os.path
-from conans import ConanFile, CMake, tools
+
+from conans import CMake, ConanFile, tools
 
 
 class CloeComponentKmph(ConanFile):
@@ -31,8 +32,8 @@ class CloeComponentKmph(ConanFile):
         self.version = self._project_version()
 
     def requirements(self):
-        self.requires("cloe-runtime/{}@cloe/develop".format(self.version))
-        self.requires("cloe-models/{}@cloe/develop".format(self.version))
+        self.requires(f"cloe-runtime/{self.version}@cloe/develop")
+        self.requires(f"cloe-models/{self.version}@cloe/develop")
 
     def _configure_cmake(self):
         if self._cmake:

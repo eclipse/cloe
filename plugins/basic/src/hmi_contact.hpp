@@ -90,7 +90,7 @@ namespace utility {
  * This phenomenon is modelled with this superclass, of which
  * Switch and PushButton are the primary subtypes.
  *
- * The function of switches occassionally changes based on the passage of time.
+ * The function of switches occasionally changes based on the passage of time.
  * What unit is used for time and what effect that has is parameterized via
  * templating.
  */

@@ -59,7 +59,7 @@ class RdbTransceiverShm : public RdbTransceiver {
   virtual ~RdbTransceiverShm();
 
   bool has() const override {
-    throw std::runtime_error("RdbTransceiverShm: has not implmented yet");
+    throw std::runtime_error("RdbTransceiverShm: has not implemented yet");
   }
 
   std::vector<std::shared_ptr<RDB_MSG_t>> receive() override;

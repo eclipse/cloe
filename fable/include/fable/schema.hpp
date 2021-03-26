@@ -99,7 +99,7 @@
  * 3. Using types in schema namespace:
  *
  *      Schema MyData::schema_impl() {
- *        using namepsace schema;
+ *        using namespace schema;
  *        return Struct{
  *          {"host", String(&host, "hostname of connection").require()},
  *          {"port", Number<uint16_t>(&port, "port of connection").minimum(1024)},

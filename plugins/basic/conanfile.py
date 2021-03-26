@@ -1,7 +1,8 @@
 import os.path
-from conans import ConanFile, CMake, tools
-from conans.errors import ConanInvalidConfiguration
 from shutil import which
+
+from conans import CMake, ConanFile, tools
+from conans.errors import ConanInvalidConfiguration
 
 
 class CloeControllerBasic(ConanFile):
@@ -36,8 +37,8 @@ class CloeControllerBasic(ConanFile):
         self.version = self._project_version()
 
     def requirements(self):
-        self.requires("cloe-runtime/{}@cloe/develop".format(self.version))
-        self.requires("cloe-models/{}@cloe/develop".format(self.version))
+        self.requires(f"cloe-runtime/{self.version}@cloe/develop")
+        self.requires(f"cloe-models/{self.version}@cloe/develop")
 
     def build_requirements(self):
         if self.options.test:

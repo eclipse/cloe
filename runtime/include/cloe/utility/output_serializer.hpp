@@ -142,13 +142,13 @@ bool BasicFileOutputStream::open_file(const std::string& filename,
   }
 
   ofs_.open(output_file);
-  bool succes = !ofs_.fail();
-  if (succes) {
+  bool success = !ofs_.fail();
+  if (success) {
     logger_->info("Writing output to file: {}", output_file);
   } else {
     logger_->error("Error opening file for writing: {}", output_file);
   }
-  return succes;
+  return success;
 }
 
 void BasicFileOutputStream::close_stream() {

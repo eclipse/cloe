@@ -226,7 +226,7 @@ class App extends Component {
     // Startup Phase 1: Render a message that UI is waiting for a Cloe host.
     // Startup Phase 2: Render an indicator for the Cloe initialization progress.
     // Startup Phase 3: Cloe is fully initialized, so render all UI components.
-    // Startup Phase 4: Cloe ist stopped, but last simulation state should still be rendered.
+    // Startup Phase 4: Cloe is stopped, but last simulation state should still be rendered.
     const waitingForCloeHost = <Spin className="mr-2" tip="Waiting for Cloe Host..." />;
     const waitingForCloeInit = (
       <React.Fragment>
@@ -460,7 +460,7 @@ class App extends Component {
     }
   };
 
-  // This method is used to fetch and return data from an spedified host and endpoint.
+  // This method is used to fetch and return data from a specified host and endpoint.
   getData = (host, endpoint) => {
     return axios.get(`http://${host}${this.apiPrefix}${endpoint}`).catch(function(error) {
       if (error.response) {

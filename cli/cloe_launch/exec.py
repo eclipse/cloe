@@ -5,16 +5,23 @@ This module also contains the PluginSetup class, which encapsulates the
 PluginSetup that each Cloe plugin should implement.
 """
 
-from typing import List, Union, Optional, Dict, Mapping, Type
-from collections import OrderedDict
 import hashlib
 import importlib.util
 import logging
-import os, os.path
-import sys
+import os
+import os.path
 import re
 import shutil
 import subprocess
+import sys
+
+from collections import OrderedDict
+from typing import Dict
+from typing import List
+from typing import Mapping
+from typing import Optional
+from typing import Type
+from typing import Union
 
 from cloe_launch.utility import run_cmd
 
@@ -58,7 +65,7 @@ class Environment:
         "PATH": "/bin:/usr/bin",
     }
     _preserve: List[str] = [
-        # Requried for XDG compliance:
+        # Required for XDG compliance:
         "XDG_.*",
         "HOME",
         "USER",
@@ -118,7 +125,7 @@ class Environment:
 
     def init_from_file(self, filepath: str) -> None:
         """Init variables from a file containing KEY=VALUE pairs."""
-        with open(filepath, "r") as file:
+        with open(filepath) as file:
             data = file.read()
         self.init_from_str(data)
 
@@ -130,10 +137,10 @@ class Environment:
         """Init variables from a shell sourcing a file."""
         if shell is None:
             shell = self._shell_path
-        cmd = [shell, "-c", "source {} &>/dev/null && env".format(filepath)]
+        cmd = [shell, "-c", f"source {filepath} &>/dev/null && env"]
         result = run_cmd(cmd, env=self._shell_env)
         if result.returncode != 0:
-            logging.error("Error: error sourcing file from shell: {}".format(filepath))
+            logging.error(f"Error: error sourcing file from shell: {filepath}")
         self.init_from_str(result.stdout)
 
     def init_from_env(self) -> None:
@@ -352,12 +359,12 @@ class Engine:
         self.preserve_env = False
         self.conan_options = []
 
-        logging.info("Profile name: {}".format(self.profile))
+        logging.info(f"Profile name: {self.profile}")
         logging.info("Configuration:")
         logging.info("   {}".format("\n    ".join(self.profile_data.split("\n"))))
 
         # Prepare runtime environment
-        logging.info("Runtime directory: {}".format(self.runtime_dir))
+        logging.info(f"Runtime directory: {self.runtime_dir}")
 
     def _read_conf_profile(self, conf) -> None:
         self.profile = conf.current_profile
@@ -365,9 +372,9 @@ class Engine:
         self.profile_data = conf.read(self.profile)
 
     def _read_anonymous_profile(self, conanfile) -> None:
-        logging.info("Source profile: {}".format(conanfile))
+        logging.info(f"Source profile: {conanfile}")
         self.profile_path = conanfile
-        with open(conanfile, "r") as file:
+        with open(conanfile) as file:
             self.profile_data = file.read()
         hasher = hashlib.blake2b(digest_size=20)
         hasher.update(self.profile_data.encode())
@@ -379,7 +386,7 @@ class Engine:
     def _prepare_runtime_dir(self) -> None:
         # Clean and create runtime directory
         self.clean()
-        logging.debug("Create: {}".format(self.runtime_dir))
+        logging.debug(f"Create: {self.runtime_dir}")
         os.makedirs(self.runtime_dir)
 
     def _prepare_virtualenv(self) -> None:
@@ -432,7 +439,7 @@ class Engine:
                 if not file.endswith(".py"):
                     continue
                 path = os.path.join(lib_dir, file)
-                logging.info("Loading plugin setup: {}".format(path))
+                logging.info(f"Loading plugin setup: {path}")
                 _find_plugin_setups(path)
         return PluginSetup.__subclasses__()
 
@@ -455,7 +462,7 @@ class Engine:
         return env
 
     def _write_runtime_env(self, env: Environment) -> None:
-        logging.debug("Write: {}".format(self.runtime_env_path()))
+        logging.debug(f"Write: {self.runtime_env_path()}")
         env.export(self.runtime_env_path())
 
     def _process_arg(self, src_path) -> str:
@@ -467,8 +474,8 @@ class Engine:
 
         dst_file = src_path.replace("/", "_")
         dst_path = os.path.join(self.runtime_dir, dst_file)
-        logging.info("Relay anonymous file {} into {}".format(src_path, dst_path))
-        with open(src_path, "r") as src:
+        logging.info(f"Relay anonymous file {src_path} into {dst_path}")
+        with open(src_path) as src:
             with open(dst_path, "w") as dst:
                 dst.write(src.read())
         return dst_path
@@ -506,7 +513,7 @@ class Engine:
     def clean(self) -> None:
         """Clean the runtime directory."""
         if os.path.exists(self.runtime_dir):
-            logging.debug("Remove: {}".format(self.runtime_dir))
+            logging.debug(f"Remove: {self.runtime_dir}")
             shutil.rmtree(self.runtime_dir, ignore_errors=True)
 
     def shell(
@@ -535,7 +542,7 @@ class Engine:
         shell = os.getenv("SHELL", "/bin/bash")
 
         # Print the final environment, if desired
-        logging.debug("Environment: {}".format(env))
+        logging.debug(f"Environment: {env}")
 
         if len(plugin_setups) > 0:
             logging.warning("Warning:")
@@ -545,7 +552,7 @@ class Engine:
             logging.warning("  that will not be called automatically within the shell.")
             logging.warning("")
             for plugin in plugin_setups:
-                logging.warning("    {}".format(plugin.plugin))
+                logging.warning(f"    {plugin.plugin}")
 
         # Replace this process with the SHELL now.
         sys.stdout.flush()
@@ -582,7 +589,7 @@ class Engine:
                 env[k] = override_env[k]
 
         # Print the final environment, if desired
-        logging.debug("Environment: {}".format(env))
+        logging.debug(f"Environment: {env}")
 
         # Run cloe engine:
         self.engine_path = env["CLOE_ENGINE"]

@@ -1,6 +1,7 @@
-from conans import ConanFile, CMake, tools
-import shutil
 import os
+import shutil
+
+from conans import CMake, ConanFile, tools
 
 
 class OpenSimulationInterfaceConan(ConanFile):
@@ -36,7 +37,7 @@ class OpenSimulationInterfaceConan(ConanFile):
         "https://github.com/OpenSimulationInterface/open-simulation-interface.git"
     )
     _git_dir = "osi"
-    _git_ref = "v{}".format(version)
+    _git_ref = f"v{version}"
 
     _cmake = None
 

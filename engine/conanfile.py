@@ -1,5 +1,6 @@
 import os.path
-from conans import ConanFile, CMake, tools
+
+from conans import CMake, ConanFile, tools
 
 
 class CloeEngine(ConanFile):
@@ -34,9 +35,9 @@ class CloeEngine(ConanFile):
         self.version = self._project_version()
 
     def requirements(self):
-        self.requires("cloe-runtime/{}@cloe/develop".format(self.version))
-        self.requires("cloe-models/{}@cloe/develop".format(self.version))
-        self.requires("cloe-oak/{}@cloe/develop".format(self.version), private=True)
+        self.requires(f"cloe-runtime/{self.version}@cloe/develop")
+        self.requires(f"cloe-models/{self.version}@cloe/develop")
+        self.requires(f"cloe-oak/{self.version}@cloe/develop", private=True)
         self.requires("cli11/1.9.1", private=True),
 
     def build_requirements(self):
@@ -69,5 +70,5 @@ class CloeEngine(ConanFile):
             self.cpp_info.system_libs.append("pthread")
             self.cpp_info.system_libs.append("dl")
         bindir = os.path.join(self.package_folder, "bin")
-        self.output.info("Appending PATH environment variable: {}".format(bindir))
+        self.output.info(f"Appending PATH environment variable: {bindir}")
         self.env_info.PATH.append(bindir)

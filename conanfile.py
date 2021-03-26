@@ -1,5 +1,6 @@
 import os.path
-from conans import ConanFile, CMake, tools
+
+from conans import CMake, ConanFile, tools
 
 
 class Cloe(ConanFile):
@@ -34,7 +35,7 @@ class Cloe(ConanFile):
         self.version = self._project_version()
 
     def _requires(self, name):
-        self.requires("{}/{}@cloe/develop".format(name, self.version))
+        self.requires(f"{name}/{self.version}@cloe/develop")
 
     def requirements(self):
         self.requires("boost/[<1.70]", override=True)

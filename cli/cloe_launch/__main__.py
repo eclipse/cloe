@@ -17,14 +17,18 @@ Commands:
 
 """
 
-from typing import List, Dict
+import logging
 import os
 import sys
-import click
-import logging
 
+from typing import Dict
+from typing import List
+
+import click
+
+from cloe_launch import Configuration
+from cloe_launch import ConfigurationError
 from cloe_launch.exec import Engine
-from cloe_launch import Configuration, ConfigurationError
 
 
 @click.group()

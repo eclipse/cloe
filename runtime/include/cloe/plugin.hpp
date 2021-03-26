@@ -51,7 +51,7 @@
 
 /*
  * When creating a plugin, only the symbols that are loaded should be made
- * visibile. This can be achieved by setting compile options:
+ * visible. This can be achieved by setting compile options:
  *
  *     -fvisibility=hidden -fvisibility-inlines-hidden
  *

@@ -1,6 +1,7 @@
-from conans import ConanFile, CMake, tools
-import shutil
 import os.path
+import shutil
+
+from conans import CMake, ConanFile, tools
 
 
 class IncbinConan(ConanFile):

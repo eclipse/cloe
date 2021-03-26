@@ -18,7 +18,7 @@ import { Scatter } from "react-chartjs-2";
 import "chartjs-plugin-zoom";
 
 // The Chart component creates a chart out of data.
-// Everytime the props 'nextXValue' and 'nextYValues' are changing,
+// Every time the props 'nextXValue' and 'nextYValues' are changing,
 // the component adds them to it"s data set and renders the new state.
 class Chart extends Component {
   constructor(props) {

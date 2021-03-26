@@ -1,5 +1,6 @@
 import os.path
-from conans import ConanFile, CMake, tools
+
+from conans import CMake, ConanFile, tools
 
 
 class Fable(ConanFile):

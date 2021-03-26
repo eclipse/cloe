@@ -41,7 +41,7 @@ namespace schema {
  * deserialize it. This is much better than telling Struct to allow all
  * additional properties.
  *
- * Specifying the type is optional and serves only for documention purposes.
+ * Specifying the type is optional and serves only for documentation purposes.
  */
 class Ignore : public Base<Ignore> {
  public:  // Constructors

@@ -1,5 +1,6 @@
-from conans import ConanFile, AutoToolsBuildEnvironment, tools
 import os
+
+from conans import AutoToolsBuildEnvironment, ConanFile, tools
 
 
 class ProtobufConan(ConanFile):
@@ -23,7 +24,7 @@ class ProtobufConan(ConanFile):
     ]
     _src_dir = "protobuf"
     _git_url = url
-    _git_ref = "v{}".format(version)
+    _git_ref = f"v{version}"
     _git_dir = "protobuf"
     _autotools = None
 
@@ -34,7 +35,7 @@ class ProtobufConan(ConanFile):
     def build(self):
         # change googletest version
         tools.patch(base_path=self._src_dir, patch_file=self._patch_v2p6p1)
-        self.run("cd {0:} && ./autogen.sh".format(self._src_dir))
+        self.run(f"cd {self._src_dir} && ./autogen.sh")
         # configure and make
         self._autotools = AutoToolsBuildEnvironment(self)
         self._autotools.configure(configure_dir=self._src_dir)

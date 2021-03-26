@@ -178,7 +178,7 @@ void set_factory(std::function<Logger(std::string)> factory);
 /**
  * Set the acceptable level of output for all loggers.
  *
- * This can be overriden on a per-logger basis. For example:
+ * This can be overridden on a per-logger basis. For example:
  * ```
  * logger:set_level(spdlog::level::error);
  * logger::get("cloe/webserver")->set_level(spdlog::level::info);
