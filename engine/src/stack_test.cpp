@@ -29,16 +29,18 @@
 #include <cloe/component/ego_sensor.hpp>     // for EgoSensor
 #include <cloe/component/object_sensor.hpp>  // for ObjectSensor
 #include <cloe/core.hpp>                     // for Json
+#include <fable/utility/gtest.hpp>           // for assert_from_conf
 #include "stack.hpp"                         // for Stack
 using namespace cloe;                        // NOLINT(build/namespaces)
 
 TEST(cloe_stack, serialization_of_empty_stack) {
   Stack s;
 
-  Json input = R"({
-    "version": "4"
-  })"_json;
-  s.from_conf(Conf{input});
+  fable::assert_from_conf(s, R"(
+    {
+      "version": "4"
+    }
+  )");
 
   Json expect = R"({
     "engine": {
@@ -119,18 +121,19 @@ TEST(cloe_stack, serialization_of_empty_stack) {
 TEST(cloe_stack, serialization_with_logging) {
   Stack s;
 
-  Json input = R"({
-    "version": "4",
-    "defaults": {
-      "simulators": [
-        { "binding": "vtd", "args": { "label_vehicle": "symbol" } }
+  assert_from_conf(s, R"(
+    {
+      "version": "4",
+      "defaults": {
+        "simulators": [
+          { "binding": "vtd", "args": { "label_vehicle": "symbol" } }
+        ]
+      },
+      "logging": [
+        { "name": "*", "level": "info" }
       ]
-    },
-    "logging": [
-      { "name": "*", "level": "info" }
-    ]
-  })"_json;
-  s.from_conf(Conf{input});
+    }
+  )");
 
   Json expect = R"({
     "engine": {
@@ -220,15 +223,8 @@ struct DummySensorConf : public Confable {
   uint64_t freq;
 
   CONFABLE_SCHEMA(DummySensorConf) {
-    using namespace schema;  // NOLINT(build/namespaces)
     return Schema{
         {"freq", Schema(&freq, "some frequency")},
-    };
-  }
-
-  void to_json(Json& j) const override {
-    j = Json{
-        {"freq", freq},
     };
   }
 };
@@ -254,21 +250,22 @@ DEFINE_COMPONENT_FACTORY(DummySensorFactory, DummySensorConf, "dummy_object_sens
 DEFINE_COMPONENT_FACTORY_MAKE(DummySensorFactory, DummySensor, cloe::ObjectSensor)
 
 TEST(cloe_stack, deserialization_of_component) {
-  Json input = R"({
-    "binding": "dummy_sensor",
-    "name": "my_dummy_sensor",
-    "from": "some_obj_sensor",
-    "args" : {
-      "freq" : 9
-    }
-  })"_json;
-
   {
     std::shared_ptr<DummySensorFactory> cf = std::make_shared<DummySensorFactory>();
     ComponentConf cc = ComponentConf("dummy_sensor", cf);
     // Create a sensor component from the given configuration.
-    cc.from_conf(Conf{input});
-    // In production code, "some_obj_sensor" would be fetched from a list of all available sensors. Skip this step here.
+    fable::assert_from_conf(cc, R"(
+      {
+        "binding": "dummy_sensor",
+        "name": "my_dummy_sensor",
+        "from": "some_obj_sensor",
+        "args" : {
+          "freq" : 9
+        }
+      }
+    )");
+    // In production code, "some_obj_sensor" would be fetched from a list of all
+    // available sensors. Skip this step here.
     std::vector<std::shared_ptr<cloe::Component>> from = {std::shared_ptr<cloe::NopObjectSensor>()};
     auto d = std::dynamic_pointer_cast<DummySensor>(
         std::shared_ptr<cloe::Component>(std::move(cf->make(cc.args, from))));
