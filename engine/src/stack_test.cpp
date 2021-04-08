@@ -303,12 +303,12 @@ std::unique_ptr<::cloe::Component> FusionSensorFactory::make(
   std::vector<std::shared_ptr<EgoSensor>> ego_sensors;
   for (auto& comp : comp_src) {
     auto obj_s = std::dynamic_pointer_cast<ObjectSensor>(comp);
-    if (obj_s != NULL) {
+    if (obj_s != nullptr) {
       obj_sensors.push_back(obj_s);
       continue;
     }
     auto ego_s = std::dynamic_pointer_cast<EgoSensor>(comp);
-    if (ego_s != NULL) {
+    if (ego_s != nullptr) {
       ego_sensors.push_back(ego_s);
       continue;
     }
@@ -321,25 +321,26 @@ std::unique_ptr<::cloe::Component> FusionSensorFactory::make(
 }
 
 TEST(cloe_stack, deserialization_of_fusion_component) {
-  Json input = R"({
-    "binding": "fusion_object_sensor",
-    "name": "my_fusion_sensor",
-    "from": [
-      "ego_sensor0",
-      "obj_sensor1",
-      "obj_sensor2"
-    ],
-    "args" : {
-      "freq" : 77
-    }
-  })"_json;
-
   {
     std::shared_ptr<FusionSensorFactory> cf = std::make_shared<FusionSensorFactory>();
     ComponentConf cc = ComponentConf("fusion_object_sensor", cf);
     // Create a sensor component from the given configuration.
-    cc.from_conf(Conf{input});
-    // In production code, a component list containing "ego_sensor0", ... would be generated. Skip this step here.
+    fable::assert_from_conf(cc, R"(
+      {
+        "binding": "fusion_object_sensor",
+        "name": "my_fusion_sensor",
+        "from": [
+          "ego_sensor0",
+          "obj_sensor1",
+          "obj_sensor2"
+        ],
+        "args" : {
+          "freq" : 77
+        }
+      }
+    )");
+    // In production code, a component list containing "ego_sensor0", ... would
+    // be generated. Skip this step here.
     std::vector<std::shared_ptr<cloe::Component>> sensor_subset = {
         std::make_shared<cloe::NopEgoSensor>(), std::make_shared<cloe::NopObjectSensor>(),
         std::make_shared<cloe::NopObjectSensor>()};
