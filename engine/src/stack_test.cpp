@@ -36,11 +36,9 @@ using namespace cloe;                        // NOLINT(build/namespaces)
 TEST(cloe_stack, serialization_of_empty_stack) {
   Stack s;
 
-  fable::assert_from_conf(s, R"(
-    {
-      "version": "4"
-    }
-  )");
+  fable::assert_from_conf(s, R"({
+    "version": "4"
+  })");
 
   Json expect = R"({
     "engine": {
@@ -121,19 +119,17 @@ TEST(cloe_stack, serialization_of_empty_stack) {
 TEST(cloe_stack, serialization_with_logging) {
   Stack s;
 
-  assert_from_conf(s, R"(
-    {
-      "version": "4",
-      "defaults": {
-        "simulators": [
-          { "binding": "vtd", "args": { "label_vehicle": "symbol" } }
-        ]
-      },
-      "logging": [
-        { "name": "*", "level": "info" }
+  assert_from_conf(s, R"({
+    "version": "4",
+    "defaults": {
+      "simulators": [
+        { "binding": "vtd", "args": { "label_vehicle": "symbol" } }
       ]
-    }
-  )");
+    },
+    "logging": [
+      { "name": "*", "level": "info" }
+    ]
+  })");
 
   Json expect = R"({
     "engine": {
@@ -250,27 +246,24 @@ DEFINE_COMPONENT_FACTORY(DummySensorFactory, DummySensorConf, "dummy_object_sens
 DEFINE_COMPONENT_FACTORY_MAKE(DummySensorFactory, DummySensor, cloe::ObjectSensor)
 
 TEST(cloe_stack, deserialization_of_component) {
-  {
-    std::shared_ptr<DummySensorFactory> cf = std::make_shared<DummySensorFactory>();
-    ComponentConf cc = ComponentConf("dummy_sensor", cf);
-    // Create a sensor component from the given configuration.
-    fable::assert_from_conf(cc, R"(
-      {
-        "binding": "dummy_sensor",
-        "name": "my_dummy_sensor",
-        "from": "some_obj_sensor",
-        "args" : {
-          "freq" : 9
-        }
-      }
-    )");
-    // In production code, "some_obj_sensor" would be fetched from a list of all
-    // available sensors. Skip this step here.
-    std::vector<std::shared_ptr<cloe::Component>> from = {std::shared_ptr<cloe::NopObjectSensor>()};
-    auto d = std::dynamic_pointer_cast<DummySensor>(
-        std::shared_ptr<cloe::Component>(std::move(cf->make(cc.args, from))));
-    ASSERT_EQ(d->get_freq(), 9);
-  }
+  // Create a sensor component from the given configuration.
+  std::shared_ptr<DummySensorFactory> cf = std::make_shared<DummySensorFactory>();
+  ComponentConf cc = ComponentConf("dummy_sensor", cf);
+  fable::assert_from_conf(cc, R"({
+    "binding": "dummy_sensor",
+    "name": "my_dummy_sensor",
+    "from": "some_obj_sensor",
+    "args" : {
+      "freq" : 9
+    }
+  })");
+
+  // In production code, "some_obj_sensor" would be fetched from a list of all
+  // available sensors. Skip this step here.
+  std::vector<std::shared_ptr<cloe::Component>> from = {std::shared_ptr<cloe::NopObjectSensor>()};
+  auto d = std::dynamic_pointer_cast<DummySensor>(
+      std::shared_ptr<cloe::Component>(std::move(cf->make(cc.args, from))));
+  ASSERT_EQ(d->get_freq(), 9);
 }
 
 class FusionSensor : public NopObjectSensor {
@@ -321,31 +314,28 @@ std::unique_ptr<::cloe::Component> FusionSensorFactory::make(
 }
 
 TEST(cloe_stack, deserialization_of_fusion_component) {
-  {
-    std::shared_ptr<FusionSensorFactory> cf = std::make_shared<FusionSensorFactory>();
-    ComponentConf cc = ComponentConf("fusion_object_sensor", cf);
-    // Create a sensor component from the given configuration.
-    fable::assert_from_conf(cc, R"(
-      {
-        "binding": "fusion_object_sensor",
-        "name": "my_fusion_sensor",
-        "from": [
-          "ego_sensor0",
-          "obj_sensor1",
-          "obj_sensor2"
-        ],
-        "args" : {
-          "freq" : 77
-        }
-      }
-    )");
-    // In production code, a component list containing "ego_sensor0", ... would
-    // be generated. Skip this step here.
-    std::vector<std::shared_ptr<cloe::Component>> sensor_subset = {
-        std::make_shared<cloe::NopEgoSensor>(), std::make_shared<cloe::NopObjectSensor>(),
-        std::make_shared<cloe::NopObjectSensor>()};
-    auto f = std::dynamic_pointer_cast<FusionSensor>(
-        std::shared_ptr<cloe::Component>(std::move(cf->make(cc.args, sensor_subset))));
-    ASSERT_EQ(f->get_freq(), 77);
-  }
+  // Create a sensor component from the given configuration.
+  std::shared_ptr<FusionSensorFactory> cf = std::make_shared<FusionSensorFactory>();
+  ComponentConf cc = ComponentConf("fusion_object_sensor", cf);
+  fable::assert_from_conf(cc, R"({
+    "binding": "fusion_object_sensor",
+    "name": "my_fusion_sensor",
+    "from": [
+      "ego_sensor0",
+      "obj_sensor1",
+      "obj_sensor2"
+    ],
+    "args" : {
+      "freq" : 77
+    }
+  })");
+
+  // In production code, a component list containing "ego_sensor0", ... would
+  // be generated. Skip this step here.
+  std::vector<std::shared_ptr<cloe::Component>> sensor_subset = {
+      std::make_shared<cloe::NopEgoSensor>(), std::make_shared<cloe::NopObjectSensor>(),
+      std::make_shared<cloe::NopObjectSensor>()};
+  auto f = std::dynamic_pointer_cast<FusionSensor>(
+      std::shared_ptr<cloe::Component>(std::move(cf->make(cc.args, sensor_subset))));
+  ASSERT_EQ(f->get_freq(), 77);
 }
