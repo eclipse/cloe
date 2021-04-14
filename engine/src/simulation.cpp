@@ -485,18 +485,12 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
         f->from_conf(d.args);
       }
       // Get input components, if applicable.
-      if (c.from.size() == 0) {
-        return nullptr;
-      }
       std::vector<std::shared_ptr<cloe::Component>> from;
       for (const auto& from_comp_name : c.from) {
         if (!v.has(from_comp_name)) {
-          continue;
+          return nullptr;
         }
         from.push_back(v.get<cloe::Component>(from_comp_name));
-      }
-      if (from.size() == 0) {
-        return nullptr;
       }
       // Create the new component.
       auto x = f->make(c.args, std::move(from));
