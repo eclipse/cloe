@@ -36,7 +36,7 @@ namespace schema {
  * The CustomDeserializer allows the user to replace the deserialization of a
  * Schema with a custom function.
  *
- * This especially useful for schema types such as Variants.
+ * This is especially useful for schema types such as Variants.
  *
  * Note that if you use this, you may have to define to_json yourself.
  */
