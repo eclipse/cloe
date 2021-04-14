@@ -17,6 +17,8 @@
  */
 /**
  * \file fable/schema/custom.hpp
+ * \see  fable/schema/custom_test.cpp
+ * \see  fable/schema/variant.hpp
  */
 
 #pragma once
@@ -30,6 +32,14 @@
 namespace fable {
 namespace schema {
 
+/**
+ * The CustomDeserializer allows the user to replace the deserialization of a
+ * Schema with a custom function.
+ *
+ * This especially useful for schema types such as Variants.
+ *
+ * Note that if you use this, you may have to define to_json yourself.
+ */
 class CustomDeserializer : public schema::Interface {
  public:  // Constructors
   CustomDeserializer(Box&& s) : impl_(std::move(s).reset_pointer().get()) {}
