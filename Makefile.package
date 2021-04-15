@@ -57,17 +57,19 @@ PACKAGE_FQN     := ${PACKAGE_NAME}/${PACKAGE_VERSION}@${PACKAGE_CHANNEL}
 
 # Determining the PACKAGE_DIR takes a long time because we have to call Conan,
 # so only do it for the targets that actually make use of it.
-PACKAGE_DIR_TARGETS := help list
-${PACKAGE_DIR_TARGETS} : PACKAGE_DIR = $(shell \
-	conan info ${PACKAGE_FQN} --package-filter ${PACKAGE_FQN} --paths -n "package_folder" 2>/dev/null \
-	| sed -rn 's/ *package_folder: (.*)/\1/p')
+ifneq "$(filter help list status,${MAKECMDGOALS})" ""
+PACKAGE_INFO := $(shell conan info ${PACKAGE_FQN} --package-filter ${PACKAGE_FQN} --paths 2>/dev/null | sed -r 's/$$/\\n/')
+PACKAGE_ID := $(shell echo "${PACKAGE_INFO}" | sed -rn "s/^ *ID: *(.*)$$/\1/p")
+PACKAGE_DIR := $(shell echo "${PACKAGE_INFO}" | sed -rn "s/^ *package_folder: *(.*)$$/\1/p")
+PACKAGE_DATE := $(shell echo "${PACKAGE_INFO}" | sed -rn "s/^ *Creation date: *(.*)$$/\1/p")
+endif
 
 # These options can be set to influence package and configure.
 CONAN_OPTIONS :=
 
 .DEFAULT: help
-.SILENT: help
-.PHONY: help
+.SILENT: help status
+.PHONY: help status
 help:
 	echo "Usage: make <target>"
 	echo
@@ -76,6 +78,7 @@ help:
 	echo
 	echo "Available targets:"
 	echo "  help        to show this help"
+	echo "  status      to show status of package"
 	echo
 	echo "  export            to export recipe and sources        [conan-cache]"
 	echo "  package           to create package with build policy [conan-cache]"
@@ -105,9 +108,31 @@ help:
 	echo "  PACKAGE_VERSION: ${PACKAGE_VERSION}"
 	echo "  PACKAGE_CHANNEL: ${PACKAGE_CHANNEL}"
 	echo "  PACKAGE_FQN:     ${PACKAGE_FQN}"
+	echo "  PACKAGE_ID:      ${PACKAGE_ID}"
 	echo "  PACKAGE_DIR:     ${PACKAGE_DIR}"
+	echo "  PACKAGE_DATE:    ${PACKAGE_DATE}"
 	echo "  GIT_COMMIT_HASH: ${GIT_COMMIT_HASH}"
 	echo
+
+status:
+	# Show the status of each package in the cloe workspace:
+	# - Is it editable / built / packaged?
+	# - Is it available in debug mode?
+	# - Is it identical to that on the remote?
+	# - Is it dirty?
+	# - Are there changes from the package?
+	# - Is cloe-launch ready to use?
+	#
+	_editable=$$(conan editable list | grep "${PACKAGE_FQN}"); \
+	if [ -z "$${_editable}" ]; then \
+		if [ -n "${PACKAGE_DATE}" ] && [ -z "$$(find -type f -newermt "${PACKAGE_DATE}")" ]; then \
+			echo "ok       : ${PACKAGE_FQN}"; \
+		else \
+			echo "outdated : ${PACKAGE_FQN}"; \
+		fi \
+	else \
+		echo "editable : ${PACKAGE_FQN}"; \
+	fi
 
 # CONFIGURATION TARGETS -------------------------------------------------------
 .PHONY: editable uneditable
