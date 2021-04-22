@@ -119,7 +119,11 @@ ControllerSchema::ControllerSchema() {
 ComponentSchema::ComponentSchema() {
   this->set_transform_schema([](fable::schema::Struct&& s) -> fable::schema::Box {
     s.set_property("name", id_prototype("globally unique identifier for component"));
-    s.set_property("from", make_prototype<std::string>("component input for binding"));
+    s.set_property("from",
+                   fable::schema::Variant{
+                       make_prototype<std::string>("component input for binding"),
+                       make_prototype<std::vector<std::string>>("component inputs for binding"),
+                   });
     return s;
   });
 }
