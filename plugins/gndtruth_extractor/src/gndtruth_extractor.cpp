@@ -26,9 +26,11 @@
 #include <cloe/controller.hpp>                 // for Controller, ControllerFactory, ...
 #include <cloe/plugin.hpp>                     // for EXPORT_CLOE_PLUGIN
 #include <cloe/sync.hpp>                       // for Sync
-#include <cloe/utility/output_serializer.hpp>  // for Outputstream, JSONSerializer, ...
-#include <cloe/vehicle.hpp>                    // for Vehicle
-using namespace cloe::utility;                 // NOLINT(build/namespaces)
+#include <cloe/utility/output_serializer.hpp>  // for Outputstream, SequentialFileSerializer, ...
+#include <cloe/utility/output_serializer_json.hpp>     // for AbstractJsonSerializer
+#include <cloe/utility/output_serializer_msgpack.hpp>  // for AbstractMsgPackSerializer
+#include <cloe/vehicle.hpp>                            // for Vehicle
+using namespace cloe::utility;                         // NOLINT(build/namespaces)
 
 #include "enumconfable.hpp"  // for EnumConfable
 
