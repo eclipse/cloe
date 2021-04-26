@@ -44,11 +44,11 @@ namespace utility {
 
 class OutputStream {
  public:
-  typedef typename std::vector<char>::iterator char_iterator;
-  typedef typename std::vector<uint8_t>::iterator uint8_iterator;
+  using char_iterator = std::vector<char>::iterator;
+  using uint8_iterator = std::vector<uint8_t>::iterator;
 
   explicit OutputStream(Logger& logger) : logger_(logger) {}
-  virtual ~OutputStream() = default;
+  virtual ~OutputStream() noexcept = default;
   virtual std::string make_default_filename(const std::string& default_filename) = 0;
   virtual bool open_stream() = 0;
   virtual void write(const char* s, std::streamsize count) = 0;
@@ -64,7 +64,7 @@ class Serializer {
   Serializer(void (OutputStream::*write_function)(const char*, std::streamsize),
              OutputStream* instance)
       : write_function_(write_function), instance_(instance) {}
-  virtual ~Serializer() = default;
+  virtual ~Serializer() noexcept = default;
   virtual std::string make_default_filename(const std::string& default_filename) = 0;
   virtual void start_array() = 0;
   virtual void serialize(TSerializerArgs... args) = 0;
@@ -88,16 +88,13 @@ class AbstractJsonSerializerBase {
   static const std::string json_array_close;
 };
 
-const std::string AbstractJsonSerializerBase::json_array_open("\n[\n");   // NOLINT
-const std::string AbstractJsonSerializerBase::json_array_close("\n]\n");  // NOLINT
-
 template <typename... TSerializerArgs>
 class AbstractJsonSerializer : public Serializer<TSerializerArgs...>,
                                public AbstractJsonSerializerBase {
  public:
-  typedef Serializer<TSerializerArgs...> base;
+  using base = Serializer<TSerializerArgs...>;
   using Serializer<TSerializerArgs...>::Serializer;
-  ~AbstractJsonSerializer() override {}
+  virtual ~AbstractJsonSerializer() noexcept = default;
   std::string make_default_filename(const std::string& default_filename) override {
     return default_filename + ".json";
   }
@@ -108,9 +105,9 @@ class AbstractJsonSerializer : public Serializer<TSerializerArgs...>,
 template <typename T, typename... TSerializerArgs>
 class AbstractMsgPackSerializer : public Serializer<TSerializerArgs...> {
  public:
-  typedef Serializer<TSerializerArgs...> base;
+  using base = Serializer<TSerializerArgs...>;
   using Serializer<TSerializerArgs...>::Serializer;
-  ~AbstractMsgPackSerializer() override {}
+  virtual ~AbstractMsgPackSerializer() noexcept = default;
   std::string make_default_filename(const std::string& default_filename) override {
     return default_filename + ".msg";
   }
@@ -124,7 +121,7 @@ class AbstractMsgPackSerializer : public Serializer<TSerializerArgs...> {
 class BasicFileOutputStream : public OutputStream {
  public:
   using OutputStream::OutputStream;
-  ~BasicFileOutputStream() override {}
+  virtual ~BasicFileOutputStream() noexcept = default;
   bool open_stream() final { return false; }
   virtual bool open_file(const std::string& filename, const std::string& default_filename);
   void write(const char* s, std::streamsize count) override { ofs_.write(s, count); }
@@ -134,33 +131,10 @@ class BasicFileOutputStream : public OutputStream {
   std::ofstream ofs_;  // output file stream
 };
 
-bool BasicFileOutputStream::open_file(const std::string& filename,
-                                      const std::string& default_filename) {
-  const auto& output_file = filename == "" ? default_filename : filename;
-  if (&output_file == &default_filename) {
-    logger_->warn("No output file specified, using {}", output_file);
-  }
-
-  ofs_.open(output_file);
-  bool success = !ofs_.fail();
-  if (success) {
-    logger_->info("Writing output to file: {}", output_file);
-  } else {
-    logger_->error("Error opening file for writing: {}", output_file);
-  }
-  return success;
-}
-
-void BasicFileOutputStream::close_stream() {
-  if (ofs_.is_open()) {
-    ofs_.close();
-  }
-}
-
 class FileOutputStream : public BasicFileOutputStream {
  public:
   using BasicFileOutputStream::BasicFileOutputStream;
-  ~FileOutputStream() override {}
+  virtual ~FileOutputStream() noexcept = default;
   std::string make_default_filename(const std::string& default_filename) override {
     return default_filename;
   }
@@ -170,20 +144,10 @@ class FilteringOutputStream : public BasicFileOutputStream {
  public:
   explicit FilteringOutputStream(Logger& logger)
       : BasicFileOutputStream(logger), filter_(), out_(&filter_) {}
-  ~FilteringOutputStream() override {}
-  bool open_file(const std::string& filename, const std::string& default_filename) override {
-    auto success = BasicFileOutputStream::open_file(filename, default_filename);
-    if (success) {
-      configure_filter();
-      filter_.push(ofs_);  // attach sink stream to the filter
-    }
-    return success;
-  }
+  virtual ~FilteringOutputStream() noexcept = default;
+  bool open_file(const std::string& filename, const std::string& default_filename) override;
   void write(const char* s, std::streamsize count) override { out_.write(s, count); }
-  void close_stream() override {
-    filter_.pop();                          // remove sink stream from filter
-    BasicFileOutputStream::close_stream();  // close sink
-  }
+  void close_stream() override;
 
  protected:
   virtual void configure_filter() = 0;
@@ -196,7 +160,7 @@ class FilteringOutputStream : public BasicFileOutputStream {
 class ZlibOutputStream : public FilteringOutputStream {
  public:
   using FilteringOutputStream::FilteringOutputStream;
-  ~ZlibOutputStream() override {}
+  virtual ~ZlibOutputStream() noexcept = default;
   std::string make_default_filename(const std::string& default_filename) override {
     return default_filename + ".zip";
   }
@@ -211,7 +175,7 @@ class ZlibOutputStream : public FilteringOutputStream {
 class GzipOutputStream : public FilteringOutputStream {
  public:
   using FilteringOutputStream::FilteringOutputStream;
-  ~GzipOutputStream() override {}
+  virtual ~GzipOutputStream() noexcept = default;
   std::string make_default_filename(const std::string& default_filename) override {
     return default_filename + ".gz";
   }
@@ -226,7 +190,7 @@ class GzipOutputStream : public FilteringOutputStream {
 class Bzip2OutputStream : public FilteringOutputStream {
  public:
   using FilteringOutputStream::FilteringOutputStream;
-  ~Bzip2OutputStream() override {}
+  virtual ~Bzip2OutputStream() noexcept = default;
   std::string make_default_filename(const std::string& default_filename) override {
     return default_filename + ".bz2";
   }
@@ -246,7 +210,7 @@ class FileSerializer {
       : outputstream_(logger)
       , serializer_((void (OutputStream::*)(const char*, std::streamsize)) & TOutputStream::write,
                     &outputstream_) {}
-  virtual ~FileSerializer() = default;
+  virtual ~FileSerializer() noexcept = default;
   virtual void open_file(const std::string& filename, const std::string& default_filename) {
     outputstream_.open_file(filename, default_filename);
   }
@@ -262,7 +226,7 @@ class FileSerializer {
 template <typename TSerializer, typename TOutputStream, typename... TSerializerArgs>
 class SequentialFileSerializer
     : public FileSerializer<TSerializer, TOutputStream, TSerializerArgs...> {
-  typedef FileSerializer<TSerializer, TOutputStream, TSerializerArgs...> base;
+  using base = FileSerializer<TSerializer, TOutputStream, TSerializerArgs...>;
 
  public:
   using base::base;

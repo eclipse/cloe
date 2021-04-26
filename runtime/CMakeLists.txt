@@ -28,6 +28,7 @@ add_library(${target} SHARED
     src/cloe/vehicle.cpp
     src/cloe/utility/command.cpp
     src/cloe/utility/evaluate.cpp
+    src/cloe/utility/output_serializer.cpp
     src/cloe/utility/std_extensions.cpp
     src/cloe/utility/uid_tracker.cpp
     src/cloe/utility/xdg.cpp
