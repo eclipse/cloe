@@ -38,7 +38,7 @@ cloe_engine() {
         cloe_launch_args+=(--override-env=${var})
     done
     if [[ "${WITH_VTD}" -eq "1" ]]; then
-        cloe_launch_args+=(-o)
+        cloe_launch_args+=(-o:o)
         cloe_launch_args+=("with_vtd=True")
     fi
     for var in ${CLOE_LAUNCH_ARGS[@]}; do
@@ -83,7 +83,7 @@ cloe_shell() {
         cloe_launch_args+=(--override-env=${var})
     done
     if [[ "${WITH_VTD}" -eq "1" ]]; then
-        cloe_launch_args+=(-o)
+        cloe_launch_args+=(-o:o)
         cloe_launch_args+=("with_vtd=True")
     fi
     for var in ${CLOE_LAUNCH_ARGS[@]}; do

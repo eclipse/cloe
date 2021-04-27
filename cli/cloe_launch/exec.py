@@ -357,7 +357,9 @@ class Engine:
         self.engine_pre_args = conf._conf["engine"]["pre_arguments"]
         self.engine_post_args = conf._conf["engine"]["post_arguments"]
         self.preserve_env = False
+        self.conan_args = []
         self.conan_options = []
+        self.conan_settings = []
 
         logging.info(f"Profile name: {self.profile}")
         logging.info("Configuration:")
@@ -402,9 +404,14 @@ class Engine:
                 "-g",
                 generator,
             ]
+            for arg in self.conan_args:
+                conan_cmd.append(arg)
             for option in self.conan_options:
                 conan_cmd.append("-o")
                 conan_cmd.append(option)
+            for setting in self.conan_settings:
+                conan_cmd.append("-s")
+                conan_cmd.append(setting)
             conan_cmd.append(self.profile_path)
             self._run_cmd(conan_cmd, must_succeed=True)
 
