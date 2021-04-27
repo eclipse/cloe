@@ -114,10 +114,24 @@ def deny_profile_and_path(profile: str, profile_path: str) -> None:
 @click.option("-E", "--preserve-env", is_flag=True, help="Preserve user environment.")
 @click.option(
     "-o",
+    "--conan-arg",
+    type=click.STRING,
+    multiple=True,
+    help="Arguments to pass to Conan for virtualrunenv generation",
+)
+@click.option(
+    "-o:o",
     "--conan-option",
     type=click.STRING,
     multiple=True,
     help="Options to pass to Conan for virtualrunenv generation",
+)
+@click.option(
+    "-o:s",
+    "--conan-setting",
+    type=click.STRING,
+    multiple=True,
+    help="Settings to pass to Conan for virtualrunenv generation",
 )
 @click.option(
     "-e",
@@ -134,7 +148,9 @@ def cli_exec(
     profile_path: str,
     preserve_env: bool,
     override_env: List[str],
+    conan_arg: List[str],
     conan_option: List[str],
+    conan_setting: List[str],
     cache: bool,
     debug: bool,
 ) -> None:
@@ -146,7 +162,9 @@ def cli_exec(
     conf = Configuration(profile)
     engine = Engine(conf, conanfile=profile_path)
     engine.preserve_env = preserve_env
+    engine.conan_args = conan_arg
     engine.conan_options = conan_option
+    engine.conan_settings = conan_setting
 
     # Prepare environment overrides:
     overrides = {}
@@ -175,10 +193,24 @@ def cli_exec(
 @click.option("-E", "--preserve-env", is_flag=True, help="Preserve user environment.")
 @click.option(
     "-o",
+    "--conan-arg",
+    type=click.STRING,
+    multiple=True,
+    help="Arguments to pass to Conan for virtualrunenv generation",
+)
+@click.option(
+    "-o:o",
     "--conan-option",
     type=click.STRING,
     multiple=True,
     help="Options to pass to Conan for virtualrunenv generation",
+)
+@click.option(
+    "-o:s",
+    "--conan-setting",
+    type=click.STRING,
+    multiple=True,
+    help="Settings to pass to Conan for virtualrunenv generation",
 )
 @click.argument("shell_args", nargs=-1)
 @click.pass_obj
@@ -188,7 +220,9 @@ def cli_shell(
     profile: str,
     profile_path: str,
     preserve_env: bool,
+    conan_arg: List[str],
     conan_option: List[str],
+    conan_setting: List[str],
     cache: bool,
 ) -> None:
     """Launch shell with the correct environment from a profile."""
@@ -196,7 +230,9 @@ def cli_shell(
     conf = Configuration(profile)
     engine = Engine(conf, conanfile=profile_path)
     engine.preserve_env = preserve_env
+    engine.conan_args = conan_arg
     engine.conan_options = conan_option
+    engine.conan_settings = conan_setting
 
     # Replace process with shell.
     engine.shell(shell_args, use_cache=cache)
