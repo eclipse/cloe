@@ -19,7 +19,9 @@ setup(
     author_email="cloe-dev@eclipse.org",
     license="Apache-2.0",
     keywords="cloe",
-    entry_points={"console_scripts": ["cloe-launch = cloe_launch.__main__:main"]},
+    entry_points={
+        "console_scripts": ["cloe-launch = cloe_launch.__main__:entry_point"]
+    },
     packages=["cloe_launch"],
     package_dir={"": "."},
     package_data={},

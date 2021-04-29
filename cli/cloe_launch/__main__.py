@@ -58,80 +58,118 @@ def main(ctx, verbose: int):
     ctx.obj = Options(verbose > 0)
 
 
-# Common options among engine and profile commands:
-def profile_option(
-    required: bool = False, help="Profile to select, default if absent."
-):
-    conf = Configuration()
+class options:
+    """Common options to be re-used among various commands."""
 
-    def complete(ctx, args, incomplete):
-        profiles = []
-        for k in conf.all_profiles:
-            if k not in args:
-                profiles.append(k)
-        return [k for k in profiles if incomplete in k]
+    @classmethod
+    def profile(
+        cls,
+        required: bool = False,
+        help: str = "Profile to select, default if absent.",
+    ):
+        conf = Configuration()
 
-    return click.option(
-        "-p",
-        "--profile",
-        envvar="CLOE_PROFILE",
-        required=required,
-        type=click.STRING,
-        help=help,
-        autocompletion=complete,
-    )
+        def complete(ctx, args, incomplete):
+            profiles = []
+            for k in conf.all_profiles:
+                if k not in args:
+                    profiles.append(k)
+            return [k for k in profiles if incomplete in k]
 
-
-def profile_path_option():
-    return click.option(
-        "-P",
-        "--profile-path",
-        envvar="CLOE_PROFILE_PATH",
-        type=click.Path(exists=True, file_okay=True, dir_okay=False),
-        help="Conanfile to use as anonymous profile.",
-    )
-
-
-def deny_profile_and_path(profile: str, profile_path: str) -> None:
-    """Assert that --profile and --profile-path are not specified simultaneously."""
-    if profile is not None and profile_path is not None:
-        raise click.UsageError(
-            "--profile and --profile-path options cannot be specified simultaneously"
+        return click.option(
+            "-p",
+            "--profile",
+            envvar="CLOE_PROFILE",
+            required=required,
+            type=click.STRING,
+            help=help,
+            autocompletion=complete,
         )
+
+    @classmethod
+    def profile_path(cls):
+        return click.option(
+            "-P",
+            "--profile-path",
+            envvar="CLOE_PROFILE_PATH",
+            type=click.Path(exists=True, file_okay=True, dir_okay=False),
+            help="Conanfile to use as anonymous profile.",
+        )
+
+    @classmethod
+    def conan_arg(cls):
+        return click.option(
+            "-o",
+            "--conan-arg",
+            type=click.STRING,
+            multiple=True,
+            help="Arguments to pass to Conan for virtualrunenv generation.",
+        )
+
+    @classmethod
+    def conan_option(cls):
+        return click.option(
+            "-o:o",
+            "--conan-option",
+            type=click.STRING,
+            multiple=True,
+            help="Options to pass to Conan for virtualrunenv generation.",
+        )
+
+    @classmethod
+    def conan_setting(cls):
+        return click.option(
+            "-o:s",
+            "--conan-setting",
+            type=click.STRING,
+            multiple=True,
+            help="Settings to pass to Conan for virtualrunenv generation.",
+        )
+
+    @classmethod
+    def preserve_env(cls):
+        return click.option(
+            "-E",
+            "--preserve-env",
+            is_flag=True,
+            help="Preserve user environment.",
+        )
+
+    @classmethod
+    def cache(cls):
+        return click.option(
+            "-c",
+            "--cache/--no-cache",
+            is_flag=True,
+            help="Re-use the cache if available.",
+        )
+
+    @classmethod
+    def deny_profile_and_path(cls, profile: str, profile_path: str) -> None:
+        """Assert that --profile and --profile-path are not specified simultaneously."""
+        if profile is not None and profile_path is not None:
+            raise click.UsageError(
+                "--profile and --profile-path options cannot be specified simultaneously"
+            )
 
 
 # _________________________________________________________________________
 # Command: exec [--cache] [--debug] [--profile=PROFILE | --profile-path=CONANFILE]
 #               [--] ENGINE_ARGS
 @main.command("exec")
+@options.profile()
+@options.profile_path()
+@options.conan_arg()
+@options.conan_option()
+@options.conan_setting()
+@options.preserve_env()
+@options.cache()
 @click.argument("engine_args", nargs=-1)
-@profile_option()
-@profile_path_option()
 @click.option(
-    "-c", "--cache/--no-cache", is_flag=True, help="Re-use the cache if available."
-)
-@click.option("-d", "--debug", is_flag=True, help="Launch cloe-engine with GDB.")
-@click.option("-E", "--preserve-env", is_flag=True, help="Preserve user environment.")
-@click.option(
-    "-o",
-    "--conan-arg",
-    type=click.STRING,
-    multiple=True,
-    help="Arguments to pass to Conan for virtualrunenv generation",
-)
-@click.option(
-    "-o:o",
-    "--conan-option",
-    type=click.STRING,
-    multiple=True,
-    help="Options to pass to Conan for virtualrunenv generation",
-)
-@click.option(
-    "-o:s",
-    "--conan-setting",
-    type=click.STRING,
-    multiple=True,
-    help="Settings to pass to Conan for virtualrunenv generation",
+    "-d",
+    "--debug",
+    is_flag=True,
+    help="Launch cloe-engine with GDB.",
 )
 @click.option(
     "-e",
@@ -146,11 +184,11 @@ def cli_exec(
     engine_args: List[str],
     profile: str,
     profile_path: str,
-    preserve_env: bool,
-    override_env: List[str],
     conan_arg: List[str],
     conan_option: List[str],
     conan_setting: List[str],
+    preserve_env: bool,
+    override_env: List[str],
     cache: bool,
     debug: bool,
 ) -> None:
@@ -158,13 +196,14 @@ def cli_exec(
 
     ENGINE_ARGS are passed on to cloe-engine.
     """
-    deny_profile_and_path(profile, profile_path)
+    options.deny_profile_and_path(profile, profile_path)
     conf = Configuration(profile)
     engine = Engine(conf, conanfile=profile_path)
-    engine.preserve_env = preserve_env
     engine.conan_args = conan_arg
     engine.conan_options = conan_option
     engine.conan_settings = conan_setting
+
+    engine.preserve_env = preserve_env
 
     # Prepare environment overrides:
     overrides = {}
@@ -185,48 +224,28 @@ def cli_exec(
 # _________________________________________________________________________
 # Command: shell [--cache] [--profile=PROFILE | --profile-path=CONANFILE]
 @main.command("shell")
-@profile_option()
-@profile_path_option()
-@click.option(
-    "-c", "--cache/--no-cache", is_flag=True, help="Re-use the cache if available."
-)
-@click.option("-E", "--preserve-env", is_flag=True, help="Preserve user environment.")
-@click.option(
-    "-o",
-    "--conan-arg",
-    type=click.STRING,
-    multiple=True,
-    help="Arguments to pass to Conan for virtualrunenv generation",
-)
-@click.option(
-    "-o:o",
-    "--conan-option",
-    type=click.STRING,
-    multiple=True,
-    help="Options to pass to Conan for virtualrunenv generation",
-)
-@click.option(
-    "-o:s",
-    "--conan-setting",
-    type=click.STRING,
-    multiple=True,
-    help="Settings to pass to Conan for virtualrunenv generation",
-)
+@options.profile()
+@options.profile_path()
+@options.conan_arg()
+@options.conan_option()
+@options.conan_setting()
+@options.preserve_env()
+@options.cache()
 @click.argument("shell_args", nargs=-1)
 @click.pass_obj
 def cli_shell(
     opt,
-    shell_args: List[str],
     profile: str,
     profile_path: str,
-    preserve_env: bool,
     conan_arg: List[str],
     conan_option: List[str],
     conan_setting: List[str],
+    preserve_env: bool,
     cache: bool,
+    shell_args: List[str],
 ) -> None:
     """Launch shell with the correct environment from a profile."""
-    deny_profile_and_path(profile, profile_path)
+    options.deny_profile_and_path(profile, profile_path)
     conf = Configuration(profile)
     engine = Engine(conf, conanfile=profile_path)
     engine.preserve_env = preserve_env
@@ -239,14 +258,71 @@ def cli_shell(
 
 
 # _________________________________________________________________________
+# Command: activate [--cache] [--profile=PROFILE | --profile-path=CONANFILE]
+@main.command("activate")
+@options.profile()
+@options.profile_path()
+@options.conan_arg()
+@options.conan_option()
+@options.conan_setting()
+@options.cache()
+@click.pass_obj
+def cli_activate(
+    opt,
+    profile: str,
+    profile_path: str,
+    conan_arg: List[str],
+    conan_option: List[str],
+    conan_setting: List[str],
+    cache: bool,
+) -> None:
+    """Launch shell with the correct environment from a profile.
+
+    You can then source or evaluate these commands to activate the
+    environment:
+
+    \b
+    1. source <(cloe-launch activate [options])
+    2. eval $(cloe-launch activate [options])
+
+    If you plan on putting this in your shell, it is /strongly/ recommended
+    to copy the output into your shell or put it in an intermediate file
+    instead of calling cloe-launch directly at every new shell invocation!
+
+    \b
+    3. cloe-launch activate > ~/.config/cloe/launcher/activate.sh
+       echo "source ~/.config/cloe/launcher/activate.sh" >> ~/.bashrc
+
+    \b
+    Warnings:
+    - If you use method #3 and delete ~/.cache/cloe, you will get errors
+      until you re-create the profile.
+    - Deleting or overwriting packages in your Conan cache that are used
+      in an activated environment is undefined behavior: it can lead to
+      unexpected problems!
+    - Using cloe shell in combination with cloe activate is undefined
+      behavior: it can lead to unexpected problems.
+    """
+    options.deny_profile_and_path(profile, profile_path)
+    conf = Configuration(profile)
+    engine = Engine(conf, conanfile=profile_path)
+    engine.conan_args = conan_arg
+    engine.conan_options = conan_option
+    engine.conan_settings = conan_setting
+
+    # Replace process with shell.
+    engine.activate(use_cache=cache)
+
+
+# _________________________________________________________________________
 # Command: clean [--profile PROFILE | --profile-path=CONANFILE]
 @main.command("clean")
-@profile_option()
-@profile_path_option()
+@options.profile()
+@options.profile_path()
 @click.pass_obj
 def cli_clean(opt, profile: str, profile_path: str) -> None:
     """Clean launcher profile cache."""
-    deny_profile_and_path(profile, profile_path)
+    options.deny_profile_and_path(profile, profile_path)
     conf = Configuration(profile)
     engine = Engine(conf, conanfile=profile_path)
     engine.clean()
@@ -262,7 +338,7 @@ def cli_profile():
 # _________________________________________________________________________
 # Command: profile show [--profile PROFILE]
 @cli_profile.command("show")
-@profile_option()
+@options.profile()
 @click.pass_obj
 def cli_profile_show(opt, profile: str) -> None:
     """Show a profile configuration."""
@@ -293,7 +369,7 @@ def cli_profile_list(opt) -> None:
 # _________________________________________________________________________
 # Command: profile add [--default] [--force] --profile PROFILE CONANFILE
 @cli_profile.command("add")
-@profile_option(required=True, help="Name of the profile to be added.")
+@options.profile(required=True, help="Name of the profile to be added.")
 @click.argument(
     "conanfile", type=click.Path(exists=True, file_okay=True, dir_okay=False)
 )
@@ -313,7 +389,7 @@ def cli_profile_add(
 # _________________________________________________________________________
 # Command: profile edit [--editor EDITOR] [--no-create]
 @cli_profile.command("edit")
-@profile_option()
+@options.profile()
 @click.option(
     "-e",
     "--editor",
@@ -339,7 +415,7 @@ def cli_profile_edit(opt, profile: str, editor: str, create: bool) -> None:
 # _________________________________________________________________________
 # Command: profile remove --profile PROFILE
 @cli_profile.command("remove")
-@profile_option(required=True, help="Profile to remove.")
+@options.profile(required=True, help="Profile to remove.")
 @click.pass_obj
 def cli_profile_remove(opt, profile: str) -> None:
     """Remove a profile."""
@@ -350,7 +426,7 @@ def cli_profile_remove(opt, profile: str) -> None:
 # _________________________________________________________________________
 # Command: profile default [--profile PROFILE]
 @cli_profile.command("default")
-@profile_option()
+@options.profile()
 @click.pass_obj
 def cli_profile_default(opt, profile: str) -> None:
     """Show or set the default profile."""
@@ -365,5 +441,12 @@ def cli_profile_default(opt, profile: str) -> None:
         conf.set_default(profile)
 
 
+def entry_point():
+    try:
+        main()
+    except ConfigurationError as e:
+        print(f"Error: {e}", file=sys.stderr)
+
+
 if __name__ == "__main__":
-    main()
+    entry_point()
