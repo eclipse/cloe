@@ -13,7 +13,7 @@ def run_cmd(
 ) -> subprocess.CompletedProcess:
     """Run a command quietly, only printing stderr if the command fails."""
 
-    logging.info("Exec: {}".format(" ".join(cmd)))
+    logging.info(f"Exec: {' '.join(cmd)}")
     result = subprocess.run(
         cmd,
         check=False,
@@ -23,7 +23,7 @@ def run_cmd(
         env=env,
     )
     if result.returncode != 0:
-        logging.error("Error running:", " ".join(cmd))
+        logging.error(f"Error running: {' '.join(cmd)}")
         logging.error(result.stdout)
         if must_succeed:
             raise ChildProcessError()

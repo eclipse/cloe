@@ -27,9 +27,7 @@ from cloe_launch.utility import run_cmd
 
 
 class Environment:
-    """
-    This class stores the set of environment variables that will be used to run
-    cloe-engine with.
+    """This class stores a set of environment variables for runtimes.
 
     The following important variables are required for correct execution:
 
@@ -233,11 +231,11 @@ class Environment:
             list(OrderedDict.fromkeys(self._data[key].split(self._sep)))
         )
 
-    def get(self, key: str, default: str = None) -> str:
+    def get(self, key: str, default: str = None) -> Optional[str]:
         """Get the value at key or return default."""
-        self._data.get(key, default)
+        return self._data.get(key, default)
 
-    def get_list(self, key: str, default: List[str] = None) -> List[str]:
+    def get_list(self, key: str, default: List[str] = None) -> Optional[List[str]]:
         """Get the value at key and split or return default."""
         if key in self._data:
             return self._data[key].split(self._sep)
@@ -337,9 +335,7 @@ def _find_plugin_setups(file: str) -> List[Type[PluginSetup]]:
 
 
 class Engine:
-    """
-    Engine represents the configuration of a single execution of cloe-engine.
-    """
+    """Engine represents the configuration of a single execution of cloe-engine."""
 
     anonymous_file_regex = "^(/proc/self|/dev)/fd/[0-9]+$"
     engine_path = "cloe-engine"
@@ -532,7 +528,6 @@ class Engine:
         use_cache: bool = False,
     ) -> None:
         """Launch a SHELL with the environment variables adjusted."""
-
         env = self._prepare_runtime_env(use_cache)
         if env.has("CLOE_SHELL"):
             logging.error("Error: recursive cloe shells are not supported.")
@@ -570,6 +565,31 @@ class Engine:
         if arguments is not None:
             cmd.extend(arguments)
         os.execvpe(shell, cmd, env.as_dict())
+
+    def activate(
+        self,
+        use_cache: bool = False,
+    ) -> None:
+        """Print shell commands to activate a cloe-engine environment."""
+        env = self._prepare_runtime_env(use_cache)
+        if env.has("CLOE_SHELL"):
+            logging.error("Error: recursive cloe shells are not supported.")
+            logging.error("Note:")
+            logging.error(
+                "  It appears you are already in a Cloe shell, since CLOE_SHELL is set."
+            )
+            logging.error(
+                "  Press [Ctrl-D] or run 'exit' to quit this session and then try again."
+            )
+            sys.exit(2)
+
+        print("# Please see `cloe-launch activate --help` before activating this.")
+        print()
+        print(f"source {os.path.join(self.runtime_dir, 'activate.sh')}")
+        print(f"source {os.path.join(self.runtime_dir, 'activate_run.sh')}")
+        for var in ["CLOE_PROFILE_HASH", "CLOE_ENGINE", "CLOE_PLUGIN_PATH"]:
+            print(f'export {var}="{env[var]}"')
+        print(f'export CLOE_SHELL="{self.runtime_env_path()}"')
 
     def exec(
         self,
