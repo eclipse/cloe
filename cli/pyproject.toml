@@ -14,7 +14,7 @@ toml = "^0.10.1"
 click = "^7.1.2"
 
 [tool.poetry.scripts]
-cloe-launch = "cloe_launch.__main__:main"
+cloe-launch = "cloe_launch.__main__:entry_point"
 
 [build-system]
 requires = ["poetry>=0.12"]
