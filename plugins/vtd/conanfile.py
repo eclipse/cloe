@@ -72,3 +72,7 @@ class CloeSimulatorVTD(ConanFile):
     def package(self):
         cmake = self._configure_cmake()
         cmake.install()
+        self.copy("vtd-launch", dst="bin", src=f"{self.source_folder}/bin")
+
+    def package_info(self):
+        self.env_info.VTD_LAUNCH = f"{self.package_folder}/bin/vtd-launch"
