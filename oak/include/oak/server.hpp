@@ -39,6 +39,19 @@ namespace oak {
 class ServerImplHandler;
 using ServerImpl = boost::network::http::server<ServerImplHandler>;
 
+class RequestStub : public cloe::Request {
+ public:
+  cloe::RequestMethod method() const override { throw ERROR; }
+  cloe::ContentType type() const override { throw ERROR; }
+  const std::string& body() const override { throw ERROR; }
+  const std::string& uri() const override { throw ERROR; }
+  const std::string& endpoint() const override { throw ERROR; }
+  const std::map<std::string, std::string>& query_map() const override { throw ERROR; }
+
+ private:
+  const std::logic_error ERROR = std::logic_error("using the request in any way is erroneous");
+};
+
 /**
  * ServerImplHandler is the main request handler for the server.
  *
@@ -72,6 +85,11 @@ class ServerImplHandler {
    * Return a list of all registered endpoints.
    */
   std::vector<std::string> endpoints() const { return muxer.routes(); }
+
+  /**
+   * Return endpoint data in json format.
+   */
+  cloe::Json endpoints_to_json(const std::vector<std::string>& endpoints) const;
 
  private:
   Muxer<Handler> muxer;
@@ -129,6 +147,13 @@ class Server {
    * Start the server.
    */
   void listen();
+
+  /**
+   * Return endpoint data in json format.
+   */
+  cloe::Json endpoints_to_json(const std::vector<std::string>& endpoints) const {
+    return handler_.endpoints_to_json(endpoints);
+  };
 
   /**
    * Stop the server.

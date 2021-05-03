@@ -237,6 +237,25 @@ void ServerImplHandler::log(const ServerImpl::string_type& msg) {
 
 void ServerImplHandler::add(const std::string& key, Handler h) { muxer.add(key, h); }
 
+cloe::Json ServerImplHandler::endpoints_to_json(const std::vector<std::string>& endpoints) const {
+  cloe::Json j;
+  for (const auto& endpoint : endpoints) {
+    const RequestStub q;
+    Response r;
+    try {
+      muxer.get(endpoint).first(q, r);
+    } catch (std::logic_error& e) {
+      // Silently ignore endpoints that require an implementation of any of
+      // the Request's methods.
+      continue;
+    }
+    if (r.status() == cloe::StatusCode::OK && r.type() == cloe::ContentType::JSON) {
+      j[endpoint] = cloe::Json(r.body());
+    }
+  }
+  return j;
+}
+
 void Server::listen() {
   if (listening_) {
     throw std::runtime_error("already listening");

@@ -28,12 +28,12 @@
 #include <string>
 #include <utility>
 
-#include <boost/thread/locks.hpp>
-#include <boost/thread/shared_mutex.hpp>
+#include <boost/thread/locks.hpp>         // for unique_lock
+#include <boost/thread/shared_mutex.hpp>  // for shared_mutex
 
-#include <cloe/handler.hpp>
+#include <cloe/handler.hpp>  // for Handler
 
-#include "oak/route_muxer.hpp"
+#include "oak/route_muxer.hpp"  // for Muxer
 
 namespace oak {
 
@@ -157,6 +157,8 @@ class StaticRegistrar : public Registrar {
   void set_prefix(const std::string& prefix) { prefix_ = prefix; }
   void set_logger(Logger logger) { logger_ = logger; }
 
+  std::vector<std::string> endpoints() const { return endpoints_; }
+
  protected:
   void log(const std::string& endpoint) {
     if (logger_) {
@@ -167,6 +169,7 @@ class StaticRegistrar : public Registrar {
  protected:
   Server* server_;
   Logger logger_;
+  std::vector<std::string> endpoints_;
 };
 
 /**
