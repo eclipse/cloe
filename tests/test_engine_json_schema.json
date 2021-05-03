@@ -695,6 +695,18 @@
                     }
                   ]
                 },
+                "data": {
+                  "description": "file to store api data stream",
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "comment": "path should either not exist or be a file",
+                      "type": "string"
+                    }
+                  ]
+                },
                 "result": {
                   "description": "file to store simulation result in",
                   "oneOf": [

@@ -1,6 +1,11 @@
 {
   "version": "4",
   "engine": {
+    "output": {
+      "files": {
+        "data": "data.json.gz"
+      }
+    },
     "hooks": {
       "pre_connect": [
         {
