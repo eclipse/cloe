@@ -707,7 +707,7 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
   }
 
   ctx.progress.init_end();
-  ctx.server->refresh_buffer();
+  ctx.server->refresh_buffer_start_stream();
   logger()->info("Simulation initialization complete.");
   return START;
 }
@@ -1216,6 +1216,13 @@ SimulationResult Simulation::run() {
     // Start the server if enabled
     if (config_.server.listen) {
       ctx.server->start();
+    }
+    // Stream data to the requested file
+    if (r.config.engine.output_file_data_stream) {
+      auto filepath = r.get_output_filepath(*r.config.engine.output_file_data_stream);
+      if (is_writable(filepath)) {
+        ctx.server->init_stream(filepath.native());
+      }
     }
 
     // Run pre-connect hooks

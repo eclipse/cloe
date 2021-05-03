@@ -1,0 +1,23 @@
+{
+    "version": "4",
+    "include": [
+        "config_vtd_smoketest.json",
+        "bootstrap_vtd.json"
+    ],
+    "engine": {
+        "output": {
+            "files": {
+                "api_recording": "data.json.gz"
+            }
+        }
+    },
+    "server": {
+        "listen": false
+    },
+    "triggers": [
+        {
+            "event": "time=2",
+            "action": "succeed"
+        }
+    ]
+}

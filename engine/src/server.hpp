@@ -21,13 +21,15 @@
 
 #pragma once
 
+#include <memory>   // for unique_ptr
 #include <utility>  // for make_pair
 
-#include <cloe/handler.hpp>    // for Request, Response
-#include <cloe/registrar.hpp>  // for Registrar
+#include <cloe/handler.hpp>                         // for Request, Response
+#include <cloe/registrar.hpp>                       // for Registrar
+#include <cloe/utility/output_serializer_json.hpp>  // for JsonFileSerializer
 
-#include "stack.hpp"      // for ServerConf
 #include "oak/server.hpp"  // for Server, StaticRegistrar, ...
+#include "stack.hpp"       // for ServerConf
 
 namespace engine {
 
@@ -67,6 +69,11 @@ class Server {
  public:
   bool is_listening() { return server_.is_listening(); }
 
+  bool is_streaming() { return is_streaming_; }
+
+  /**
+   * Start the web server.
+   */
   void start() {
     assert(!is_listening());
 
@@ -77,13 +84,31 @@ class Server {
     server_.listen();
   }
 
+  /**
+   * Open a file for api data streaming. This does not require a running web
+   * server.
+   */
+  void init_stream(const std::string& filename) {
+    serializer_ = make_json_file_serializer(cloe::utility::JsonFileType::JSON_GZIP, logger());
+    serializer_->open_file(filename);
+  }
+
+  /**
+   * Stop all server-related procedures.
+   */
   void stop() {
     if (is_listening()) {
       logger()->info("Stopping server...");
       server_.stop();
     }
+    if (serializer_ != nullptr) {
+      serializer_->close_file();
+    }
   }
 
+  /**
+   * Register a list of all endpoints.
+   */
   void enroll(cloe::Registrar& r) {
     r.register_api_handler(
         "/endpoints", cloe::HandlerType::STATIC,
@@ -107,11 +132,31 @@ class Server {
   }
 
   /**
-   * Refresh the server buffer.
+   * Refresh and/or start streaming api data to a file.
+   */
+  void refresh_buffer_start_stream() {
+    is_streaming_ = serializer_ != nullptr;
+    if (is_listening() || is_streaming()) {
+      buffer_api_registrar_.refresh_buffer();
+    }
+    if (is_streaming()) {
+      // Write static endpoints at the beginning of the file.
+      write_data_stream(static_api_registrar_.endpoints());
+      write_data_stream(locked_api_registrar_.endpoints());
+      write_data_stream(buffer_api_registrar_.endpoints());
+    }
+  }
+
+  /**
+   * Refresh and/or write api data to a file.
    */
   void refresh_buffer() {
-    if (config.listen) {
+    if (is_listening() || is_streaming()) {
       buffer_api_registrar_.refresh_buffer();
+    }
+    if (is_streaming()) {
+      write_data_stream(locked_api_registrar_.endpoints());
+      write_data_stream(buffer_api_registrar_.endpoints());
     }
   }
 
@@ -123,12 +168,22 @@ class Server {
  protected:
   cloe::Logger logger() const { return cloe::logger::get("cloe"); }
 
+ private:
+  void write_data_stream(const std::vector<std::string>& endpoints) const {
+    auto j = server_.endpoints_to_json(endpoints);
+    if (!j.empty()) {
+      serializer_->serialize(j);
+    }
+  };
+
  private:  // State
   oak::Server server_;
   oak::StaticRegistrar static_registrar_{&server_, config.static_prefix, nullptr};
   oak::StaticRegistrar static_api_registrar_{&server_, config.api_prefix, nullptr};
   oak::LockedRegistrar locked_api_registrar_{&server_, config.api_prefix, nullptr};
   oak::BufferRegistrar buffer_api_registrar_{&server_, config.api_prefix, nullptr};
+  bool is_streaming_{false};
+  std::unique_ptr<cloe::utility::JsonFileSerializer> serializer_;
 };
 
 }  // namespace engine

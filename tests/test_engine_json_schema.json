@@ -683,6 +683,18 @@
             "files": {
               "additionalProperties": false,
               "properties": {
+                "api_recording": {
+                  "description": "file to store api data stream",
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "comment": "path should either not exist or be a file",
+                      "type": "string"
+                    }
+                  ]
+                },
                 "config": {
                   "description": "file to store config in",
                   "oneOf": [
