@@ -43,8 +43,49 @@ struct SimulationResult {
   SimulationOutcome outcome;
   SimulationStatistics statistics;
   cloe::Json triggers;
+  boost::optional<boost::filesystem::path> output_dir;
 
  public:
+  /**
+   * The output directory of files is normally built up with:
+   *
+   *     $registry / $id / $filename
+   *
+   * If any of the last variables is absolute, the preceding variables
+   * shall be ignored; e.g. if $filename is absolute, then neither the
+   * simulation registry nor the UUID-based path shall be considered.
+   *
+   * If not explicitly specified in the configuration file, the registry
+   * and output path are set automatically. Thus, if they are empty, then
+   * that is because the user explicitly set them so.
+   */
+  boost::filesystem::path get_output_filepath(const boost::filesystem::path& filename) const {
+    boost::filesystem::path filepath;
+    if (filename.is_absolute()) {
+      filepath = filename;
+    } else if (output_dir) {
+      filepath = *output_dir / filename;
+    } else {
+      throw cloe::ModelError{"cannot determine output path for '{}'", filename.native()};
+    }
+
+    return filepath;
+  }
+
+  void set_output_dir() {
+    if (config.engine.output_path) {
+      // For $registry to be of value, output_path (~= $id) here needs to be set.
+      if (config.engine.output_path->is_absolute()) {
+        // If it's absolute, then registry_path doesn't matter.
+        output_dir = *config.engine.output_path;
+      } else if (config.engine.registry_path) {
+        // Now, since output_dir is relative, we need the registry path.
+        // We don't care here whether the registry is relative or not.
+        output_dir = *config.engine.registry_path / *config.engine.output_path;
+      }
+    }
+  }
+
   friend void to_json(cloe::Json& j, const SimulationResult& r) {
     j = cloe::Json{
         {"uuid", r.uuid},       {"statistics", r.statistics}, {"simulation", r.sync},
@@ -77,10 +118,14 @@ class Simulation {
   size_t write_output(const SimulationResult&) const;
 
   /**
-   * Write the given JSON output into the file, respecting clobber options.
-   * Return true if successful.
+   * Write the given JSON output into the file. Return true if successful.
    */
   bool write_output_file(const boost::filesystem::path& filepath, const cloe::Json& j) const;
+
+  /**
+   * Check if the given filepath may be opened, respecting clobber options.
+   */
+  bool is_writable(const boost::filesystem::path& filepath) const;
 
   /**
    * Set whether simulation progress should be reported.

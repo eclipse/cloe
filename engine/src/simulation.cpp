@@ -1168,6 +1168,7 @@ SimulationResult Simulation::run() {
   SimulationResult r;
   r.uuid = uuid_;
   r.config = ctx.config;
+  r.set_output_dir();
   r.outcome = SimulationOutcome::NoStart;
 
   // Abort handler:
@@ -1259,31 +1260,8 @@ SimulationResult Simulation::run() {
 }
 
 size_t Simulation::write_output(const SimulationResult& r) const {
-  // The output directory of files is normally built up with:
-  //
-  //     $registry / $id / $filename
-  //
-  // If any of the last variables is absolute, the preceding variables
-  // shall be ignored; e.g. if $filename is absolute, then neither the
-  // simulation registry nor the UUID-based path shall be considered.
-  //
-  // If not explicitly specified in the configuration file, the registry
-  // and output path are set automatically. Thus, if they are empty, then
-  // that is because the user explicitly set them so.
-  boost::optional<boost::filesystem::path> output_dir;
-  if (r.config.engine.output_path) {
-    // For $registry to be of value, output_path (~= $id) here needs to be set.
-    if (r.config.engine.output_path->is_absolute()) {
-      // If it's absolute, then registry_path doesn't matter.
-      output_dir = *r.config.engine.output_path;
-    } else if (r.config.engine.registry_path) {
-      // Now, since output_dir is relative, we need the registry path.
-      // We don't care here whether the registry is relative or not.
-      output_dir = *r.config.engine.registry_path / *r.config.engine.output_path;
-    }
-  }
-  if (output_dir) {
-    logger()->debug("Using output path: {}", output_dir->native());
+  if (r.output_dir) {
+    logger()->debug("Using output path: {}", r.output_dir->native());
   }
 
   size_t files_written = 0;
@@ -1292,13 +1270,8 @@ size_t Simulation::write_output(const SimulationResult& r) const {
       return;
     }
 
-    boost::optional<boost::filesystem::path> filepath;
-    if (filename->is_absolute()) {
-      filepath = *filename;
-    } else if (output_dir) {
-      filepath = *output_dir / *filename;
-    }
-    if (write_output_file(*filepath, output)) {
+    auto filepath = r.get_output_filepath(*filename);
+    if (write_output_file(filepath, output)) {
       files_written++;
     }
   };
@@ -1313,6 +1286,22 @@ size_t Simulation::write_output(const SimulationResult& r) const {
 
 bool Simulation::write_output_file(const boost::filesystem::path& filepath,
                                    const cloe::Json& j) const {
+  if (!is_writable(filepath)) {
+    return false;
+  }
+  auto native = filepath.native();
+  std::ofstream ofs(native);
+  if (ofs.fail()) {
+    // throw error?
+    logger()->error("Error opening file for writing: {}", native);
+    return false;
+  }
+  logger()->debug("Writing file: {}", native);
+  ofs << j.dump(2) << std::endl;
+  return true;
+}
+
+bool Simulation::is_writable(const boost::filesystem::path& filepath) const {
   // Make sure we're not clobbering anything if we shouldn't.
   auto native = filepath.native();
   if (boost::filesystem::exists(filepath)) {
@@ -1336,15 +1325,6 @@ bool Simulation::write_output_file(const boost::filesystem::path& filepath,
     }
   }
 
-  // Write the file.
-  std::ofstream ofs(native);
-  if (ofs.fail()) {
-    // throw error?
-    logger()->error("Error opening file for writing: {}", native);
-    return false;
-  }
-  logger()->debug("Writing file: {}", native);
-  ofs << j.dump(2) << std::endl;
   return true;
 }
 
