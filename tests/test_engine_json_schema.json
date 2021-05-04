@@ -1312,8 +1312,19 @@
                       "description": "name of factory"
                     },
                     "from": {
-                      "description": "component input for binding",
-                      "type": "string"
+                      "anyOf": [
+                        {
+                          "description": "component input for binding",
+                          "type": "string"
+                        },
+                        {
+                          "description": "component inputs for binding",
+                          "items": {
+                            "type": "string"
+                          },
+                          "type": "array"
+                        }
+                      ]
                     },
                     "name": {
                       "description": "globally unique identifier for component",
@@ -1403,8 +1414,19 @@
                       "description": "name of factory"
                     },
                     "from": {
-                      "description": "component input for binding",
-                      "type": "string"
+                      "anyOf": [
+                        {
+                          "description": "component input for binding",
+                          "type": "string"
+                        },
+                        {
+                          "description": "component inputs for binding",
+                          "items": {
+                            "type": "string"
+                          },
+                          "type": "array"
+                        }
+                      ]
                     },
                     "name": {
                       "description": "globally unique identifier for component",
@@ -1426,8 +1448,19 @@
                       "description": "name of factory"
                     },
                     "from": {
-                      "description": "component input for binding",
-                      "type": "string"
+                      "anyOf": [
+                        {
+                          "description": "component input for binding",
+                          "type": "string"
+                        },
+                        {
+                          "description": "component inputs for binding",
+                          "items": {
+                            "type": "string"
+                          },
+                          "type": "array"
+                        }
+                      ]
                     },
                     "name": {
                       "description": "globally unique identifier for component",
