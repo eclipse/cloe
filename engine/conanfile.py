@@ -69,6 +69,9 @@ class CloeEngine(ConanFile):
         if self.settings.os == "Linux":
             self.cpp_info.system_libs.append("pthread")
             self.cpp_info.system_libs.append("dl")
-        bindir = os.path.join(self.package_folder, "bin")
+        if self.in_local_cache:
+            bindir = os.path.join(self.package_folder, "bin")
+        else:
+            bindir = os.path.join(self.package_folder, "build", "bin")
         self.output.info(f"Appending PATH environment variable: {bindir}")
         self.env_info.PATH.append(bindir)

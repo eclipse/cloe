@@ -33,7 +33,6 @@ using namespace cloe::utility;                 // NOLINT(build/namespaces)
 #include "enumconfable.hpp"  // for EnumConfable
 
 namespace cloe {
-namespace controller {
 
 enum OutputTypeEnum {
   JSON_BZIP2,
@@ -49,17 +48,19 @@ enum OutputTypeEnum {
 typedef EnumStringConfable<OutputTypeEnum> OutputType;
 
 // clang-format off
-IMPLEMENT_ENUMSTRINGMAP(cloe::controller::OutputTypeEnum)
-    (cloe::controller::OutputTypeEnum::JSON_BZIP2   , "json.bz2"    )
-    (cloe::controller::OutputTypeEnum::JSON_GZIP    , "json.gz"     )
-    (cloe::controller::OutputTypeEnum::JSON_ZIP     , "json.zip"    )
-    (cloe::controller::OutputTypeEnum::JSON         , "json"        )
-    (cloe::controller::OutputTypeEnum::MSGPACK_BZIP2, "msgpack.bz2" )
-    (cloe::controller::OutputTypeEnum::MSGPACK_GZIP , "msgpack.gz"  )
-    (cloe::controller::OutputTypeEnum::MSGPACK_ZIP  , "msgpack.zip" )
-    (cloe::controller::OutputTypeEnum::MSGPACK      , "msgpack"     )
+IMPLEMENT_ENUMSTRINGMAP(cloe::OutputTypeEnum)
+    (cloe::OutputTypeEnum::JSON_BZIP2   , "json.bz2"    )
+    (cloe::OutputTypeEnum::JSON_GZIP    , "json.gz"     )
+    (cloe::OutputTypeEnum::JSON_ZIP     , "json.zip"    )
+    (cloe::OutputTypeEnum::JSON         , "json"        )
+    (cloe::OutputTypeEnum::MSGPACK_BZIP2, "msgpack.bz2" )
+    (cloe::OutputTypeEnum::MSGPACK_GZIP , "msgpack.gz"  )
+    (cloe::OutputTypeEnum::MSGPACK_ZIP  , "msgpack.zip" )
+    (cloe::OutputTypeEnum::MSGPACK      , "msgpack"     )
 ;
 // clang-format on
+
+namespace controller {
 
 struct GndTruthExtractorConfiguration : public Confable {
   std::string output_file;
@@ -154,6 +155,7 @@ class GndTruthSerializerImpl
  public:
   GndTruthSerializerImpl(Logger& logger) : base1(logger), GndTruthSerializer() {}
   virtual ~GndTruthSerializerImpl() override;
+  using base1::open_file;
   virtual void open_file(const std::string& filename) override {
     std::string default_name = this->outputstream_.make_default_filename(
         this->serializer_.make_default_filename(default_filename));

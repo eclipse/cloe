@@ -650,6 +650,15 @@ struct ComponentConf : public Confable {
     };
     // clang-format on
   }
+
+  void to_json(Json& j) const override {
+    j = Json{
+        {"binding", binding},
+        {"name", name},
+        {"from", from},
+        {"args", args},
+    };
+  }
 };
 
 class ComponentSchema : public FactoryPlugin<ComponentConf, ComponentFactory> {

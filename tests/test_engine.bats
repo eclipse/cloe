@@ -8,6 +8,13 @@ test_vtd_plugin_exists() {
 }
 
 @test "Expect schema equality  : test_engine_json_schema.json" {
+    # Note: you will have to update the schema files every time you change the schema,
+    # in order that this test completes successfully. Here's how you do it.
+    #
+    #    cloe-launch -vv exec -P conanfile.py -- usage -j > tests/test_engine_json_schema.json
+    #    cloe-launch -vv exec -o with_vtd=True -P conanfile.py -- usage -j > tests/test_engine_json_schema_with_vtd.json
+    #
+    # Then use git diff to check that the changes make sense and are what you expect.
     if ! type diff &>/dev/null; then
         skip "required program diff not present"
     fi
