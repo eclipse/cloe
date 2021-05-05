@@ -14,6 +14,7 @@ RUN pacman -Syu --noconfirm --needed make && \
         PACMAN_ARGS="--noconfirm --needed" \
         install-system-deps \
         && \
+    locale-gen en_US.UTF-8 && \
     pacman -Scc --noconfirm
 
 RUN pip3 install --upgrade pip && \
@@ -33,12 +34,15 @@ RUN conan profile new --detect default && \
 # Build and Install Cloe
 WORKDIR /cloe
 COPY . /cloe
+ARG WITH_VTD=0
+ARG PACKAGE_TARGET=package-select
 RUN make export-vendor export && \
-    make WITH_VTD=0 package-all && \
-    export LC_ALL=C.UTF-8 LANG=C.UTF-8 && \
-    make WITH_VTD=0 smoketest && \
-    make WITH_VTD=0 INSTALL_DIR="/deploy" deploy && \
+    make WITH_VTD=${WITH_VTD} ${PACKAGE_TARGET} && \
+    export LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 && \
     conan remove \* -b -f
+
+RUN make WITH_VTD=${WITH_VTD} smoketest && \
+    make WITH_VTD=${WITH_VTD} INSTALL_DIR="/deploy" deploy
 
 # Create Deploy Image
 FROM ${DEPLOY_FROM}
