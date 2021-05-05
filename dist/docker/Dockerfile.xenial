@@ -1,0 +1,137 @@
+# Dockerfile.ubuntu
+#
+# This file acts partly as a Docker recipe for building Cloe on Ubuntu.
+# It is currently only tested with Ubuntu 16.04.
+#
+# If you are behind a proxy, make sure to pass in the respective HTTP_PROXY,
+# HTTPS_PROXY, and NO_PROXY variables.
+ARG BUILD_FROM=ubuntu:16.04
+ARG DEPLOY_FROM=${BUILD_FROM}
+
+FROM ${BUILD_FROM} AS build
+
+# Install Newer CMake and GCC Packages
+RUN apt-get update && \
+    apt-get install --no-install-recommends -y apt-transport-https ca-certificates gnupg software-properties-common wget && \
+    # Add cmake repository:
+    wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - > /etc/apt/trusted.gpg.d/kitware.gpg && \
+    apt-add-repository "deb https://apt.kitware.com/ubuntu/ xenial main" && \
+    add-apt-repository "ppa:ubuntu-toolchain-r/test" && \
+    # Install packages:
+    apt-get update && \
+    export DEBIAN_FRONTEND=noninteractive && \
+    apt-get install --no-install-recommends -y gcc-8 g++-8 cmake && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install Pyenv
+RUN apt-get update && \
+    apt-get install --no-install-recommends -y \
+        build-essential \
+        curl \
+        git \
+        libbz2-dev \
+        libffi-dev \
+        liblzma-dev \
+        libncurses5-dev \
+        libreadline-dev \
+        libsqlite3-dev \
+        libssl-dev \
+        libxml2-dev \
+        libxmlsec1-dev \
+        llvm \
+        make \
+        tk-dev \
+        wget \
+        xz-utils \
+        zlib1g-dev \
+    && \
+    curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash && \
+    echo 'export PATH="/root/.pyenv/bin:$PATH"' >> /etc/profile.d/pyenv.sh && \
+    echo 'eval "$(pyenv init -)"' >> /etc/profile.d/pyenv.sh && \
+    echo 'eval "$(pyenv virtualenv-init -)"' >> /etc/profile.d/pyenv.sh && \
+    rm -rf /var/lib/apt/lists/*
+
+ARG PYTHON_VERSION=3.6.13
+RUN . /etc/profile.d/pyenv.sh && \
+    pyenv install ${PYTHON_VERSION} && \
+    pyenv global ${PYTHON_VERSION}
+
+# Install System Packages
+#
+# These packages are required for building and testing Cloe.
+COPY Makefile.setup /cloe/Makefile.setup
+RUN apt-get update && \
+    apt-get install -y make locales && \
+    make -f /cloe/Makefile.setup \
+        WITHOUT_DEV_DEPS=yes \
+        DEBIAN_FRONTEND=noninteractive \
+        APT_ARGS="--no-install-recommends -y" \
+        install-system-deps \
+        && \
+    locale-gen en_US.UTF-8 && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN . /etc/profile.d/pyenv.sh && \
+    pip install --upgrade pip && \
+    make -f /cloe/Makefile.setup \
+        PIP_INSTALL_ARGS="" \
+        install-python-deps
+
+# Install and Setup Conan
+#
+# You may not want to use the default Conan remote (conan-center), so we use
+# whatever is stored in the build arguments CONAN_REMOTE. Currently, only
+# anonymous access is possible in this Dockerfile.
+ARG CONAN_REMOTE=https://conan.bintray.com
+ARG CONAN_REMOTE_VERIFY_SSL=true
+RUN . /etc/profile.d/pyenv.sh && \
+    conan profile new --detect default && \
+    conan profile update settings.compiler.libcxx=libstdc++11 default && \
+    conan config set general.request_timeout=360 && \
+    conan remote clean && \
+    conan remote add default ${CONAN_REMOTE} ${CONAN_REMOTE_VERIFY_SSL}
+
+# Build and Install Cloe
+#
+# All common processes are made easy to apply by writing target recipes in the
+# Makefile at the root of the repository. This also acts as a form of
+# documentation.
+WORKDIR /cloe
+COPY . /cloe
+ARG WITH_VTD=0
+ARG PACKAGE_TARGET=package-select
+RUN . /etc/profile.d/pyenv.sh && \
+    # Export our own Conan recipes, in case they are not available in the
+    # CONAN_REMOTE specified above.
+    make export-vendor export && \
+    # Build all the packages, except for vtd, because that currently requires
+    # dependencies we don't have in the Docker container.
+    # You can specify more than one package here, see the Makefile for more
+    # information on the WITH_*, PACKAGES, NOBUILD_PKGS, and BUILD_PKGS variables.
+    make WITH_VTD=${WITH_VTD} ${PACKAGE_TARGET} && \
+    # In the above commands, Conan downloads and creates packages into its
+    # local cache. We don't need the build directories, since we have deployed
+    # Cloe, so we should clean up to keep the Docker image down.
+    conan remove \* -b -f
+
+RUN . /etc/profile.d/pyenv.sh && \
+    # Run smoketests.
+    export LC_ALL=C.UTF-8 LANG=C.UTF-8 && \
+    make WITH_VTD=${WITH_VTD} smoketest && \
+    # Deploy all the Cloe packages to INSTALL_DIR, which is /usr/local by
+    # default. This will also populate BUILD_DIR, so that should be removed
+    # afterwards to prevent this image from getting too big.
+    make WITH_VTD=${WITH_VTD} INSTALL_DIR="/deploy" deploy
+
+# Create Deploy Image
+#
+# Unfortunately, there are still some issues with cloe-engine not finding
+# libcloe-runtime.so, so we need to explicitly set LD_LIBRARY_PATH.
+#
+# This image can now be used to work with stack files. You should mount in
+# whatever directory contains your stack files for best results, otherwise
+# the engine might try to read files that it doesn't have in its own filesystem.
+FROM ${DEPLOY_FROM}
+COPY --from=build /deploy /usr/local/
+ENV LD_LIBRARY_PATH=/usr/local/lib
+ENTRYPOINT [ "cloe-engine" ]

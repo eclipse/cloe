@@ -45,10 +45,13 @@ RUN pip3 install --upgrade pip && \
 # Build and Install Cloe
 WORKDIR /cloe
 COPY . /cloe
+ARG WITH_VTD=0
+ARG PACKAGE_TARGET=package-select
 RUN make export-vendor export && \
-    make WITH_VTD=0 package-all && \
-    make WITH_VTD=0 INSTALL_DIR="/deploy" deploy && \
+    make WITH_VTD=${WITH_VTD} ${PACKAGE_TARGET} && \
     conan remove \* -b -f
+
+RUN make WITH_VTD=${WITH_VTD} INSTALL_DIR="/deploy" deploy
 
 # Finalize Image
 FROM ${DEPLOY_FROM}

@@ -43,6 +43,7 @@ help:
 	@echo "  all           to build all stable docker images"
 	@echo "  ubuntu-20.04  to build the Ubuntu 20.04 image"
 	@echo "  ubuntu-18.04  to build the Ubuntu 18.04 image"
+	@echo "  ubuntu-16.04  to build the Ubuntu 18.04 image"
 	@echo "  archlinux     to build the Archlinux image"
 	@echo "  alpine        to build the Alpine image"
 	@echo
@@ -53,20 +54,24 @@ help:
 	@echo "  DOCKER_CONTEXT: ${DOCKER_CONTEXT}"
 	@echo "  DOCKER_ARGS:    ${DOCKER_ARGS}"
 
-.PHONY: all ubuntu-18.04 ubuntu-20.04 archlinux alpine
-all: ubuntu-18.04 ubuntu-20.04 archlinux alpine
+.PHONY: all ubuntu-16.04 ubuntu-18.04 ubuntu-20.04 archlinux alpine
+all: ubuntu-16.04 ubuntu-18.04 ubuntu-20.04 archlinux alpine
 
-ubuntu-18.04: Dockerfile.ubuntu
+ubuntu-16.04: Dockerfile.xenial
 	@echo ===================================================================================
 	docker build -f $< ${DOCKER_ARGS} \
-		--build-arg BUILD_FROM=ubuntu:18.04 \
 		-t ${DOCKER_IMAGE}-$@ \
 		${DOCKER_CONTEXT}
 
-ubuntu-20.04: Dockerfile.ubuntu
+ubuntu-18.04: Dockerfile.bionic
 	@echo ===================================================================================
 	docker build -f $< ${DOCKER_ARGS} \
-		--build-arg BUILD_FROM=ubuntu:20.04 \
+		-t ${DOCKER_IMAGE}-$@ \
+		${DOCKER_CONTEXT}
+
+ubuntu-20.04: Dockerfile.focal
+	@echo ===================================================================================
+	docker build -f $< ${DOCKER_ARGS} \
 		-t ${DOCKER_IMAGE}-$@ \
 		${DOCKER_CONTEXT}
 
