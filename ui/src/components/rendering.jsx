@@ -43,6 +43,7 @@ class Rendering extends Component {
       opacity: 0.3
     });
     this.sensorMaterial = new THREE.MeshLambertMaterial({
+      vertexColors: true,
       color: 0xfffb8f,
       transparent: true,
       opacity: 0.25
@@ -471,7 +472,7 @@ class Rendering extends Component {
 
   createEgoVehicle = (ego) => {
     const vehicleGeometry = this.createBoxGeometry(ego);
-    vehicleGeometry.applyMatrix(
+    vehicleGeometry.applyMatrix4(
       new THREE.Matrix4().makeTranslation(ego.cog_offset.x, ego.cog_offset.y, ego.dimensions.z / 2)
     );
 
@@ -583,15 +584,15 @@ class Rendering extends Component {
   };
 
   getLaneGeomFromGtPoints = (lane, sensor, pointsEgoFrame) => {
-    const geometry = new THREE.Geometry();
+    const geometry = new THREE.BufferGeometry();
     const material =
       lane.type === "dashed"
         ? new THREE.LineDashedMaterial({
-            linewidth: 1,
-            color: 0xffffff,
-            dashSize: 3,
-            gapSize: 3
-          })
+          linewidth: 1,
+          color: 0xffffff,
+          dashSize: 3,
+          gapSize: 3
+        })
         : new THREE.LineBasicMaterial({ color: 0xffffff });
     for (const point of lane.points) {
       const pointEgoFrame = new THREE.Vector3(point.x, point.y, point.z);
@@ -603,12 +604,12 @@ class Rendering extends Component {
       }
       pointsEgoFrame.push(pointEgoFrame);
     }
-    geometry.vertices = pointsEgoFrame;
+    geometry.setFromPoints(pointsEgoFrame);
     return new THREE.Line(geometry, material);
   };
 
   getLaneGeomFromClothoid = (lane, detectedBy, pointsEgoFrame) => {
-    const geometry = new THREE.Geometry();
+    const geometry = new THREE.BufferGeometry();
     const material = new THREE.LineBasicMaterial({
       color: this.laneColors[detectedBy],
       linewidth: 2
@@ -617,7 +618,7 @@ class Rendering extends Component {
     const lineLengthGT = pointsEgoFrame[n - 1].x - pointsEgoFrame[0].x;
     if (lineLengthGT < 0.01) {
       // If the points fall within a distance of 1cm, skip the clothoid rendering.
-      geometry.vertices.push(new THREE.Vector3(0.0, 0.0, 0.0));
+      geometry.setFromPoints([new THREE.Vector3(0.0, 0.0, 0.0)]);
       return new THREE.Line(geometry, material);
     }
     const clothoid = {
@@ -631,17 +632,19 @@ class Rendering extends Component {
     };
     // Estimate the point sampling distance.
     const ds = lineLengthGT / (2 * (n + 1));
+    const vertices = [];
     // Compute clothoid points.
     for (let s = clothoid.dxStart; s < clothoid.dxEnd; s += ds) {
       const point = new THREE.Vector3(s, 0.0, this.interpPointZ(pointsEgoFrame, s));
-      geometry.vertices.push(this.calcClothoidPoint(clothoid, point));
+      vertices.push(this.calcClothoidPoint(clothoid, point));
     }
     const point = new THREE.Vector3(
       clothoid.dxEnd,
       0.0,
       this.interpPointZ(pointsEgoFrame, clothoid.dxEnd)
     );
-    geometry.vertices.push(this.calcClothoidPoint(clothoid, point));
+    vertices.push(this.calcClothoidPoint(clothoid, point));
+    geometry.setFromPoints(vertices);
     return new THREE.Line(geometry, material);
   };
 
@@ -775,30 +778,63 @@ class Rendering extends Component {
     }
 
     const frustumPoints = clipNear.concat(clipFar);
-    var frustumGeometry = new THREE.Geometry();
-    frustumGeometry.vertices = frustumPoints;
-
+    var frustumBufferGeometry = new THREE.BufferGeometry();
+    frustumBufferGeometry.setFromPoints(frustumPoints);
+    const vertices = [];
+    // Define vertex positions.
     if (this.state.frustum3d) {
-      frustumGeometry.faces.push(
-        new THREE.Face3(2, 1, 0),
-        new THREE.Face3(0, 3, 2),
-        new THREE.Face3(1, 5, 4),
-        new THREE.Face3(1, 4, 0),
-        new THREE.Face3(1, 6, 5),
-        new THREE.Face3(2, 6, 1),
-        new THREE.Face3(3, 6, 2),
-        new THREE.Face3(3, 7, 6),
-        new THREE.Face3(0, 7, 3),
-        new THREE.Face3(4, 7, 0),
-        new THREE.Face3(4, 5, 6),
-        new THREE.Face3(4, 6, 7)
+      vertices.push(
+        frustumPoints[0].x, frustumPoints[0].y, frustumPoints[0].z,
+        frustumPoints[1].x, frustumPoints[1].y, frustumPoints[1].z,
+        frustumPoints[2].x, frustumPoints[2].y, frustumPoints[2].z,
+        frustumPoints[3].x, frustumPoints[3].y, frustumPoints[3].z,
+        frustumPoints[4].x, frustumPoints[4].y, frustumPoints[4].z,
+        frustumPoints[5].x, frustumPoints[5].y, frustumPoints[5].z,
+        frustumPoints[6].x, frustumPoints[6].y, frustumPoints[6].z,
+        frustumPoints[7].x, frustumPoints[7].y, frustumPoints[7].z
       );
     } else {
-      frustumGeometry.faces.push(new THREE.Face3(0, 1, 2), new THREE.Face3(0, 3, 2));
+      vertices.push(
+        frustumPoints[0].x, frustumPoints[0].y, frustumPoints[0].z,
+        frustumPoints[1].x, frustumPoints[1].y, frustumPoints[1].z,
+        frustumPoints[2].x, frustumPoints[2].y, frustumPoints[2].z,
+        frustumPoints[3].x, frustumPoints[3].y, frustumPoints[3].z
+      );
     }
 
-    frustumGeometry.computeBoundingSphere();
-    const frustumToRender = new THREE.Mesh(frustumGeometry, this.sensorMaterial);
+    // Number of attribute components per vertex (position or color).
+    const itemSize = 3;
+    // Set position of frustum geometry.
+    frustumBufferGeometry.setAttribute(
+      'position',
+      new THREE.BufferAttribute(new Float32Array(vertices), itemSize));
+    // Define faces via index.
+    if (this.state.frustum3d) {
+      frustumBufferGeometry.setIndex([
+        2, 1, 0, 0, 3, 2, 1, 5, 4,
+        1, 4, 0, 1, 6, 5, 2, 6, 1,
+        3, 6, 2, 3, 7, 6, 0, 7, 3,
+        4, 7, 0, 4, 5, 6, 4, 6, 7,
+      ])
+    } else {
+      frustumBufferGeometry.setIndex([
+        0, 1, 2,
+        0, 3, 2,
+      ])
+    }
+    // Set uniform color of frustum geometry.
+    const colors = [];
+    Array.from({ length: vertices.length / itemSize }, () => colors.push(1, 0.98, 0.56))
+    // Map RGB color to vertices.
+    frustumBufferGeometry.setAttribute(
+      'color',
+      new THREE.BufferAttribute(new Float32Array(colors), itemSize));
+
+    // Compute geometric properties.
+    frustumBufferGeometry.computeVertexNormals();
+    frustumBufferGeometry.computeBoundingSphere();
+
+    const frustumToRender = new THREE.Mesh(frustumBufferGeometry, this.sensorMaterial);
     frustumToRender.up.set(0, 0, 1);
 
     const quaternion = this.getQuaternionFromPose(pose);
@@ -839,15 +875,15 @@ class Rendering extends Component {
 
   createGridGeometry = (step) => {
     const size = 1000;
-    const geometry = new THREE.Geometry();
-
+    const geometry = new THREE.BufferGeometry();
+    const vertices = [];
     for (let i = -size; i <= size; i += step) {
-      geometry.vertices.push(new THREE.Vector3(-size, i, 0));
-      geometry.vertices.push(new THREE.Vector3(size, i, 0));
-      geometry.vertices.push(new THREE.Vector3(i, -size, 0));
-      geometry.vertices.push(new THREE.Vector3(i, size, 0));
+      vertices.push(new THREE.Vector3(-size, i, 0));
+      vertices.push(new THREE.Vector3(size, i, 0));
+      vertices.push(new THREE.Vector3(i, -size, 0));
+      vertices.push(new THREE.Vector3(i, size, 0));
     }
-
+    geometry.setFromPoints(vertices);
     return geometry;
   };
 

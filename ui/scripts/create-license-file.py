@@ -13,14 +13,15 @@ license_file.write("\n")
 
 license_file.write("The following licenses are used by dependencies of cloe-ui:\n")
 result = subprocess.run(
-    ["license-checker", "--summary", "--excludePrivatePackages"], stdout=subprocess.PIPE
+    ["npx", "license-checker", "--summary", "--excludePrivatePackages"],
+    stdout=subprocess.PIPE,
 )
 output = result.stdout.decode("utf-8")
 license_file.write(output)
 
 license_file.write("The following libraries are used by cloe-ui:\n")
 license_output = subprocess.Popen(
-    ["license-checker", "--relativeLicensePath", "--excludePrivatePackages"],
+    ["npx", "license-checker", "--relativeLicensePath", "--excludePrivatePackages"],
     stdout=subprocess.PIPE,
 )
 result = subprocess.run(
