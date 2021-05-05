@@ -163,7 +163,7 @@ test_vtd_plugin_exists() {
     cloe_engine check test_engine_keep_alive.json
 }
 
-@test "Expect check success    : test_engine_keep_alive.json" {
+@test "Expect run success      : test_engine_keep_alive.json" {
     if ! type kill &>/dev/null; then
         skip "required program kill not present"
     fi
