@@ -32,7 +32,7 @@ class VtdSensorConan(ConanFile):
     def requirements(self):
         self.requires("open-simulation-interface/[=3.0.*]@cloe/stable", private=True)
         self.requires("protobuf/2.6.1@cloe/stable", override=True)
-        self.requires("vtd/2.2.0@cloe/stable")
+        self.requires("vtd/2.2.0@cloe-restricted/stable")
 
     def source(self):
         git = tools.Git(folder=self._git_dir)

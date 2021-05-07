@@ -103,7 +103,7 @@ def setup_runtime(vtd_root: Path, runtime_dir: Path) -> None:
     logging.debug(f"Create directory: {runtime_dir}")
     os.makedirs(runtime_dir)
 
-    for file in ["bin", "Develop", "Runtime"]:
+    for file in ["bin", "bundled", "Develop", "Runtime"]:
         src = vtd_root / file
         dst = runtime_dir / file
         logging.debug(f"Create symlink: {dst} -> {src}")

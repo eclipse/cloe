@@ -128,6 +128,8 @@ oak: runtime
 engine: models oak
 ${ALL_PLUGIN_PKGS}: runtime models
 
+vendor/osi-sensor-1.0.0-vtd2.2: vendor/vtd vendor/open-simulation-interface-3.0.1
+
 # Select packages to use:
 # - Define recipes only for selected packages.
 # - Ensure CONAN_OPTIONS are correct for cloe metapackage.
@@ -144,6 +146,7 @@ override CONAN_OPTIONS += -o cloe:with_vtd=True
 else
 ALL_PKGS := $(filter-out plugins/vtd, ${ALL_PKGS})
 ALL_VENDOR_PKGS := $(filter-out $(wildcard vendor/vtd*), ${ALL_VENDOR_PKGS})
+ALL_VENDOR_PKGS := $(filter-out $(wildcard vendor/osi*), ${ALL_VENDOR_PKGS})
 endif
 
 ifeq (${BUILD_TESTS},0)
