@@ -412,6 +412,9 @@ class Engine:
             self._run_cmd(conan_cmd, must_succeed=True)
 
     def _read_conan_env(self) -> Environment:
+        # The order of the items in env_paths is important because variables
+        # will be overwritten.
+        # TODO: Should be replaced by merging in the future.
         env_paths = [
             os.path.join(self.runtime_dir, "activate_run.sh"),
             os.path.join(self.runtime_dir, "activate.sh"),
