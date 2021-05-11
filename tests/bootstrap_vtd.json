@@ -4,13 +4,13 @@
     "hooks": {
       "pre_connect": [
         {
-          "path": "../plugins/vtd/bin/vtd",
+          "path": "${VTD_LAUNCH}",
           "args": [
             "stop"
           ]
         },
         {
-          "path": "../plugins/vtd/bin/vtd",
+          "path": "${VTD_LAUNCH}",
           "args": [
             "start",
             "--vtd-setup", "${THIS_STACKFILE_DIR}/../plugins/vtd/contrib/setups/Cloe.noGUInoIG",
@@ -19,7 +19,7 @@
         }
       ],
       "post_disconnect": [
-        { "path": "../plugins/vtd/bin/vtd", "args": ["stop"] }
+        { "path": "${VTD_LAUNCH}", "args": ["stop"] }
       ]
     }
   }

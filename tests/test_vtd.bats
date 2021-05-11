@@ -3,8 +3,8 @@
 load setup_bats
 
 teardown_vtd() {
-    # CLOE_ROOT is only available outside the shell.
-    cloe_shell -c "${CLOE_ROOT}/plugins/vtd/bin/vtd stop"
+    # VTD_LAUNCH is only available in the shell.
+    cloe_shell -c '${VTD_LAUNCH} stop'
 }
 
 test_vtd_plugin_exists() {

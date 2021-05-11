@@ -8,13 +8,11 @@ include ../../Makefile.package
 export:
 	# Only try to export the vtd sources if they are actually there.
 	@( \
-		cat conanfile.py \
-		| sed -rne 's/^.*"(.*\.tgz)"$$/\1/p' \
-		| while read file; do \
-			if [ ! -f $$file ]; then \
-				echo "Missing source tgz: $$file"; \
-				echo "Skipping export of: ${PACKAGE_FQN}"; \
-				return 1; \
-			fi \
-		done \
+		file=$$(cat conanfile.py \
+		| sed -rne 's/^.*_archive_base.*"(.*\.tgz)"$$/\1/p'); \
+		if [ ! -f $$file ]; then \
+			echo "Missing source tgz: $$file"; \
+			echo "Skipping export of: ${PACKAGE_FQN}"; \
+			return 1; \
+		fi \
 	) && conan export . ${PACKAGE_FQN} || true
