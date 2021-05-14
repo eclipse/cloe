@@ -70,6 +70,8 @@ class VtdConan(ConanFile):
         binary_files = [Path(x) for x in result.stdout.decode().splitlines()]
         # Set RPATH of all the collected binaries:
         for file in binary_files:
+            if not ".so" in file.suffixes:
+                continue
             assert file.exists()
             rpath = os.path.relpath(libdir, (dst / file).parent)
             try:
