@@ -192,10 +192,25 @@ class FactoryBase : public Base<CRTP> {
   bool has_factory(const std::string& key) const { return available_.count(key); }
 
   /**
-   * Add a factory with the given key, schema, and function.
+   * Add a factory with the given key, schema, and function, provided it
+   * doesn't already exist.
+   *
+   * Return true if successful, false otherwise.
    */
-  void add_factory(const std::string& key, Box&& s, MakeFunc f) {
-    available_.insert(std::make_pair(key, TypeFactory{std::move(s), f}));
+  bool add_factory(const std::string& key, Box&& s, MakeFunc f) {
+    if (available_.count(key)) {
+      available_.insert(std::make_pair(key, TypeFactory{std::move(s), f}));
+      reset_schema();
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Add or replace a factory with the given key, schema, and function.
+   */
+  void set_factory(const std::string& key, Box&& s, MakeFunc f) {
+    available_[key] = TypeFactory{std::move(s), f};
     reset_schema();
   }
 
