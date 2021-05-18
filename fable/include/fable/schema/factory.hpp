@@ -198,7 +198,7 @@ class FactoryBase : public Base<CRTP> {
    * Return true if successful, false otherwise.
    */
   bool add_factory(const std::string& key, Box&& s, MakeFunc f) {
-    if (available_.count(key)) {
+    if (!available_.count(key)) {
       available_.insert(std::make_pair(key, TypeFactory{std::move(s), f}));
       reset_schema();
       return true;
@@ -210,7 +210,10 @@ class FactoryBase : public Base<CRTP> {
    * Add or replace a factory with the given key, schema, and function.
    */
   void set_factory(const std::string& key, Box&& s, MakeFunc f) {
-    available_[key] = TypeFactory{std::move(s), f};
+    if (!available_.count(key)) {
+      available_.erase(key);
+    }
+    available_.insert(std::make_pair(key, TypeFactory{std::move(s), f}));
     reset_schema();
   }
 
