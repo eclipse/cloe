@@ -117,7 +117,7 @@ $(filter-out cloe, ${ALL_PKGS} ${ALL_VENDOR_PKGS}):
 cloe:
 	for case in export package package-outdated list purge clean; do \
 		if [[ "$$(echo '${MAKECMDGOALS}' | sed -re ${REGEX_TARGET})" == "$${case}" ]]; then \
-			${MAKE} -f Makefile.package CONAN_OPTIONS="${CONAN_OPTIONS}" $${case}; \
+			${MAKE} -f Makefile.package CONAN_OPTIONS="${CONAN_OPTIONS}" $${case} || exit 1; \
 		fi \
 	done
 
