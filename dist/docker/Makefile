@@ -7,10 +7,10 @@ CLOE_VERSION := $(shell cat ${CLOE_ROOT}/VERSION)
 DOCKER_NETWORK := \
 	$(shell \
 		if [ -n $$https_proxy ]; then \
+			echo " --network=host"; \
 			echo " --build-arg https_proxy=\"$$https_proxy\""; \
 			echo " --build-arg http_proxy=\"$$http_proxy\""; \
 			echo " --build-arg no_proxy=\"$$no_proxy\""; \
-			echo " --network=host"; \
 		fi \
 	)
 
@@ -19,7 +19,11 @@ IMAGE_VERSION := ${CLOE_VERSION}
 DOCKER_IMAGE := ${IMAGE_BASE}:${IMAGE_VERSION}
 DOCKER_CONTEXT := ${CLOE_ROOT}
 
-DOCKER_BUILD_ARGS += ${DOCKER_NETWORK}
+# Default build arguments
+PACKAGE_TARGET := package-select
+BUILD_TYPE := Release
+WITH_VTD := 0
+VI_LIC_SERVER :=
 
 # Read extra build arguments from the .env file.
 # The .env file is in .gitignore so the user can write their overrides there.
@@ -27,12 +31,27 @@ DOCKER_BUILD_ARGS += ${DOCKER_NETWORK}
 # Conan remote with the variables CONAN_REMOTE and CONAN_REMOTE_VERIFY_SSL.
 -include .env
 
+DOCKER_BUILD_ARGS += ${DOCKER_NETWORK}
+
 ifneq (${CONAN_REMOTE},)
-DOCKER_BUILD_ARGS += \
-	--build-arg CONAN_REMOTE="${CONAN_REMOTE}" \
-	--build-arg CONAN_REMOTE_VERIFY_SSL="${CONAN_REMOTE_VERIFY_SSL}"
+DOCKER_BUILD_ARGS += --build-arg CONAN_REMOTE="${CONAN_REMOTE}"
+DOCKER_BUILD_ARGS += --build-arg CONAN_REMOTE_VERIFY_SSL="${CONAN_REMOTE_VERIFY_SSL}"
 endif
-DOCKER_ARGS = $(shell echo "${DOCKER_BUILD_ARGS}" | sed -r 's/\s+/ /g')
+
+ifneq (${CONAN_LOGIN_USERNAME},)
+DOCKER_BUILD_ARGS += --build-arg CONAN_LOGIN_USERNAME="${CONAN_LOGIN_USERNAME}"
+DOCKER_BUILD_ARGS += --build-arg CONAN_PASSWORD="${CONAN_PASSWORD}"
+endif
+
+DOCKER_BUILD_ARGS += --build-arg PACKAGE_TARGET=${PACKAGE_TARGET}
+
+ifeq (${WITH_VTD},1)
+DOCKER_IMAGE := ${DOCKER_IMAGE}-vtd
+DOCKER_BUILD_ARGS += --build-arg WITH_VTD=${WITH_VTD}
+DOCKER_BUILD_ARGS += --build-arg VI_LIC_SERVER="${VI_LIC_SERVER}"
+endif
+
+DOCKER_ARGS := ${DOCKER_BUILD_ARGS}
 
 .PHONY: help
 .DEFAULT: help

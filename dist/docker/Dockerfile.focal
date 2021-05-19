@@ -1,7 +1,6 @@
-# Dockerfile.ubuntu
+# Dockerfile.focal
 #
 # This file acts partly as a Docker recipe for building Cloe on Ubuntu.
-# It is currently only tested with Ubuntu 18.04 and 20.04.
 #
 # If you are behind a proxy, make sure to pass in the respective HTTP_PROXY,
 # HTTPS_PROXY, and NO_PROXY variables.
@@ -37,6 +36,8 @@ RUN pip3 install --upgrade pip && \
 # anonymous access is possible in this Dockerfile.
 ARG CONAN_REMOTE=https://conan.bintray.com
 ARG CONAN_REMOTE_VERIFY_SSL=true
+ARG CONAN_LOGIN_USERNAME
+ARG CONAN_PASSWORD
 RUN conan profile new --detect default && \
     conan profile update settings.compiler.libcxx=libstdc++11 default && \
     conan config set general.request_timeout=360 && \
@@ -53,6 +54,10 @@ COPY . /cloe
 ARG WITH_VTD=0
 ARG PACKAGE_TARGET=package-select
 RUN \
+    export CONAN_NON_INTERACTIVE=yes && \
+    if [ ${CONAN_LOGIN_USERNAME} != "" ]; then \
+        CONAN_LOGIN_USERNAME="${CONAN_LOGIN_USERNAME}" CONAN_PASSWORD="${CONAN_PASSWORD}" conan user --remote=default -p || exit 1; \
+    fi && \
     # Export our own Conan recipes, in case they are not available in the
     # CONAN_REMOTE specified above.
     make export-vendor export && \
@@ -64,11 +69,14 @@ RUN \
     # In the above commands, Conan downloads and creates packages into its
     # local cache. We don't need the build directories, since we have deployed
     # Cloe, so we should clean up to keep the Docker image down.
-    conan remove \* -b -f
+    conan remove \* -b -f && \
+    conan user --clean
 
+ARG VI_LIC_SERVER
 RUN \
     # Run smoketests.
     export LC_ALL=C.UTF-8 LANG=C.UTF-8 && \
+    export VI_LIC_SERVER="${VI_LIC_SERVER}" && \
     make WITH_VTD=${WITH_VTD} smoketest && \
     # Deploy all the Cloe packages to INSTALL_DIR, which is /usr/local by
     # default. This will also populate BUILD_DIR, so that should be removed

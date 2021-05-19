@@ -1,6 +1,6 @@
 # Dockerfile.archlinux
 #
-# See Dockerfile.ubuntu for documentation of each of the lines.
+# See Dockerfile.focal for documentation of each of the lines.
 ARG BUILD_FROM=archlinux:latest
 ARG DEPLOY_FROM=${BUILD_FROM}
 
@@ -25,6 +25,8 @@ RUN pip3 install --upgrade pip && \
 # Install and Setup Conan
 ARG CONAN_REMOTE=https://conan.bintray.com
 ARG CONAN_REMOTE_VERIFY_SSL=true
+ARG CONAN_LOGIN_USERNAME
+ARG CONAN_PASSWORD
 RUN conan profile new --detect default && \
     conan profile update settings.compiler.libcxx=libstdc++11 default && \
     conan config set general.request_timeout=360 && \
@@ -36,12 +38,19 @@ WORKDIR /cloe
 COPY . /cloe
 ARG WITH_VTD=0
 ARG PACKAGE_TARGET=package-select
-RUN make export-vendor export && \
+RUN export CONAN_NON_INTERACTIVE=yes && \
+    if [ ${CONAN_LOGIN_USERNAME} != "" ]; then \
+        CONAN_LOGIN_USERNAME="${CONAN_LOGIN_USERNAME}" CONAN_PASSWORD="${CONAN_PASSWORD}" conan user --remote=default -p || exit 1; \
+    fi && \
+    make export-vendor export && \
     make WITH_VTD=${WITH_VTD} ${PACKAGE_TARGET} && \
-    export LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 && \
-    conan remove \* -b -f
+    conan remove \* -b -f && \
+    conan user --clean
 
-RUN make WITH_VTD=${WITH_VTD} smoketest && \
+ARG VI_LIC_SERVER
+RUN export LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 && \
+    export VI_LIC_SERVER="${VI_LIC_SERVER}" && \
+    make WITH_VTD=${WITH_VTD} smoketest && \
     make WITH_VTD=${WITH_VTD} INSTALL_DIR="/deploy" deploy
 
 # Create Deploy Image
