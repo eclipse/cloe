@@ -121,6 +121,7 @@ cloe:
 		fi \
 	done
 
+# Specify dependencies:
 fable:
 runtime: fable
 models: runtime
@@ -177,7 +178,7 @@ ${1}:
 	@printf "________________________________________"
 	@printf "________________________________________\n"
 	@printf ":: Proceeding to%s\n" "$(shell echo "${3}" | sed -re 's/ +/ /g')"
-	${MAKE} ${SUBMAKEFLAGS} ${4} ${2}
+	${MAKE} -f Makefile.all ${SUBMAKEFLAGS} ${4} ${2}
 endef
 
 define make_target_rules
@@ -207,6 +208,10 @@ define make_cloe_target
 $(eval $(call make_cloe_rules,${1},${2}))
 endef
 
+define make_help_target
+$(eval $(call make_target_help,${1},${2}))
+endef
+
 # --------------------------------------------------------------------------- #
 
 .PHONY: help
@@ -217,6 +222,7 @@ help::
 
 $(call make_vendor_target, export-vendor,      "export all vendor packages                  [conan-cache]")
 $(call make_vendor_target, package-vendor,     "create all vendor packages                  [conan-cache]")
+$(call make_vendor_target, download-vendor,    "download or build vendor packages           [conan-cache]")
 
 help::
 	echo
@@ -225,6 +231,7 @@ $(call make_every_target, export,              "export all package recipes      
 $(call make_cloe_target, package,              "create cloe package with build policy       [conan-cache]")
 $(call make_cloe_target, package-all,          "create cloe package and all dependencies    [conan-cache]")
 $(call make_cloe_target, package-outdated,     "create cloe package if outdated             [conan-cache]")
+$(call make_help_target, package-auto,         "create select packages together with cloe   [conan-cache]")
 
 help::
 	echo
@@ -267,3 +274,22 @@ help::
 	echo
 	echo "  Please see Makefile.all for more details and usage tips."
 	echo
+
+.PHONY: package-auto
+package-auto: export-select
+	# Build cloe with all targets and options together.
+	#
+	#   This is different from the package target in that it always builds the
+	#   packages from this workspace, the ones in SELECT_PKGS.
+	#   This is different from the package-select target in that it builds them
+	#   all together and thereby uses the correct dependency resolution with
+	#   overrides and options.
+	TARGETS=$$( \
+		for pkg in ${SELECT_PKGS}; do \
+			if [ ! -d $${pkg} ]; then \
+				continue; \
+			fi; \
+			echo -n "--build=$$(make --no-print-directory -C $${pkg} info-name) "; \
+		done; \
+	) && \
+	${MAKE} -f Makefile.package CONAN_OPTIONS="${CONAN_OPTIONS} $$TARGETS" package

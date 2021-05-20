@@ -16,7 +16,7 @@
 #
 
 PROJECT_ROOT     := $(dir $(abspath $(lastword ${MAKEFILE_LIST})))
-PROJECT_VERSION  := $(shell cat ${PROJECT_ROOT}/VERSION)
+PROJECT_VERSION  := $(shell [ -r ${PROJECT_ROOT}/VERSION ] && cat ${PROJECT_ROOT}/VERSION || echo unknown)
 
 DATE := $(shell date +"%Y%m%d")
 TIMESTAMP := $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
@@ -46,7 +46,6 @@ BUILD_POLICY     := missing
 #
 # This can be one of: None, Debug, Release, RelWithDebInfo, MinSizeRel
 BUILD_TYPE := RelWithDebInfo
-DEBUG_BUILD_TYPE := Debug
 
 PACKAGE_NAME    := $(shell sed -rn 's/.*name\s*=\s*"([^"]+)"$$/\1/p' ${SOURCE_CONANFILE})
 PACKAGE_VERSION := $(or \
@@ -70,8 +69,8 @@ endif
 CONAN_OPTIONS :=
 
 .DEFAULT: help
-.SILENT: help status
-.PHONY: help status
+.SILENT: help status info-name info-version info-channel info-fqn
+.PHONY: help status info-name info-version info-channel info-fqn
 help:
 	echo "Usage: make <target>"
 	echo
@@ -83,6 +82,7 @@ help:
 	echo "  status      to show status of package"
 	echo
 	echo "  export            to export recipe and sources        [conan-cache]"
+	echo "  download          to download or create package       [conan-cache]"
 	echo "  package           to create package with build policy [conan-cache]"
 	echo "  package-all       to create package and dependencies  [conan-cache]"
 	echo "  package-outdated  to create package if outdated       [conan-cache]"
@@ -118,13 +118,12 @@ help:
 	echo
 
 status:
-	# Show the status of each package in the cloe workspace:
-	# - Is it editable / built / packaged?
-	# - Is it available in debug mode?
-	# - Is it identical to that on the remote?
-	# - Is it dirty?
-	# - Are there changes from the package?
-	# - Is cloe-launch ready to use?
+	# Show the *approximate* status of each package in the cloe workspace.
+	#
+	#   This lets you know whether a package is in editable mode or not,
+	#   and will also let you know if any of the files in the package
+	#   directory has been modified more recently than the package in the
+	#   Conan cache.
 	#
 	_editable=$$(conan editable list | grep "${PACKAGE_FQN}"); \
 	if [ -z "$${_editable}" ]; then \
@@ -136,6 +135,18 @@ status:
 	else \
 		echo "editable : ${PACKAGE_FQN}"; \
 	fi
+
+info-name:
+	echo ${PACKAGE_NAME}
+
+info-version:
+	echo ${PACKAGE_VERSION}
+
+info-channel:
+	echo ${PACKAGE_CHANNEL}
+
+info-fqn:
+	echo ${PACKAGE_FQN}
 
 # CONFIGURATION TARGETS -------------------------------------------------------
 .PHONY: editable uneditable
@@ -170,6 +181,20 @@ export:
 	#   build recipe to Conan for on-demand building.
 	#
 	conan export . ${PACKAGE_FQN}
+
+download:
+	# Try to download the package to Conan cache.
+	#
+	#   Note that this cannot be called if the package is currently in editable mode.
+	#
+	#   See: https://docs.conan.io/en/latest/mastering/policies.html
+	#
+	conan create . ${PACKAGE_CHANNEL} \
+		--build=never \
+		${CONAN_OPTIONS} || \
+	conan create . ${PACKAGE_CHANNEL} \
+		--build=${BUILD_POLICY} --build=${PACKAGE_NAME} \
+		${CONAN_OPTIONS}
 
 package:
 	# Build the package in Conan cache unconditionally.
