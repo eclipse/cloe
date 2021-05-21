@@ -15,7 +15,7 @@ Available targets:
   ubuntu-18.04  to build the Ubuntu 18.04 image
   ubuntu-16.04  to build the Ubuntu 18.04 image
   archlinux     to build the Archlinux image
-  alpine        to build the Alpine image
+  vires         to build the required VTD sources image
 
 Configuration:
   IMAGE_BASE:     cloe/cloe-engine
@@ -26,33 +26,31 @@ Configuration:
                    --build-arg https_proxy=http://127.0.0.1:3128/
                    --build-arg http_proxy=http://127.0.0.1:3128/
                    --build-arg no_proxy=localhost,127.0.0.1,127.*,172.*,192.168.*,10.*
-                   --build-arg CONAN_REMOTE=https://artifactory.example.com/artifactory/api/conan/cloe
-                   --build-arg CONAN_REMOTE_VERIFY_SSL=True
-                   --build-arg CONAN_LOGIN_USERNAME=cloebuilder
-                   --build-arg CONAN_PASSWORD=secret
-                   --build-arg WITH_VTD=0
-                   --build-arg VI_LIC_SERVER=license-server.example.com
-                   --build-arg PACKAGE_TARGET=package-select
+                   --progress=plain
+                   --secret id=setup,src=setup.sh
 ```
 
 The output has been slightly formatted to make the Docker build arguments a
-little more obvious. The following build arguments are available:
-
-- `CONAN_REMOTE`: optional string; defaults to conan-center URL.
-- `CONAN_REMOTE_VERIFY_SSL`: optional, one of `True` and `False`; defaults to `True`.
-- `CONAN_LOGIN_USERNAME`: optional username for authenticating with remote.
-- `CONAN_PASSWORD`: optional password, required if username specified.
-- `WITH_VTD`: optional, one of `0` and `1`; defaults to `0`.
-- `VI_LIC_SERVER`: optional hostname of VTD license server.
-- `PACKAGE_TARGET`: optional, one of `package`, `package-select`, and `package-all`;
-  defaults to `package-select`.
-
-You can specify these arguments on the command line when calling make, or you
-can specify them in a `.env` file, which is exempt from version control.
-It is recommended to specify the Conan build arguments in the `.env` file, and
-the other arguments on the command line. Because of the way the .env file is
-read by Make, it is important to not use any quotation marks around the values.
+little more obvious.
 
 Because Docker images may be built in environments that have a proxy running,
 the Makefile will automatically add the proxy variables if they are are
 detected in the host environment.
+
+The following build arguments are available and should be specified on the
+command line when calling make:
+
+- `WITH_VTD`: optional, one of `0` and `1`; defaults to `0`.
+- `BUILD_TYPE`: optional, one of `Release`, `RelWithDebInfo`, `Debug`;
+  defaults to `RelWithDebInfo`.
+- `VENDOR_TARGET`: optional; defaults to `export-vendor download-vendor`.
+- `PACKAGE_TARGET`: optional, one of `package`, `package-auto`,
+  `package-select`, and `package-all`; defaults to `package-auto`.
+
+If you want to use a different Conan remote from the default, you need to
+copy `setup.sh.example` to `setup.sh` and modify the values to match your
+environment.
+
+Note that this build requires the use of docker buildx, which has been
+available for some time. This allows us to mount secrets in at build time
+and also speeds up the build by the strategic use of caches.

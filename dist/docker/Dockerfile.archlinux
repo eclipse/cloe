@@ -1,21 +1,24 @@
+# syntax = docker/dockerfile:1.2-labs
 # Dockerfile.archlinux
 #
 # See Dockerfile.focal for documentation of each of the lines.
-ARG BUILD_FROM=archlinux:latest
-ARG DEPLOY_FROM=${BUILD_FROM}
-
-FROM ${BUILD_FROM} AS build
+FROM archlinux:latest
 
 # Install System Packages
 COPY Makefile.setup /cloe/Makefile.setup
-RUN pacman -Syu --noconfirm --needed make && \
+RUN pacman -Syu --noconfirm --needed make ccache && \
     make -f /cloe/Makefile.setup \
         WITHOUT_DEV_DEPS=yes \
         PACMAN_ARGS="--noconfirm --needed" \
         install-system-deps \
         && \
-    locale-gen en_US.UTF-8 && \
+    locale-gen && \
     pacman -Scc --noconfirm
+
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
+ENV CCACHE_DIR=/ccache
+ENV PATH=/usr/lib/ccache:$PATH
 
 RUN pip3 install --upgrade pip && \
     make -f /cloe/Makefile.setup \
@@ -23,38 +26,46 @@ RUN pip3 install --upgrade pip && \
         install-python-deps
 
 # Install and Setup Conan
-ARG CONAN_REMOTE=https://conan.bintray.com
-ARG CONAN_REMOTE_VERIFY_SSL=true
-ARG CONAN_LOGIN_USERNAME
-ARG CONAN_PASSWORD
+ARG BUILD_TYPE=RelWithDebInfo
 RUN conan profile new --detect default && \
-    conan profile update settings.compiler.libcxx=libstdc++11 default && \
-    conan config set general.request_timeout=360 && \
-    conan remote clean && \
-    conan remote add default ${CONAN_REMOTE} ${CONAN_REMOTE_VERIFY_SSL}
+    conan profile update settings.build_type=${BUILD_TYPE} default && \
+    conan profile update settings.compiler.libcxx=libstdc++11 default
+
+ENV CONAN_NON_INTERACTIVE=yes
 
 # Build and Install Cloe
 WORKDIR /cloe
-COPY . /cloe
 ARG WITH_VTD=0
-ARG PACKAGE_TARGET=package-select
-RUN export CONAN_NON_INTERACTIVE=yes && \
-    if [ ${CONAN_LOGIN_USERNAME} != "" ]; then \
-        CONAN_LOGIN_USERNAME="${CONAN_LOGIN_USERNAME}" CONAN_PASSWORD="${CONAN_PASSWORD}" conan user --remote=default -p || exit 1; \
-    fi && \
-    make export-vendor export && \
-    make WITH_VTD=${WITH_VTD} ${PACKAGE_TARGET} && \
-    conan remove \* -b -f && \
+
+# Download or build dependencies:
+COPY vendor /cloe/vendor
+COPY Makefile.package /cloe
+COPY Makefile.all /cloe
+ARG VENDOR_TARGET="export-vendor download-vendor"
+RUN --mount=type=cache,target=/ccache \
+    --mount=type=bind,target=/cloe/vendor/vtd/vires,from=cloe/vtd-sources:2.2.0 \
+    --mount=type=secret,target=/root/setup.sh,id=setup,mode=0400 \
+    if [ -r /root/setup.sh ]; then . /root/setup.sh; fi && \
+    make -f Makefile.all WITH_VTD=${WITH_VTD} ${VENDOR_TARGET} && \
+    # Clean up:
+    find /root/.conan/data -name dl -type d -maxdepth 5 -exec rm -r {} + && \
+    conan remove \* -s -b -f && \
     conan user --clean
 
-ARG VI_LIC_SERVER
-RUN export LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 && \
-    export VI_LIC_SERVER="${VI_LIC_SERVER}" && \
-    make WITH_VTD=${WITH_VTD} smoketest && \
-    make WITH_VTD=${WITH_VTD} INSTALL_DIR="/deploy" deploy
+# Build Cloe.
+COPY . /cloe
+ARG PACKAGE_TARGET=package-auto
+RUN --mount=type=cache,target=/ccache \
+    --mount=type=secret,target=/root/setup.sh,id=setup,mode=0400 \
+    if [ -r /root/setup.sh ]; then . /root/setup.sh; fi && \
+    make WITH_VTD=${WITH_VTD} ${PACKAGE_TARGET} && \
+    # Clean up:
+    find /root/.conan/data -name dl -type d -maxdepth 5 -exec rm -r {} + && \
+    conan remove \* -s -b -f && \
+    conan user --clean
 
-# Create Deploy Image
-FROM ${DEPLOY_FROM}
-COPY --from=build /deploy /usr/local/
-ENV LD_LIBRARY_PATH=/usr/local/lib
-ENTRYPOINT [ "cloe-engine" ]
+# Run smoketests.
+RUN --mount=type=secret,target=/root/setup.sh,id=setup,mode=0400 \
+    --network=default \
+    if [ -r /root/setup.sh ]; then . /root/setup.sh; fi && \
+    make WITH_VTD=${WITH_VTD} smoketest
