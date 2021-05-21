@@ -129,6 +129,7 @@ oak: runtime
 engine: models oak
 ${ALL_PLUGIN_PKGS}: runtime models
 
+vendor/cpp-netlib: vendor/libbacktrace
 vendor/osi-sensor-1.0.0-vtd2.2: vendor/vtd vendor/open-simulation-interface-3.0.1
 
 # Select packages to use:
