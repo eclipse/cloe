@@ -1,19 +1,28 @@
 # syntax = docker/dockerfile:1.2-labs
-# Dockerfile.archlinux
+# Dockerfile.focal
 #
-# See Dockerfile.focal for documentation of each of the lines.
-FROM archlinux:latest
+# This file acts partly as a Docker recipe for building Cloe on Ubuntu.
+#
+# If you are behind a proxy, make sure to pass in the respective HTTP_PROXY,
+# HTTPS_PROXY, and NO_PROXY variables.
+FROM ubuntu:20.04
 
 # Install System Packages
+#
+# These packages are required for building and testing Cloe.
 COPY Makefile.setup /cloe/Makefile.setup
-RUN pacman -Syu --noconfirm --needed make ccache && \
+RUN --mount=type=cache,id=focal-cache,target=/var/cache/apt \
+    --mount=type=cache,id=focal-lib,target=/var/lib/apt \
+    apt-get update && \
+    apt-get install -y make ccache locales && \
     make -f /cloe/Makefile.setup \
         WITHOUT_DEV_DEPS=yes \
-        PACMAN_ARGS="--noconfirm --needed" \
+        DEBIAN_FRONTEND=noninteractive \
+        APT_ARGS="--no-install-recommends -y" \
         install-system-deps \
         && \
     locale-gen && \
-    pacman -Scc --noconfirm
+    rm -rf /var/lib/apt/lists/*
 
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
@@ -26,6 +35,10 @@ RUN pip3 install --upgrade pip && \
         install-python-deps
 
 # Install and Setup Conan
+#
+# You may not want to use the default Conan remote (conan-center), so we use
+# whatever is stored in the build arguments CONAN_REMOTE. Currently, only
+# anonymous access is possible in this Dockerfile.
 ARG BUILD_TYPE=RelWithDebInfo
 RUN conan profile new --detect default && \
     conan profile update settings.build_type=${BUILD_TYPE} default && \
@@ -34,6 +47,10 @@ RUN conan profile new --detect default && \
 ENV CONAN_NON_INTERACTIVE=yes
 
 # Build and Install Cloe
+#
+# All common processes are made easy to apply by writing target recipes in the
+# Makefile at the root of the repository. This also acts as a form of
+# documentation.
 WORKDIR /cloe
 ARG WITH_VTD=0
 

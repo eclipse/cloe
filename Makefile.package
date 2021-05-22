@@ -16,7 +16,7 @@
 #
 
 PROJECT_ROOT     := $(dir $(abspath $(lastword ${MAKEFILE_LIST})))
-PROJECT_VERSION  := $(shell cat ${PROJECT_ROOT}/VERSION)
+PROJECT_VERSION  := $(shell [ -r ${PROJECT_ROOT}/VERSION ] && cat ${PROJECT_ROOT}/VERSION || echo unknown)
 
 DATE := $(shell date +"%Y%m%d")
 TIMESTAMP := $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
@@ -41,10 +41,11 @@ BUILD_LAYOUT     := ${PROJECT_ROOT}/.conan-layout.ini
 BUILD_POLICY     := missing
 
 # Normally, you should set this in your profile, but if you just want to build
-# the package in debug mode once, you can do it this way.
+# the package in debug mode once, you can do it this way, although it will
+# only apply to local builds.
 #
 # This can be one of: None, Debug, Release, RelWithDebInfo, MinSizeRel
-DEBUG_BUILD_TYPE := Debug
+BUILD_TYPE := RelWithDebInfo
 
 PACKAGE_NAME    := $(shell sed -rn 's/.*name\s*=\s*"([^"]+)"$$/\1/p' ${SOURCE_CONANFILE})
 PACKAGE_VERSION := $(or \
@@ -57,17 +58,19 @@ PACKAGE_FQN     := ${PACKAGE_NAME}/${PACKAGE_VERSION}@${PACKAGE_CHANNEL}
 
 # Determining the PACKAGE_DIR takes a long time because we have to call Conan,
 # so only do it for the targets that actually make use of it.
-PACKAGE_DIR_TARGETS := help list
-${PACKAGE_DIR_TARGETS} : PACKAGE_DIR = $(shell \
-	conan info ${PACKAGE_FQN} --package-filter ${PACKAGE_FQN} --paths -n "package_folder" 2>/dev/null \
-	| sed -rn 's/ *package_folder: (.*)/\1/p')
+ifneq "$(filter help list status,${MAKECMDGOALS})" ""
+PACKAGE_INFO := $(shell conan info ${PACKAGE_FQN} --package-filter ${PACKAGE_FQN} --paths 2>/dev/null | sed -r 's/$$/\\n/')
+PACKAGE_ID := $(shell echo "${PACKAGE_INFO}" | sed -rn "s/^ *ID: *(.*)$$/\1/p")
+PACKAGE_DIR := $(shell echo "${PACKAGE_INFO}" | sed -rn "s/^ *package_folder: *(.*)$$/\1/p")
+PACKAGE_DATE := $(shell echo "${PACKAGE_INFO}" | sed -rn "s/^ *Creation date: *(.*)$$/\1/p")
+endif
 
 # These options can be set to influence package and configure.
 CONAN_OPTIONS :=
 
 .DEFAULT: help
-.SILENT: help
-.PHONY: help
+.SILENT: help status info-name info-version info-channel info-fqn
+.PHONY: help status info-name info-version info-channel info-fqn
 help:
 	echo "Usage: make <target>"
 	echo
@@ -76,8 +79,10 @@ help:
 	echo
 	echo "Available targets:"
 	echo "  help        to show this help"
+	echo "  status      to show status of package"
 	echo
 	echo "  export            to export recipe and sources        [conan-cache]"
+	echo "  download          to download or create package       [conan-cache]"
 	echo "  package           to create package with build policy [conan-cache]"
 	echo "  package-all       to create package and dependencies  [conan-cache]"
 	echo "  package-outdated  to create package if outdated       [conan-cache]"
@@ -98,6 +103,7 @@ help:
 	echo "  SOURCE_DIR:      ${SOURCE_DIR}"
 	echo "  BUILD_DIR:       ${BUILD_DIR}"
 	echo "  BUILD_POLICY:    ${BUILD_POLICY}"
+	echo "  BUILD_TYPE:      ${BUILD_TYPE}"
 	echo "  CONAN_OPTIONS:   ${CONAN_OPTIONS}"
 	echo
 	echo "Package information:"
@@ -105,9 +111,42 @@ help:
 	echo "  PACKAGE_VERSION: ${PACKAGE_VERSION}"
 	echo "  PACKAGE_CHANNEL: ${PACKAGE_CHANNEL}"
 	echo "  PACKAGE_FQN:     ${PACKAGE_FQN}"
+	echo "  PACKAGE_ID:      ${PACKAGE_ID}"
 	echo "  PACKAGE_DIR:     ${PACKAGE_DIR}"
+	echo "  PACKAGE_DATE:    ${PACKAGE_DATE}"
 	echo "  GIT_COMMIT_HASH: ${GIT_COMMIT_HASH}"
 	echo
+
+status:
+	# Show the *approximate* status of each package in the cloe workspace.
+	#
+	#   This lets you know whether a package is in editable mode or not,
+	#   and will also let you know if any of the files in the package
+	#   directory has been modified more recently than the package in the
+	#   Conan cache.
+	#
+	_editable=$$(conan editable list | grep "${PACKAGE_FQN}"); \
+	if [ -z "$${_editable}" ]; then \
+		if [ -n "${PACKAGE_DATE}" ] && [ -z "$$(find -type f -newermt "${PACKAGE_DATE}")" ]; then \
+			echo "ok       : ${PACKAGE_FQN}"; \
+		else \
+			echo "outdated : ${PACKAGE_FQN}"; \
+		fi \
+	else \
+		echo "editable : ${PACKAGE_FQN}"; \
+	fi
+
+info-name:
+	echo ${PACKAGE_NAME}
+
+info-version:
+	echo ${PACKAGE_VERSION}
+
+info-channel:
+	echo ${PACKAGE_CHANNEL}
+
+info-fqn:
+	echo ${PACKAGE_FQN}
 
 # CONFIGURATION TARGETS -------------------------------------------------------
 .PHONY: editable uneditable
@@ -143,6 +182,20 @@ export:
 	#
 	conan export . ${PACKAGE_FQN}
 
+download:
+	# Try to download the package to Conan cache.
+	#
+	#   Note that this cannot be called if the package is currently in editable mode.
+	#
+	#   See: https://docs.conan.io/en/latest/mastering/policies.html
+	#
+	conan create . ${PACKAGE_CHANNEL} \
+		--build=never \
+		${CONAN_OPTIONS} || \
+	conan create . ${PACKAGE_CHANNEL} \
+		--build=${BUILD_POLICY} --build=${PACKAGE_NAME} \
+		${CONAN_OPTIONS}
+
 package:
 	# Build the package in Conan cache unconditionally.
 	#
@@ -151,7 +204,9 @@ package:
 	#
 	#   See: https://docs.conan.io/en/latest/mastering/policies.html
 	#
-	conan create . ${PACKAGE_CHANNEL} --build=${BUILD_POLICY} --build=${PACKAGE_NAME} ${CONAN_OPTIONS}
+	conan create . ${PACKAGE_CHANNEL} \
+		--build=${BUILD_POLICY} --build=${PACKAGE_NAME} \
+		${CONAN_OPTIONS}
 
 package-all:
 	# Build the package in Conan cache unconditionally.
@@ -159,7 +214,9 @@ package-all:
 	#   Conan will retrieve and build all dependencies unconditionally.
 	#   Note that this cannot be called if the package is currently in editable mode.
 	#
-	conan create . ${PACKAGE_CHANNEL} --build ${CONAN_OPTIONS}
+	conan create . ${PACKAGE_CHANNEL} \
+		--build \
+		${CONAN_OPTIONS}
 
 package-outdated:
 	# Build the package in Conan cache if it is outdated.
@@ -168,18 +225,9 @@ package-outdated:
 	#   Rebuilds will occur if package info has changed or a hash of the source
 	#   code changes. Timestamps are not taken into account.
 	#
-	conan create . ${PACKAGE_CHANNEL} --build=outdated ${CONAN_OPTIONS}
-
-package-debug:
-	# Build the package in Conan cache unconditionally in debug mode.
-	#
-	#   Conan will retrieve and build all dependencies based on the build policy.
-	#   Note that this cannot be called if the package is currently in editable mode.
-	#
-	#   See: https://docs.conan.io/en/latest/mastering/policies.html
-	#   See: https://docs.conan.io/en/latest/using_packages/debugging.html
-	#
-	conan create . ${PACKAGE_CHANNEL} -s build_type=${DEBUG_BUILD_TYPE} --build=${BUILD_POLICY} --build=${PACKAGE_NAME} ${CONAN_OPTIONS}
+	conan create . ${PACKAGE_CHANNEL} \
+		--build=outdated \
+		${CONAN_OPTIONS}
 
 purge:
 	# Remove all instances of this package in the Conan cache.
@@ -252,7 +300,10 @@ ${BUILD_CONANINFO}: ${SOURCE_CONANFILE}
 	# Install package dependencies and prepare in-source build.
 	#
 	mkdir -p ${BUILD_DIR}
-	conan install . --install-folder=${BUILD_DIR} --build=${BUILD_POLICY} ${CONAN_OPTIONS}
+	conan install . --install-folder=${BUILD_DIR} \
+		-s ${PACKAGE_NAME}:build_type=${BUILD_TYPE} \
+		--build=${BUILD_POLICY} \
+		${CONAN_OPTIONS}
 	touch ${BUILD_CONANINFO}
 
 ${BUILD_CMAKECACHE}: ${BUILD_CONANINFO} ${SOURCE_CMAKELISTS}

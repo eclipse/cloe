@@ -38,15 +38,19 @@ include Makefile.setup
 include Makefile.all
 
 # Workspace targets -----------------------------------------------------------
-.PHONY: deploy doxygen docker docker-test smoketest
+.PHONY: status deploy doxygen docker docker-test smoketest
 help::
 	echo "Available workspace targets:"
-	echo "  deploy         to deploy Cloe to INSTALL_DIR [=${INSTALL_DIR}]"
-	echo "  docker         to build all Docker images"
-	echo "  docker-test    to build only a single Docker image"
-	echo "  doxygen        to generate Doxygen documentation"
-	echo "  smoketest      to run BATS system tests"
+	echo "  status          to show current workspace status"
+	echo "  deploy          to deploy Cloe to INSTALL_DIR [=${INSTALL_DIR}]"
+	echo "  docker-test     to build only a single Docker image"
+	echo "  docker-all      to build all Docker images"
+	echo "  doxygen         to generate Doxygen documentation"
+	echo "  smoketest       to run BATS system tests"
 	echo
+
+status:
+	@for pkg in ${ALL_PKGS}; do [ -d $${pkg} ] && ${MAKE} -C $${pkg} status || true; done
 
 deploy:
 	$(call print_header, "Deploying binaries to ${INSTALL_DIR}...")
@@ -54,13 +58,13 @@ deploy:
 	mkdir -p ${INSTALL_DIR}
 	cp -r ${BUILD_DIR}/deploy/cloe-*/* ${INSTALL_DIR}/
 
-docker:
-	$(call print_header, "Building all Docker images...")
-	${MAKE} -C dist/docker all
-
 docker-test:
 	$(call print_header, "Building ubuntu-18.04 Docker image...")
 	${MAKE} -C dist/docker ubuntu-18.04
+
+docker-all:
+	$(call print_header, "Building all Docker images...")
+	${MAKE} -C dist/docker all
 
 doxygen:
 	$(call print_header, "Generating Doxygen documentation...")

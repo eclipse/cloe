@@ -24,7 +24,7 @@ class VtdApiConan(ConanFile):
     }
     generators = "cmake"
 
-    _archive_base = "../vtd/vtd.2.2.0.Base.20181231.tgz"
+    _archive_base = "../vtd/vires/vtd.2.2.0.Base.20181231.tgz"
     _root_dir = "VTD.2.2"
 
     def export_sources(self):

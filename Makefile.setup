@@ -68,6 +68,7 @@ install-ubuntu-deps::
 		git \
 		jq \
 		patchelf \
+		psmisc \
 		python3-setuptools \
 		python3-pip \
 		time \
@@ -100,6 +101,7 @@ install-archlinux-deps::
 		git \
 		jq \
 		patchelf \
+		psmisc \
 		python-pip \
 		time \
 		tmux \

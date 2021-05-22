@@ -485,7 +485,7 @@ class FactoryPlugin : public fable::schema::FactoryPointerless<C> {
   virtual ~FactoryPlugin() = default;
 
   void add_plugin(const std::string& name, std::shared_ptr<Plugin> p) {
-    this->add_factory(name, p->make<F>()->schema(), [p, name](const Conf& c) {
+    this->set_factory(name, p->make<F>()->schema(), [p, name](const Conf& c) {
       C tmp{name, p->make<F>()};
       tmp.from_conf(c);
       return tmp;

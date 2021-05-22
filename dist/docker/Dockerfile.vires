@@ -1,0 +1,19 @@
+# Dockerfile
+#
+# This dockerfile simply adds the sources of vires/ so that they can be
+# mounted separately in Docker builds. This keeps image sizes down.
+#
+# Build the image like this:
+#
+#   docker build -t cloe/vires-vtd:latest -f Dockerfile vires
+#
+# And use it in another Dockerfile (with buildkit) like this:
+#
+#   RUN --mount=type=bind,target=/cloe/vendor/vtd/vires,from=cloe/vires-vtd:2.2.0
+#
+# Note, you can create this image even if you don't have anything in the vires
+# directory. It will result in an empty image, but it will allow the other
+# Docker builds to continue.
+#
+FROM scratch
+COPY . /
