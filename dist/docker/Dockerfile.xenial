@@ -124,4 +124,5 @@ RUN --mount=type=cache,target=/ccache \
 RUN --mount=type=secret,target=/root/setup.sh,id=setup,mode=0400 \
     --network=default \
     if [ -r /root/setup.sh ]; then . /root/setup.sh; fi && \
-    make WITH_VTD=${WITH_VTD} smoketest
+    make WITH_VTD=${WITH_VTD} smoketest && \
+    conan user --clean
