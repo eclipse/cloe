@@ -1,8 +1,8 @@
 # Usage: make [options] <target>
 #
 
-CLOE_ROOT := ../..
-CLOE_VERSION := $(shell cat ${CLOE_ROOT}/VERSION)
+PROJECT_ROOT := ../..
+PROJECT_VERSION := $(shell make --no-print-directory -C ${PROJECT_ROOT} -f Makefile.package info-version)
 
 DOCKER := DOCKER_BUILDKIT=1 docker
 
@@ -17,9 +17,9 @@ DOCKER_NETWORK := \
 	)
 
 IMAGE_BASE := cloe/cloe-engine
-IMAGE_VERSION := ${CLOE_VERSION}
+IMAGE_VERSION := ${PROJECT_VERSION}
 DOCKER_IMAGE := ${IMAGE_BASE}:${IMAGE_VERSION}
-DOCKER_CONTEXT := ${CLOE_ROOT}
+DOCKER_CONTEXT := ${PROJECT_ROOT}
 
 # Default build arguments
 VENDOR_TARGET :=
@@ -29,6 +29,7 @@ WITH_VTD :=
 
 DOCKER_BUILD_ARGS += ${DOCKER_NETWORK}
 DOCKER_BUILD_ARGS += --progress=plain
+DOCKER_BUILD_ARGS += --build-arg PROJECT_VERSION=${PROJECT_VERSION}
 
 ifeq ($(shell [ -f setup.sh ] && echo "true"),true)
 DOCKER_BUILD_ARGS += --secret id=setup,src=setup.sh
@@ -49,7 +50,6 @@ endif
 ifeq (${WITH_VTD},1)
 DOCKER_IMAGE := ${DOCKER_IMAGE}-vtd
 DOCKER_BUILD_ARGS += --build-arg WITH_VTD=${WITH_VTD}
-DOCKER_BUILD_ARGS += --build-arg VTD_SRCS=cloe/vires:2.2.0
 endif
 
 DOCKER_ARGS := ${DOCKER_BUILD_ARGS}
@@ -96,9 +96,9 @@ archlinux: Dockerfile.archlinux
 
 # The VTD image is required for the other builds, but can be empty if you don't
 # have access to actual VTD sources.
-VTD_VERSION := $(shell make --no-print-directory -C ${CLOE_ROOT}/vendor/vtd info-version)
+VTD_VERSION := $(shell make --no-print-directory -C ${PROJECT_ROOT}/vendor/vtd info-version 2>/dev/null)
 VTD_IMAGE   := cloe/vtd-sources:${VTD_VERSION}
-VTD_CONTEXT := ${CLOE_ROOT}/vendor/vtd/vires
+VTD_CONTEXT := ${PROJECT_ROOT}/vendor/vtd/vires
 vires: Dockerfile.vires
 	@echo ===================================================================================
 	[ -d ${VTD_CONTEXT} ] || mkdir ${VTD_CONTEXT}

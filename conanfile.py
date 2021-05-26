@@ -1,5 +1,4 @@
-import os.path
-
+from pathlib import Path
 from conans import CMake, ConanFile, tools
 
 
@@ -27,15 +26,13 @@ class Cloe(ConanFile):
 
     _cmake = None
 
-    def _project_version(self):
-        version_file = os.path.join(self.recipe_folder, "VERSION")
-        return tools.load(version_file).strip()
-
     def set_version(self):
-        self.version = self._project_version()
-
-    def _requires(self, name):
-        self.requires(f"{name}/{self.version}@cloe/develop")
+        version_file = Path(self.recipe_folder) / "VERSION"
+        if version_file.exists():
+            self.version = tools.load(version_file).strip()
+        else:
+            git = tools.Git(folder=self.recipe_folder)
+            self.version = git.run("describe --dirty=-dirty")[1:]
 
     def requirements(self):
         self.requires("boost/[<1.70]", override=True)
@@ -58,7 +55,7 @@ class Cloe(ConanFile):
             requires.append("cloe-engine")
 
         for dep in requires:
-            self._requires(dep)
+            self.requires(f"{dep}/{self.version}@cloe/develop")
 
     def _configure_cmake(self):
         if self._cmake:

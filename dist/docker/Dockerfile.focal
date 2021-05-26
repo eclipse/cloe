@@ -71,10 +71,12 @@ RUN --mount=type=cache,target=/ccache \
 
 # Build Cloe.
 COPY . /cloe
+ARG PROJECT_VERSION=unknown
 ARG PACKAGE_TARGET=package-auto
 RUN --mount=type=cache,target=/ccache \
     --mount=type=secret,target=/root/setup.sh,id=setup,mode=0400 \
     if [ -r /root/setup.sh ]; then . /root/setup.sh; fi && \
+    echo "${PROJECT_VERSION}" > /cloe/VERSION && \
     make WITH_VTD=${WITH_VTD} ${PACKAGE_TARGET} && \
     # Clean up:
     find /root/.conan/data -name dl -type d -maxdepth 5 -exec rm -r {} + && \

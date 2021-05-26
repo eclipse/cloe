@@ -22,12 +22,15 @@ DATE := $(shell date +"%Y%m%d")
 TIMESTAMP := $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 
 HAS_GIT := $(shell [ -d ${PROJECT_ROOT}/.git ] && echo "true")
+ifeq (${PROJECT_VERSION},unknown)
 ifeq (${HAS_GIT},true)
-	GIT_COMMIT_HASH  := $(shell git log -1 --format=%h)
-	GIT_COMMIT_DIRTY := $(shell git diff --quiet || echo "-dirty")
-	GIT_DESCRIBE     := ${GIT_COMMIT_HASH}${GIT_COMMIT_DIRTY}
+GIT_COMMIT_HASH  := $(shell git log -1 --format=%h)
+GIT_COMMIT_DIRTY := $(shell git diff --quiet || echo "-dirty")
+GIT_DESCRIBE     := $(shell git describe --dirty="-dirty" | sed -r "s/^v(.*)/\1/")
 else
-	GIT_DESCRIBE     := "unknown"
+GIT_DESCRIBE     := "unknown"
+endif
+PROJECT_VERSION  := ${GIT_DESCRIBE}
 endif
 
 SOURCE_DIR       := .
@@ -189,10 +192,10 @@ download:
 	#
 	#   See: https://docs.conan.io/en/latest/mastering/policies.html
 	#
-	conan create . ${PACKAGE_CHANNEL} \
+	conan create . ${PACKAGE_FQN} \
 		--build=never \
 		${CONAN_OPTIONS} || \
-	conan create . ${PACKAGE_CHANNEL} \
+	conan create . ${PACKAGE_FQN} \
 		--build=${BUILD_POLICY} --build=${PACKAGE_NAME} \
 		${CONAN_OPTIONS}
 
@@ -204,7 +207,7 @@ package:
 	#
 	#   See: https://docs.conan.io/en/latest/mastering/policies.html
 	#
-	conan create . ${PACKAGE_CHANNEL} \
+	conan create . ${PACKAGE_FQN} \
 		--build=${BUILD_POLICY} --build=${PACKAGE_NAME} \
 		${CONAN_OPTIONS}
 
@@ -214,7 +217,7 @@ package-all:
 	#   Conan will retrieve and build all dependencies unconditionally.
 	#   Note that this cannot be called if the package is currently in editable mode.
 	#
-	conan create . ${PACKAGE_CHANNEL} \
+	conan create . ${PACKAGE_FQN} \
 		--build \
 		${CONAN_OPTIONS}
 
@@ -225,7 +228,7 @@ package-outdated:
 	#   Rebuilds will occur if package info has changed or a hash of the source
 	#   code changes. Timestamps are not taken into account.
 	#
-	conan create . ${PACKAGE_CHANNEL} \
+	conan create . ${PACKAGE_FQN} \
 		--build=outdated \
 		${CONAN_OPTIONS}
 

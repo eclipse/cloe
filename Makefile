@@ -77,6 +77,11 @@ smoketest:
 	@${CLOE_LAUNCH} clean -P conanfile.py
 	@\time -f "\nTotal smoketest time (real) = %e sec" bats tests
 
+purge-all:
+	$(call print_header, "Removing all cloe Conan packages...")
+	conan remove -f 'cloe-*'
+	conan remove -f 'cloe'
+	conan remove -f 'fable'
 
 # Development targets ---------------------------------------------------------
 .PHONY: format todos find-missing-eol sanitize-files
