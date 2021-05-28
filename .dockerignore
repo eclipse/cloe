@@ -2,4 +2,4 @@
 build/
 **/build/
 dist/docker/
-vendor/vtd/vires/
+vendor/vtd/dl/

@@ -8,12 +8,12 @@ conan_basic_setup(TARGETS)
 set(target vtd_api)
 
 add_library(${target}
-    VTD.2.2/Develop/Framework/RDBHandler/RDBHandler.cc
+    src/Develop/Framework/RDBHandler/RDBHandler.cc
 )
 target_include_directories(${target}
   PUBLIC
-    VTD.2.2/Develop/Framework/inc
-    VTD.2.2/Develop/Framework/RDBHandler
+    src/Develop/Framework/inc
+    src/Develop/Framework/RDBHandler
 )
 
 # Installation -------------------------------------------------------
@@ -26,7 +26,7 @@ install(TARGETS ${target}
 )
 install(
     DIRECTORY
-        VTD.2.2/Develop/Framework/inc/
-        VTD.2.2/Develop/Framework/RDBHandler/
+        src/Develop/Framework/inc/
+        src/Develop/Framework/RDBHandler/
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )

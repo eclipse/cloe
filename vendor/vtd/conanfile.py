@@ -68,9 +68,9 @@ class VtdConan(ConanFile):
         "with_road_designer": False,
     }
 
-    _archive_base = "vires/vtd.2.2.0.Base.20181231.tgz"
-    _archive_osi = "vires/vtd.2.2.0.addOns.OSI.20210120.tgz"
-    _archive_rod = "vires/vtd.2.2.0.addOns.ROD.Base.20190313.tgz"
+    _archive_base = "dl/vtd.2.2.0.Base.20181231.tgz"
+    _archive_osi = "dl/vtd.2.2.0.addOns.OSI.20210120.tgz"
+    _archive_rod = "dl/vtd.2.2.0.addOns.ROD.Base.20190313.tgz"
     _root_dir = "VTD.2.2"
 
     def export_sources(self):

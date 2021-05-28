@@ -1,7 +1,11 @@
-# syntax = docker/dockerfile:1.2-labs
+# syntax = docker/dockerfile:1.2
 # Dockerfile.archlinux
 #
 # See Dockerfile.focal for documentation of each of the lines.
+ARG VTD_IMAGE=scratch
+FROM ${VTD_IMAGE} AS vtd
+WORKDIR /vtd
+
 FROM archlinux:latest
 
 # Install System Packages
@@ -12,11 +16,12 @@ RUN pacman -Syu --noconfirm --needed make ccache && \
         PACMAN_ARGS="--noconfirm --needed" \
         install-system-deps \
         && \
+    sed -r -i 's/#(en_US.UTF-8.*)/\1/' /etc/locale.gen && \
     locale-gen && \
     pacman -Scc --noconfirm
 
-ENV LANG=C.UTF-8
-ENV LC_ALL=C.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
 ENV CCACHE_DIR=/ccache
 ENV PATH=/usr/lib/ccache:$PATH
 
@@ -27,9 +32,11 @@ RUN pip3 install --upgrade pip && \
 
 # Install and Setup Conan
 ARG BUILD_TYPE=RelWithDebInfo
-RUN conan profile new --detect default && \
+RUN conan config init && \
     conan profile update settings.build_type=${BUILD_TYPE} default && \
-    conan profile update settings.compiler.libcxx=libstdc++11 default
+    conan profile update settings.compiler.libcxx=libstdc++11 default && \
+    conan profile update settings.compiler.version=11 default && \
+    sed -r -i 's/10.1"]/10.1", "11", "11.1"]/' /root/.conan/settings.yml
 
 ENV CONAN_NON_INTERACTIVE=yes
 
@@ -43,8 +50,8 @@ COPY Makefile.package /cloe
 COPY Makefile.all /cloe
 ARG VENDOR_TARGET="export-vendor download-vendor"
 RUN --mount=type=cache,target=/ccache \
-    --mount=type=bind,target=/cloe/vendor/vtd/vires,from=cloe/vtd-sources:2.2.0 \
     --mount=type=secret,target=/root/setup.sh,id=setup,mode=0400 \
+    --mount=type=bind,target=/root/.conan/data/vtd,source=/vtd,from=vtd,rw \
     if [ -r /root/setup.sh ]; then . /root/setup.sh; fi && \
     make -f Makefile.all WITH_VTD=${WITH_VTD} ${VENDOR_TARGET} && \
     # Clean up:
@@ -68,7 +75,7 @@ RUN --mount=type=cache,target=/ccache \
 
 # Run smoketests.
 RUN --mount=type=secret,target=/root/setup.sh,id=setup,mode=0400 \
-    --network=default \
+    --mount=type=bind,target=/root/.conan/data/vtd,source=/vtd,from=vtd,rw \
     if [ -r /root/setup.sh ]; then . /root/setup.sh; fi && \
     make WITH_VTD=${WITH_VTD} smoketest && \
     conan user --clean
