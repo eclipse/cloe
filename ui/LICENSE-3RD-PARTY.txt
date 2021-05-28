@@ -2,7 +2,7 @@
 ==================
 
 The following licenses are used by dependencies of cloe-ui:
-├─ MIT: 1353
+├─ MIT: 1354
 ├─ ISC: 120
 ├─ BSD-3-Clause: 33
 ├─ BSD-2-Clause: 32
@@ -14,7 +14,6 @@ The following licenses are used by dependencies of cloe-ui:
 ├─ BSD-3-Clause OR MIT: 1
 ├─ (MIT OR Apache-2.0): 1
 ├─ CC-BY-4.0: 1
-├─ MIT OR GPL-2.0: 1
 ├─ MIT OR GPL-2.0-or-later: 1
 ├─ (Apache-2.0 OR MPL-1.1): 1
 ├─ AFLv2.1,BSD: 1
@@ -1893,8 +1892,8 @@ The following libraries are used by cloe-ui:
 │  ├─ publisher: James Halliday
 │  ├─ url: http://substack.net
 │  └─ licenseFile: node_modules/commondir/LICENSE
-├─ complex.js@2.0.11
-│  ├─ licenses: MIT OR GPL-2.0
+├─ complex.js@2.0.13
+│  ├─ licenses: MIT OR GPL-2.0-or-later
 │  ├─ repository: https://github.com/infusion/Complex.js
 │  ├─ publisher: Robert Eisele
 │  ├─ url: http://www.xarg.org/
@@ -3141,8 +3140,8 @@ The following libraries are used by cloe-ui:
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/jshttp/forwarded
 │  └─ licenseFile: node_modules/forwarded/LICENSE
-├─ fraction.js@4.0.13
-│  ├─ licenses: MIT OR GPL-2.0-or-later
+├─ fraction.js@4.1.1
+│  ├─ licenses: MIT
 │  ├─ repository: https://github.com/infusion/Fraction.js
 │  ├─ publisher: Robert Eisele
 │  ├─ url: http://www.xarg.org/
@@ -4756,7 +4755,7 @@ The following libraries are used by cloe-ui:
 │  ├─ publisher: Jon Schlinkert
 │  ├─ url: https://github.com/jonschlinkert
 │  └─ licenseFile: node_modules/map-visit/LICENSE
-├─ mathjs@6.6.5
+├─ mathjs@7.6.0
 │  ├─ licenses: Apache-2.0
 │  ├─ repository: https://github.com/josdejong/mathjs
 │  ├─ publisher: Jos de Jong
@@ -7880,7 +7879,7 @@ The following libraries are used by cloe-ui:
 │  ├─ publisher: Mariusz Nowak
 │  ├─ url: https://www.medikoo.com/
 │  └─ licenseFile: node_modules/ext/node_modules/type/LICENSE
-├─ typed-function@1.1.1
+├─ typed-function@2.0.0
 │  ├─ licenses: MIT*
 │  ├─ repository: https://github.com/josdejong/typed-function
 │  ├─ publisher: Jos de Jong
