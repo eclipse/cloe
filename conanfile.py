@@ -22,7 +22,7 @@ class Cloe(ConanFile):
         "with_engine": True,
     }
     generators = "cmake"
-    no_copy_source = False
+    no_copy_source = True
 
     _cmake = None
 
@@ -49,7 +49,6 @@ class Cloe(ConanFile):
         ]
         if self.options.with_vtd:
             requires.append("cloe-plugin-vtd")
-            self.requires("osi-sensor/1.0.0-vtd2.2@cloe/stable")
 
         if self.options.with_engine:
             requires.append("cloe-engine")

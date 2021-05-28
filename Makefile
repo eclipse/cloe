@@ -74,7 +74,7 @@ doxygen:
 smoketest:
 	# Call this target with WITH_VTD=1 to include VTD binding tests.
 	$(call print_header, "Running smoke tests...")
-	@${CLOE_LAUNCH} clean -P conanfile.py
+	@${CLOE_LAUNCH} clean -P conantest.py
 	@\time -f "\nTotal smoketest time (real) = %e sec" bats tests
 
 purge-all:
