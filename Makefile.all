@@ -179,12 +179,12 @@ ${1}:
 	@printf "________________________________________"
 	@printf "________________________________________\n"
 	@printf ":: Proceeding to%s\n" "$(shell echo "${3}" | sed -re 's/ +/ /g')"
-	${MAKE} -f Makefile.all ${SUBMAKEFLAGS} ${4} ${2}
+	${MAKE} ${SUBMAKEFLAGS} ${4} ${2}
 endef
 
 define make_target_rules
 $(call make_target_help,${1},${2})
-$(call make_target_rule,${1},${1}-each,${2},)
+$(call make_target_rule,${1},${1}-each,${2},-f Makefile.all)
 ${1}-each: ${3}
 endef
 

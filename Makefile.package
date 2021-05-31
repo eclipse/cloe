@@ -74,7 +74,7 @@ CONAN_OPTIONS :=
 .DEFAULT: help
 .SILENT: help status info-name info-version info-channel info-fqn
 .PHONY: help status info-name info-version info-channel info-fqn
-help:
+help::
 	echo "Usage: make <target>"
 	echo
 	echo "The following targets define common operations with this package in"
@@ -188,6 +188,10 @@ export:
 download:
 	# Try to download the package to Conan cache.
 	#
+	#   Only if the package is not available in the remote, will the package be built:
+	#   The first command tries to create the package without building anything; if
+	#   there is an error, then we build the package using the default build policy.
+	#   Thus, errors arising from the first command can be safely ignored.
 	#   Note that this cannot be called if the package is currently in editable mode.
 	#
 	#   See: https://docs.conan.io/en/latest/mastering/policies.html
