@@ -103,6 +103,13 @@ archlinux: Dockerfile.archlinux
 	@echo ===================================================================================
 	${DOCKER} build -f $< ${DOCKER_ARGS} -t ${DOCKER_IMAGE}-$@ ${DOCKER_CONTEXT}
 
+release:
+	@test -f setup.sh || echo 'Error: require setup.sh for user authentication'
+	for dist in ubuntu-16.04 ubuntu-18.04 ubuntu-20.04; do \
+		${DOCKER} run ${DOCKER_NETWORK} --rm ${DOCKER_IMAGE}-$${dist} bash -c \
+			'. /root/setup.sh && conan upload --all -no -c "*"'; \
+	done
+
 .PHONY: purge-current purge-all
 purge-current:
 	docker rmi $$(docker images --format '{{.Repository}}:{{.Tag}}' | grep '${DOCKER_IMAGE}')

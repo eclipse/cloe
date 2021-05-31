@@ -45,6 +45,7 @@ help::
 	echo "  deploy          to deploy Cloe to INSTALL_DIR [=${INSTALL_DIR}]"
 	echo "  docker-test     to build only a single Docker image"
 	echo "  docker-all      to build all Docker images"
+	echo "  docker-release  to upload all Conan packages from Docker images"
 	echo "  doxygen         to generate Doxygen documentation"
 	echo "  smoketest       to run BATS system tests"
 	echo
@@ -65,6 +66,10 @@ docker-test:
 docker-all:
 	$(call print_header, "Building all Docker images...")
 	${MAKE} -C dist/docker all
+
+docker-release:
+	$(call print_header, "Uploading all Conan packages from Docker images...")
+	${MAKE} -C dist/docker release
 
 doxygen:
 	$(call print_header, "Generating Doxygen documentation...")
