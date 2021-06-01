@@ -1,10 +1,18 @@
-# syntax = docker/dockerfile:1.2-labs
+# syntax = docker/dockerfile:1.2
 # Dockerfile.focal
 #
 # This file acts partly as a Docker recipe for building Cloe on Ubuntu.
 #
 # If you are behind a proxy, make sure to pass in the respective HTTP_PROXY,
 # HTTPS_PROXY, and NO_PROXY variables.
+
+# This is a work-around to not being able to use variables in RUN --mount=from:
+# If you want to use VTD in this image, you need to specify the Docker image
+# containing the distribution that can be mounted at /root/.conan/data/
+ARG VTD_IMAGE=scratch
+FROM ${VTD_IMAGE} AS vtd
+WORKDIR /vtd
+
 FROM ubuntu:20.04
 
 # Install System Packages
@@ -60,8 +68,8 @@ COPY Makefile.package /cloe
 COPY Makefile.all /cloe
 ARG VENDOR_TARGET="export-vendor download-vendor"
 RUN --mount=type=cache,target=/ccache \
-    --mount=type=bind,target=/cloe/vendor/vtd/vires,from=cloe/vtd-sources:2.2.0 \
     --mount=type=secret,target=/root/setup.sh,id=setup,mode=0400 \
+    --mount=type=bind,target=/root/.conan/data/vtd,source=/vtd,from=vtd,rw \
     if [ -r /root/setup.sh ]; then . /root/setup.sh; fi && \
     make -f Makefile.all WITH_VTD=${WITH_VTD} ${VENDOR_TARGET} && \
     # Clean up:
@@ -71,10 +79,12 @@ RUN --mount=type=cache,target=/ccache \
 
 # Build Cloe.
 COPY . /cloe
+ARG PROJECT_VERSION=unknown
 ARG PACKAGE_TARGET=package-auto
 RUN --mount=type=cache,target=/ccache \
     --mount=type=secret,target=/root/setup.sh,id=setup,mode=0400 \
     if [ -r /root/setup.sh ]; then . /root/setup.sh; fi && \
+    echo "${PROJECT_VERSION}" > /cloe/VERSION && \
     make WITH_VTD=${WITH_VTD} ${PACKAGE_TARGET} && \
     # Clean up:
     find /root/.conan/data -name dl -type d -maxdepth 5 -exec rm -r {} + && \
@@ -83,6 +93,7 @@ RUN --mount=type=cache,target=/ccache \
 
 # Run smoketests.
 RUN --mount=type=secret,target=/root/setup.sh,id=setup,mode=0400 \
-    --network=default \
+    --mount=type=bind,target=/root/.conan/data/vtd,source=/vtd,from=vtd,rw \
     if [ -r /root/setup.sh ]; then . /root/setup.sh; fi && \
-    make WITH_VTD=${WITH_VTD} smoketest
+    make WITH_VTD=${WITH_VTD} smoketest && \
+    conan user --clean

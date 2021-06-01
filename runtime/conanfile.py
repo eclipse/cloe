@@ -1,4 +1,5 @@
-import os.path
+import os
+from pathlib import Path
 
 from conans import CMake, ConanFile, tools
 
@@ -38,13 +39,6 @@ class CloeRuntime(ConanFile):
 
     _cmake = None
 
-    def _project_version(self):
-        version_file = os.path.join(self.recipe_folder, "..", "VERSION")
-        return tools.load(version_file).strip()
-
-    def set_version(self):
-        self.version = self._project_version()
-
     def requirements(self):
         self.requires(f"fable/{self.version}@cloe/develop")
 
@@ -72,6 +66,9 @@ class CloeRuntime(ConanFile):
     def package(self):
         cmake = self._configure_cmake()
         cmake.install()
+
+    def package_id(self):
+        self.info.requires["boost"].full_version_mode()
 
     def package_info(self):
         # Make sure we can find the libs and *.cmake files, both in editable

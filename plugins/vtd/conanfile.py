@@ -1,5 +1,4 @@
-import os.path
-
+from pathlib import Path
 from conans import CMake, ConanFile, tools
 
 
@@ -28,18 +27,10 @@ class CloeSimulatorVTD(ConanFile):
     no_copy_source = True
     requires = [
         "open-simulation-interface/3.2.0@cloe/stable",
-        "vtd-api/2.2.0@cloe-restricted/stable",
-        "vtd/2.2.0@cloe-restricted/stable",
+        "vtd-api/2.2.0@cloe/stable",
     ]
 
     _cmake = None
-
-    def _project_version(self):
-        version_file = os.path.join(self.recipe_folder, "..", "..", "VERSION")
-        return tools.load(version_file).strip()
-
-    def set_version(self):
-        self.version = self._project_version()
 
     def requirements(self):
         self.requires(f"cloe-runtime/{self.version}@cloe/develop")

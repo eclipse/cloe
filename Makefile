@@ -45,6 +45,7 @@ help::
 	echo "  deploy          to deploy Cloe to INSTALL_DIR [=${INSTALL_DIR}]"
 	echo "  docker-test     to build only a single Docker image"
 	echo "  docker-all      to build all Docker images"
+	echo "  docker-release  to upload all Conan packages from Docker images"
 	echo "  doxygen         to generate Doxygen documentation"
 	echo "  smoketest       to run BATS system tests"
 	echo
@@ -66,6 +67,10 @@ docker-all:
 	$(call print_header, "Building all Docker images...")
 	${MAKE} -C dist/docker all
 
+docker-release:
+	$(call print_header, "Uploading all Conan packages from Docker images...")
+	${MAKE} -C dist/docker release
+
 doxygen:
 	$(call print_header, "Generating Doxygen documentation...")
 	mkdir -p ${BUILD_DIR}/doxygen
@@ -74,9 +79,14 @@ doxygen:
 smoketest:
 	# Call this target with WITH_VTD=1 to include VTD binding tests.
 	$(call print_header, "Running smoke tests...")
-	@${CLOE_LAUNCH} clean -P conanfile.py
+	@${CLOE_LAUNCH} clean -P conantest.py
 	@\time -f "\nTotal smoketest time (real) = %e sec" bats tests
 
+purge-all:
+	$(call print_header, "Removing all cloe Conan packages...")
+	conan remove -f 'cloe-*'
+	conan remove -f 'cloe'
+	conan remove -f 'fable'
 
 # Development targets ---------------------------------------------------------
 .PHONY: format todos find-missing-eol sanitize-files

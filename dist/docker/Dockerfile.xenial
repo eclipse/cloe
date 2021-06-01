@@ -2,6 +2,10 @@
 # Dockerfile.xenial
 #
 # See Dockerfile.focal for documentation of each of the lines.
+ARG VTD_IMAGE=scratch
+FROM ${VTD_IMAGE} AS vtd
+WORKDIR /vtd
+
 FROM ubuntu:16.04
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -83,8 +87,8 @@ RUN pip install --upgrade pip && \
 # Install and Setup Conan
 ARG BUILD_TYPE=RelWithDebInfo
 RUN conan profile new --detect default && \
-    conan profile update settings.compiler.libcxx=libstdc++11 default && \
     conan profile update settings.build_type=${BUILD_TYPE} default && \
+    conan profile update settings.compiler.libcxx=libstdc++11 default && \
     conan profile update env.PATH="[$PYENV_ROOT/shims,$PYENV_ROOT/bin]" default
 
 ENV CONAN_NON_INTERACTIVE=yes
@@ -99,8 +103,8 @@ COPY Makefile.package /cloe
 COPY Makefile.all /cloe
 ARG VENDOR_TARGET="export-vendor download-vendor"
 RUN --mount=type=cache,target=/ccache \
-    --mount=type=bind,target=/cloe/vendor/vtd/vires,from=cloe/vtd-sources:2.2.0 \
     --mount=type=secret,target=/root/setup.sh,id=setup,mode=0400 \
+    --mount=type=bind,target=/root/.conan/data/vtd,source=/vtd,from=vtd,rw \
     if [ -r /root/setup.sh ]; then . /root/setup.sh; fi && \
     make -f Makefile.all WITH_VTD=${WITH_VTD} ${VENDOR_TARGET} && \
     # Clean up:
@@ -110,10 +114,12 @@ RUN --mount=type=cache,target=/ccache \
 
 # Build Cloe.
 COPY . /cloe
+ARG PROJECT_VERSION=unknown
 ARG PACKAGE_TARGET=package-auto
 RUN --mount=type=cache,target=/ccache \
     --mount=type=secret,target=/root/setup.sh,id=setup,mode=0400 \
     if [ -r /root/setup.sh ]; then . /root/setup.sh; fi && \
+    echo "${PROJECT_VERSION}" > /cloe/VERSION && \
     make WITH_VTD=${WITH_VTD} ${PACKAGE_TARGET} && \
     # Clean up:
     find /root/.conan/data -name dl -type d -maxdepth 5 -exec rm -r {} + && \
@@ -122,6 +128,7 @@ RUN --mount=type=cache,target=/ccache \
 
 # Run smoketests.
 RUN --mount=type=secret,target=/root/setup.sh,id=setup,mode=0400 \
-    --network=default \
+    --mount=type=bind,target=/root/.conan/data/vtd,source=/vtd,from=vtd,rw \
     if [ -r /root/setup.sh ]; then . /root/setup.sh; fi && \
-    make WITH_VTD=${WITH_VTD} smoketest
+    make WITH_VTD=${WITH_VTD} smoketest && \
+    conan user --clean

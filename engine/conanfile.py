@@ -1,5 +1,5 @@
-import os.path
-
+import os
+from pathlib import Path
 from conans import CMake, ConanFile, tools
 
 
@@ -27,14 +27,8 @@ class CloeEngine(ConanFile):
 
     _cmake = None
 
-    def _project_version(self):
-        version_file = os.path.join(self.recipe_folder, "..", "VERSION")
-        return tools.load(version_file).strip()
-
-    def set_version(self):
-        self.version = self._project_version()
-
     def requirements(self):
+        self.requires("boost/[>=1.65.1]"),
         self.requires(f"cloe-runtime/{self.version}@cloe/develop")
         self.requires(f"cloe-models/{self.version}@cloe/develop")
         self.requires(f"cloe-oak/{self.version}@cloe/develop", private=True)
@@ -64,6 +58,9 @@ class CloeEngine(ConanFile):
     def package(self):
         cmake = self._configure_cmake()
         cmake.install()
+
+    def package_id(self):
+        self.info.requires["boost"].full_version_mode()
 
     def package_info(self):
         if self.settings.os == "Linux":

@@ -1,5 +1,4 @@
-import os.path
-
+from pathlib import Path
 from conans import CMake, ConanFile, tools
 
 
@@ -34,13 +33,6 @@ class Fable(ConanFile):
 
     _cmake = None
 
-    def _project_version(self):
-        version_file = os.path.join(self.recipe_folder, "..", "VERSION")
-        return tools.load(version_file).strip()
-
-    def set_version(self):
-        self.version = self._project_version()
-
     def build_requirements(self):
         if self.options.test:
             self.build_requires("gtest/[~1.10]")
@@ -64,6 +56,9 @@ class Fable(ConanFile):
     def package(self):
         cmake = self._configure_cmake()
         cmake.install()
+
+    def package_id(self):
+        self.info.requires["boost"].full_version_mode()
 
     def package_info(self):
         if self.in_local_cache:

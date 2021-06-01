@@ -86,8 +86,8 @@ See the Conan [documentation][6] for more information on how to do this.
 
 To build all packages, you should run the following:
 
-    make export-vendor export
-    make package
+    make export-vendor
+    make package-auto
 
 This will export all Conan recipes from this repository and create the cloe
 package. Conan will download and build all necessary dependencies. Should

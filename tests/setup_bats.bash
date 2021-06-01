@@ -29,7 +29,7 @@ export exit_outcome_syskill=250
 #   CLOE_WRITE_OUTPUT   : bool
 cloe_engine() {
     local cloe_log_level="${CLOE_LOG_LEVEL-debug}"
-    local cloe_profile_file="${CLOE_PROFILE_FILE-${CLOE_ROOT}/conanfile.py}"
+    local cloe_profile_file="${CLOE_PROFILE_FILE-${CLOE_ROOT}/conantest.py}"
     local cloe_launch_exe=(python3 -m cloe_launch)
     local cloe_launch_args=(-vv exec -c -P "${cloe_profile_file}")
     local cloe_engine_args=(--no-system-confs --no-system-plugins --level ${cloe_log_level})
@@ -75,7 +75,7 @@ cloe_engine() {
 
 cloe_shell() {
     local cloe_log_level="${CLOE_LOG_LEVEL-debug}"
-    local cloe_profile_file="${CLOE_PROFILE_FILE-${CLOE_ROOT}/conanfile.py}"
+    local cloe_profile_file="${CLOE_PROFILE_FILE-${CLOE_ROOT}/conantest.py}"
     local cloe_launch_exe=(python3 -m cloe_launch)
     local cloe_launch_args=(-vv shell -c -P "${cloe_profile_file}")
 
