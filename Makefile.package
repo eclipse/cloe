@@ -290,7 +290,8 @@ export-pkg:
 	#   binaries available to Conan but not the source.
 	#
 	#   Note that this does not require the package to be editable.
-	conan export-pkg . --build-folder=${BUILD_DIR}
+	conan export-pkg . ${PACKAGE_FQN} \
+		--build-folder=${BUILD_DIR}
 
 ${SOURCE_DIR}:
 	# Copy source to an external source directory.
@@ -307,7 +308,8 @@ ${BUILD_CONANINFO}: ${SOURCE_CONANFILE}
 	# Install package dependencies and prepare in-source build.
 	#
 	mkdir -p ${BUILD_DIR}
-	conan install . --install-folder=${BUILD_DIR} \
+	conan install . ${PACKAGE_FQN} \
+		--install-folder=${BUILD_DIR} \
 		-s ${PACKAGE_NAME}:build_type=${BUILD_TYPE} \
 		--build=${BUILD_POLICY} \
 		${CONAN_OPTIONS}
