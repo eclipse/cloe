@@ -65,5 +65,13 @@ class CloeSimulatorVTD(ConanFile):
         cmake.install()
         self.copy("vtd-launch", dst="bin", src=f"{self.source_folder}/bin")
 
+    def package_id(self):
+        # Changes in a dependency's package_id need to be accounted for since
+        # the package statically links against vtd-object-lib.
+        self.info.requires["cloe-models"].full_package_mode()
+        self.info.requires["cloe-runtime"].full_package_mode()
+        self.info.requires["open-simulation-interface"].full_package_mode()
+        self.info.requires["vtd-api"].full_package_mode()
+
     def package_info(self):
         self.env_info.VTD_LAUNCH = f"{self.package_folder}/bin/vtd-launch"
