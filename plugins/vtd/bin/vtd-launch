@@ -44,6 +44,12 @@ import libtmux
     required=True,
     help="The tmux session name to use.",
 )
+@click.option(
+    "-l",
+    "--logfile",
+    type=click.Path(file_okay=True, dir_okay=False),
+    help="VTD logfile path.",
+)
 @click.pass_context
 def main(
     ctx,
@@ -51,6 +57,7 @@ def main(
     vtd_root: str,
     runtime_dir: str,
     tmux_session: str,
+    logfile: str,
 ):
     """Start and stop a VTD simulation."""
 
@@ -63,11 +70,12 @@ def main(
     logging.basicConfig(format="%(message)s", stream=sys.stderr, level=level)
 
     class Options:
-        def __init__(self, root: str, runtime: str, session_name: str):
+        def __init__(self, root: str, runtime: str, session_name: str, log_file: str):
             self.root_dir = Path(root)
             self.runtime_dir = Path(runtime)
             self.tmux = libtmux.Server()
             self.session_name = session_name
+            self.log_file = log_file
 
         def get_session(self) -> Optional[libtmux.Session]:
             return self.tmux.find_where({"session_name": self.session_name})
@@ -78,7 +86,7 @@ def main(
         def new_session(self) -> libtmux.Session:
             return self.tmux.new_session(self.session_name)
 
-    ctx.obj = Options(vtd_root, runtime_dir, tmux_session)
+    ctx.obj = Options(vtd_root, runtime_dir, tmux_session, logfile)
 
 
 # _________________________________________________________________________
@@ -247,6 +255,9 @@ def start(
     pane = window.attached_pane
     pane.clear()
 
+    if opt.log_file:
+        log_file = shlex.quote(str(opt.log_file))
+        pane.cmd("pipe", f"cat >> {log_file}")
     runtime_dir = shlex.quote(str(opt.runtime_dir))
     pane.send_keys(f"cd {runtime_dir}")
     pane.send_keys(f"export VTD_ROOT={runtime_dir}")
