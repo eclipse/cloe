@@ -56,18 +56,18 @@ class LaneBoundary : public Confable {
   CONFABLE_FRIENDS(LaneBoundary)
 
  public:
-  int id;
-  int prev_id;
-  int next_id;
-  double dx_start;
-  double dy_start;
-  double heading_start;
-  double curv_hor_start;
-  double curv_hor_change;
-  double dx_end;
-  double exist_prob;
-  Type type;
-  Color color;
+  int id{-1};
+  int prev_id{-1};
+  int next_id{-1};
+  double dx_start{0};
+  double dy_start{0};
+  double heading_start{0};
+  double curv_hor_start{0};
+  double curv_hor_change{0};
+  double dx_end{0};
+  double exist_prob{0};
+  Type type{Type::Unknown};
+  Color color{Color::Unknown};
 
   std::vector<Eigen::Vector3d> points;
 };
