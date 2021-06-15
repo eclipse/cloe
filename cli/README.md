@@ -6,14 +6,18 @@ makes it into the repository.
 ## Installation
 
 We recommend the use of [pipx][1] for installation, but you can also use
-pip.
+pip. The easiest way is to just use the `Makefile`:
 ```
-pipx install .
+make install
 ```
 If you want to install in editable mode, you unfortunately need to disable
 use of PEP-517 temporarily, which you can do by renaming `pyproject.toml`:
 ```
 mv pyproject.toml{,.bak} && pipx install -e . && mv pyproject.toml{.bak,}
+```
+This is easiest with the `Makefile`, which automates the whole process:
+```
+make editable
 ```
 
 ## Design Considerations
