@@ -43,7 +43,7 @@ DOCKER_BUILD_ARGS += --build-arg BUILD_TYPE=${BUILD_TYPE}
 endif
 
 ifneq (${VENDOR_TARGET},)
-DOCKER_BUILD_ARGS += --build-arg PACKAGE_TARGET=${PACKAGE_TARGET}
+DOCKER_BUILD_ARGS += --build-arg VENDOR_TARGET=${VENDOR_TARGET}
 endif
 
 ifneq (${PACKAGE_TARGET},)
@@ -80,7 +80,6 @@ help:
 	echo "Configuration:"
 	echo "  IMAGE_BASE:     ${IMAGE_BASE}"
 	echo "  IMAGE_VERSION:  ${IMAGE_VERSION}"
-	echo "  CONAN_REMOTE:   ${CONAN_REMOTE}"
 	echo "  DOCKER_CONTEXT: ${DOCKER_CONTEXT}"
 	echo "  DOCKER_ARGS:    ${DOCKER_ARGS}"
 

@@ -38,7 +38,7 @@ include Makefile.setup
 include Makefile.all
 
 # Workspace targets -----------------------------------------------------------
-.PHONY: status deploy doxygen docker docker-test smoketest
+.PHONY: status deploy doxygen docker-all docker-test docker-release purge-all smoketest
 help::
 	echo "Available workspace targets:"
 	echo "  smoketest       to run BATS system tests"
