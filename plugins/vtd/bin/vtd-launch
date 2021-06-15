@@ -6,6 +6,7 @@ import shlex
 import shutil
 import subprocess
 import sys
+import tarfile
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -159,7 +160,16 @@ def teardown_runtime(runtime_dir: Path) -> None:
     "-s",
     "--vtd-setup",
     type=click.Path(exists=True, file_okay=True, dir_okay=True),
-    help="VTD setup to use, default to currently symlinked.",
+    help="Path to VTD setup to use, default to currently symlinked.",
+)
+@click.option(
+    "-S",
+    "--vtd-setup-cloe",
+    type=click.Choice(
+        [Path(s).stem for s in os.listdir(os.getenv("VTD_SETUP_DIR"))],
+        case_sensitive=False,
+    ),
+    help="VTD setup to use from (env: $VTD_SETUP_DIR). Default from VTD.",
 )
 @click.option(
     "-p",
@@ -195,6 +205,7 @@ def start(
     opt,
     skip_setup: bool,
     vtd_setup: str,
+    vtd_setup_cloe: str,
     vtd_project: str,
     vtd_external_models: List[str],
     no_start: bool,
@@ -227,6 +238,17 @@ def start(
         if dst.exists():
             os.remove(dst)
         shutil.copytree(vtd_setup, dst, symlinks=True)
+
+    elif vtd_setup_cloe is not None:
+        vtd_setup_cloe = Path(os.getenv("VTD_SETUP_DIR")) / f"{vtd_setup_cloe}.tgz"
+        logging.info(f"Use setup: {vtd_setup_cloe}")
+        with tarfile.open(vtd_setup_cloe, "r:gz") as tar:
+            dst = opt.runtime_dir / "Data" / "Setups" / "Current"
+            if dst.exists():
+                os.remove(dst)
+            if not Path(vtd_setup_cloe.stem).exists():
+                tar.extractall(path=dst.parent)
+            os.symlink(vtd_setup_cloe.stem, dst)
 
     if vtd_project is not None:
         logging.info(f"Select project: {vtd_project}")
