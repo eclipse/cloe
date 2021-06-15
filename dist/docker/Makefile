@@ -105,8 +105,11 @@ archlinux: Dockerfile.archlinux
 release:
 	@test -f setup.sh || echo 'Error: require setup.sh for user authentication'
 	for dist in ubuntu-16.04 ubuntu-18.04 ubuntu-20.04; do \
-		${DOCKER} run ${DOCKER_NETWORK} --rm ${DOCKER_IMAGE}-$${dist} bash -c \
-			'. /root/setup.sh && conan upload --all -no -c "*"'; \
+		${DOCKER} run --rm \
+			$(subst --build-arg,-e,${DOCKER_NETWORK}) \
+			--mount "type=bind,source=${PWD}/setup.sh,target=/root/setup.sh" \
+			${DOCKER_IMAGE}-$${dist} \
+			bash -c '. /root/setup.sh && conan upload --all -no -c "*"'; \
 	done
 
 .PHONY: purge-current purge-all
