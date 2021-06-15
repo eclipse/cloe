@@ -17,6 +17,7 @@ endif
 .SILENT: help
 help:
 	echo "Usage: make <target>"
+	echo
 	echo "Available targets:"
 	echo "  install       to install cloe-launch locally"
 	echo "  editable      to install cloe-launch locally in editable mode"

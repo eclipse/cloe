@@ -114,10 +114,14 @@ shell scripts that you can source, similar to Python's virtualenv. Or, you can
 use the `cloe-launch` tool, in the `cli` directory, which wraps all this
 functionality for you in one convenient place.
 
-You can install an editable instance with `pipx` (or `pip`):
+You can install `cloe-launch` with `pipx` (or `pip`), but we recommend you just
+use the make target:
 
-    cd cli
-    pipx install -e .
+    make deploy-cli
+
+If you want to install it in editable mode, you can use:
+
+    make -C cli editable
 
 This has the advantage that any updates to the repository will be transparently
 used.

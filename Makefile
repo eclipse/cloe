@@ -41,13 +41,14 @@ include Makefile.all
 .PHONY: status deploy doxygen docker docker-test smoketest
 help::
 	echo "Available workspace targets:"
-	echo "  status          to show current workspace status"
+	echo "  smoketest       to run BATS system tests"
+	echo "  doxygen         to generate Doxygen documentation"
 	echo "  deploy          to deploy Cloe to INSTALL_DIR [=${INSTALL_DIR}]"
+	echo "  deploy-cli      to install cloe-launch with pip"
+	echo
 	echo "  docker-test     to build only a single Docker image"
 	echo "  docker-all      to build all Docker images"
 	echo "  docker-release  to upload all Conan packages from Docker images"
-	echo "  doxygen         to generate Doxygen documentation"
-	echo "  smoketest       to run BATS system tests"
 	echo
 
 status:
@@ -58,6 +59,10 @@ deploy:
 	conan install ${CONAN_OPTIONS} --install-folder ${BUILD_DIR}/deploy -g deploy .
 	mkdir -p ${INSTALL_DIR}
 	cp -r ${BUILD_DIR}/deploy/cloe-*/* ${INSTALL_DIR}/
+
+deploy-cli:
+	$(call print_header, "Deploying cloe-launch binary with pip...")
+	${MAKE} -C cli install
 
 docker-test:
 	$(call print_header, "Building ubuntu-18.04 Docker image...")
@@ -92,6 +97,7 @@ purge-all:
 .PHONY: format todos find-missing-eol sanitize-files
 help::
 	echo "Available development targets:"
+	echo "  status          to show current workspace status"
 	echo "  format         to format Cloe source code with clang-format"
 	echo "  todos          to show all TODOs in Cloe source code"
 	echo
