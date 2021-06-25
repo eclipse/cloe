@@ -28,6 +28,14 @@ teardown() {
     cloe_engine run test_vtd_smoketest.json
 }
 
+@test "Expect check/run success: test_vtd_api_recording.json" {
+    if ! test_vtd_plugin_exists; then
+        skip "required simulator vtd not present"
+    fi
+    cloe_engine check test_vtd_api_recording.json
+    cloe_engine_with_tmp_registry run test_vtd_api_recording.json
+}
+
 @test "Expect check/run success: test_vtd_watchdog.json" {
     if ! test_vtd_plugin_exists; then
         skip "required simulator vtd not present"

@@ -427,7 +427,7 @@ struct EngineConf : public Confable {
               {"config", make_schema(&output_file_config, file_proto(), "file to store config in")},
               {"result", make_schema(&output_file_result, file_proto(), "file to store simulation result in")},
               {"triggers", make_schema(&output_file_triggers, file_proto(), "file to store triggers in")},
-              {"data", make_schema(&output_file_data_stream, file_proto(), "file to store api data stream")},
+              {"api_recording", make_schema(&output_file_data_stream, file_proto(), "file to store api data stream")},
            }},
         }},
         {"triggers", Struct{

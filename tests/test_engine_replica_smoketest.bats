@@ -6,21 +6,6 @@
 
 load setup_bats
 
-export cloe_tmp_registry="/tmp/cloe-ci-registry"
-
-cloe_engine_with_tmp_registry() {
-    test $1 == "run"
-    shift
-
-    (
-        export CLOE_WRITE_OUTPUT=true
-        export CLOE_TMP_REGISTRY=${cloe_tmp_registry}
-        export CLOE_OVERRIDE_ENV=(CLOE_TMP_REGISTRY)
-        cloe_engine run <(echo '{"version":"4","engine":{"registry_path":"${CLOE_TMP_REGISTRY}"}}') "$@"
-    )
-}
-
-
 @test "Expect exact replication: test_engine_replica_smoketest.json" {
     # Clean up in case temporary registry already exists.
     if [[ -d "$cloe_tmp_registry" ]]; then

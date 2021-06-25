@@ -683,8 +683,8 @@
             "files": {
               "additionalProperties": false,
               "properties": {
-                "config": {
-                  "description": "file to store config in",
+                "api_recording": {
+                  "description": "file to store api data stream",
                   "oneOf": [
                     {
                       "type": "null"
@@ -695,8 +695,8 @@
                     }
                   ]
                 },
-                "data": {
-                  "description": "file to store api data stream",
+                "config": {
+                  "description": "file to store config in",
                   "oneOf": [
                     {
                       "type": "null"
