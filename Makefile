@@ -38,10 +38,11 @@ include Makefile.setup
 include Makefile.all
 
 # Workspace targets -----------------------------------------------------------
-.PHONY: status deploy doxygen docker-all docker-test docker-release purge-all smoketest
+.PHONY: status deploy sphinx doxygen docker-all docker-test docker-release purge-all smoketest
 help::
 	echo "Available workspace targets:"
 	echo "  smoketest       to run BATS system tests"
+	echo "  sphinx          to generate Sphinx documentation"
 	echo "  doxygen         to generate Doxygen documentation"
 	echo "  deploy          to deploy Cloe to INSTALL_DIR [=${INSTALL_DIR}]"
 	echo "  deploy-cli      to install cloe-launch with pip"
@@ -75,6 +76,11 @@ docker-all:
 docker-release:
 	$(call print_header, "Uploading all Conan packages from Docker images...")
 	${MAKE} -C dist/docker release
+
+sphinx:
+	$(call print_header, "Generating Sphinx documentation...")
+	mkdir -p ${BUILD_DIR}/sphinx
+	${MAKE} -C docs html
 
 doxygen:
 	$(call print_header, "Generating Doxygen documentation...")

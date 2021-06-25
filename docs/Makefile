@@ -1,0 +1,54 @@
+# Makefile
+#
+# Minimal makefile for Sphinx documentation
+#
+
+# You can set these variables from the command line.
+SPHINXOPTS :=
+SPHINXBUILD := $(shell command -v sphinx-build 2> /dev/null)
+ifndef SPHINXBUILD
+SPHINXBUILD := python3 -m sphinx.cmd.build
+endif
+SPHINXPROJ := Cloe
+SOURCEDIR := .
+BUILDDIR := ../build/sphinx
+
+.PHONY: help
+.DEFAULT: help
+.SILENT: help
+
+# Put it first so that "make" without argument is like "make help".
+help:
+	$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	echo
+	echo "Available serving targets:"
+	echo "  serve          to serve the documentation on 0.0.0.0:8000"
+	echo "  livehtml       to autobuild and serve the documentation on localhost:8000"
+	echo
+	echo "Available setup targets:"
+	echo "  install-sphinx-deps    to install dependencies for sphinx"
+
+.PHONY: install-sphinx-deps serve livehtml
+
+SPHINXDEPS := \
+	sphinx_rtd_theme \
+	sphinxcontrib-runcmd \
+	sphinxcontrib-plantuml \
+	sphinxcontrib.asciinema \
+	jsx-lexer
+install-sphinx-deps:
+	pipx install sphinx
+	pipx inject sphinx ${SPHINXDEPS}
+	pipx install sphinx-autobuild
+	pipx inject sphinx-autobuild ${SPHINXDEPS}
+
+serve:
+	cd ${BUILDDIR}/html && python3 -m http.server
+
+livehtml:
+	sphinx-autobuild --host 0.0.0.0 -b html . ${BUILDDIR}/html
+
+# Catch-all target: route all unknown targets to Sphinx using the new
+# "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
+%:
+	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)

@@ -1,0 +1,32 @@
+{
+    "logging": [
+        {
+            "name": "*",
+            "pattern": "%L%L %H:%M:%S.%e [%n] %v",
+            "level": "info"
+        },
+        {
+            "name": "cloe/simulation",
+            "level": "trace",
+            "pattern": "%L%L %H:%M:%S.%e [%n] %v"
+        },
+        {
+            "name": "cloe/config",
+            "level": "trace"
+        }
+    ],
+    "simulation": {
+        "target_speed": 1.0
+    },
+    "simulator": {
+        "vtd": {
+            "connection": {
+                "host": "vtd",
+                "port": 48179,
+                "initial_sensor_port": 48195,
+                "retry_connect": 60,
+                "retry_sleep_s": 1
+            }
+        }
+    }
+}

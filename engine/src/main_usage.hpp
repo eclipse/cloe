@@ -147,7 +147,7 @@ files by sourcing them, if they are available:
   ${XDG_CONFIG_HOME-${HOME}/.config}/cloe/config.json
 
 While this is useful for user- or system-specific configurations, it can be
-undesirable when reproducibility is of import, such as common during testing.
+undesirable when reproducibility is of importance, such as common during testing.
 Thus, this behavior can be disabled with the --no-system-confs flag.
 
 Several subcommands are available:

@@ -1,0 +1,43 @@
+digraph {
+    graph [splines=ortho, nodesep=1, rankdir=LR];
+
+    {
+        node [shape=circle style=filled fillcolor=gray]
+        "Model()" "~Model()"
+    };
+
+    {
+        node [style=filled fillcolor=yellow]
+        "abort()"
+    };
+
+    {
+        node [group=1]
+        "Model()" "~Model()" "connect()" "disconnect()" "enroll(Registrar&)"
+        "start(const Sync&)" "process(const Sync&)" "stop(const Sync&)"
+    };
+
+    "Model()" -> "connect()";
+    "connect()" -> "enroll(Registrar&)";
+    "enroll(Registrar&)" -> "start(const Sync&)";
+    "start(const Sync&)" -> "process(const Sync&)";
+    "process(const Sync&)" -> "process(const Sync&)" [splines=curved];
+    "process(const Sync&)" -> "stop(const Sync&)";
+    "stop(const Sync&)" -> "disconnect()";
+    "disconnect()" -> "~Model()";
+
+    // Pause behavior
+    "process(const Sync&)" -> "pause(const Sync&)";
+    "pause(const Sync&)" -> "resume(const Sync&)";
+    "resume(const Sync&)" -> "process(const Sync&)";
+
+    // Reset behavior
+    "stop(const Sync&)" -> "reset()";
+    "reset()" -> "start(const Sync&)";
+
+    // Abort behavior
+    "connect()" -> "abort()";
+    "process(const Sync&)" -> "abort()";
+    "pause(const Sync&)" -> "abort()";
+    "abort()" -> "stop(const Sync&)";
+}
