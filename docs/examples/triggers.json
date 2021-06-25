@@ -1,0 +1,16 @@
+{
+  "version": "4",
+  "triggers": [
+    { "event": "start", "action": { "name": "foobar/hmi", "main": false } },
+    { "event": "start", "action": { "name": "realtime_factor", "factor": 0.2 } },
+    { "event": "time=5", "action": { "name": "foobar/hmi", "main": true, "resume": true } },
+    { "event": "time=5.1", "action": { "name": "foobar/hmi", "resume": false } },
+    { "event": "time=20", "action": { "name": "foobar/hmi", "main": false } },
+    { "event": "time=25", "action": { "name": "foobar/hmi", "main": true, "resume": true } },
+    { "event": "time=26", "action": { "name": "foobar/hmi", "resume": false, "set": true } },
+    { "event": "time=26.1", "action": { "name": "foobar/hmi", "set": false } },
+    { "event": "time=60", "action": { "name": "stop" } },
+    { "event": "failure", "action": { "name": "command", "command": "notify-send 'Simulation aborted.'" } },
+    { "event": "success", "action": { "name": "command", "command": "notify-send 'Simulation finished.'" } }
+  ]
+}

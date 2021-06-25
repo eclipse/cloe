@@ -12,10 +12,11 @@ stack files.
 ## config_*.json
 
 All stack files that are prefixed with `config_` are complete stack files that
-can be checked or run with cloe-engine:
+can be checked or run with cloe-engine inside a cloe shell
+(`cloe-launch shell -P ./conantest.py`):
 
 ```console
-$ build/cloe-engine run tests/config_nop_smoketest.json
+$ cloe-engine run tests/config_nop_smoketest.json
 ...
 ```
 
@@ -24,10 +25,11 @@ $ build/cloe-engine run tests/config_nop_smoketest.json
 The controller configuration is used in both NOP as-well-as VTD simulator
 binding stack files. To reduce duplication, the controller specific
 configuration is placed in its own partial configuration file. This file
-can be checked, but it might fail:
+can be checked inside a cloe shell (`cloe-launch shell -P ./conantest.py`), but
+it might fail:
 
 ```console
-$ build/cloe-engine check tests/controller_basic.json
+$ cloe-engine check tests/controller_basic.json
 tests/controller_basic.json: cannot find a vehicle with the name 'default': no entity with that name has been defined
 ```
 
@@ -37,7 +39,7 @@ This stack file can be included *in addition* to another complete stack file
 to enable callgrind profiling:
 
 ```console
-$ valgrind --tool=callgrind --instr-atstart=no build/cloe-engine run tests/config_nop_smoketest.json tests/debug_callgrind.json
+$ valgrind --tool=callgrind --instr-atstart=no cloe-launch exec -P conantest.py -- run tests/config_nop_smoketest.json tests/debug_callgrind.json
 ...
 ```
 
