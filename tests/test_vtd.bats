@@ -18,6 +18,8 @@ teardown() {
         echo "Teardown VTD (from BATS)"
         teardown_vtd
     fi
+    # Remove the temporary registry.
+    rm -rf "$cloe_tmp_registry"
 }
 
 @test "Expect check/run success: test_vtd_smoketest.json" {
@@ -34,6 +36,8 @@ teardown() {
     fi
     cloe_engine check test_vtd_api_recording.json
     cloe_engine_with_tmp_registry run test_vtd_api_recording.json
+    # Remove the test registry.
+    rm -rf "$cloe_tmp_registry"
 }
 
 @test "Expect check/run success: test_vtd_watchdog.json" {

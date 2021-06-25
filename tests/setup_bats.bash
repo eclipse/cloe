@@ -73,7 +73,7 @@ cloe_engine() {
     )
 }
 
-export cloe_tmp_registry="/tmp/cloe-ci-registry"
+export cloe_tmp_registry="${HOME}/.cache/cloe/tmp-registry"
 
 cloe_engine_with_tmp_registry() {
     test $1 == "run"
