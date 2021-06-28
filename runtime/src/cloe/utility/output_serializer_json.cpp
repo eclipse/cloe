@@ -29,22 +29,25 @@
 namespace cloe {
 namespace utility {
 
+const std::string AbstractJsonSerializerBase::json_array_open("\n[\n");   // NOLINT
+const std::string AbstractJsonSerializerBase::json_array_close("\n]\n");  // NOLINT
+
 const std::string JsonFileSerializer::default_filename = "/tmp/cloe_data";
 
-std::unique_ptr<JsonFileSerializer> make_json_file_serializer(FileTypeEnum type, Logger log) {
+std::unique_ptr<JsonFileSerializer> make_json_file_serializer(JsonFileType type, Logger log) {
   std::unique_ptr<JsonFileSerializer> result;
   switch (type) {
-    case JSON_GZIP:
+    case JsonFileType::JSON_GZIP:
       result = std::unique_ptr<JsonFileSerializer>(std::make_unique<GZipJsonSerializer>(log));
       break;
-    case JSON_ZIP:
+    case JsonFileType::JSON_ZIP:
       result = std::unique_ptr<JsonFileSerializer>(std::make_unique<ZlibJsonSerializer>(log));
       break;
-    case JSON:
+    case JsonFileType::JSON:
       result = std::unique_ptr<JsonFileSerializer>(std::make_unique<JsonSerializer>(log));
       break;
     default:
-      result = make_json_file_serializer(FileTypeEnum::JSON, log);
+      result = make_json_file_serializer(JsonFileType::JSON, log);
       break;
   }
   return result;

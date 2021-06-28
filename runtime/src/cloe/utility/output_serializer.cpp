@@ -25,9 +25,6 @@
 namespace cloe {
 namespace utility {
 
-const std::string AbstractJsonSerializerBase::json_array_open("\n[\n");   // NOLINT
-const std::string AbstractJsonSerializerBase::json_array_close("\n]\n");  // NOLINT
-
 bool BasicFileOutputStream::open_file(const std::string& filename,
                                       const std::string& default_filename) {
   const auto& output_file = filename == "" ? default_filename : filename;

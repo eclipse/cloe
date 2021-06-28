@@ -31,19 +31,39 @@
 namespace cloe {
 namespace utility {
 
-enum FileTypeEnum {
+enum class JsonFileType {
   JSON_GZIP,
   JSON_ZIP,
   JSON,
 };
 
 // clang-format off
-ENUM_SERIALIZATION(FileTypeEnum, ({
-    {cloe::utility::FileTypeEnum::JSON_GZIP    , "json.gz"     },
-    {cloe::utility::FileTypeEnum::JSON_ZIP     , "json.zip"    },
-    {cloe::utility::FileTypeEnum::JSON         , "json"        },
+ENUM_SERIALIZATION(JsonFileType, ({
+    {cloe::utility::JsonFileType::JSON_GZIP    , "json.gz"     },
+    {cloe::utility::JsonFileType::JSON_ZIP     , "json.zip"    },
+    {cloe::utility::JsonFileType::JSON         , "json"        },
 }))
 // clang-format on
+
+class AbstractJsonSerializerBase {
+ protected:
+  static const std::string json_array_open;
+  static const std::string json_array_close;
+};
+
+template <typename... TSerializerArgs>
+class AbstractJsonSerializer : public Serializer<TSerializerArgs...>,
+                               public AbstractJsonSerializerBase {
+ public:
+  using base = Serializer<TSerializerArgs...>;
+  using Serializer<TSerializerArgs...>::Serializer;
+  virtual ~AbstractJsonSerializer() = default;
+  std::string make_default_filename(const std::string& default_filename) override {
+    return default_filename + ".json";
+  }
+  void start_array() override { base::write(json_array_open); }
+  void end_array() override { base::write(json_array_close); }
+};
 
 class SimpleJsonSerializer : public AbstractJsonSerializer<const Json&, bool> {
  public:
@@ -63,7 +83,7 @@ class SimpleJsonSerializer : public AbstractJsonSerializer<const Json&, bool> {
 // 2) the anchor point for exactly one instance of the default_filename
 class JsonFileSerializer {
  public:
-  virtual ~JsonFileSerializer() noexcept = default;
+  virtual ~JsonFileSerializer() = default;
   virtual void open_file(const std::string& filename) = 0;
   virtual void serialize(const Json& j) = 0;
   virtual void close_file() = 0;
@@ -83,7 +103,7 @@ class JsonFileSerializerImpl
 
  public:
   JsonFileSerializerImpl(Logger& logger) : file_base(logger), JsonFileSerializer() {}
-  virtual ~JsonFileSerializerImpl() noexcept = default;
+  virtual ~JsonFileSerializerImpl() = default;
   using file_base::open_file;
   void open_file(const std::string& filename) override {
     std::string default_name = this->outputstream_.make_default_filename(
@@ -106,7 +126,7 @@ using JsonSerializer = JsonFileSerializerImpl<FileOutputStream>;
 using ZlibJsonSerializer = JsonFileSerializerImpl<ZlibOutputStream>;
 using GZipJsonSerializer = JsonFileSerializerImpl<GzipOutputStream>;
 
-std::unique_ptr<JsonFileSerializer> make_json_file_serializer(FileTypeEnum type, Logger log);
+std::unique_ptr<JsonFileSerializer> make_json_file_serializer(JsonFileType type, Logger log);
 
 }  // namespace utility
 }  // namespace cloe
