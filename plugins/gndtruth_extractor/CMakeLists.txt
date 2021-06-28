@@ -15,3 +15,25 @@ cloe_add_plugin(
         CONAN_PKG::cloe-runtime
         CONAN_PKG::cloe-models
 )
+
+option(BuildTests "Build tests?" ON)
+if(BuildTests)
+    message(STATUS "-> Enable testing")
+    enable_testing()
+    include(GoogleTest)
+
+    add_executable(test-gndtruth-extractor
+        src/gndtruth_extractor_test.cpp
+    )
+    set_target_properties(test-gndtruth-extractor PROPERTIES
+        CXX_STANDARD 14
+        CXX_STANDARD_REQUIRED ON
+    )
+    target_link_libraries(test-gndtruth-extractor
+      PRIVATE
+        CONAN_PKG::gtest
+        CONAN_PKG::cloe-runtime
+        CONAN_PKG::cloe-models
+    )
+    gtest_add_tests(TARGET test-gndtruth-extractor)
+endif()
