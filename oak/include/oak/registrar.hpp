@@ -157,7 +157,7 @@ class StaticRegistrar : public Registrar {
   void set_prefix(const std::string& prefix) { prefix_ = prefix; }
   void set_logger(Logger logger) { logger_ = logger; }
 
-  std::vector<std::string> endpoints() const { return endpoints_; }
+  const std::vector<std::string>& endpoints() const { return endpoints_; }
 
  protected:
   void log(const std::string& endpoint) {
