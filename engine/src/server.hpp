@@ -89,7 +89,7 @@ class Server {
    * server.
    */
   void init_stream(const std::string& filename) {
-    serializer_ = make_json_file_serializer(cloe::utility::FileTypeEnum::JSON_GZIP, logger());
+    serializer_ = make_json_file_serializer(cloe::utility::JsonFileType::JSON_GZIP, logger());
     serializer_->open_file(filename);
   }
 
