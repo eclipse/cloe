@@ -72,6 +72,11 @@ struct SimulationResult {
     return filepath;
   }
 
+  /**
+   * Determine the output directory from config.
+   *
+   * Must be called before output_dir is used.
+   */
   void set_output_dir() {
     if (config.engine.output_path) {
       // For $registry to be of value, output_path (~= $id) here needs to be set.
