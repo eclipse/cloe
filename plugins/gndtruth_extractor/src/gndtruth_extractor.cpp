@@ -19,6 +19,8 @@
  * \file gndtruth_extractor.cpp
  */
 
+#include "gndtruth_extractor.hpp"
+
 #include <cassert>  // for assert
 #include <chrono>   // for chrono, duration_cast<>
 #include <memory>   // for unique_ptr<>
@@ -32,65 +34,8 @@
 #include <cloe/vehicle.hpp>                            // for Vehicle
 using namespace cloe::utility;                         // NOLINT(build/namespaces)
 
-#include "enumconfable.hpp"  // for EnumConfable
-
 namespace cloe {
-
-enum OutputTypeEnum {
-  JSON_BZIP2,
-  JSON_GZIP,
-  JSON_ZIP,
-  JSON,
-  MSGPACK_BZIP2,
-  MSGPACK_GZIP,
-  MSGPACK_ZIP,
-  MSGPACK,
-};
-
-typedef EnumStringConfable<OutputTypeEnum> OutputType;
-
-// clang-format off
-IMPLEMENT_ENUMSTRINGMAP(cloe::OutputTypeEnum)
-    (cloe::OutputTypeEnum::JSON_BZIP2   , "json.bz2"    )
-    (cloe::OutputTypeEnum::JSON_GZIP    , "json.gz"     )
-    (cloe::OutputTypeEnum::JSON_ZIP     , "json.zip"    )
-    (cloe::OutputTypeEnum::JSON         , "json"        )
-    (cloe::OutputTypeEnum::MSGPACK_BZIP2, "msgpack.bz2" )
-    (cloe::OutputTypeEnum::MSGPACK_GZIP , "msgpack.gz"  )
-    (cloe::OutputTypeEnum::MSGPACK_ZIP  , "msgpack.zip" )
-    (cloe::OutputTypeEnum::MSGPACK      , "msgpack"     )
-;
-// clang-format on
-
 namespace controller {
-
-struct GndTruthExtractorConfiguration : public Confable {
-  std::string output_file;
-  OutputType output_type;
-  std::vector<std::string> components;
-
-  CONFABLE_SCHEMA(GndTruthExtractorConfiguration) {
-    return Schema{
-        {"components", Schema(&components, "array of components to be extracted")},
-        {"output_file", Schema(&output_file, "file path to write groundtruth output to")},
-        {"output_type", Schema(&output_type, "type of output file to write")},
-    };
-  }
-
-  void to_json(Json& j) const override {
-    j = Json{
-        {"components", components},
-        {"output_file", output_file},
-        {"output_type", output_type},
-    };
-  }
-
-  // TODO(ben): Is this override still necessary?
-  virtual void from_conf(const Conf& conf) override {
-    Confable::from_conf(conf);
-    conf.try_from("output_type", &output_type);
-  }
-};
 
 // Approximate size of GndTruth is minimally: 1K
 // Simulation with 100s * 50/s * 1K = 5000 K
@@ -193,28 +138,28 @@ typedef MsgPackOutputSerializer<Bzip2OutputStream> BZip2MsgPackSerializer;
 std::unique_ptr<GndTruthSerializer> makeGndTruthSerializer(OutputTypeEnum type, Logger log) {
   std::unique_ptr<GndTruthSerializer> result;
   switch (type) {
-    case JSON_BZIP2:
+    case OutputTypeEnum::JSON_BZIP2:
       result = std::unique_ptr<GndTruthSerializer>(std::make_unique<BZip2JsonSerializer>(log));
       break;
-    case JSON_GZIP:
+    case OutputTypeEnum::JSON_GZIP:
       result = std::unique_ptr<GndTruthSerializer>(std::make_unique<GZipJsonSerializer>(log));
       break;
-    case JSON_ZIP:
+    case OutputTypeEnum::JSON_ZIP:
       result = std::unique_ptr<GndTruthSerializer>(std::make_unique<ZlibJsonSerializer>(log));
       break;
-    case JSON:
+    case OutputTypeEnum::JSON:
       result = std::unique_ptr<GndTruthSerializer>(std::make_unique<JsonSerializer>(log));
       break;
-    case MSGPACK_BZIP2:
+    case OutputTypeEnum::MSGPACK_BZIP2:
       result = std::unique_ptr<GndTruthSerializer>(std::make_unique<BZip2MsgPackSerializer>(log));
       break;
-    case MSGPACK_GZIP:
+    case OutputTypeEnum::MSGPACK_GZIP:
       result = std::unique_ptr<GndTruthSerializer>(std::make_unique<GZipMsgPackSerializer>(log));
       break;
-    case MSGPACK_ZIP:
+    case OutputTypeEnum::MSGPACK_ZIP:
       result = std::unique_ptr<GndTruthSerializer>(std::make_unique<ZlibMsgPackSerializer>(log));
       break;
-    case MSGPACK:
+    case OutputTypeEnum::MSGPACK:
       result = std::unique_ptr<GndTruthSerializer>(std::make_unique<MsgPackSerializer>(log));
       break;
     default:
