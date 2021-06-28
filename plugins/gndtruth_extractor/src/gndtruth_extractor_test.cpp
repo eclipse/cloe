@@ -44,7 +44,18 @@ TEST(gndtruth_extractor, gndtruth_extractor_schema) {
         "type": "string"
         },
         "output_type": {
-        "description": "type of output file to write"
+        "description": "type of output file to write",
+        "enum": [
+          "json.bz2",
+          "json.gz",
+          "json.zip",
+          "json",
+          "msgpack.bz2",
+          "msgpack.gz",
+          "msgpack.zip",
+          "msgpack"
+        ],
+        "type": "string"
         }
     },
     "type": "object"
