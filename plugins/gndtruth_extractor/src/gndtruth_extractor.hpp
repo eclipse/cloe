@@ -19,7 +19,7 @@
  * \file gndtruth_extractor.hpp
  */
 
-#include "enumconfable.hpp"  // for EnumConfable
+#include <cloe/core.hpp>  // for Confable, Schema
 
 namespace cloe {
 enum class OutputTypeEnum {
@@ -33,25 +33,23 @@ enum class OutputTypeEnum {
   MSGPACK,
 };
 
-typedef EnumStringConfable<OutputTypeEnum> OutputType;
-
 // clang-format off
-IMPLEMENT_ENUMSTRINGMAP(cloe::OutputTypeEnum)
-    (cloe::OutputTypeEnum::JSON_BZIP2   , "json.bz2"    )
-    (cloe::OutputTypeEnum::JSON_GZIP    , "json.gz"     )
-    (cloe::OutputTypeEnum::JSON_ZIP     , "json.zip"    )
-    (cloe::OutputTypeEnum::JSON         , "json"        )
-    (cloe::OutputTypeEnum::MSGPACK_BZIP2, "msgpack.bz2" )
-    (cloe::OutputTypeEnum::MSGPACK_GZIP , "msgpack.gz"  )
-    (cloe::OutputTypeEnum::MSGPACK_ZIP  , "msgpack.zip" )
-    (cloe::OutputTypeEnum::MSGPACK      , "msgpack"     )
-;
+ENUM_SERIALIZATION(OutputTypeEnum, ({
+    {cloe::OutputTypeEnum::JSON_BZIP2   , "json.bz2"    },
+    {cloe::OutputTypeEnum::JSON_GZIP    , "json.gz"     },
+    {cloe::OutputTypeEnum::JSON_ZIP     , "json.zip"    },
+    {cloe::OutputTypeEnum::JSON         , "json"        },
+    {cloe::OutputTypeEnum::MSGPACK_BZIP2, "msgpack.bz2" },
+    {cloe::OutputTypeEnum::MSGPACK_GZIP , "msgpack.gz"  },
+    {cloe::OutputTypeEnum::MSGPACK_ZIP  , "msgpack.zip" },
+    {cloe::OutputTypeEnum::MSGPACK      , "msgpack"     },
+}))
 // clang-format on
 
 namespace controller {
 struct GndTruthExtractorConfiguration : public Confable {
   std::string output_file;
-  OutputType output_type;
+  cloe::OutputTypeEnum output_type{cloe::OutputTypeEnum::JSON_GZIP};
   std::vector<std::string> components;
 
   CONFABLE_SCHEMA(GndTruthExtractorConfiguration) {
@@ -60,20 +58,6 @@ struct GndTruthExtractorConfiguration : public Confable {
         {"output_file", Schema(&output_file, "file path to write groundtruth output to")},
         {"output_type", Schema(&output_type, "type of output file to write")},
     };
-  }
-
-  void to_json(Json& j) const override {
-    j = Json{
-        {"components", components},
-        {"output_file", output_file},
-        {"output_type", output_type},
-    };
-  }
-
-  // TODO(ben): Is this override still necessary?
-  virtual void from_conf(const Conf& conf) override {
-    Confable::from_conf(conf);
-    conf.try_from("output_type", &output_type);
   }
 };
 

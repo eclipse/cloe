@@ -179,7 +179,7 @@ class GndTruthExtractor : public Controller {
   void start(const Sync& sync) override {
     Controller::start(sync);
     auto log = this->logger();
-    serializer_ = makeGndTruthSerializer(config_.output_type.value, log);
+    serializer_ = makeGndTruthSerializer(config_.output_type, log);
     open_file();
   }
 
