@@ -1,0 +1,11 @@
+{
+  "is_cool": false,
+  "is_supercool": true,
+  "advanced": {
+    "some_strings": [
+      "first",
+      "second",
+      "third"
+    ]
+  }
+}

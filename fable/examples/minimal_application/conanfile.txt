@@ -1,0 +1,7 @@
+[requires]
+cli11/1.9.1
+fable/0.18.0-rc2@cloe/develop
+fmt/8.0.0
+
+[generators]
+cmake
