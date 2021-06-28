@@ -1,0 +1,69 @@
+[
+  {
+    "firstName": "John",
+    "lastName": "Smith",
+    "isAlive": true,
+    "age": 27,
+    "address": {
+      "streetAddress": "21 2nd Street",
+      "city": "New York",
+      "state": "NY",
+      "postalCode": "10021-3100"
+    },
+    "phoneNumbers": [
+      {
+        "type": "home",
+        "number": "212 555-1234"
+      },
+      {
+        "type": "office",
+        "number": "646 555-4567"
+      }
+    ],
+    "children": [
+      "Jupiter",
+      "Mars"
+    ],
+    "spouse": "Julia Smith"
+  },
+  {
+    "firstName": "Julia",
+    "lastName": "Smith",
+    "isAlive": true,
+    "age": 28,
+    "address": {
+      "streetAddress": "21 2nd Street",
+      "city": "New York",
+      "state": "NY",
+      "postalCode": "10021-3100"
+    },
+    "phoneNumbers": [
+      {
+        "type": "home",
+        "number": "212 465-4819"
+      },
+      {
+        "type": "office",
+        "number": "646 555-4566"
+      }
+    ],
+    "children": [
+        "Jupiter",
+        "Mars"
+    ],
+    "spouse": "John Smith"
+  },
+  {
+    "firstName": "Elbow",
+    "lastName": "Dorado",
+    "isAlive": false,
+    "age": null,
+    "address": null
+  },
+  {
+    "firstName": "Hannibal",
+    "lastName": "Mercurial",
+    "isAlive": false,
+    "age": 34
+  }
+]

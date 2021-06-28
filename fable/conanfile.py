@@ -35,7 +35,8 @@ class Fable(ConanFile):
 
     def build_requirements(self):
         if self.options.test:
-            self.build_requires("gtest/[~1.10]")
+            self.build_requires("gtest/[~=1.10]")
+            self.build_requires("cli11/[~=1.9.1]")
 
     def _configure_cmake(self):
         if self._cmake:

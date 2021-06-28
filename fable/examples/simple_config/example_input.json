@@ -1,0 +1,11 @@
+{
+  "feature_a": false,
+  "feature_b": true,
+  "nested": {
+    "keys": [
+      "first",
+      "second",
+      "third"
+    ]
+  }
+}
