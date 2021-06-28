@@ -1,0 +1,7 @@
+[requires]
+cli11/[~=1.9.1]
+fable/[>0.17.0]@cloe/develop
+fmt/[>=6.0.0]
+
+[generators]
+cmake
