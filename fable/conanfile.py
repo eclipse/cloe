@@ -22,6 +22,7 @@ class Fable(ConanFile):
     no_copy_source = True
     exports_sources = [
         "include/*",
+        "examples/*",
         "src/*",
         "CMakeLists.txt",
     ]
