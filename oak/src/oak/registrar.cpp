@@ -26,7 +26,8 @@
 #include <memory>
 #include <string>
 
-#include "oak/server.hpp"
+#include <cloe/core.hpp>   // for Json, logger::get
+#include "oak/server.hpp"  // for Server
 
 namespace oak {
 
@@ -84,6 +85,7 @@ void StaticRegistrar::register_handler(const std::string& route, Handler h) {
   } else {
     server_->add_handler(endpoint, h);
   }
+  endpoints_.push_back(endpoint);
 }
 
 void LockedRegistrar::register_handler(const std::string& route, Handler h) {
@@ -97,19 +99,6 @@ void LockedRegistrar::register_handler(const std::string& route, Handler h) {
   StaticRegistrar::register_handler(route, h);
 }
 
-class RequestStub : public cloe::Request {
- public:
-  cloe::RequestMethod method() const override { throw ERROR; }
-  cloe::ContentType type() const override { throw ERROR; }
-  const std::string& body() const override { throw ERROR; }
-  const std::string& uri() const override { throw ERROR; }
-  const std::string& endpoint() const override { throw ERROR; }
-  const std::map<std::string, std::string>& query_map() const override { throw ERROR; }
-
- private:
-  const std::logic_error ERROR = std::logic_error("using the request in any way is erroneous");
-};
-
 void BufferRegistrar::register_handler(const std::string& route, Handler h) {
   assert(route.size() != 0 && route[0] == '/');
   assert(proxy_ == nullptr);
@@ -120,6 +109,7 @@ void BufferRegistrar::register_handler(const std::string& route, Handler h) {
   } else {
     handlers_.add(key, h);
   }
+  this->endpoints_.push_back(key);
   // Since it's not available to the server yet, we don't need to
   // lock for refreshing the route.
   refresh_route(key);

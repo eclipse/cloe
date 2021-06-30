@@ -18,6 +18,8 @@ teardown() {
         echo "Teardown VTD (from BATS)"
         teardown_vtd
     fi
+    # Remove the temporary registry.
+    rm -r "$cloe_tmp_registry" || true
 }
 
 @test "Expect check/run success: test_vtd_smoketest.json" {
@@ -26,6 +28,16 @@ teardown() {
     fi
     cloe_engine check test_vtd_smoketest.json
     cloe_engine run test_vtd_smoketest.json
+}
+
+@test "Expect check/run success: test_vtd_api_recording.json" {
+    if ! test_vtd_plugin_exists; then
+        skip "required simulator vtd not present"
+    fi
+    cloe_engine check test_vtd_api_recording.json
+    cloe_engine_with_tmp_registry run test_vtd_api_recording.json
+    # Remove the test registry.
+    rm -r "$cloe_tmp_registry" || true
 }
 
 @test "Expect check/run success: test_vtd_watchdog.json" {

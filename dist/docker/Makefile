@@ -107,7 +107,7 @@ release:
 	for dist in ubuntu-16.04 ubuntu-18.04 ubuntu-20.04; do \
 		${DOCKER} run --rm \
 			$(subst --build-arg,-e,${DOCKER_NETWORK}) \
-			--mount "type=bind,source=${PWD}/setup.sh,target=/root/setup.sh" \
+			--mount "type=bind,source=$(CURDIR)/setup.sh,target=/root/setup.sh" \
 			${DOCKER_IMAGE}-$${dist} \
 			bash -c '. /root/setup.sh && conan upload --all -no -c "*"'; \
 	done

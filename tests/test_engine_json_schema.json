@@ -251,7 +251,18 @@
                     "type": "string"
                   },
                   "output_type": {
-                    "description": "type of output file to write"
+                    "description": "type of output file to write",
+                    "enum": [
+                      "json.bz2",
+                      "json.gz",
+                      "json.zip",
+                      "json",
+                      "msgpack.bz2",
+                      "msgpack.gz",
+                      "msgpack.zip",
+                      "msgpack"
+                    ],
+                    "type": "string"
                   }
                 },
                 "type": "object"
@@ -683,6 +694,18 @@
             "files": {
               "additionalProperties": false,
               "properties": {
+                "api_recording": {
+                  "description": "file to store api data stream",
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "comment": "path should either not exist or be a file",
+                      "type": "string"
+                    }
+                  ]
+                },
                 "config": {
                   "description": "file to store config in",
                   "oneOf": [
