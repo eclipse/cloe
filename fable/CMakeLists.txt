@@ -71,6 +71,34 @@ if(BuildTests)
     gtest_add_tests(TARGET test-fable)
 endif()
 
+option(BuildExamples "Build examples?" ${BuildTests})
+if(BuildExamples)
+    message(STATUS "-> Build examples")
+    add_executable(example-contacts
+        examples/contacts/src/main.cpp
+    )
+    set_target_properties(example-contacts PROPERTIES
+        CXX_STANDARD 14
+        CXX_STANDARD_REQUIRED ON
+    )
+    target_link_libraries(example-contacts
+        CONAN_PKG::cli11
+        ${target}
+    )
+
+    add_executable(example-simple-config
+        examples/simple_config/src/main.cpp
+    )
+    set_target_properties(example-simple-config PROPERTIES
+        CXX_STANDARD 14
+        CXX_STANDARD_REQUIRED ON
+    )
+    target_link_libraries(example-simple-config
+        CONAN_PKG::cli11
+        ${target}
+    )
+endif()
+
 # Installation -------------------------------------------------------
 include(GNUInstallDirs)
 install(TARGETS ${target}
