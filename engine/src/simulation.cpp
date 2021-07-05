@@ -1277,7 +1277,7 @@ size_t Simulation::write_output(const SimulationResult& r) const {
       return;
     }
 
-    auto filepath = r.get_output_filepath(*filename);
+    boost::filesystem::path filepath = r.get_output_filepath(*filename);
     if (write_output_file(filepath, output)) {
       files_written++;
     }
