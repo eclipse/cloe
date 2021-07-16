@@ -1,0 +1,3 @@
+[requires]
+cloe/0.18.0-nightly@cloe/develop
+cloe-plugin-sumo/0.1.0-nightly@cloe/develop

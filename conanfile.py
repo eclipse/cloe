@@ -14,12 +14,14 @@ class Cloe(ConanFile):
         "pedantic": [True, False],
         "with_vtd": [True, False],
         "with_engine": [True, False],
+        "with_sumo": [True, False],
     }
     default_options = {
         "test": True,
         "pedantic": True,
         "with_vtd": False,
         "with_engine": True,
+        "with_sumo": True,
     }
     generators = "cmake"
     no_copy_source = True
@@ -46,10 +48,15 @@ class Cloe(ConanFile):
             "cloe-plugin-noisy-sensor",
             "cloe-plugin-speedometer",
             "cloe-plugin-virtue",
+            "cloe-plugin-sumo",
         ]
         if self.options.with_vtd:
             requires.append("cloe-plugin-vtd")
 
+        if self.options.with_sumo:
+            requires.append("cloe-plugin-sumo")
+            self.requires("sumo/1.6.0@cloe/stable")
+            
         if self.options.with_engine:
             requires.append("cloe-engine")
 

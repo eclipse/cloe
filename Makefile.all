@@ -86,6 +86,12 @@ WITH_ENGINE := 1
 ##
 WITH_VTD := 0
 
+## WITH_SUMO
+##   Usage: make WITH_SUMO=1 <targets>
+##   Default: 0
+##
+WITH_SUMO := 0
+
 ## BUILD_TESTS
 ##   Usage: make BUILD_TESTS=0 package
 ##   Default: 1
@@ -151,6 +157,13 @@ ALL_VENDOR_PKGS := $(filter-out $(wildcard vendor/vtd*), ${ALL_VENDOR_PKGS})
 ALL_VENDOR_PKGS := $(filter-out $(wildcard vendor/osi*), ${ALL_VENDOR_PKGS})
 endif
 
+ifeq (${WITH_SUMO},1)
+override CONAN_OPTIONS += -o cloe:with_sumo=True
+else
+ALL_PKGS := $(filter-out plugins/sumo, ${ALL_PKGS})
+ALL_VENDOR_PKGS := $(filter-out $(wildcard vendor/sumo*), ${ALL_VENDOR_PKGS})
+endif
+
 ifeq (${BUILD_TESTS},0)
 override CONAN_OPTIONS += -o cloe:test=False
 override CONAN_OPTIONS += -o fable:test=False
@@ -163,6 +176,11 @@ endif
 ifeq (${WITH_VTD},1)
 override CONAN_OPTIONS += -o cloe-plugin-vtd:test=False
 endif
+
+ifeq (${WITH_SUMO},1)
+override CONAN_OPTIONS += -o cloe-plugin-sumo:test=False
+endif
+
 override CONAN_OPTIONS += -o cloe-plugin-basic:test=False
 override CONAN_OPTIONS += -o cloe-plugin-noisy-sensor:test=False
 endif
@@ -264,6 +282,7 @@ help::
 	echo "    USE_NPROC=(0|1)    to build $(shell nproc) packages simultaneously (default=0)"
 	echo "    WITH_ENGINE=(0|1)  to build and deploy cloe-engine (default=1)"
 	echo "    WITH_VTD=(0|1)     to build and deploy cloe-plugin-vtd (default=0)"
+	echo "    WITH_SUMO=(0|1)     to build and deploy cloe-plugin-sumo (default=0)"
 	echo "    BUILD_TESTS=(0|1)  to build and run unit tests (default=1)"
 	echo
 	echo "  Defines:"

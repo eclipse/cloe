@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<routes>
+  <vType accel="3.0" decel="6.0" id="CarA" length="5.0" minGap="2.5" maxSpeed="50.0" sigma="0.5" />
+  <vType accel="2.0" decel="6.0" id="CarB" length="7.5" minGap="2.5" maxSpeed="50.0" sigma="0.5" />
+  <vType accel="1.0" decel="5.0" id="CarC" length="5.0" minGap="2.5" maxSpeed="40.0" sigma="0.5" />
+  <vType accel="1.0" decel="5.0" id="CarD" length="7.5" minGap="2.5" maxSpeed="30.0" sigma="0.5" />
+
+  <route id="route01" edges="D2 L2 L12 L10 L7 D7"/>
+  <route id="route02" edges="D2 L2 L12 L15 L18 L5 D5"/>
+  <route id="route03" edges="D2 L2 L12 L15 L13 L3 D3"/>
+  <route id="route04" edges="D4 L4 L14 L18 L5 D5"/>
+  <route id="route05" edges="D4 L4 L14 L16 L10 L7 D7"/>
+  <route id="route06" edges="D4 L4 L14 L16 L11 L1 D1"/>
+  <route id="route07" edges="D6 L6 L17 L13 L3 D3"/>
+  <route id="route08" edges="D6 L6 L17 L16 L11 L1 D1"/>
+  <route id="route09" edges="D6 L6 L17 L16 L10 L7 D7"/>
+  <route id="route10" edges="D8 L8 L9 L11 L1 D1"/>
+  <route id="route11" edges="D8 L8 L9 L15 L13 L3 D3"/>
+  <route id="route12" edges="D8 L8 L9 L15 L18 L5 D5"/>
+
+  <vehicle depart="1" id="veh0" route="route01" type="CarA" color="1,0,0"/> 
+
+</routes>

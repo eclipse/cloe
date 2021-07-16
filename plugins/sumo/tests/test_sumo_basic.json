@@ -1,0 +1,36 @@
+{
+    "version": "4",
+    "controllers": [
+        {
+            "binding": "nop",
+            "vehicle": "default"
+        }
+    ],
+    "vehicles": [
+        {
+            "from": {
+                "simulator": "sumo",
+                "name": "veh0"
+            },
+            "name": "default"
+        }
+    ],
+    "simulators": [
+        {
+            "binding": "sumo",
+            "args": {
+                "ip_addr": "127.0.0.1",
+                "port": 9898,
+                "egos": [
+                    "veh0"
+                ]
+            }
+        }
+    ],
+    "triggers": [
+        {
+            "event": "time=5",
+            "action": "succeed"
+        }
+    ]
+}
