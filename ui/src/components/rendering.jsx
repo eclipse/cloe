@@ -106,7 +106,7 @@ class Rendering extends Component {
 
   render() {
     // Make sensors available for input fields.
-    const { sensors, replayState, streamingType } = this.props;
+    const { sensors, replayState, streamingType, isRecording } = this.props;
     const selectObjSensors = this.getAvailSensors(sensors, this.sensorType.Object);
     const selectLaneSensors = this.getAvailSensors(sensors, this.sensorType.Lane);
 
@@ -186,6 +186,7 @@ class Rendering extends Component {
             toggleReplay={this.toggleReplay}
             fastForward={this.fastForward}
             rewind={this.rewind}
+            recordCanvas={this.recordCanvas}
           ></ReplayControlls>
           <div
             className="m-0 mt-2 text-light"
@@ -956,6 +957,10 @@ class Rendering extends Component {
 
   rewind = () => {
     this.props.rewind();
+  };
+
+  recordCanvas = () => {
+    this.props.recordCanvas();
   };
 
   resetRenderOptions = () => {

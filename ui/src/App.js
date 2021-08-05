@@ -18,7 +18,7 @@ import { withCookies } from "react-cookie";
 import axios from "axios";
 import { DragDropContext, Draggable } from "react-beautiful-dnd";
 import { Spin, Progress } from "antd";
-
+import RecordService from "./services/recordService";
 import Sidebar from "./components/sidebar";
 import ErrorBoundary from "./components/errorBoundary";
 import NavBar from "./components/navbar";
@@ -63,6 +63,7 @@ class App extends Component {
       replayIndex: 0,
       replayState: REPLAYSTATES.PAUSED,
       showErrorMessage: false,
+      isRecoding: false
     };
 
     // Helper variable to declare if Cloe-UI should perform one-time fetches,
@@ -87,6 +88,7 @@ class App extends Component {
     this.componentsOnLeftSide = cookies.get("firstColumn") || [0];
     this.componentsOnRightSide = cookies.get("secondColumn") || [1, 2, 3, 4, 5];
     this.componentOrder = ["left"];
+    this.recordService = null;
 
     this.stepWidth = null;
     this.replaySpeed = 1;
@@ -142,9 +144,11 @@ class App extends Component {
             sensors={cloeDataLive.sensors}
             replayState={this.state.replayState}
             streamingType={this.state.streamingType}
+            isRecording={this.state.isRecoding}
             toggleReplay={this.toggleReplay}
             fastForward={this.fastForward}
             rewind={this.rewind}
+            recordCanvas={this.recordCanvas}
           />
         )
       },
@@ -604,6 +608,37 @@ class App extends Component {
 
   toggleSidebar = () => {
     this.setState({ sideBarOpen: !this.state.sideBarOpen });
+  };
+
+  recordCanvas = () => {
+    let canvas = document.getElementById("scene").getElementsByTagName("canvas")[0];
+    this.setState({ isRecoding: !this.state.isRecoding }, () => {
+      const recordSettings = {
+        timeslice: 100,
+        mimeType: "video/webm",
+        canvas: canvas
+      };
+      if (this.recordService === null) {
+        this.recordService = new RecordService(recordSettings);
+      }
+      if (this.state.isRecoding) {
+        this.recordService.startRecording();
+      } else {
+        this.recordService.stopRecording();
+        let videoData = this.recordService.getData();
+        let a = document.createElement("a");
+        videoData.then((data) => {
+          const url = URL.createObjectURL(data);
+          //temporary creating an element for automatic download
+          a.setAttribute("href", url);
+          a.setAttribute("download", "cloe-replay-" + this.uuid);
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          this.recordService = null;
+        });
+      }
+    });
   };
 
   rewind = () => {

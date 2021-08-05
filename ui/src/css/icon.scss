@@ -28,6 +28,23 @@
   cursor: pointer;
 }
 
+.rec-icon-pending {
+  width:10px;
+  height:10px;
+  border-radius:50px;
+  line-height:100px;
+  background:#e05048;
+
+  @keyframes glowing {
+    50% {
+      opacity: 0%;
+      box-shadow: 0 0 20px #e05048;
+    }
+  }
+
+  animation: glowing 1500ms infinite;
+}
+
 .icon-clickable {
   color: #6c757d;
   cursor: pointer;
