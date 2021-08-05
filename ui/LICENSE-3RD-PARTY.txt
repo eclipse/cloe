@@ -11,6 +11,7 @@ The following licenses are used by dependencies of cloe-ui:
 ├─ MIT*: 4
 ├─ BSD*: 3
 ├─ BSD: 2
+├─ (MIT AND Zlib): 2
 ├─ BSD-3-Clause OR MIT: 1
 ├─ (MIT OR Apache-2.0): 1
 ├─ CC-BY-4.0: 1
@@ -20,7 +21,6 @@ The following licenses are used by dependencies of cloe-ui:
 ├─ Public Domain: 1
 ├─ WTFPL: 1
 ├─ (BSD-3-Clause OR GPL-2.0): 1
-├─ (MIT AND Zlib): 1
 ├─ (WTFPL OR MIT): 1
 ├─ Custom: https://randomcolor.lllllllllllllllll.com: 1
 ├─ (BSD-2-Clause OR MIT OR Apache-2.0): 1
@@ -5462,6 +5462,10 @@ The following libraries are used by cloe-ui:
 │  ├─ url: sindresorhus.com
 │  └─ licenseFile: node_modules/p-try/license
 ├─ pako@1.0.11
+│  ├─ licenses: (MIT AND Zlib)
+│  ├─ repository: https://github.com/nodeca/pako
+│  └─ licenseFile: node_modules/browserify-zlib/node_modules/pako/LICENSE
+├─ pako@2.0.3
 │  ├─ licenses: (MIT AND Zlib)
 │  ├─ repository: https://github.com/nodeca/pako
 │  └─ licenseFile: node_modules/pako/LICENSE

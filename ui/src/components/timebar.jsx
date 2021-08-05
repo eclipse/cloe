@@ -27,21 +27,27 @@ class Timebar extends Component {
       nextSectionID: 1,
       startTime: 0,
       sections: [],
-      initialStart: true,
-      simulationID: null
+      resetTimeBar: true,
+      simulationID: null,
+      endTime: 0
     };
   }
 
   updateData = () => {
-    const { initialStart, nextSectionID, sections, simulationID } = this.data;
+    const { resetTimeBar, nextSectionID, sections, simulationID } = this.data;
     const { newSimTime, controllerState } = this.props;
+    // Set resetTimeBar to reset UI.
+    if (newSimTime < this.data.endTime) {
+      this.data.resetTimeBar = true;
+    }
+    this.data.endTime = newSimTime;
     const newSimTimeSeconds = newSimTime / 1000;
     if (newSimTime !== undefined && controllerState !== undefined) {
       this.data.simTime = newSimTimeSeconds;
       // Reset if initial UI start or new simulation started.
-      if (initialStart || simulationID !== this.props.simulationID) {
+      if (resetTimeBar || simulationID !== this.props.simulationID) {
         if (this.props.newSimTime) {
-          this.data.initialStart = false;
+          this.data.resetTimeBar = false;
           this.data.startTime = newSimTimeSeconds;
           this.data.simulationID = this.props.simulationID;
           this.data.sections = [
