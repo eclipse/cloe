@@ -15,7 +15,6 @@
  */
 import React, { Component } from "react";
 import { withCookies } from "react-cookie";
-import "whatwg-fetch";
 import axios from "axios";
 import { DragDropContext, Draggable } from "react-beautiful-dnd";
 import { Spin, Progress } from "antd";
@@ -30,7 +29,8 @@ import Rendering from "./components/rendering";
 import Controller from "./components/controller";
 import DroppableWrapper from "./components/droppableWrapper";
 import VehicleCard from "./components/vehiclecard";
-
+import { REPLAYSTATES, STREAMINGTYPES } from "./enums";
+import ErrorMessage from "./components/errorMessage";
 class App extends Component {
   constructor(props) {
     super(props);
@@ -41,13 +41,7 @@ class App extends Component {
     // Definition of the endpoints to fetch, specific to startup phase.
     this.firstPhaseEndpoints = [""];
     this.secondPhaseEndpoints = ["/uuid", "/version", "/progress"];
-    this.thirdPhaseEndpoints = [
-      "/simulation",
-      "/triggers/queue",
-      "/triggers/history",
-      "/uuid",
-      "/version"
-    ];
+    this.thirdPhaseEndpoints = this.setDefaultEndpoints();
 
     // this.endpointsToFetch gets filled with the third phase endpoints and
     // dynamic named endpoints, e.g. for controllers or simulators.
@@ -56,19 +50,25 @@ class App extends Component {
     // All data which could change during one simulation is stored in this.state.
     this.state = {
       startupPhase: 1,
-      cloeData: {},
+      cloeDataImported: {},
+      cloeDataLive: {},
+      configData: {},
       initialHost: "",
       host: "",
       updateInterval: 1000,
       connected: false,
       sideBarOpen: false,
-      dragNDropActivated: false
+      dragNDropActivated: false,
+      streamingType: STREAMINGTYPES.LIVE,
+      replayIndex: 0,
+      replayState: REPLAYSTATES.PAUSED,
+      showErrorMessage: false,
     };
 
     // Helper variable to declare if Cloe-UI should perform one-time fetches,
     // this will be the case at each start of a new simulation.
     this.performOneTimeFetches = true;
-
+    this.fetchCloeApi = 0;
     // Definitions for the one-time fetched information.
     this.controllers = [];
     this.simulators = [];
@@ -87,6 +87,9 @@ class App extends Component {
     this.componentsOnLeftSide = cookies.get("firstColumn") || [0];
     this.componentsOnRightSide = cookies.get("secondColumn") || [1, 2, 3, 4, 5];
     this.componentOrder = ["left"];
+
+    this.stepWidth = null;
+    this.replaySpeed = 1;
   }
 
   render() {
@@ -98,9 +101,15 @@ class App extends Component {
       this.getActionsAndEvents();
       this.performOneTimeFetches = false;
     }
-
-    const { connected, updateInterval, host, initialHost, sideBarOpen, cloeData } = this.state;
-
+    const {
+      connected,
+      updateInterval,
+      host,
+      initialHost,
+      sideBarOpen,
+      cloeDataLive,
+      configData
+    } = this.state;
     // The following array includes all main components.
     const components = [
       {
@@ -114,8 +123,12 @@ class App extends Component {
                 controller={singleController}
                 connected={connected}
                 updateInterval={updateInterval}
-                simTime={cloeData.simTime}
+                cloeData={cloeDataLive}
                 simulationID={this.uuid}
+                uiConfigData={
+                  configData[`${this.apiPrefix}/controllers/${singleController.id}/ui`] || {}
+                }
+                streamingType={this.state.streamingType}
                 saveLayout={(name, value) => this.cookiesSet(name, value)}
                 layout={this.cookiesGet("controllerLayout") || {}}
               />
@@ -124,16 +137,27 @@ class App extends Component {
       },
       {
         id: 1,
-        component: <Rendering sensors={cloeData.sensors} />
+        component: (
+          <Rendering
+            sensors={cloeDataLive.sensors}
+            replayState={this.state.replayState}
+            streamingType={this.state.streamingType}
+            toggleReplay={this.toggleReplay}
+            fastForward={this.fastForward}
+            rewind={this.rewind}
+          />
+        )
       },
       {
         id: 2,
         component: (
           <Simulation
-            simulation={this.getSimulationState(cloeData["/simulation"])}
+            simulation={this.getSimulationState(cloeDataLive["/simulation"])}
             host={host}
             apiPrefix={this.apiPrefix}
             uuid={this.uuid}
+            setSimulationSpeed={this.setSimulationSpeed}
+            streamingType={this.state.streamingType}
           />
         )
       },
@@ -144,7 +168,7 @@ class App extends Component {
             <SimulatorBinding simulator={null} />
           ) : (
             this.simulators.map((simulator) => (
-              <SimulatorBinding simulator={this.state.cloeData[simulator]} key={simulator} />
+              <SimulatorBinding simulator={this.state.cloeDataLive[simulator]} key={simulator} />
             ))
           )
       },
@@ -156,9 +180,9 @@ class App extends Component {
           ) : (
             this.vehicles.map((vehicle) => (
               <VehicleCard
-                vehicle={this.state.cloeData[vehicle]}
+                vehicle={this.state.cloeDataLive[vehicle]}
                 key={vehicle}
-                simTime={cloeData.simTime}
+                simTime={cloeDataLive.simTime}
                 simulationID={this.uuid}
               />
             ))
@@ -172,8 +196,8 @@ class App extends Component {
             apiPrefix={this.apiPrefix}
             connected={connected}
             triggers={{
-              queue: cloeData["/triggers/queue"],
-              history: cloeData["/triggers/history"]
+              queue: cloeDataLive["/triggers/queue"],
+              history: cloeDataLive["/triggers/history"]
             }}
             triggerEvents={this.triggerEvents}
             triggerActions={this.triggerActions}
@@ -189,6 +213,7 @@ class App extends Component {
           <NavBar
             connected={connected}
             toggleSidebar={this.toggleSidebar}
+            getSimulationDataFromJSON={this.getSimulationDataFromJSON}
             version={this.version ? this.version : ""}
           />
         </ErrorBoundary>
@@ -215,6 +240,11 @@ class App extends Component {
             }
             resetCookies={this.resetCookies}
           />
+          {this.state.showErrorMessage && (
+            <ErrorMessage
+              errorMessage={`current JSON ${this.version || ""} version is not supported`}
+            ></ErrorMessage>
+          )}
           {this.renderComponents(components)}
         </div>
       </div>
@@ -233,7 +263,7 @@ class App extends Component {
         <div className="m-auto p-2" style={{ width: "100px" }}>
           <Progress
             type="circle"
-            percent={Math.round((this.initializationProgress.percent || 0) * 100)}
+            percent={Math.round((this.initializationProgress || 0) * 100)}
             width={80}
           />
         </div>
@@ -312,17 +342,18 @@ class App extends Component {
       initialHost: host,
       host: host
     });
-    // Fetch data from Cloe API in given interval (default: 1000ms).
-    this.fetchCloeApi = setInterval(this.fetchData, 100);
+    // Fetch data from Cloe API in given interval (default: 500ms).
+    this.fetchCloeApi = setInterval(this.fetchData, 500);
   }
 
   fetchData = () => {
     // This function checks for connection, and, depending on
     // the startup phase, fetches a set of endpoints.
-
+    if (!this.state.streamingType === STREAMINGTYPES.LIVE) {
+      return;
+    }
     // Check always for connection.
     this.setConnectionState();
-
     // In StartupPhase 2, fetch UUID, version and Cloe init progress.
     if (this.state.startupPhase === 2) {
       this.startupStepTwo();
@@ -330,7 +361,7 @@ class App extends Component {
 
     // In StartupPhase 3, fetch all endpoints in this.endpoints, these
     // include all relevant Cloe data. The data will be stored in
-    // this.state.cloeData.
+    // this.state.cloeDataLive.
     if (this.state.startupPhase === 3) {
       this.startupStepThree();
     }
@@ -407,8 +438,9 @@ class App extends Component {
               data[this.secondPhaseEndpoints[index]] = (allResults[index] || {}).data;
             }
             this.version = data["/version"];
-            this.initializationProgress = data["/progress"].initialization;
-            if (this.initializationProgress.percent === 1) {
+            this.initializationProgress = data["/progress"].initialization.percent;
+            // startupPhase 2 ends with an initializationProgress of 1%.
+            if (this.initializationProgress === 1) {
               this.setState({ startupPhase: 3 });
               if (this.uuid !== data["/uuid"]) {
                 // New simulation started; make sure that dynamic endpoints
@@ -421,7 +453,7 @@ class App extends Component {
             }
             // Clear data to ensure that at a new simulation, Cloe-UI doesn't
             // show old information.
-            this.setState({ cloeData: {} });
+            this.setState({ cloeDataLive: {} });
           }.bind(this)
         )
       );
@@ -446,7 +478,9 @@ class App extends Component {
               data.simTime = ((data["/simulation"] || {}).time || {}).ms;
               data.sensors = (data[this.vehicles[0]] || {}).components;
               // Update app state which triggers rerendering of the app.
-              this.setState({ cloeData: data });
+              if (this.state.connected) {
+                this.setState({ cloeDataLive: data });
+              }
             }.bind(this)
           )
         );
@@ -546,12 +580,20 @@ class App extends Component {
   };
 
   updateHost = () => {
+    clearInterval(this.fetchCloeApi);
+    this.thirdPhaseEndpoints = this.setDefaultEndpoints();
     if (document.getElementById("cloeHost").value === "") {
       this.setState({ host: this.state.initialHost });
     } else {
       this.setState({ host: document.getElementById("cloeHost").value });
     }
-    this.renewFetchInterval(this.state.updateInterval);
+    this.setState(
+      { streamingType: STREAMINGTYPES.LIVE, startupPhase: 1, updateInterval: 1000 },
+      () => {
+        this.initializationProgress = 0;
+        this.renewFetchInterval(1000);
+      }
+    );
   };
 
   handleEnter = (e) => {
@@ -562,6 +604,123 @@ class App extends Component {
 
   toggleSidebar = () => {
     this.setState({ sideBarOpen: !this.state.sideBarOpen });
+  };
+
+  rewind = () => {
+    let currentIndex = this.state.replayIndex;
+    this.setState({ replayState: REPLAYSTATES.PAUSED }, () => {
+      currentIndex = currentIndex - 100 <= 0 ? 0 : (currentIndex -= 100);
+      this.setState({ replayIndex: currentIndex }, () => {
+        this.startReplay(this.replaySpeed);
+        this.setState({ replayState: REPLAYSTATES.STARTED });
+      });
+    });
+  };
+
+  fastForward = () => {
+    let currentIndex = this.state.replayIndex;
+    this.setState({ replayState: REPLAYSTATES.PAUSED }, () => {
+      currentIndex =
+        currentIndex + 100 >= this.state.cloeDataImported.length
+          ? this.state.cloeDataImported.length - 50
+          : (currentIndex += 100);
+      this.setState({ replayIndex: currentIndex }, () => {
+        this.startReplay(this.replaySpeed);
+        this.setState({ replayState: REPLAYSTATES.STARTED });
+      });
+    });
+  };
+
+  toggleReplay = (replayState) => {
+    if (replayState === REPLAYSTATES.FINISHED) {
+      this.setState({ replayState: REPLAYSTATES.STARTED, replayIndex: 0 }, () => {
+        this.startReplay(this.replaySpeed);
+      });
+    } else if (replayState === REPLAYSTATES.STARTED) {
+      this.setState({ replayState: replayState }, () => {
+        this.stepWidth = this.getSimulationState(
+          this.state.cloeDataImported[0][this.apiPrefix + "/simulation"]
+        ).stepWidth;
+        this.replaySpeed = this.state.updateInterval / this.stepWidth;
+        this.startReplay(this.replaySpeed);
+      });
+    } else {
+      clearInterval(this.fetchCloeApi);
+      this.setState({ replayState: REPLAYSTATES.PAUSED });
+    }
+  };
+
+  startReplay = (replaySpeed) => {
+    clearInterval(this.fetchCloeApi);
+    this.fetchCloeApi = setInterval(() => {
+      let index = this.state.replayIndex;
+      if (
+        index < this.state.cloeDataImported.length &&
+        this.state.replayState === REPLAYSTATES.STARTED
+      ) {
+        this.setSimReplayData(this.state.cloeDataImported[index]);
+        index += replaySpeed;
+        this.setState({ replayIndex: index });
+      } else {
+        this.setState({ replayState: REPLAYSTATES.FINISHED });
+        clearInterval(this.fetchCloeApi);
+        return;
+      }
+    }, this.state.updateInterval);
+  };
+
+  getSimulationDataFromJSON = (file, content) => {
+    this.initializationProgress = 0.5;
+    clearInterval(this.fetchCloeApi);
+    this.setState({
+      streamingType: STREAMINGTYPES.REPLAY,
+      updateInterval: 100,
+      startupPhase: 2,
+      cloeDataLive: {}
+    });
+    this.resetEndpoints();
+    this.performOneTimeFetches = false;
+    const simulationData = JSON.parse(content);
+    // Parse data to valid JSON.
+    let simulatorEndpoints = [];
+    let vehiclesEndpoints = [];
+    let controllerEndpoints = [];
+    let parsedData = simulationData.map((arr, i) => {
+      var data = {};
+      for (const key in arr) {
+        data[key] = JSON.parse(arr[key]);
+        // Set simulator endpoint from given JSON.
+        let endpoint = key.replace(this.apiPrefix, "");
+        if (key.match(/simulators.*state$/) && !simulatorEndpoints.includes(endpoint)) {
+          simulatorEndpoints.push(endpoint);
+          this.thirdPhaseEndpoints.push(endpoint);
+        } else if (key.match(/vehicles./) && !vehiclesEndpoints.includes(endpoint)) {
+          vehiclesEndpoints.push(endpoint);
+          this.thirdPhaseEndpoints.push(endpoint);
+        } else if (key.match(/controllers./) && !controllerEndpoints.includes(endpoint)) {
+          controllerEndpoints.push(endpoint);
+          this.thirdPhaseEndpoints.push(endpoint);
+        }
+      }
+      return data;
+    });
+    let configData = parsedData.shift();
+    // Check if JSON is valid and currently supported.
+    let destructVersion = configData[this.apiPrefix + "/version"].split(".");
+    let version = destructVersion[0] + "." + destructVersion[1] + destructVersion[2];
+    if (parseFloat(version) >= 0.18) {
+      this.simulators.push(simulatorEndpoints);
+      this.vehicles.push(vehiclesEndpoints);
+      this.triggerActions = configData[this.apiPrefix + "/triggers/actions"];
+      this.triggerEvents = configData[this.apiPrefix + "/triggers/events"];
+      this.setState({ cloeDataImported: parsedData }, () => this.setSimReplayData(configData));
+      this.renewFetchInterval(this.state.updateInterval);
+    } else {
+      this.setState({ showErrorMessage: true });
+      setTimeout(() => {
+        this.setState({ showErrorMessage: false });
+      }, 5000);
+    }
   };
 
   cookiesSet(name, value) {
@@ -582,8 +741,44 @@ class App extends Component {
     if (this.fetchCloeApi) {
       clearInterval(this.fetchCloeApi);
     }
-    this.fetchData();
-    this.fetchCloeApi = setInterval(this.fetchData, updateInterval);
+    if (this.state.streamingType === STREAMINGTYPES.LIVE) {
+      this.fetchData();
+      this.fetchCloeApi = setInterval(this.fetchData, updateInterval);
+    } else {
+      this.setSimReplayData(this.state.cloeDataImported[0]);
+    }
+  };
+
+  setSimReplayData = (allResults) => {
+    // Create temporary data object which holds all data.
+    let data = {};
+    if (this.state.startupPhase === 2) {
+      this.version = allResults[this.apiPrefix + "/version"];
+      this.uuid = allResults[this.apiPrefix + "/uuid"];
+      this.initializationProgress = 1;
+      this.controllers = [];
+      for (const index in allResults[this.apiPrefix + "/controllers"]) {
+        const controllerID = allResults[this.apiPrefix + "/controllers"][index];
+        const controller = {
+          id: controllerID,
+          endpointBase: `${this.apiPrefix}/controllers/${controllerID}`
+        };
+        this.controllers.push(controller);
+      }
+      this.triggerEvents = allResults[this.apiPrefix + "/triggers/events"];
+      this.triggerActions = allResults[this.apiPrefix + "/triggers/actions"];
+      this.setState({ startupPhase: 3, configData: allResults });
+    } else if (this.state.startupPhase === 3) {
+      for (let index = 0; index < this.thirdPhaseEndpoints.length; index++) {
+        data[this.thirdPhaseEndpoints[index]] =
+          allResults[this.apiPrefix + this.thirdPhaseEndpoints[index]] || {};
+      }
+      // Store simTime and sensors in a more accessible way.
+      data.simTime = ((data["/simulation"] || {}).time || {}).ms;
+      data.sensors = (data[this.vehicles[0]] || {}).components;
+      // Update app state which triggers rerendering of the app.
+      this.setState({ cloeDataLive: data });
+    }
   };
 
   getSimulationState = (simulationState) => {
@@ -592,7 +787,8 @@ class App extends Component {
         time: simulationState.time.ms,
         step: simulationState.step,
         realtime_factor: simulationState.realtime_factor,
-        eta: simulationState.eta
+        eta: simulationState.eta,
+        stepWidth: parseInt(simulationState.step_width)
       };
     } else {
       return undefined;
@@ -613,6 +809,24 @@ class App extends Component {
       destination.droppableId,
       destination.index
     );
+  };
+
+  setDefaultEndpoints = () => {
+    return ["/simulation", "/triggers/queue", "/triggers/history", "/uuid", "/version"];
+  };
+
+  setSimulationSpeed = (value) => {
+    this.replaySpeed = Number(((this.state.updateInterval * value) / this.stepWidth).toFixed());
+    this.startReplay(this.replaySpeed);
+  };
+
+  resetEndpoints = () => {
+    this.controllerEndpoints = [];
+    this.vehicles = [];
+    this.simulators = [];
+    this.controllers = [];
+    this.triggerActions = [];
+    this.triggerEvents = [];
   };
 }
 

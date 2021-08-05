@@ -25,6 +25,7 @@ import hash from "object-hash";
 import jp from "jsonpath";
 import { Icon as LegacyIcon } from "@ant-design/compatible";
 import * as mathjs from "mathjs";
+import { STREAMINGTYPES } from "../enums";
 
 class Controller extends Component {
   constructor(props) {
@@ -36,6 +37,7 @@ class Controller extends Component {
     this.sources = {};
     this.groupsVisibility = props.layout;
     this.uiEnabled = true;
+    this.streamingType = props.streamingType;
   }
 
   render() {
@@ -84,6 +86,17 @@ class Controller extends Component {
           this.uiEnabled = false;
         });
     }
+    // In replay mode the parent component provides the uiConfigData.
+    // Check if the provided uiConfigData has entries (should be done once).
+    else if (Object.keys(this.props.uiConfigData).length > 0) {
+      let data = this.props.uiConfigData.controller;
+      this.paths = data.paths;
+      this.layout = data.layout;
+      this.title = data.title;
+      this.action = data.action;
+      this.elements = this.generateElements(data.elements);
+      this.uiSpecificationLoaded = true;
+    }
   };
 
   generateElements = (specifiedElements) => {
@@ -106,6 +119,15 @@ class Controller extends Component {
               this.sources[endpoint][path] = jp.value(response, path);
             }
           });
+      }
+    } else if (this.streamingType === STREAMINGTYPES.REPLAY) {
+      for (const endpoint in this.sources) {
+        for (const path in this.sources[endpoint]) {
+          const fetchEndpoint = this.resolveEndpoint(endpoint).replace("/api", "");
+          if (Object.keys(this.props.cloeData).length > 0) {
+            this.sources[endpoint][path] = jp.value(this.props.cloeData[fetchEndpoint], path);
+          }
+        }
       }
     }
   };
@@ -291,7 +313,7 @@ class Controller extends Component {
         <Timebar
           key={timebarElement.id}
           controllerState={value}
-          newSimTime={this.props.simTime}
+          newSimTime={this.props.cloeData.simTime}
           simulationID={this.props.simulationID}
           colorTrue={timebarElement.params.color_true}
           colorFalse={timebarElement.params.color_false}
@@ -317,7 +339,7 @@ class Controller extends Component {
           key={linechartElement.id}
           sourcePaths={sourcePaths}
           nextYValues={values}
-          nextXValue={this.props.simTime / 1000}
+          nextXValue={this.props.cloeData.simTime / 1000}
           simulationID={this.props.simulationID}
           colors={linechartElement.params.colors}
         />

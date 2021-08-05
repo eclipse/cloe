@@ -21,6 +21,7 @@ import Slider from "react-rangeslider";
 import { Select, Tag } from "antd";
 import { SettingFilled, UndoOutlined } from "@ant-design/icons";
 import SpriteText from "three-spritetext";
+import ReplayControlls from "./replayControls";
 
 const OrbitControls = require("three-orbit-controls")(THREE);
 var randomColor = require("randomcolor");
@@ -105,7 +106,7 @@ class Rendering extends Component {
 
   render() {
     // Make sensors available for input fields.
-    const { sensors } = this.props;
+    const { sensors, replayState, streamingType } = this.props;
     const selectObjSensors = this.getAvailSensors(sensors, this.sensorType.Object);
     const selectLaneSensors = this.getAvailSensors(sensors, this.sensorType.Lane);
 
@@ -178,6 +179,14 @@ class Rendering extends Component {
               </div>
             </div>
           </div>
+          <ReplayControlls
+            replayState={replayState}
+            streamingType={streamingType}
+            isRecording={isRecording}
+            toggleReplay={this.toggleReplay}
+            fastForward={this.fastForward}
+            rewind={this.rewind}
+          ></ReplayControlls>
           <div
             className="m-0 mt-2 text-light"
             style={{
@@ -935,6 +944,18 @@ class Rendering extends Component {
   // Make rendering options un-/visible.
   toggleOptions = () => {
     this.setState({ optionsVisible: !this.state.optionsVisible });
+  };
+
+  toggleReplay = (isRunning) => {
+    this.props.toggleReplay(isRunning);
+  };
+
+  fastForward = () => {
+    this.props.fastForward();
+  };
+
+  rewind = () => {
+    this.props.rewind();
   };
 
   resetRenderOptions = () => {

@@ -18,6 +18,7 @@ import axios from "axios";
 import Card from "./card";
 import Label from "./label";
 import Slider from "react-rangeslider";
+import { STREAMINGTYPES } from "../enums";
 
 // The Simulation component displays general Information about the simulation.
 // Each Information is represented by a Label component.
@@ -42,7 +43,11 @@ class Simulation extends Component {
 
   handleSimSpeedChange = (value) => {
     this.setState({ simSpeed: value }, () => {
-      this.triggerHMI("realtime_factor", this.state.simSpeed / 100);
+      if (this.props.streamingType === STREAMINGTYPES.REPLAY) {
+        this.props.setSimulationSpeed(value / 100);
+      } else {
+        this.triggerHMI("realtime_factor", this.state.simSpeed / 100);
+      }
     });
   };
 
