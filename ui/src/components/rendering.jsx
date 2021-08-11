@@ -21,6 +21,7 @@ import Slider from "react-rangeslider";
 import { Select, Tag } from "antd";
 import { SettingFilled, UndoOutlined } from "@ant-design/icons";
 import SpriteText from "three-spritetext";
+import ReplayControlls from "./replayControls";
 
 const OrbitControls = require("three-orbit-controls")(THREE);
 var randomColor = require("randomcolor");
@@ -105,7 +106,7 @@ class Rendering extends Component {
 
   render() {
     // Make sensors available for input fields.
-    const { sensors } = this.props;
+    const { sensors, replayState, streamingType, isRecording } = this.props;
     const selectObjSensors = this.getAvailSensors(sensors, this.sensorType.Object);
     const selectLaneSensors = this.getAvailSensors(sensors, this.sensorType.Lane);
 
@@ -178,9 +179,21 @@ class Rendering extends Component {
               </div>
             </div>
           </div>
+          <ReplayControlls
+            replayState={replayState}
+            streamingType={streamingType}
+            isRecording={isRecording}
+            toggleReplay={this.toggleReplay}
+            fastForward={this.fastForward}
+            rewind={this.rewind}
+            recordCanvas={this.recordCanvas}
+          ></ReplayControlls>
           <div
             className="m-0 mt-2 text-light"
-            style={{ position: "absolute", transform: "translate(25px, -0.5px)" }}
+            style={{
+              position: "absolute",
+              transform: "translate(25px, -0.5px)"
+            }}
           >
             <UndoOutlined
               className="m-2 icon-white"
@@ -240,7 +253,11 @@ class Rendering extends Component {
                 color={colors[value]}
                 closable={closable}
                 onClose={onClose}
-                style={{ marginRight: 3, color: "rgb(0,0,0)", borderColor: "#999" }}
+                style={{
+                  marginRight: 3,
+                  color: "rgb(0,0,0)",
+                  borderColor: "#999"
+                }}
               >
                 {label}
               </Tag>
@@ -588,11 +605,11 @@ class Rendering extends Component {
     const material =
       lane.type === "dashed"
         ? new THREE.LineDashedMaterial({
-          linewidth: 1,
-          color: 0xffffff,
-          dashSize: 3,
-          gapSize: 3
-        })
+            linewidth: 1,
+            color: 0xffffff,
+            dashSize: 3,
+            gapSize: 3
+          })
         : new THREE.LineBasicMaterial({ color: 0xffffff });
     for (const point of lane.points) {
       const pointEgoFrame = new THREE.Vector3(point.x, point.y, point.z);
@@ -783,6 +800,7 @@ class Rendering extends Component {
     const vertices = [];
     // Define vertex positions.
     if (this.state.frustum3d) {
+      // prettier-ignore
       vertices.push(
         frustumPoints[0].x, frustumPoints[0].y, frustumPoints[0].z,
         frustumPoints[1].x, frustumPoints[1].y, frustumPoints[1].z,
@@ -794,6 +812,7 @@ class Rendering extends Component {
         frustumPoints[7].x, frustumPoints[7].y, frustumPoints[7].z
       );
     } else {
+      // prettier-ignore
       vertices.push(
         frustumPoints[0].x, frustumPoints[0].y, frustumPoints[0].z,
         frustumPoints[1].x, frustumPoints[1].y, frustumPoints[1].z,
@@ -806,29 +825,33 @@ class Rendering extends Component {
     const itemSize = 3;
     // Set position of frustum geometry.
     frustumBufferGeometry.setAttribute(
-      'position',
-      new THREE.BufferAttribute(new Float32Array(vertices), itemSize));
+      "position",
+      new THREE.BufferAttribute(new Float32Array(vertices), itemSize)
+    );
     // Define faces via index.
     if (this.state.frustum3d) {
+      // prettier-ignore
       frustumBufferGeometry.setIndex([
         2, 1, 0, 0, 3, 2, 1, 5, 4,
         1, 4, 0, 1, 6, 5, 2, 6, 1,
         3, 6, 2, 3, 7, 6, 0, 7, 3,
         4, 7, 0, 4, 5, 6, 4, 6, 7,
-      ])
+      ]);
     } else {
+      // prettier-ignore
       frustumBufferGeometry.setIndex([
         0, 1, 2,
         0, 3, 2,
-      ])
+      ]);
     }
     // Set uniform color of frustum geometry.
     const colors = [];
-    Array.from({ length: vertices.length / itemSize }, () => colors.push(1, 0.98, 0.56))
+    Array.from({ length: vertices.length / itemSize }, () => colors.push(1, 0.98, 0.56));
     // Map RGB color to vertices.
     frustumBufferGeometry.setAttribute(
-      'color',
-      new THREE.BufferAttribute(new Float32Array(colors), itemSize));
+      "color",
+      new THREE.BufferAttribute(new Float32Array(colors), itemSize)
+    );
 
     // Compute geometric properties.
     frustumBufferGeometry.computeVertexNormals();
@@ -922,6 +945,22 @@ class Rendering extends Component {
   // Make rendering options un-/visible.
   toggleOptions = () => {
     this.setState({ optionsVisible: !this.state.optionsVisible });
+  };
+
+  toggleReplay = (isRunning) => {
+    this.props.toggleReplay(isRunning);
+  };
+
+  fastForward = () => {
+    this.props.fastForward();
+  };
+
+  rewind = () => {
+    this.props.rewind();
+  };
+
+  recordCanvas = () => {
+    this.props.recordCanvas();
   };
 
   resetRenderOptions = () => {

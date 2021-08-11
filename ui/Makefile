@@ -2,7 +2,7 @@
 #
 
 CLOE_ROOT := ..
-CLOE_VERSION := $(shell cat ${CLOE_ROOT}/VERSION)
+CLOE_VERSION := $(shell $(MAKE) -s -C ../ -f Makefile.package info-version)
 
 HAS_GIT := $(shell [ -d ${CLOE_ROOT}/.git ] && echo "true")
 ifeq (${HAS_GIT},true)

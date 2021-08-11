@@ -24,29 +24,32 @@ class Chart extends Component {
   constructor(props) {
     super(props);
     this.lastXValue = 0;
-    this.initialStart = true;
+    this.resetChart = true;
     this.simulationID = null;
+    this.chart = null;
   }
 
   shouldComponentUpdate(nextProps) {
     this.updateChartData();
-    this.refs.chart.chartInstance.chart.update(0);
+    this.chart.chartInstance.chart.update(0);
     return false;
   }
 
   resetZoom = () => {
-    this.refs.chart.chartInstance.resetZoom();
+    this.chart.chartInstance.resetZoom();
   };
 
   updateChartData = () => {
     const { nextXValue, nextYValues, sourcePaths, colors, simulationID } = this.props;
-    const data = this.refs.chart.chartInstance.chart.data;
-    if (this.simulationID !== simulationID) {
+    // Set initial state to reset UI.
+    if (this.simulationID !== simulationID || this.lastXValue > nextXValue) {
       this.simulationID = simulationID;
-      this.initialStart = true;
+      this.resetChart = true;
     }
-    if (this.initialStart) {
-      this.initialStart = false;
+    this.lastXValue = nextXValue;
+    const data = this.chart.chartInstance.chart.data;
+    if (this.resetChart) {
+      this.resetChart = false;
       data.datasets = [];
       nextYValues.forEach(() => {
         data.datasets.push({ data: [] });
@@ -78,7 +81,7 @@ class Chart extends Component {
         </small>
 
         <Scatter
-          ref="chart"
+          ref={(ref) => (this.chart = ref)}
           data={{ datasets: [{ data: [0, 0] }] }}
           options={{
             scales: {

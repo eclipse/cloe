@@ -17,10 +17,16 @@ import React from "react";
 import { MoreOutlined } from "@ant-design/icons";
 import { Popover } from "antd";
 import { copyToClipboard } from "../helpers";
+import FileUploader from "./fileUploader";
 
 function NavBar(props) {
   const { connected, version } = props;
   const versionString = version.package_version;
+  // Propagate the file to parent app.js.
+  const handleFileUpload = (file, content) => {
+    props.getSimulationDataFromJSON(file, content);
+  };
+
   return (
     <nav
       className={`navbar navbar-expand-lg navbar-light shadow-sm ${
@@ -54,7 +60,8 @@ function NavBar(props) {
           </small>
         </Popover>
       </div>
-      <div className="navbar-nav ml-auto">
+      <FileUploader handleFileUpload={handleFileUpload} connected={connected}></FileUploader>
+      <div className="navbar-nav mx-1">
         <div className="float-left my-lg-0 m-auto">
           <MoreOutlined
             className={connected ? "icon" : "icon-white"}
