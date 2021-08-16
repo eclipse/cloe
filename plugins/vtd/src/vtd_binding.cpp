@@ -59,7 +59,11 @@ namespace vtd {
  * The VtdStatistics struct contains all nominal statistics of the VTD binding.
  */
 struct VtdStatistics {
+  double last_frame_time_ms{0};
   cloe::utility::Accumulator frame_time_ms;
+  cloe::utility::Accumulator task_control_time_ms;
+  cloe::utility::Accumulator trigger_and_send;
+  cloe::utility::Accumulator data_receive_time_ms;
   cloe::utility::Accumulator clock_drift_ns;
 
   /**
@@ -68,15 +72,22 @@ struct VtdStatistics {
    * # JSON Output
    * ```json
    * {
-   *   {"connection_tries": number},
+   *   {"last_frame_time_ms", Milliseconds}
    *   {"frame_time_ms", Accumulator},
+   *   {"task_control_time_ms", Accumulator},
+   *   {"data_receive_time_ms", Accumulator},
+   *   {"trigger_and_send", Accumulator},
    *   {"clock_drift_ns", Accumulator}
    * }
    * ```
    */
   friend void to_json(cloe::Json& j, const VtdStatistics& s) {
     j = cloe::Json{
+        {"last_frame_time_ms", s.last_frame_time_ms},
         {"frame_time_ms", s.frame_time_ms},
+        {"task_control_time_ms", s.task_control_time_ms},
+        {"data_receive_time_ms", s.data_receive_time_ms},
+        {"trigger_and_send", s.trigger_and_send},
         {"clock_drift_ns", s.clock_drift_ns},
     };
   }
@@ -364,8 +375,10 @@ class VtdBinding : public cloe::Simulator {
     assert(operational_);
 
     // Statistics:
-    timer::DurationTimer<timer::Milliseconds> t(
-        [this](timer::Milliseconds d) { this->stats_.frame_time_ms.push_back(d.count()); });
+    timer::DurationTimer<timer::Milliseconds> t([this](timer::Milliseconds d) {
+      this->stats_.last_frame_time_ms = d.count();
+      this->stats_.frame_time_ms.push_back(d.count());
+    });
 
     // Read all incoming SCP messages,
     // a) to empty the buffer, and
@@ -378,16 +391,30 @@ class VtdBinding : public cloe::Simulator {
     }
 
     // Process task control messages
-    task_control_->step(sync);
+    {
+      timer::DurationTimer<timer::Milliseconds> t([this](timer::Milliseconds d) {
+        this->stats_.task_control_time_ms.push_back(d.count());
+      });
+      task_control_->step(sync);
+    }
 
     // Receive new data relating to all sensors
     cloe::Duration sensor_time{0};
-    for (auto v : vehicles_) {
-      sensor_time = v->vtd_step_sensors(sync);
+    {
+      timer::DurationTimer<timer::Milliseconds> t([this](timer::Milliseconds d) {
+        this->stats_.data_receive_time_ms.push_back(d.count());
+      });
+      for (auto v : vehicles_) {
+        sensor_time = v->vtd_step_sensors(sync);
+      }
     }
 
     // Trigger VTD to simulation the next step
-    task_control_->add_trigger_and_send(sync.step_width());
+    {
+      timer::DurationTimer<timer::Milliseconds> t(
+          [this](timer::Milliseconds d) { this->stats_.trigger_and_send.push_back(d.count()); });
+      task_control_->add_trigger_and_send(sync.step_width());
+    }
 
     // Calculate error of previous timestep for timing statistics
     vtd_timestep_error_ = sync.time() - sensor_time;
