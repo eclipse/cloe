@@ -44,7 +44,7 @@ class LatLongActuator : public Component {
    * Set the vehicle target acceleration in m/s^2.
    * The time that the vehicle requires to reach this acceleration is undefined.
    */
-  void set_acceleration(double a) {
+  virtual void set_acceleration(double a) {
     target_acceleration_ = a;
     level_.set_long();
   }
@@ -62,7 +62,7 @@ class LatLongActuator : public Component {
    * In most cases, the front left wheel defines the angle, and the time to target
    * steering angle is zero.
    */
-  void set_steering_angle(double a) {
+  virtual void set_steering_angle(double a) {
     target_steering_angle_ = a;
     level_.set_lat();
   }
