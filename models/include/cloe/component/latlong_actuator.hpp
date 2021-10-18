@@ -45,17 +45,17 @@ class LatLongActuator : public Component {
    * Set the vehicle target acceleration in m/s^2.
    * The time that the vehicle requires to reach this acceleration is undefined.
    */
-  void set_acceleration(double a) {
+  virtual void set_acceleration(double a) {
     target_acceleration_ = a;
     level_.set_long();
   }
 
-  boost::optional<double> acceleration() const { return target_acceleration_; }
+  virtual boost::optional<double> acceleration() { return target_acceleration_; }
 
   /**
    * Return true if set_acceleration was called for the current step.
    */
-  bool is_acceleration() const { return static_cast<bool>(target_acceleration_); }
+  virtual bool is_acceleration() const { return static_cast<bool>(target_acceleration_); }
 
   /**
    * Set the target steering angle of the wheels in rad.
@@ -63,17 +63,17 @@ class LatLongActuator : public Component {
    * In most cases, the front left wheel defines the angle, and the time to target
    * steering angle is zero.
    */
-  void set_steering_angle(double a) {
+  virtual void set_steering_angle(double a) {
     target_steering_angle_ = a;
     level_.set_lat();
   }
 
-  boost::optional<double> steering_angle() const { return target_steering_angle_; }
+  virtual boost::optional<double> steering_angle() { return target_steering_angle_; }
 
   /**
    * Return true if set_target_steering_angle was called for the current step.
    */
-  bool is_steering_angle() const { return static_cast<bool>(target_steering_angle_); }
+  virtual bool is_steering_angle() const { return static_cast<bool>(target_steering_angle_); }
 
   /**
    * Return a single enum summarizing the current actuation level of control.
