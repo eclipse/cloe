@@ -22,10 +22,11 @@ import {
   FastForwardOutlined,
   VideoCameraOutlined
 } from "@ant-design/icons";
+import { Spin } from "antd";
 import { STREAMINGTYPES, REPLAYSTATES } from "../enums";
 
 function ReplayControls(props) {
-  const { streamingType, replayState, isRecording } = props;
+  const { streamingType, replayState, isRecording, isBuffering } = props;
 
   const handleToggleReplay = (isRunning) => {
     props.toggleReplay(isRunning);
@@ -76,7 +77,7 @@ function ReplayControls(props) {
           )}
           {isReplayType(streamingType) && replayState === REPLAYSTATES.PAUSED && (
             <PlayCircleOutlined
-              className="m-2 icon-white"
+              className={`m-2 ${isBuffering ? "icon-invisible" : "icon-white"}`}
               style={{ color: "#2bbbad", fontSize: "16px" }}
               onClick={() => handleToggleReplay(REPLAYSTATES.STARTED)}
             />
@@ -118,6 +119,9 @@ function ReplayControls(props) {
           </div>
         </div>
       }
+      {isReplayType(streamingType) && replayState === REPLAYSTATES.PAUSED && isBuffering && (
+        <Spin className="custom-spinner" tip="Loading..." />
+      )}
     </React.Fragment>
   );
 }

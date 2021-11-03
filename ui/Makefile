@@ -2,7 +2,7 @@
 #
 
 CLOE_ROOT := ..
-CLOE_VERSION := $(shell $(MAKE) -s -C ../ -f Makefile.package info-version)
+CLOE_VERSION := $(shell sed -rn "s/^ *\"version\": *\"(.*)\".*$$/\1/p" package.json)
 
 HAS_GIT := $(shell [ -d ${CLOE_ROOT}/.git ] && echo "true")
 ifeq (${HAS_GIT},true)
@@ -29,6 +29,8 @@ DOCKER_IMAGE    := ${IMAGE_BASE}:${IMAGE_VERSION}
 DOCKER_RUN_ARGS := -p=5000:5000
 DOCKER_CONTEXT  := .
 
+CONTAINER_NAME := cloe-ui
+
 .PHONY: help
 .DEFAULT: help
 help:
@@ -53,4 +55,4 @@ image:
 	docker tag ${DOCKER_IMAGE} ${DOCKER_IMAGE}
 
 run:
-	docker run --rm ${DOCKER_RUN_ARGS} ${DOCKER_IMAGE}
+	docker run --rm --name=${CONTAINER_NAME} ${DOCKER_RUN_ARGS} ${DOCKER_IMAGE}
