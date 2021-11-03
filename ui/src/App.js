@@ -13,6 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/**
+ * This is the main entry point (root) for react.
+ * App.js has several functions:
+ *   - Render the child components and propagate the simulation data.
+ *   - Manage fetching of data for live simulations.
+ *   - Manage data handling for replays.
+ *   - Recording of the 3d canvas.
+ *   - Slow down, accelerate, fast-forward, rewind, play, pause simulation or
+ *     data stream.
+ *
+ */
 import React, { Component } from "react";
 import { withCookies } from "react-cookie";
 import axios from "axios";
@@ -121,7 +132,7 @@ class App extends Component {
     this.socket = socketIOClient(`ws://${this.hostname}:${this.webserverPort}`);
     this.child = React.createRef();
   }
-
+  // React lifecycle method.
   render() {
     // Perform one-time fetches if new simulation started.
     if (this.state.startupPhase === 3 && this.performOneTimeFetches) {
@@ -378,7 +389,7 @@ class App extends Component {
       </DroppableWrapper>
     );
   };
-
+  // React lifecylc method.
   componentDidMount() {
     // Set host variable with get parameter or default value and
     // store the initial host in order to have it as placeholder in input field
@@ -392,9 +403,9 @@ class App extends Component {
     // Fetch data from Cloe API in given interval (default: 500ms).
     this.fetchCloeApi = setInterval(this.fetchData, this.defaultUpdateInterval);
 
-    this.websocketCallback();
+    this.websocketCallbacks();
   }
-
+  // React lifecylc method.
   // Remove the listener before unmounting the component to avoid addition of multiple listeners.
   componentWillUnmount() {
     this.socket.off("new_replay_data");
@@ -402,7 +413,7 @@ class App extends Component {
     this.socket.off("plot_data");
   }
 
-  websocketCallback = () => {
+  websocketCallbacks = () => {
     this.socket.on("set_replay_environment", async (data) => {
       console.log("new simulation replay started");
       this.replayBufferData = [];
@@ -964,8 +975,6 @@ class App extends Component {
         this.loadPlotData(data);
       }, 500);
     } else {
-      console.log("wad");
-      console.log(this.child.current);
       this.child.current.extractDataFromString(data);
     }
   };

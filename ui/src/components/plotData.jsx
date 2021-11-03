@@ -114,7 +114,9 @@ class PlotData extends Component {
 
   addTimeMarkers = () => {
     if (!$("#plotData").contents().length > 0) {
-      return;
+      setTimeout(() => {
+        this.addTimeMarkers();
+      }, 1000);
     } else if (this.state.timeMarkersCount === 0) {
       let iframeData = $("#plotData").contents()[0].children[0].children[1].children[0].children[2]
         .data;

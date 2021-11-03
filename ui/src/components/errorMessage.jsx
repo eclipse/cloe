@@ -19,6 +19,9 @@ import React, { Component } from "react";
 class ErrorMessage extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+      showErrorMessage: true
+    };
     this.fileType = props.fileType || null;
     this.errorMessage = props.errorMessage;
     this.state = {
