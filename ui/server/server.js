@@ -1,3 +1,28 @@
+/*
+ * Copyright 2021 Robert Bosch GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/**
+ * This is the main file for the cloe webserver.
+ * For now everything is located here. API Endpoints and websocket handling
+ * could be written in separate files to archieve a better project structure.
+ *
+ * Further Work:
+ *  -API Endpoint to share config file between server/client
+ *
+ */
+
 // Import libraries.
 const express = require("express");
 const os = require("os");
@@ -9,6 +34,8 @@ const app = express();
 const path = require("path");
 const JSONStream = require("JSONStream");
 // Enable CORS.
+// Cross Origin Resource Sharing -> see: https://expressjs.com/en/resources/middleware/cors.html.
+// Set credentials to true to allow HTTP Cookies.
 app.use(cors({ credentials: true, origin: "*" }));
 
 // Config express webserver.
@@ -25,7 +52,7 @@ const FILEPATHROOT = process.env.CLOE_UI_SERVER_ROOT_DIR
 const FILEDIRECTORY = "replay_data";
 
 // Create directory ./uploads for multer if not existing.
-var DIR = "./uploads";
+const DIR = "./uploads";
 
 if (!fs.existsSync(DIR)) {
   fs.mkdirSync(DIR);
@@ -44,7 +71,7 @@ const storage = multer.diskStorage({
 // Define multer function.
 const uploadsConfig = multer({ storage });
 
-// Confirm that server is running and is listening to the specified port.
+// The Server will run on 0.0.0.0 and is available for all clients within the network.
 const server = app.listen(port, () => console.log(`Listening on port ${port}`));
 
 // Make websocket listen on port.
@@ -60,7 +87,7 @@ io.sockets.on("connection", function(socket) {
     `new Client ${socket.handshake.headers.origin} subscribed at ${socket.handshake.time}`
   );
 });
-// API Endpoint to decompress incomming gz file and sent content back.
+// API Endpoint to decompress incomming gz file and to send content back.
 app.post("/decompress-gzips", uploadsConfig.single("uploaded_file"), async (req, res) => {
   let newFileName = req.file.filename.replace(".gz", "");
   let file = req.file;

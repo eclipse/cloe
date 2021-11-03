@@ -18,10 +18,8 @@ export default class RecordService {
   stream = null;
   blobs = [];
   constructor(recordSettings) {
-    // Read the data in chunks.
     this.timeslice = recordSettings.timeslice;
     this.mimeType = recordSettings.mimeType === void 0 ? "video/webm" : recordSettings.mimeType;
-    // Default value is 2.5mbps.
     this.videoBitsPerSecond = 2500000;
     this.canvas = recordSettings.canvas;
   }
@@ -42,7 +40,6 @@ export default class RecordService {
   }
   // Stop the recording.
   stopRecording() {
-    // if recording multiple times, consider choosing right track - getTracks()[?].
     this.stream.getTracks()[0].stop();
     this.recorder.stop();
   }

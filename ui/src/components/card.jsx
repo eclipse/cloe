@@ -20,7 +20,7 @@ function Card(props) {
   return props.invisible ? null : (
     <div
       className="shadow-sm container pb-2 pt-2 pl-1 pr-1 border white-bg"
-      style={{ width: props.width || "auto" }}
+      style={{ width: props.width || "auto", wordBreak: "break-word", overflow: "hidden" }}
     >
       {props.children}
     </div>

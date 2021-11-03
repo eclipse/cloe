@@ -2,7 +2,7 @@
 ==================
 
 The following licenses are used by dependencies of cloe-ui:
-├─ MIT: 1657
+├─ MIT: 1658
 ├─ ISC: 134
 ├─ BSD-3-Clause: 54
 ├─ BSD-2-Clause: 35
@@ -14,6 +14,7 @@ The following licenses are used by dependencies of cloe-ui:
 ├─ Zlib: 3
 ├─ BSD: 2
 ├─ Custom: http://badges.github.io/stability-badges/dist/stable.svg: 2
+├─ (MIT OR CC0-1.0): 2
 ├─ Custom: https://github.com/tmcw/jsonlint: 1
 ├─ BSD-3-Clause OR MIT: 1
 ├─ (MIT OR Apache-2.0): 1
@@ -30,7 +31,6 @@ The following licenses are used by dependencies of cloe-ui:
 ├─ (BSD-2-Clause OR MIT OR Apache-2.0): 1
 ├─ (MIT AND BSD-3-Clause): 1
 ├─ CC-BY-3.0: 1
-├─ (MIT OR CC0-1.0): 1
 └─ Custom: https://github.com/substack/node-browserify: 1
 
 The following libraries are used by cloe-ui:
@@ -1058,9 +1058,9 @@ The following libraries are used by cloe-ui:
 │  ├─ repository: https://github.com/epoberezkin/ajv
 │  ├─ publisher: Evgeny Poberezkin
 │  └─ licenseFile: node_modules/ajv/LICENSE
-├─ ajv@6.5.3
+├─ ajv@6.12.6
 │  ├─ licenses: MIT
-│  ├─ repository: https://github.com/epoberezkin/ajv
+│  ├─ repository: https://github.com/ajv-validator/ajv
 │  ├─ publisher: Evgeny Poberezkin
 │  └─ licenseFile: node_modules/serve/node_modules/ajv/LICENSE
 ├─ almost-equal@1.1.0
@@ -1089,7 +1089,7 @@ The following libraries are used by cloe-ui:
 │  ├─ publisher: James Burke
 │  ├─ url: http://github.com/jrburke
 │  └─ licenseFile: node_modules/amdefine/LICENSE
-├─ ansi-align@2.0.0
+├─ ansi-align@3.0.1
 │  ├─ licenses: ISC
 │  ├─ repository: https://github.com/nexdrew/ansi-align
 │  ├─ publisher: nexdrew
@@ -1128,7 +1128,7 @@ The following libraries are used by cloe-ui:
 │  ├─ repository: https://github.com/chalk/ansi-regex
 │  ├─ publisher: Sindre Sorhus
 │  ├─ url: sindresorhus.com
-│  └─ licenseFile: node_modules/string-width/node_modules/ansi-regex/license
+│  └─ licenseFile: node_modules/wide-align/node_modules/ansi-regex/license
 ├─ ansi-regex@4.1.0
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/chalk/ansi-regex
@@ -1141,6 +1141,12 @@ The following libraries are used by cloe-ui:
 │  ├─ publisher: Sindre Sorhus
 │  ├─ url: sindresorhus.com
 │  └─ licenseFile: node_modules/inquirer/node_modules/ansi-regex/license
+├─ ansi-regex@5.0.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/chalk/ansi-regex
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/boxen/node_modules/string-width/node_modules/ansi-regex/license
 ├─ ansi-styles@2.2.1
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/chalk/ansi-styles
@@ -1153,6 +1159,12 @@ The following libraries are used by cloe-ui:
 │  ├─ publisher: Sindre Sorhus
 │  ├─ url: sindresorhus.com
 │  └─ licenseFile: node_modules/ansi-styles/license
+├─ ansi-styles@4.3.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/chalk/ansi-styles
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/boxen/node_modules/ansi-styles/license
 ├─ antd@4.10.0
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/ant-design/ant-design
@@ -1174,11 +1186,11 @@ The following libraries are used by cloe-ui:
 │  ├─ repository: https://github.com/iarna/aproba
 │  ├─ publisher: Rebecca Turner
 │  └─ licenseFile: node_modules/aproba/LICENSE
-├─ arch@2.1.1
+├─ arch@2.2.0
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/feross/arch
 │  ├─ publisher: Feross Aboukhadijeh
-│  ├─ url: http://feross.org/
+│  ├─ url: https://feross.org
 │  └─ licenseFile: node_modules/arch/LICENSE
 ├─ are-we-there-yet@1.1.5
 │  ├─ licenses: ISC
@@ -1671,11 +1683,11 @@ The following libraries are used by cloe-ui:
 │  ├─ repository: https://github.com/mikolalysenko/box-intersect
 │  ├─ publisher: Mikola Lysenko
 │  └─ licenseFile: node_modules/box-intersect/LICENSE
-├─ boxen@1.3.0
+├─ boxen@5.1.2
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/sindresorhus/boxen
 │  ├─ publisher: Sindre Sorhus
-│  ├─ url: sindresorhus.com
+│  ├─ url: https://sindresorhus.com
 │  └─ licenseFile: node_modules/boxen/license
 ├─ brace-expansion@1.1.11
 │  ├─ licenses: MIT
@@ -1860,12 +1872,6 @@ The following libraries are used by cloe-ui:
 │  ├─ publisher: Sindre Sorhus
 │  ├─ url: http://sindresorhus.com
 │  └─ licenseFile: node_modules/camelcase-keys/node_modules/camelcase/license
-├─ camelcase@4.1.0
-│  ├─ licenses: MIT
-│  ├─ repository: https://github.com/sindresorhus/camelcase
-│  ├─ publisher: Sindre Sorhus
-│  ├─ url: sindresorhus.com
-│  └─ licenseFile: node_modules/boxen/node_modules/camelcase/license
 ├─ camelcase@5.0.0
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/sindresorhus/camelcase
@@ -1878,6 +1884,12 @@ The following libraries are used by cloe-ui:
 │  ├─ publisher: Sindre Sorhus
 │  ├─ url: sindresorhus.com
 │  └─ licenseFile: node_modules/camelcase/license
+├─ camelcase@6.2.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/camelcase
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: https://sindresorhus.com
+│  └─ licenseFile: node_modules/boxen/node_modules/camelcase/license
 ├─ caniuse-api@3.0.0
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/nyalab/caniuse-api
@@ -1931,6 +1943,10 @@ The following libraries are used by cloe-ui:
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/chalk/chalk
 │  └─ licenseFile: node_modules/chalk/license
+├─ chalk@4.1.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/chalk/chalk
+│  └─ licenseFile: node_modules/boxen/node_modules/chalk/license
 ├─ chardet@0.7.0
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/runk/node-chardet
@@ -2031,11 +2047,11 @@ The following libraries are used by cloe-ui:
 │  ├─ publisher: Sindre Sorhus
 │  ├─ url: sindresorhus.com
 │  └─ licenseFile: node_modules/clean-stack/license
-├─ cli-boxes@1.0.0
+├─ cli-boxes@2.2.1
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/sindresorhus/cli-boxes
 │  ├─ publisher: Sindre Sorhus
-│  ├─ url: sindresorhus.com
+│  ├─ url: https://sindresorhus.com
 │  └─ licenseFile: node_modules/cli-boxes/license
 ├─ cli-cursor@3.1.0
 │  ├─ licenses: MIT
@@ -2048,7 +2064,7 @@ The following libraries are used by cloe-ui:
 │  ├─ repository: https://github.com/knownasilya/cli-width
 │  ├─ publisher: Ilya Radchenko
 │  └─ licenseFile: node_modules/cli-width/LICENSE
-├─ clipboardy@1.2.3
+├─ clipboardy@2.3.0
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/sindresorhus/clipboardy
 │  ├─ publisher: Sindre Sorhus
@@ -2119,6 +2135,11 @@ The following libraries are used by cloe-ui:
 │  ├─ repository: https://github.com/Qix-/color-convert
 │  ├─ publisher: Heather Arthur
 │  └─ licenseFile: node_modules/color-convert/LICENSE
+├─ color-convert@2.0.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/Qix-/color-convert
+│  ├─ publisher: Heather Arthur
+│  └─ licenseFile: node_modules/boxen/node_modules/color-convert/LICENSE
 ├─ color-id@1.1.0
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/colorjs/color-id
@@ -2442,17 +2463,11 @@ The following libraries are used by cloe-ui:
 │  ├─ publisher: IndigoUnited
 │  ├─ url: http://indigounited.com
 │  └─ licenseFile: node_modules/node-sass/node_modules/cross-spawn/LICENSE
-├─ cross-spawn@5.1.0
-│  ├─ licenses: MIT
-│  ├─ repository: https://github.com/IndigoUnited/node-cross-spawn
-│  ├─ publisher: IndigoUnited
-│  ├─ url: http://indigounited.com
-│  └─ licenseFile: node_modules/cross-spawn/LICENSE
 ├─ cross-spawn@6.0.5
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/moxystudio/node-cross-spawn
 │  ├─ publisher: André Cruz
-│  └─ licenseFile: node_modules/execa/node_modules/cross-spawn/LICENSE
+│  └─ licenseFile: node_modules/cross-spawn/LICENSE
 ├─ cross-spawn@7.0.1
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/moxystudio/node-cross-spawn
@@ -3424,18 +3439,6 @@ The following libraries are used by cloe-ui:
 │  ├─ repository: https://github.com/tsertkov/exec-sh
 │  ├─ publisher: Aleksandr Tsertkov
 │  └─ licenseFile: node_modules/exec-sh/LICENSE
-├─ execa@0.7.0
-│  ├─ licenses: MIT
-│  ├─ repository: https://github.com/sindresorhus/execa
-│  ├─ publisher: Sindre Sorhus
-│  ├─ url: sindresorhus.com
-│  └─ licenseFile: node_modules/term-size/node_modules/execa/license
-├─ execa@0.8.0
-│  ├─ licenses: MIT
-│  ├─ repository: https://github.com/sindresorhus/execa
-│  ├─ publisher: Sindre Sorhus
-│  ├─ url: sindresorhus.com
-│  └─ licenseFile: node_modules/clipboardy/node_modules/execa/license
 ├─ execa@1.0.0
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/sindresorhus/execa
@@ -3518,11 +3521,6 @@ The following libraries are used by cloe-ui:
 │  ├─ publisher: James Halliday
 │  ├─ url: http://substack.net
 │  └─ licenseFile: node_modules/falafel/LICENSE
-├─ fast-deep-equal@2.0.1
-│  ├─ licenses: MIT
-│  ├─ repository: https://github.com/epoberezkin/fast-deep-equal
-│  ├─ publisher: Evgeny Poberezkin
-│  └─ licenseFile: node_modules/serve/node_modules/fast-deep-equal/LICENSE
 ├─ fast-deep-equal@3.1.1
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/epoberezkin/fast-deep-equal
@@ -3904,18 +3902,12 @@ The following libraries are used by cloe-ui:
 │  ├─ publisher: Sindre Sorhus
 │  ├─ url: sindresorhus.com
 │  └─ licenseFile: node_modules/eslint-config-prettier/node_modules/get-stdin/license
-├─ get-stream@3.0.0
-│  ├─ licenses: MIT
-│  ├─ repository: https://github.com/sindresorhus/get-stream
-│  ├─ publisher: Sindre Sorhus
-│  ├─ url: sindresorhus.com
-│  └─ licenseFile: node_modules/get-stream/license
 ├─ get-stream@4.1.0
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/sindresorhus/get-stream
 │  ├─ publisher: Sindre Sorhus
 │  ├─ url: sindresorhus.com
-│  └─ licenseFile: node_modules/execa/node_modules/get-stream/license
+│  └─ licenseFile: node_modules/get-stream/license
 ├─ get-stream@6.0.1
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/sindresorhus/get-stream
@@ -4640,7 +4632,7 @@ The following libraries are used by cloe-ui:
 │  ├─ publisher: Jens Taylor
 │  ├─ url: https://github.com/homebrewing
 │  └─ licenseFile: node_modules/imurmurhash/README.md
-├─ in-publish@2.0.1
+├─ in-publish@2.0.0
 │  ├─ licenses: ISC
 │  ├─ repository: https://github.com/iarna/in-publish
 │  ├─ publisher: Rebecca Turner
@@ -5756,12 +5748,12 @@ The following libraries are used by cloe-ui:
 │  ├─ licenses: ISC
 │  ├─ repository: https://github.com/isaacs/node-lru-cache
 │  ├─ publisher: Isaac Z. Schlueter
-│  └─ licenseFile: node_modules/lru-cache/LICENSE
+│  └─ licenseFile: node_modules/node-sass/node_modules/lru-cache/LICENSE
 ├─ lru-cache@5.1.1
 │  ├─ licenses: ISC
 │  ├─ repository: https://github.com/isaacs/node-lru-cache
 │  ├─ publisher: Isaac Z. Schlueter
-│  └─ licenseFile: node_modules/cacache/node_modules/lru-cache/LICENSE
+│  └─ licenseFile: node_modules/lru-cache/LICENSE
 ├─ make-dir@2.1.0
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/sindresorhus/make-dir
@@ -6017,7 +6009,7 @@ The following libraries are used by cloe-ui:
 │  ├─ repository: https://github.com/substack/minimist
 │  ├─ publisher: James Halliday
 │  ├─ url: http://substack.net
-│  └─ licenseFile: node_modules/meow/node_modules/minimist/LICENSE
+│  └─ licenseFile: node_modules/glslify/node_modules/minimist/LICENSE
 ├─ minipass-collect@1.0.2
 │  ├─ licenses: ISC
 │  ├─ publisher: Isaac Z. Schlueter
@@ -6063,12 +6055,6 @@ The following libraries are used by cloe-ui:
 │  ├─ publisher: James Halliday
 │  ├─ url: http://substack.net
 │  └─ licenseFile: node_modules/mkdirp/LICENSE
-├─ mkdirp@0.5.5
-│  ├─ licenses: MIT
-│  ├─ repository: https://github.com/substack/node-mkdirp
-│  ├─ publisher: James Halliday
-│  ├─ url: http://substack.net
-│  └─ licenseFile: node_modules/fstream/node_modules/mkdirp/LICENSE
 ├─ moment@2.24.0
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/moment/moment
@@ -8568,7 +8554,7 @@ The following libraries are used by cloe-ui:
 │  ├─ repository: https://github.com/yahoo/serialize-javascript
 │  ├─ publisher: Eric Ferraiuolo
 │  └─ licenseFile: node_modules/serialize-javascript/LICENSE
-├─ serve-handler@6.1.2
+├─ serve-handler@6.1.3
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/zeit/serve-handler
 │  ├─ publisher: leo
@@ -8583,9 +8569,9 @@ The following libraries are used by cloe-ui:
 │  ├─ repository: https://github.com/expressjs/serve-static
 │  ├─ publisher: Douglas Christopher Wilson
 │  └─ licenseFile: node_modules/serve-static/LICENSE
-├─ serve@11.3.0
+├─ serve@13.0.2
 │  ├─ licenses: MIT
-│  ├─ repository: https://github.com/zeit/serve
+│  ├─ repository: https://github.com/vercel/serve
 │  ├─ publisher: leo
 │  └─ licenseFile: node_modules/serve/LICENSE
 ├─ set-blocking@2.0.0
@@ -9031,19 +9017,25 @@ The following libraries are used by cloe-ui:
 │  ├─ repository: https://github.com/sindresorhus/string-width
 │  ├─ publisher: Sindre Sorhus
 │  ├─ url: sindresorhus.com
-│  └─ licenseFile: node_modules/string-width/license
+│  └─ licenseFile: node_modules/wide-align/node_modules/string-width/license
 ├─ string-width@3.1.0
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/sindresorhus/string-width
 │  ├─ publisher: Sindre Sorhus
 │  ├─ url: sindresorhus.com
-│  └─ licenseFile: node_modules/cliui/node_modules/string-width/license
+│  └─ licenseFile: node_modules/string-width/license
 ├─ string-width@4.2.0
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/sindresorhus/string-width
 │  ├─ publisher: Sindre Sorhus
 │  ├─ url: sindresorhus.com
 │  └─ licenseFile: node_modules/inquirer/node_modules/string-width/license
+├─ string-width@4.2.3
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/string-width
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/boxen/node_modules/string-width/license
 ├─ string.prototype.matchall@4.0.3
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/ljharb/String.prototype.matchAll
@@ -9098,7 +9090,7 @@ The following libraries are used by cloe-ui:
 │  ├─ repository: https://github.com/chalk/strip-ansi
 │  ├─ publisher: Sindre Sorhus
 │  ├─ url: sindresorhus.com
-│  └─ licenseFile: node_modules/string-width/node_modules/strip-ansi/license
+│  └─ licenseFile: node_modules/wide-align/node_modules/strip-ansi/license
 ├─ strip-ansi@5.2.0
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/chalk/strip-ansi
@@ -9111,6 +9103,12 @@ The following libraries are used by cloe-ui:
 │  ├─ publisher: Sindre Sorhus
 │  ├─ url: sindresorhus.com
 │  └─ licenseFile: node_modules/inquirer/node_modules/string-width/node_modules/strip-ansi/license
+├─ strip-ansi@6.0.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/chalk/strip-ansi
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/boxen/node_modules/string-width/node_modules/strip-ansi/license
 ├─ strip-bom@2.0.0
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/sindresorhus/strip-bom
@@ -9203,6 +9201,12 @@ The following libraries are used by cloe-ui:
 │  ├─ publisher: Sindre Sorhus
 │  ├─ url: sindresorhus.com
 │  └─ licenseFile: node_modules/terser-webpack-plugin/node_modules/supports-color/license
+├─ supports-color@7.2.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/chalk/supports-color
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/boxen/node_modules/supports-color/license
 ├─ surface-nets@1.0.2
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/mikolalysenko/surface-nets
@@ -9262,12 +9266,6 @@ The following libraries are used by cloe-ui:
 │  ├─ publisher: Isaac Z. Schlueter
 │  ├─ url: http://blog.izs.me/
 │  └─ licenseFile: node_modules/tar/LICENSE
-├─ term-size@1.2.0
-│  ├─ licenses: MIT
-│  ├─ repository: https://github.com/sindresorhus/term-size
-│  ├─ publisher: Sindre Sorhus
-│  ├─ url: sindresorhus.com
-│  └─ licenseFile: node_modules/term-size/license
 ├─ terser-webpack-plugin@1.4.3
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/webpack-contrib/terser-webpack-plugin
@@ -9547,6 +9545,12 @@ The following libraries are used by cloe-ui:
 │  ├─ repository: https://github.com/gkz/type-check
 │  ├─ publisher: George Zahariev
 │  └─ licenseFile: node_modules/type-check/LICENSE
+├─ type-fest@0.20.2
+│  ├─ licenses: (MIT OR CC0-1.0)
+│  ├─ repository: https://github.com/sindresorhus/type-fest
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: https://sindresorhus.com
+│  └─ licenseFile: node_modules/boxen/node_modules/type-fest/license
 ├─ type-fest@0.8.1
 │  ├─ licenses: (MIT OR CC0-1.0)
 │  ├─ repository: https://github.com/sindresorhus/type-fest
@@ -10060,7 +10064,7 @@ The following libraries are used by cloe-ui:
 │  ├─ publisher: Rebecca Turner
 │  ├─ url: http://re-becca.org/
 │  └─ licenseFile: node_modules/wide-align/LICENSE
-├─ widest-line@2.0.1
+├─ widest-line@3.1.0
 │  ├─ licenses: MIT
 │  ├─ repository: https://github.com/sindresorhus/widest-line
 │  ├─ publisher: Sindre Sorhus
@@ -10180,6 +10184,12 @@ The following libraries are used by cloe-ui:
 │  ├─ publisher: Sindre Sorhus
 │  ├─ url: sindresorhus.com
 │  └─ licenseFile: node_modules/wrap-ansi/license
+├─ wrap-ansi@7.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/chalk/wrap-ansi
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: https://sindresorhus.com
+│  └─ licenseFile: node_modules/boxen/node_modules/wrap-ansi/license
 ├─ wrappy@1.0.2
 │  ├─ licenses: ISC
 │  ├─ repository: https://github.com/npm/wrappy
@@ -10247,13 +10257,13 @@ The following libraries are used by cloe-ui:
 │  ├─ repository: https://github.com/isaacs/yallist
 │  ├─ publisher: Isaac Z. Schlueter
 │  ├─ url: http://blog.izs.me/
-│  └─ licenseFile: node_modules/yallist/LICENSE
+│  └─ licenseFile: node_modules/node-sass/node_modules/yallist/LICENSE
 ├─ yallist@3.1.1
 │  ├─ licenses: ISC
 │  ├─ repository: https://github.com/isaacs/yallist
 │  ├─ publisher: Isaac Z. Schlueter
 │  ├─ url: http://blog.izs.me/
-│  └─ licenseFile: node_modules/cacache/node_modules/yallist/LICENSE
+│  └─ licenseFile: node_modules/yallist/LICENSE
 ├─ yallist@4.0.0
 │  ├─ licenses: ISC
 │  ├─ repository: https://github.com/isaacs/yallist
