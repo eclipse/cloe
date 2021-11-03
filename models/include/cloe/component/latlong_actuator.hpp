@@ -28,8 +28,10 @@
 
 #include <boost/optional.hpp>         // for optional<>
 #include <fable/json/with_boost.hpp>  // for to_json
+#include <functional>                 // for function
 
 #include <cloe/component.hpp>                // for Component, Json
+#include <cloe/component/object.hpp>         // for Object
 #include <cloe/utility/actuation_level.hpp>  // for ActuationLevel
 
 namespace cloe {
@@ -75,6 +77,53 @@ class LatLongActuator : public Component {
   bool is_steering_angle() const { return static_cast<bool>(target_steering_angle_); }
 
   /**
+   * Set the ego vehicle state at the end of the current step.
+   */
+  virtual void set_vehicle_state(const Object& obj) { vehicle_state_ = obj; }
+
+  /**
+   * Get the ego vehicle state at the end of the current step. Note that
+   * vehicle_state() may invoke set_vehicle_state() by calling
+   * vehicle_state_callback_().
+   */
+  const boost::optional<Object>& vehicle_state() {
+    if (vehicle_state_callback_) {
+      vehicle_state_callback_();
+    }
+    return vehicle_state_;
+  }
+
+  /**
+   * Return true if set_vehicle_state was called for the current step. Note that
+   * is_vehicle_state() may invoke set_vehicle_state() by calling
+   * vehicle_state_callback_().
+   */
+  bool is_vehicle_state() {
+    if (vehicle_state_callback_) {
+      vehicle_state_callback_();
+    }
+    return static_cast<bool>(vehicle_state_);
+  }
+
+  /**
+   * Register a callback that is invoked when access to the ego vehicle target
+   * state is requested (by calling is_vehicle_state() or vehicle_state()).
+   *
+   * The main use case for the callback is to update the ego vehicle state using
+   * an actuator and/or vehicle dynamics model external of the simulator. Then,
+   * the callback could implement the following:
+   *  - Update the external model with the latest simulator state
+   *  - Trigger the time stepping of the external model
+   *  - Invoke set_vehicle_state() to update LatLongActuator
+   *
+   * Note that the callback function must ensure that repeated invocation within
+   * the same time step does not lead to unintended behavior.
+   */
+  void register_vehicle_state_callback(const std::function<void(void)>& c) {
+    vehicle_state_callback_ = c;
+  }
+
+  /**
    * Return a single enum summarizing the current actuation level of control.
    *
    * Useful for tracking changes.
@@ -91,6 +140,7 @@ class LatLongActuator : public Component {
     return Json{
         {"target_acceleration", target_acceleration_},
         {"target_steering_angle", target_steering_angle_},
+        {"vehicle_state", vehicle_state_},
         {"actuation_label", level_.to_human_cstr()},
     };
   }
@@ -99,6 +149,7 @@ class LatLongActuator : public Component {
     auto t = Component::process(sync);
     target_acceleration_.reset();
     target_steering_angle_.reset();
+    vehicle_state_.reset();
     level_.set_none();
     return t;
   }
@@ -107,6 +158,7 @@ class LatLongActuator : public Component {
     Component::reset();
     target_acceleration_.reset();
     target_steering_angle_.reset();
+    vehicle_state_.reset();
     level_.set_none();
   }
 
@@ -114,6 +166,8 @@ class LatLongActuator : public Component {
   utility::ActuationLevel level_;
   boost::optional<double> target_acceleration_;
   boost::optional<double> target_steering_angle_;
+  boost::optional<Object> vehicle_state_;
+  std::function<void(void)> vehicle_state_callback_;
 };
 
 template <typename T = double>
