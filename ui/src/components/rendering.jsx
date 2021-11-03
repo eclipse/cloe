@@ -106,7 +106,7 @@ class Rendering extends Component {
 
   render() {
     // Make sensors available for input fields.
-    const { sensors, replayState, streamingType, isRecording } = this.props;
+    const { sensors, replayState, streamingType, isRecording, isBuffering } = this.props;
     const selectObjSensors = this.getAvailSensors(sensors, this.sensorType.Object);
     const selectLaneSensors = this.getAvailSensors(sensors, this.sensorType.Lane);
 
@@ -126,6 +126,7 @@ class Rendering extends Component {
       <Card>
         <div
           id="scene"
+          className="position-relative"
           style={{ width: "100%", height: "400px" }}
           ref={(mount) => {
             this.mount = mount;
@@ -187,6 +188,7 @@ class Rendering extends Component {
             fastForward={this.fastForward}
             rewind={this.rewind}
             recordCanvas={this.recordCanvas}
+            isBuffering={isBuffering}
           ></ReplayControlls>
           <div
             className="m-0 mt-2 text-light"

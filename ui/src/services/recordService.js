@@ -47,7 +47,7 @@ export default class RecordService {
     this.recorder.stop();
   }
 
-  // return the blobs[] array.
+  // Return the data blob.
   getData() {
     let self = this;
     return new Promise((resolve) => {

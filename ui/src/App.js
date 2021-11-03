@@ -31,6 +31,10 @@ import DroppableWrapper from "./components/droppableWrapper";
 import VehicleCard from "./components/vehiclecard";
 import { REPLAYSTATES, STREAMINGTYPES } from "./enums";
 import ErrorMessage from "./components/errorMessage";
+import PlotData from "./components/plotData";
+import socketIOClient from "socket.io-client";
+import { download } from "../src/helpers";
+
 class App extends Component {
   constructor(props) {
     super(props);
@@ -42,11 +46,14 @@ class App extends Component {
     this.firstPhaseEndpoints = [""];
     this.secondPhaseEndpoints = ["/uuid", "/version", "/progress"];
     this.thirdPhaseEndpoints = this.setDefaultEndpoints();
+    this.replayPhaseEndpoints = this.setDefaultEndpoints();
 
     // this.endpointsToFetch gets filled with the third phase endpoints and
     // dynamic named endpoints, e.g. for controllers or simulators.
     this.endpointsToFetch = [];
+    this.controllerEndpoints = [];
 
+    this.replayBufferData = [];
     // All data which could change during one simulation is stored in this.state.
     this.state = {
       startupPhase: 1,
@@ -55,7 +62,7 @@ class App extends Component {
       configData: {},
       initialHost: "",
       host: "",
-      updateInterval: 1000,
+      updateInterval: 500,
       connected: false,
       sideBarOpen: false,
       dragNDropActivated: false,
@@ -63,13 +70,17 @@ class App extends Component {
       replayIndex: 0,
       replayState: REPLAYSTATES.PAUSED,
       showErrorMessage: false,
-      isRecoding: false
+      isRecoding: false,
+      isBuffering: false
     };
 
     // Helper variable to declare if Cloe-UI should perform one-time fetches,
     // this will be the case at each start of a new simulation.
     this.performOneTimeFetches = true;
+    this.jsonVersionChecked = false;
     this.fetchCloeApi = 0;
+    this.bufferInterval = 0;
+    this.defaultUpdateInterval = 500;
     // Definitions for the one-time fetched information.
     this.controllers = [];
     this.simulators = [];
@@ -85,13 +96,30 @@ class App extends Component {
     // Definition of which component should be displayed at which app column
     // per default, if no cookie with stored layout is available.
     const { cookies } = props;
-    this.componentsOnLeftSide = cookies.get("firstColumn") || [0];
+    this.componentsOnLeftSide = cookies.get("firstColumn") || [0, 6];
     this.componentsOnRightSide = cookies.get("secondColumn") || [1, 2, 3, 4, 5];
     this.componentOrder = ["left"];
     this.recordService = null;
 
+    this.webserverPort = 4000;
     this.stepWidth = null;
     this.replaySpeed = 1;
+    // URL Parameter to define where to ask for data.
+    let hostParameter = this.getQueryVariable("host")
+      ? this.getQueryVariable("host")
+      : "localhost:8080";
+    let url = new URL("http://" + hostParameter);
+    this.hostname = url.hostname;
+    this.port = url.port;
+    this.host = url.host;
+
+    // URL Parameter to trigger a replay and to define which tc should be replayed.
+    this.remoteReplayId = this.getQueryVariable("id") ? this.getQueryVariable("id") : "";
+    // URL Parameter to define the name of the replay file.
+    this.fileName = this.getQueryVariable("name") ? this.getQueryVariable("name") : "";
+    // Connect to host via websockets to transfer data for replay.
+    this.socket = socketIOClient(`ws://${this.hostname}:${this.webserverPort}`);
+    this.child = React.createRef();
   }
 
   render() {
@@ -143,6 +171,7 @@ class App extends Component {
           <Rendering
             sensors={cloeDataLive.sensors}
             replayState={this.state.replayState}
+            isBuffering={this.state.isBuffering}
             streamingType={this.state.streamingType}
             isRecording={this.state.isRecoding}
             toggleReplay={this.toggleReplay}
@@ -207,6 +236,16 @@ class App extends Component {
             triggerActions={this.triggerActions}
           />
         )
+      },
+      {
+        id: 6,
+        component: (
+          <PlotData
+            ref={this.child}
+            simTime={cloeDataLive.simTime}
+            replayState={this.state.replayState}
+          />
+        )
       }
     ];
 
@@ -218,7 +257,10 @@ class App extends Component {
             connected={connected}
             toggleSidebar={this.toggleSidebar}
             getSimulationDataFromJSON={this.getSimulationDataFromJSON}
+            setupReplayEnvironment={this.setupReplayEnvironment}
             version={this.version ? this.version : ""}
+            hostname={this.hostname}
+            webserverPort={this.webserverPort}
           />
         </ErrorBoundary>
         <div className="container pt-4">
@@ -341,14 +383,70 @@ class App extends Component {
     // Set host variable with get parameter or default value and
     // store the initial host in order to have it as placeholder in input field
     // of the sidebar component.
-    const host = this.getQueryVariable("host") ? this.getQueryVariable("host") : "localhost:8080";
+
     this.setState({
-      initialHost: host,
-      host: host
+      initialHost: this.host,
+      host: this.host
     });
+
     // Fetch data from Cloe API in given interval (default: 500ms).
-    this.fetchCloeApi = setInterval(this.fetchData, 500);
+    this.fetchCloeApi = setInterval(this.fetchData, this.defaultUpdateInterval);
+
+    this.websocketCallback();
   }
+
+  // Remove the listener before unmounting the component to avoid addition of multiple listeners.
+  componentWillUnmount() {
+    this.socket.off("new_replay_data");
+    this.socket.off("replay_data_sent");
+    this.socket.off("plot_data");
+  }
+
+  websocketCallback = () => {
+    this.socket.on("set_replay_environment", async (data) => {
+      console.log("new simulation replay started");
+      this.replayBufferData = [];
+      this.setState({ isBuffering: true });
+      this.setupReplayEnvironment();
+    });
+
+    this.socket.on("replay_data_sent", async (data) => {
+      console.log("data sent");
+      this.stopBuffering();
+      let dataArray = this.replayBufferData.flat();
+      dataArray.shift();
+      this.setState({ cloeDataImported: dataArray, isBuffering: false });
+    });
+
+    this.socket.on("new_replay_data", async (dataChunks) => {
+      let parsedData = this.setEndpointsFromArray([dataChunks]);
+      this.replayBufferData.push(parsedData);
+      if (!this.jsonVersionChecked) {
+        this.checkJSONVersion(this.replayBufferData.flat());
+        this.startBuffering();
+        setTimeout(() => {
+          this.renewFetchInterval(this.state.updateInterval);
+        }, 1000);
+      }
+    });
+
+    this.socket.on("plot_data", (data) => {
+      if (data != null) {
+        this.loadPlotData(data);
+        this.setState({ isBuffering: false });
+      }
+    });
+
+    this.socket.on("connect", () => {
+      if (this.remoteReplayId) {
+        fetch(
+          `http://${this.hostname}:${this.webserverPort}/remote/start-replay?id=${this.remoteReplayId}&name=${this.fileName}`
+        );
+      }
+    });
+
+    this.socket.on("disconnect", () => {});
+  };
 
   fetchData = () => {
     // This function checks for connection, and, depending on
@@ -414,6 +512,8 @@ class App extends Component {
     axios
       .get(`http://${this.state.host}`)
       .then(() => {
+        // If connected set new interval.
+        this.renewFetchInterval(this.defaultUpdateInterval);
         if (!this.state.connected) {
           this.setState({ connected: true, startupPhase: 2 });
         }
@@ -437,13 +537,17 @@ class App extends Component {
         axios.spread(
           function(...allResults) {
             // Create temporary data object which holds all data.
+            if (allResults[0] === undefined) {
+              this.setState({ startupPhase: 1 });
+              this.renewFetchInterval(this.state.updateInterval);
+              return;
+            }
             var data = {};
             for (const index in allResults) {
               data[this.secondPhaseEndpoints[index]] = (allResults[index] || {}).data;
             }
             this.version = data["/version"];
             this.initializationProgress = data["/progress"].initialization.percent;
-            // startupPhase 2 ends with an initializationProgress of 1%.
             if (this.initializationProgress === 1) {
               this.setState({ startupPhase: 3 });
               if (this.uuid !== data["/uuid"]) {
@@ -579,7 +683,7 @@ class App extends Component {
     for (const cookie in cookies.getAll()) {
       cookies.remove(cookie);
     }
-    this.componentsOnLeftSide = [0];
+    this.componentsOnLeftSide = [0, 6];
     this.componentsOnRightSide = [1, 2, 3, 4, 5];
   };
 
@@ -592,10 +696,14 @@ class App extends Component {
       this.setState({ host: document.getElementById("cloeHost").value });
     }
     this.setState(
-      { streamingType: STREAMINGTYPES.LIVE, startupPhase: 1, updateInterval: 1000 },
+      {
+        streamingType: STREAMINGTYPES.LIVE,
+        startupPhase: 1,
+        updateInterval: this.defaultUpdateInterval
+      },
       () => {
         this.initializationProgress = 0;
-        this.renewFetchInterval(1000);
+        this.renewFetchInterval(this.defaultUpdateInterval);
       }
     );
   };
@@ -608,154 +716,6 @@ class App extends Component {
 
   toggleSidebar = () => {
     this.setState({ sideBarOpen: !this.state.sideBarOpen });
-  };
-
-  recordCanvas = () => {
-    let canvas = document.getElementById("scene").getElementsByTagName("canvas")[0];
-    this.setState({ isRecoding: !this.state.isRecoding }, () => {
-      const recordSettings = {
-        timeslice: 100,
-        mimeType: "video/webm",
-        canvas: canvas
-      };
-      if (this.recordService === null) {
-        this.recordService = new RecordService(recordSettings);
-      }
-      if (this.state.isRecoding) {
-        this.recordService.startRecording();
-      } else {
-        this.recordService.stopRecording();
-        let videoData = this.recordService.getData();
-        let a = document.createElement("a");
-        videoData.then((data) => {
-          const url = URL.createObjectURL(data);
-          //temporary creating an element for automatic download
-          a.setAttribute("href", url);
-          a.setAttribute("download", "cloe-replay-" + this.uuid);
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          this.recordService = null;
-        });
-      }
-    });
-  };
-
-  rewind = () => {
-    let currentIndex = this.state.replayIndex;
-    this.setState({ replayState: REPLAYSTATES.PAUSED }, () => {
-      currentIndex = currentIndex - 100 <= 0 ? 0 : (currentIndex -= 100);
-      this.setState({ replayIndex: currentIndex }, () => {
-        this.startReplay(this.replaySpeed);
-        this.setState({ replayState: REPLAYSTATES.STARTED });
-      });
-    });
-  };
-
-  fastForward = () => {
-    let currentIndex = this.state.replayIndex;
-    this.setState({ replayState: REPLAYSTATES.PAUSED }, () => {
-      currentIndex =
-        currentIndex + 100 >= this.state.cloeDataImported.length
-          ? this.state.cloeDataImported.length - 50
-          : (currentIndex += 100);
-      this.setState({ replayIndex: currentIndex }, () => {
-        this.startReplay(this.replaySpeed);
-        this.setState({ replayState: REPLAYSTATES.STARTED });
-      });
-    });
-  };
-
-  toggleReplay = (replayState) => {
-    if (replayState === REPLAYSTATES.FINISHED) {
-      this.setState({ replayState: REPLAYSTATES.STARTED, replayIndex: 0 }, () => {
-        this.startReplay(this.replaySpeed);
-      });
-    } else if (replayState === REPLAYSTATES.STARTED) {
-      this.setState({ replayState: replayState }, () => {
-        this.stepWidth = this.getSimulationState(
-          this.state.cloeDataImported[0][this.apiPrefix + "/simulation"]
-        ).stepWidth;
-        this.replaySpeed = this.state.updateInterval / this.stepWidth;
-        this.startReplay(this.replaySpeed);
-      });
-    } else {
-      clearInterval(this.fetchCloeApi);
-      this.setState({ replayState: REPLAYSTATES.PAUSED });
-    }
-  };
-
-  startReplay = (replaySpeed) => {
-    clearInterval(this.fetchCloeApi);
-    this.fetchCloeApi = setInterval(() => {
-      let index = this.state.replayIndex;
-      if (
-        index < this.state.cloeDataImported.length &&
-        this.state.replayState === REPLAYSTATES.STARTED
-      ) {
-        this.setSimReplayData(this.state.cloeDataImported[index]);
-        index += replaySpeed;
-        this.setState({ replayIndex: index });
-      } else {
-        this.setState({ replayState: REPLAYSTATES.FINISHED });
-        clearInterval(this.fetchCloeApi);
-        return;
-      }
-    }, this.state.updateInterval);
-  };
-
-  getSimulationDataFromJSON = (file, content) => {
-    this.initializationProgress = 0.5;
-    clearInterval(this.fetchCloeApi);
-    this.setState({
-      streamingType: STREAMINGTYPES.REPLAY,
-      updateInterval: 100,
-      startupPhase: 2,
-      cloeDataLive: {}
-    });
-    this.resetEndpoints();
-    this.performOneTimeFetches = false;
-    const simulationData = JSON.parse(content);
-    // Parse data to valid JSON.
-    let simulatorEndpoints = [];
-    let vehiclesEndpoints = [];
-    let controllerEndpoints = [];
-    let parsedData = simulationData.map((arr, i) => {
-      var data = {};
-      for (const key in arr) {
-        data[key] = JSON.parse(arr[key]);
-        // Set simulator endpoint from given JSON.
-        let endpoint = key.replace(this.apiPrefix, "");
-        if (key.match(/simulators.*state$/) && !simulatorEndpoints.includes(endpoint)) {
-          simulatorEndpoints.push(endpoint);
-          this.thirdPhaseEndpoints.push(endpoint);
-        } else if (key.match(/vehicles./) && !vehiclesEndpoints.includes(endpoint)) {
-          vehiclesEndpoints.push(endpoint);
-          this.thirdPhaseEndpoints.push(endpoint);
-        } else if (key.match(/controllers./) && !controllerEndpoints.includes(endpoint)) {
-          controllerEndpoints.push(endpoint);
-          this.thirdPhaseEndpoints.push(endpoint);
-        }
-      }
-      return data;
-    });
-    let configData = parsedData.shift();
-    // Check if JSON is valid and currently supported.
-    let destructVersion = configData[this.apiPrefix + "/version"].split(".");
-    let version = destructVersion[0] + "." + destructVersion[1] + destructVersion[2];
-    if (parseFloat(version) >= 0.18) {
-      this.simulators.push(simulatorEndpoints);
-      this.vehicles.push(vehiclesEndpoints);
-      this.triggerActions = configData[this.apiPrefix + "/triggers/actions"];
-      this.triggerEvents = configData[this.apiPrefix + "/triggers/events"];
-      this.setState({ cloeDataImported: parsedData }, () => this.setSimReplayData(configData));
-      this.renewFetchInterval(this.state.updateInterval);
-    } else {
-      this.setState({ showErrorMessage: true });
-      setTimeout(() => {
-        this.setState({ showErrorMessage: false });
-      }, 5000);
-    }
   };
 
   cookiesSet(name, value) {
@@ -780,39 +740,7 @@ class App extends Component {
       this.fetchData();
       this.fetchCloeApi = setInterval(this.fetchData, updateInterval);
     } else {
-      this.setSimReplayData(this.state.cloeDataImported[0]);
-    }
-  };
-
-  setSimReplayData = (allResults) => {
-    // Create temporary data object which holds all data.
-    let data = {};
-    if (this.state.startupPhase === 2) {
-      this.version = allResults[this.apiPrefix + "/version"];
-      this.uuid = allResults[this.apiPrefix + "/uuid"];
-      this.initializationProgress = 1;
-      this.controllers = [];
-      for (const index in allResults[this.apiPrefix + "/controllers"]) {
-        const controllerID = allResults[this.apiPrefix + "/controllers"][index];
-        const controller = {
-          id: controllerID,
-          endpointBase: `${this.apiPrefix}/controllers/${controllerID}`
-        };
-        this.controllers.push(controller);
-      }
-      this.triggerEvents = allResults[this.apiPrefix + "/triggers/events"];
-      this.triggerActions = allResults[this.apiPrefix + "/triggers/actions"];
-      this.setState({ startupPhase: 3, configData: allResults });
-    } else if (this.state.startupPhase === 3) {
-      for (let index = 0; index < this.thirdPhaseEndpoints.length; index++) {
-        data[this.thirdPhaseEndpoints[index]] =
-          allResults[this.apiPrefix + this.thirdPhaseEndpoints[index]] || {};
-      }
-      // Store simTime and sensors in a more accessible way.
-      data.simTime = ((data["/simulation"] || {}).time || {}).ms;
-      data.sensors = (data[this.vehicles[0]] || {}).components;
-      // Update app state which triggers rerendering of the app.
-      this.setState({ cloeDataLive: data });
+      this.setSimDataBuffer(this.state.cloeDataImported[0]);
     }
   };
 
@@ -846,10 +774,6 @@ class App extends Component {
     );
   };
 
-  setDefaultEndpoints = () => {
-    return ["/simulation", "/triggers/queue", "/triggers/history", "/uuid", "/version"];
-  };
-
   setSimulationSpeed = (value) => {
     this.replaySpeed = Number(((this.state.updateInterval * value) / this.stepWidth).toFixed());
     this.startReplay(this.replaySpeed);
@@ -862,6 +786,236 @@ class App extends Component {
     this.controllers = [];
     this.triggerActions = [];
     this.triggerEvents = [];
+  };
+
+  setDefaultEndpoints = () => {
+    return ["/simulation", "/triggers/queue", "/triggers/history", "/uuid", "/version"];
+  };
+
+  // The following functions are only needed for replay.
+
+  recordCanvas = () => {
+    let canvas = document.getElementsByTagName("canvas")[1];
+    this.setState({ isRecoding: !this.state.isRecoding }, () => {
+      const recordSettings = {
+        timeslice: 100,
+        mimeType: "video/webm",
+        canvas: canvas
+      };
+      if (this.recordService === null) {
+        this.recordService = new RecordService(recordSettings);
+      }
+      if (this.state.isRecoding) {
+        this.recordService.startRecording();
+      } else {
+        this.recordService.stopRecording();
+        let videoData = this.recordService.getData();
+        videoData.then((data) => {
+          const url = URL.createObjectURL(data);
+          download(url, "cloe-replay-" + this.uuid);
+          this.recordService = null;
+        });
+      }
+    });
+  };
+
+  rewind = () => {
+    let currentIndex = this.state.replayIndex;
+    this.setState({ replayState: REPLAYSTATES.PAUSED }, () => {
+      currentIndex =
+        currentIndex - 100 <= this.state.replayPauseIndex
+          ? this.state.replayPauseIndex
+          : (currentIndex -= 100);
+      this.setState({ replayIndex: currentIndex }, () => {
+        clearInterval(this.fetchCloeApi);
+        this.startReplay(this.replaySpeed);
+        this.setState({ replayState: REPLAYSTATES.STARTED });
+      });
+    });
+  };
+
+  fastForward = () => {
+    let currentIndex = this.state.replayIndex;
+    this.setState({ replayState: REPLAYSTATES.PAUSED }, () => {
+      currentIndex =
+        currentIndex + 100 >= this.state.cloeDataImported.length
+          ? (currentIndex = this.state.cloeDataImported.length)
+          : (currentIndex += 100);
+      this.setState({ replayIndex: currentIndex }, () => {
+        clearInterval(this.fetchCloeApi);
+        this.startReplay(this.replaySpeed);
+        this.setState({ replayState: REPLAYSTATES.STARTED });
+      });
+    });
+  };
+
+  toggleReplay = (replayState) => {
+    if (replayState === REPLAYSTATES.FINISHED) {
+      this.setState({ replayState: REPLAYSTATES.STARTED, replayIndex: 0 }, () => {
+        clearInterval(this.fetchCloeApi);
+        this.startReplay(this.replaySpeed);
+      });
+    } else if (replayState === REPLAYSTATES.STARTED) {
+      this.setState({ replayState: replayState }, () => {
+        clearInterval(this.fetchCloeApi);
+        this.stepWidth = this.getSimulationState(
+          this.state.cloeDataImported[0][this.apiPrefix + "/simulation"]
+        ).stepWidth;
+        this.replaySpeed = this.state.updateInterval / this.stepWidth;
+        this.startReplay(this.replaySpeed);
+      });
+    } else {
+      clearInterval(this.fetchCloeApi);
+      this.setState({ replayState: REPLAYSTATES.PAUSED });
+    }
+  };
+
+  startReplay = (replaySpeed) => {
+    clearInterval(this.fetchCloeApi);
+    this.fetchCloeApi = setInterval(() => {
+      let index = this.state.replayIndex;
+      if (
+        index < this.state.cloeDataImported.length &&
+        this.state.replayState === REPLAYSTATES.STARTED
+      ) {
+        this.setSimDataBuffer(this.state.cloeDataImported[index]);
+        index += replaySpeed;
+        this.setState({ replayIndex: index });
+      } else {
+        this.setState({ replayState: REPLAYSTATES.FINISHED });
+        clearInterval(this.fetchCloeApi);
+        return;
+      }
+    }, this.state.updateInterval);
+  };
+
+  setSimDataBuffer = (allResults) => {
+    if (allResults === undefined) return;
+    // Create temporary data object which holds all data.
+    let data = {};
+    if (this.state.startupPhase === 2) {
+      this.version = allResults[this.apiPrefix + "/version"];
+      this.uuid = allResults[this.apiPrefix + "/uuid"];
+      this.initializationProgress = 1;
+      this.controllers = [];
+      for (const index in allResults[this.apiPrefix + "/controllers"]) {
+        const controllerID = allResults[this.apiPrefix + "/controllers"][index];
+        const controller = {
+          id: controllerID,
+          endpointBase: `${this.apiPrefix}/controllers/${controllerID}`
+        };
+        this.controllers.push(controller);
+      }
+      this.triggerEvents = allResults[this.apiPrefix + "/triggers/events"];
+      this.triggerActions = allResults[this.apiPrefix + "/triggers/actions"];
+      this.setState({ startupPhase: 3, configData: allResults });
+    } else if (this.state.startupPhase === 3) {
+      for (let index = 0; index < this.replayPhaseEndpoints.length; index++) {
+        data[this.replayPhaseEndpoints[index]] =
+          allResults[this.apiPrefix + this.replayPhaseEndpoints[index]] || {};
+      }
+      // Store simTime and sensors in a more accessible way.
+      data.simTime = ((data["/simulation"] || {}).time || {}).ms;
+      data.sensors = (data[this.vehicles[0]] || {}).components;
+      // Update app state which triggers rerendering of the app.
+      this.setState({ cloeDataLive: data });
+    }
+  };
+
+  getSimulationDataFromJSON = (file, content) => {
+    this.resetEndpoints();
+    let parsedData = this.setEndpointsFromArray(content);
+    if (!this.jsonVersionChecked) {
+      this.checkJSONVersion(parsedData);
+    }
+  };
+
+  setupReplayEnvironment = () => {
+    this.resetEndpoints();
+    this.initializationProgress = 0.5;
+    clearInterval(this.fetchCloeApi);
+    this.setState({
+      streamingType: STREAMINGTYPES.REPLAY,
+      replayIndex: 0,
+      updateInterval: 100,
+      startupPhase: 2,
+      cloeData: {}
+    });
+    this.performOneTimeFetches = false;
+  };
+
+  startBuffering = () => {
+    console.log("start Buffering");
+    this.bufferInterval = setInterval(() => {
+      let dataArray = this.replayBufferData.flat();
+      dataArray.shift();
+      this.setState({ cloeDataImported: dataArray });
+    }, this.defaultUpdateInterval);
+  };
+
+  stopBuffering = () => {
+    console.log("stop Buffering");
+    clearInterval(this.bufferInterval);
+  };
+
+  loadPlotData = (data) => {
+    if (this.child.current == null) {
+      setTimeout(() => {
+        this.loadPlotData(data);
+      }, 500);
+    } else {
+      console.log("wad");
+      console.log(this.child.current);
+      this.child.current.extractDataFromString(data);
+    }
+  };
+
+  checkJSONVersion = (cloeDataImported) => {
+    // Get first element which contains meta infos.
+    let configData = cloeDataImported.shift();
+    // Check if JSON is valid and currently supported.
+    let destructVersion = configData[this.apiPrefix + "/version"].split(".");
+    let version = destructVersion[0] + "." + destructVersion[1] + destructVersion[2];
+    if (parseFloat(version) >= 0.18) {
+      this.triggerActions = configData[this.apiPrefix + "/triggers/actions"];
+      this.triggerEvents = configData[this.apiPrefix + "/triggers/events"];
+      this.setState({ cloeDataImported: cloeDataImported }, () =>
+        this.setSimDataBuffer(configData)
+      );
+    } else {
+      this.setState({ showErrorMessage: true });
+      setTimeout(() => {
+        this.setState({ showErrorMessage: false });
+      }, 5000);
+    }
+    this.jsonVersionChecked = true;
+  };
+
+  setEndpointsFromArray = (content) => {
+    const simulationData = typeof content === "string" ? JSON.parse(content) : content;
+    // Parse data to valid JSON.
+    let parsedData = simulationData.map((arr, i) => {
+      var data = {};
+      for (const key in arr) {
+        data[key] = JSON.parse(arr[key]);
+        // Set simulator endpoint from given JSON.
+        let endpoint = key.replace(this.apiPrefix, "");
+        if (key.match(/simulators.*state$/) && !this.simulators.includes(endpoint)) {
+          this.simulators.push(endpoint);
+          this.replayPhaseEndpoints.push(endpoint);
+        }
+        if (key.match(/vehicles./) && !this.vehicles.includes(endpoint)) {
+          this.vehicles.push(endpoint);
+          this.replayPhaseEndpoints.push(endpoint);
+        }
+        if (key.match(/controllers./) && !this.controllerEndpoints.includes(endpoint)) {
+          this.controllerEndpoints.push(endpoint);
+          this.replayPhaseEndpoints.push(endpoint);
+        }
+      }
+      return data;
+    });
+    return parsedData;
   };
 }
 

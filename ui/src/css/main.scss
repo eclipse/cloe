@@ -123,3 +123,15 @@ span {
 .ant-tag-has-color .anticon-close {
   color: #111;
 }
+
+// The Scrollbar is defined here.
+::-webkit-scrollbar {
+  width: 0.45rem;
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgba(27, 27, 27, 0.4);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
