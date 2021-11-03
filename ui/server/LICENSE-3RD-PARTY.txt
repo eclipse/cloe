@@ -1,0 +1,1138 @@
+3RD-PARTY LICENSES
+==================
+
+The following licenses are used by dependencies of cloe-ui:
+├─ MIT: 181
+├─ ISC: 19
+├─ BSD-2-Clause: 3
+├─ BSD-3-Clause: 2
+├─ (MIT OR Apache-2.0): 1
+├─ (BSD-2-Clause OR MIT OR Apache-2.0): 1
+├─ (MIT OR CC0-1.0): 1
+└─ BSD: 1
+
+The following libraries are used by cloe-ui:
+├─ @sindresorhus/is@0.14.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/is
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/@sindresorhus/is/license
+├─ @szmarczak/http-timer@1.1.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/szmarczak/http-timer
+│  ├─ publisher: Szymon Marczak
+│  └─ licenseFile: node_modules/@szmarczak/http-timer/LICENSE
+├─ @types/component-emitter@1.2.10
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/DefinitelyTyped/DefinitelyTyped
+│  └─ licenseFile: node_modules/@types/component-emitter/LICENSE
+├─ @types/cookie@0.4.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/DefinitelyTyped/DefinitelyTyped
+│  └─ licenseFile: node_modules/@types/cookie/LICENSE
+├─ @types/cors@2.8.12
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/DefinitelyTyped/DefinitelyTyped
+│  └─ licenseFile: node_modules/@types/cors/LICENSE
+├─ @types/node@16.4.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/DefinitelyTyped/DefinitelyTyped
+│  └─ licenseFile: node_modules/@types/node/LICENSE
+├─ JSONStream@1.3.5
+│  ├─ licenses: (MIT OR Apache-2.0)
+│  ├─ repository: https://github.com/dominictarr/JSONStream
+│  ├─ publisher: Dominic Tarr
+│  ├─ url: http://bit.ly/dominictarr
+│  └─ licenseFile: node_modules/JSONStream/LICENSE.APACHE2
+├─ abbrev@1.1.1
+│  ├─ licenses: ISC
+│  ├─ repository: https://github.com/isaacs/abbrev-js
+│  ├─ publisher: Isaac Z. Schlueter
+│  └─ licenseFile: node_modules/abbrev/LICENSE
+├─ accepts@1.3.7
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jshttp/accepts
+│  └─ licenseFile: node_modules/accepts/LICENSE
+├─ ansi-align@3.0.0
+│  ├─ licenses: ISC
+│  ├─ repository: https://github.com/nexdrew/ansi-align
+│  ├─ publisher: nexdrew
+│  └─ licenseFile: node_modules/ansi-align/LICENSE
+├─ ansi-regex@4.1.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/chalk/ansi-regex
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/ansi-align/node_modules/ansi-regex/license
+├─ ansi-regex@5.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/chalk/ansi-regex
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/ansi-regex/license
+├─ ansi-styles@4.3.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/chalk/ansi-styles
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/ansi-styles/license
+├─ anymatch@3.1.2
+│  ├─ licenses: ISC
+│  ├─ repository: https://github.com/micromatch/anymatch
+│  ├─ publisher: Elan Shanker
+│  ├─ url: https://github.com/es128
+│  └─ licenseFile: node_modules/anymatch/LICENSE
+├─ append-field@1.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/LinusU/node-append-field
+│  ├─ publisher: Linus Unnebäck
+│  └─ licenseFile: node_modules/append-field/LICENSE
+├─ array-flatten@1.1.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/blakeembrey/array-flatten
+│  ├─ publisher: Blake Embrey
+│  ├─ url: http://blakeembrey.me
+│  └─ licenseFile: node_modules/array-flatten/LICENSE
+├─ balanced-match@1.0.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/juliangruber/balanced-match
+│  ├─ publisher: Julian Gruber
+│  ├─ url: http://juliangruber.com
+│  └─ licenseFile: node_modules/balanced-match/LICENSE.md
+├─ base64-arraybuffer@0.1.4
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/niklasvh/base64-arraybuffer
+│  ├─ publisher: Niklas von Hertzen
+│  ├─ url: http://hertzen.com
+│  └─ licenseFile: node_modules/base64-arraybuffer/LICENSE-MIT
+├─ base64id@2.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/faeldt/base64id
+│  ├─ publisher: Kristian Faeldt
+│  └─ licenseFile: node_modules/base64id/LICENSE
+├─ binary-extensions@2.2.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/binary-extensions
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/binary-extensions/license
+├─ body-parser@1.19.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/expressjs/body-parser
+│  └─ licenseFile: node_modules/body-parser/LICENSE
+├─ boxen@4.2.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/boxen
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/boxen/license
+├─ brace-expansion@1.1.11
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/juliangruber/brace-expansion
+│  ├─ publisher: Julian Gruber
+│  ├─ url: http://juliangruber.com
+│  └─ licenseFile: node_modules/brace-expansion/LICENSE
+├─ braces@3.0.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/micromatch/braces
+│  ├─ publisher: Jon Schlinkert
+│  ├─ url: https://github.com/jonschlinkert
+│  └─ licenseFile: node_modules/braces/LICENSE
+├─ buffer-from@1.1.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/LinusU/buffer-from
+│  └─ licenseFile: node_modules/buffer-from/LICENSE
+├─ busboy@0.2.14
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/mscdex/busboy
+│  ├─ publisher: Brian White
+│  └─ licenseFile: node_modules/busboy/LICENSE
+├─ bytes@3.1.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/visionmedia/bytes.js
+│  ├─ publisher: TJ Holowaychuk
+│  ├─ url: http://tjholowaychuk.com
+│  └─ licenseFile: node_modules/bytes/LICENSE
+├─ cacheable-request@6.1.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/lukechilds/cacheable-request
+│  ├─ publisher: Luke Childs
+│  ├─ url: http://lukechilds.co.uk
+│  └─ licenseFile: node_modules/cacheable-request/LICENSE
+├─ camelcase@5.3.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/camelcase
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/camelcase/license
+├─ chalk@3.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/chalk/chalk
+│  └─ licenseFile: node_modules/chalk/license
+├─ chokidar@3.5.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/paulmillr/chokidar
+│  ├─ publisher: Paul Miller
+│  ├─ url: https://paulmillr.com
+│  └─ licenseFile: node_modules/chokidar/LICENSE
+├─ ci-info@2.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/watson/ci-info
+│  ├─ publisher: Thomas Watson Steen
+│  ├─ url: https://twitter.com/wa7son
+│  └─ licenseFile: node_modules/ci-info/LICENSE
+├─ cli-boxes@2.2.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/cli-boxes
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: https://sindresorhus.com
+│  └─ licenseFile: node_modules/cli-boxes/license
+├─ clone-response@1.0.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/lukechilds/clone-response
+│  ├─ publisher: Luke Childs
+│  ├─ url: http://lukechilds.co.uk
+│  └─ licenseFile: node_modules/clone-response/LICENSE
+├─ color-convert@2.0.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/Qix-/color-convert
+│  ├─ publisher: Heather Arthur
+│  └─ licenseFile: node_modules/color-convert/LICENSE
+├─ color-name@1.1.4
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/colorjs/color-name
+│  ├─ publisher: DY
+│  └─ licenseFile: node_modules/color-name/LICENSE
+├─ component-emitter@1.3.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/component/emitter
+│  └─ licenseFile: node_modules/component-emitter/LICENSE
+├─ concat-map@0.0.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/substack/node-concat-map
+│  ├─ publisher: James Halliday
+│  ├─ url: http://substack.net
+│  └─ licenseFile: node_modules/concat-map/LICENSE
+├─ concat-stream@1.6.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/maxogden/concat-stream
+│  ├─ publisher: Max Ogden
+│  └─ licenseFile: node_modules/concat-stream/LICENSE
+├─ configstore@5.0.1
+│  ├─ licenses: BSD-2-Clause
+│  ├─ repository: https://github.com/yeoman/configstore
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/configstore/license
+├─ content-disposition@0.5.3
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jshttp/content-disposition
+│  ├─ publisher: Douglas Christopher Wilson
+│  └─ licenseFile: node_modules/content-disposition/LICENSE
+├─ content-type@1.0.4
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jshttp/content-type
+│  ├─ publisher: Douglas Christopher Wilson
+│  └─ licenseFile: node_modules/content-type/LICENSE
+├─ cookie-signature@1.0.6
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/visionmedia/node-cookie-signature
+│  ├─ publisher: TJ Holowaychuk
+│  └─ licenseFile: node_modules/cookie-signature/Readme.md
+├─ cookie@0.4.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jshttp/cookie
+│  ├─ publisher: Roman Shtylman
+│  └─ licenseFile: node_modules/cookie/LICENSE
+├─ cookie@0.4.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jshttp/cookie
+│  ├─ publisher: Roman Shtylman
+│  └─ licenseFile: node_modules/engine.io/node_modules/cookie/LICENSE
+├─ core-util-is@1.0.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/isaacs/core-util-is
+│  ├─ publisher: Isaac Z. Schlueter
+│  ├─ url: http://blog.izs.me/
+│  └─ licenseFile: node_modules/core-util-is/LICENSE
+├─ cors@2.8.5
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/expressjs/cors
+│  ├─ publisher: Troy Goode
+│  ├─ url: https://github.com/troygoode/
+│  └─ licenseFile: node_modules/cors/LICENSE
+├─ crypto-random-string@2.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/crypto-random-string
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/crypto-random-string/license
+├─ debug@2.6.9
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/visionmedia/debug
+│  ├─ publisher: TJ Holowaychuk
+│  └─ licenseFile: node_modules/debug/LICENSE
+├─ debug@3.2.7
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/visionmedia/debug
+│  ├─ publisher: TJ Holowaychuk
+│  └─ licenseFile: node_modules/nodemon/node_modules/debug/LICENSE
+├─ debug@4.3.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/visionmedia/debug
+│  ├─ publisher: TJ Holowaychuk
+│  └─ licenseFile: node_modules/socket.io/node_modules/debug/LICENSE
+├─ decompress-response@3.3.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/decompress-response
+│  └─ licenseFile: node_modules/decompress-response/license
+├─ deep-extend@0.6.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/unclechu/node-deep-extend
+│  ├─ publisher: Viacheslav Lotsmanov
+│  └─ licenseFile: node_modules/deep-extend/LICENSE
+├─ defer-to-connect@1.1.3
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/szmarczak/defer-to-connect
+│  ├─ publisher: Szymon Marczak
+│  └─ licenseFile: node_modules/defer-to-connect/LICENSE
+├─ depd@1.1.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/dougwilson/nodejs-depd
+│  ├─ publisher: Douglas Christopher Wilson
+│  └─ licenseFile: node_modules/depd/LICENSE
+├─ destroy@1.0.4
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/stream-utils/destroy
+│  ├─ publisher: Jonathan Ong
+│  ├─ url: http://jongleberry.com
+│  └─ licenseFile: node_modules/destroy/LICENSE
+├─ dicer@0.2.5
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/mscdex/dicer
+│  ├─ publisher: Brian White
+│  └─ licenseFile: node_modules/dicer/LICENSE
+├─ dot-prop@5.3.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/dot-prop
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/dot-prop/license
+├─ duplexer3@0.1.4
+│  ├─ licenses: BSD-3-Clause
+│  ├─ repository: https://github.com/floatdrop/duplexer3
+│  ├─ publisher: Conrad Pankoff
+│  ├─ url: http://www.fknsrs.biz/
+│  └─ licenseFile: node_modules/duplexer3/LICENSE.md
+├─ ee-first@1.1.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jonathanong/ee-first
+│  ├─ publisher: Jonathan Ong
+│  ├─ url: http://jongleberry.com
+│  └─ licenseFile: node_modules/ee-first/LICENSE
+├─ emoji-regex@7.0.3
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/mathiasbynens/emoji-regex
+│  ├─ publisher: Mathias Bynens
+│  ├─ url: https://mathiasbynens.be/
+│  └─ licenseFile: node_modules/ansi-align/node_modules/emoji-regex/LICENSE-MIT.txt
+├─ emoji-regex@8.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/mathiasbynens/emoji-regex
+│  ├─ publisher: Mathias Bynens
+│  ├─ url: https://mathiasbynens.be/
+│  └─ licenseFile: node_modules/emoji-regex/LICENSE-MIT.txt
+├─ encodeurl@1.0.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/pillarjs/encodeurl
+│  └─ licenseFile: node_modules/encodeurl/LICENSE
+├─ end-of-stream@1.4.4
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/mafintosh/end-of-stream
+│  ├─ publisher: Mathias Buus
+│  └─ licenseFile: node_modules/end-of-stream/LICENSE
+├─ engine.io-parser@4.0.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/socketio/engine.io-parser
+│  └─ licenseFile: node_modules/engine.io-parser/LICENSE
+├─ engine.io@5.1.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/socketio/engine.io
+│  ├─ publisher: Guillermo Rauch
+│  └─ licenseFile: node_modules/engine.io/LICENSE
+├─ escape-goat@2.1.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/escape-goat
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/escape-goat/license
+├─ escape-html@1.0.3
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/component/escape-html
+│  └─ licenseFile: node_modules/escape-html/LICENSE
+├─ etag@1.8.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jshttp/etag
+│  └─ licenseFile: node_modules/etag/LICENSE
+├─ express@4.17.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/expressjs/express
+│  ├─ publisher: TJ Holowaychuk
+│  └─ licenseFile: node_modules/express/LICENSE
+├─ fill-range@7.0.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jonschlinkert/fill-range
+│  ├─ publisher: Jon Schlinkert
+│  ├─ url: https://github.com/jonschlinkert
+│  └─ licenseFile: node_modules/fill-range/LICENSE
+├─ finalhandler@1.1.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/pillarjs/finalhandler
+│  ├─ publisher: Douglas Christopher Wilson
+│  └─ licenseFile: node_modules/finalhandler/LICENSE
+├─ forwarded@0.2.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jshttp/forwarded
+│  └─ licenseFile: node_modules/forwarded/LICENSE
+├─ fresh@0.5.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jshttp/fresh
+│  ├─ publisher: TJ Holowaychuk
+│  ├─ url: http://tjholowaychuk.com
+│  └─ licenseFile: node_modules/fresh/LICENSE
+├─ get-stream@4.1.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/get-stream
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/get-stream/license
+├─ get-stream@5.2.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/get-stream
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: https://sindresorhus.com
+│  └─ licenseFile: node_modules/cacheable-request/node_modules/get-stream/license
+├─ glob-parent@5.1.2
+│  ├─ licenses: ISC
+│  ├─ repository: https://github.com/gulpjs/glob-parent
+│  ├─ publisher: Gulp Team
+│  ├─ url: https://gulpjs.com/
+│  └─ licenseFile: node_modules/glob-parent/LICENSE
+├─ global-dirs@2.1.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/global-dirs
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: https://sindresorhus.com
+│  └─ licenseFile: node_modules/global-dirs/license
+├─ got@9.6.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/got
+│  └─ licenseFile: node_modules/got/license
+├─ graceful-fs@4.2.6
+│  ├─ licenses: ISC
+│  ├─ repository: https://github.com/isaacs/node-graceful-fs
+│  └─ licenseFile: node_modules/graceful-fs/LICENSE
+├─ has-flag@3.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/has-flag
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/has-flag/license
+├─ has-flag@4.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/has-flag
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/chalk/node_modules/has-flag/license
+├─ has-yarn@2.1.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/has-yarn
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/has-yarn/license
+├─ http-cache-semantics@4.1.0
+│  ├─ licenses: BSD-2-Clause
+│  ├─ repository: https://github.com/kornelski/http-cache-semantics
+│  ├─ publisher: Kornel Lesiński
+│  ├─ url: https://kornel.ski/
+│  └─ licenseFile: node_modules/http-cache-semantics/LICENSE
+├─ http-errors@1.7.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jshttp/http-errors
+│  ├─ publisher: Jonathan Ong
+│  ├─ url: http://jongleberry.com
+│  └─ licenseFile: node_modules/http-errors/LICENSE
+├─ http-errors@1.7.3
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jshttp/http-errors
+│  ├─ publisher: Jonathan Ong
+│  ├─ url: http://jongleberry.com
+│  └─ licenseFile: node_modules/send/node_modules/http-errors/LICENSE
+├─ iconv-lite@0.4.24
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/ashtuchkin/iconv-lite
+│  ├─ publisher: Alexander Shtuchkin
+│  └─ licenseFile: node_modules/iconv-lite/LICENSE
+├─ ignore-by-default@1.0.1
+│  ├─ licenses: ISC
+│  ├─ repository: https://github.com/novemberborn/ignore-by-default
+│  ├─ publisher: Mark Wubben
+│  ├─ url: https://novemberborn.net/
+│  └─ licenseFile: node_modules/ignore-by-default/LICENSE
+├─ import-lazy@2.1.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/import-lazy
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/import-lazy/license
+├─ imurmurhash@0.1.4
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jensyt/imurmurhash-js
+│  ├─ publisher: Jens Taylor
+│  ├─ url: https://github.com/homebrewing
+│  └─ licenseFile: node_modules/imurmurhash/README.md
+├─ inherits@2.0.3
+│  ├─ licenses: ISC
+│  ├─ repository: https://github.com/isaacs/inherits
+│  └─ licenseFile: node_modules/http-errors/node_modules/inherits/LICENSE
+├─ inherits@2.0.4
+│  ├─ licenses: ISC
+│  ├─ repository: https://github.com/isaacs/inherits
+│  └─ licenseFile: node_modules/inherits/LICENSE
+├─ ini@1.3.7
+│  ├─ licenses: ISC
+│  ├─ repository: https://github.com/isaacs/ini
+│  ├─ publisher: Isaac Z. Schlueter
+│  ├─ url: http://blog.izs.me/
+│  └─ licenseFile: node_modules/ini/LICENSE
+├─ ini@1.3.8
+│  ├─ licenses: ISC
+│  ├─ repository: https://github.com/isaacs/ini
+│  ├─ publisher: Isaac Z. Schlueter
+│  ├─ url: http://blog.izs.me/
+│  └─ licenseFile: node_modules/rc/node_modules/ini/LICENSE
+├─ ipaddr.js@1.9.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/whitequark/ipaddr.js
+│  ├─ publisher: whitequark
+│  └─ licenseFile: node_modules/ipaddr.js/LICENSE
+├─ is-binary-path@2.1.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/is-binary-path
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/is-binary-path/license
+├─ is-ci@2.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/watson/is-ci
+│  ├─ publisher: Thomas Watson Steen
+│  ├─ url: https://twitter.com/wa7son
+│  └─ licenseFile: node_modules/is-ci/LICENSE
+├─ is-extglob@2.1.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jonschlinkert/is-extglob
+│  ├─ publisher: Jon Schlinkert
+│  ├─ url: https://github.com/jonschlinkert
+│  └─ licenseFile: node_modules/is-extglob/LICENSE
+├─ is-fullwidth-code-point@2.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/is-fullwidth-code-point
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/ansi-align/node_modules/is-fullwidth-code-point/license
+├─ is-fullwidth-code-point@3.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/is-fullwidth-code-point
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/is-fullwidth-code-point/license
+├─ is-glob@4.0.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/micromatch/is-glob
+│  ├─ publisher: Jon Schlinkert
+│  ├─ url: https://github.com/jonschlinkert
+│  └─ licenseFile: node_modules/is-glob/LICENSE
+├─ is-installed-globally@0.3.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/is-installed-globally
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/is-installed-globally/license
+├─ is-npm@4.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/is-npm
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/is-npm/license
+├─ is-number@7.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jonschlinkert/is-number
+│  ├─ publisher: Jon Schlinkert
+│  ├─ url: https://github.com/jonschlinkert
+│  └─ licenseFile: node_modules/is-number/LICENSE
+├─ is-obj@2.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/is-obj
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/is-obj/license
+├─ is-path-inside@3.0.3
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/is-path-inside
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/is-path-inside/license
+├─ is-typedarray@1.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/hughsk/is-typedarray
+│  ├─ publisher: Hugh Kennedy
+│  ├─ url: http://hughsk.io/
+│  └─ licenseFile: node_modules/is-typedarray/LICENSE.md
+├─ is-yarn-global@0.3.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/LitoMore/is-yarn-global
+│  ├─ publisher: LitoMore
+│  ├─ url: litomore@gmail.com
+│  └─ licenseFile: node_modules/is-yarn-global/LICENSE
+├─ isarray@0.0.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/juliangruber/isarray
+│  ├─ publisher: Julian Gruber
+│  ├─ url: http://juliangruber.com
+│  └─ licenseFile: node_modules/isarray/README.md
+├─ isarray@1.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/juliangruber/isarray
+│  ├─ publisher: Julian Gruber
+│  ├─ url: http://juliangruber.com
+│  └─ licenseFile: node_modules/concat-stream/node_modules/isarray/README.md
+├─ json-buffer@3.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/dominictarr/json-buffer
+│  ├─ publisher: Dominic Tarr
+│  ├─ url: http://dominictarr.com
+│  └─ licenseFile: node_modules/json-buffer/LICENSE
+├─ jsonparse@1.3.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/creationix/jsonparse
+│  ├─ publisher: Tim Caswell
+│  └─ licenseFile: node_modules/jsonparse/LICENSE
+├─ keyv@3.1.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/lukechilds/keyv
+│  ├─ publisher: Luke Childs
+│  ├─ url: http://lukechilds.co.uk
+│  └─ licenseFile: node_modules/keyv/LICENSE
+├─ latest-version@5.1.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/latest-version
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/latest-version/license
+├─ lowercase-keys@1.0.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/lowercase-keys
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/lowercase-keys/license
+├─ lowercase-keys@2.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/lowercase-keys
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/cacheable-request/node_modules/lowercase-keys/license
+├─ make-dir@3.1.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/make-dir
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/make-dir/license
+├─ media-typer@0.3.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jshttp/media-typer
+│  ├─ publisher: Douglas Christopher Wilson
+│  └─ licenseFile: node_modules/media-typer/LICENSE
+├─ merge-descriptors@1.0.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/component/merge-descriptors
+│  ├─ publisher: Jonathan Ong
+│  ├─ url: http://jongleberry.com
+│  └─ licenseFile: node_modules/merge-descriptors/LICENSE
+├─ methods@1.1.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jshttp/methods
+│  └─ licenseFile: node_modules/methods/LICENSE
+├─ mime-db@1.48.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jshttp/mime-db
+│  └─ licenseFile: node_modules/mime-db/LICENSE
+├─ mime-types@2.1.31
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jshttp/mime-types
+│  └─ licenseFile: node_modules/mime-types/LICENSE
+├─ mime@1.6.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/broofa/node-mime
+│  ├─ publisher: Robert Kieffer
+│  ├─ url: http://github.com/broofa
+│  └─ licenseFile: node_modules/mime/LICENSE
+├─ mimic-response@1.0.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/mimic-response
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/mimic-response/license
+├─ minimatch@3.0.4
+│  ├─ licenses: ISC
+│  ├─ repository: https://github.com/isaacs/minimatch
+│  ├─ publisher: Isaac Z. Schlueter
+│  ├─ url: http://blog.izs.me
+│  └─ licenseFile: node_modules/minimatch/LICENSE
+├─ minimist@1.2.5
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/substack/minimist
+│  ├─ publisher: James Halliday
+│  ├─ url: http://substack.net
+│  └─ licenseFile: node_modules/minimist/LICENSE
+├─ mkdirp@0.5.5
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/substack/node-mkdirp
+│  ├─ publisher: James Halliday
+│  ├─ url: http://substack.net
+│  └─ licenseFile: node_modules/mkdirp/LICENSE
+├─ ms@2.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/zeit/ms
+│  └─ licenseFile: node_modules/ms/license.md
+├─ ms@2.1.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/zeit/ms
+│  └─ licenseFile: node_modules/send/node_modules/ms/license.md
+├─ ms@2.1.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/zeit/ms
+│  └─ licenseFile: node_modules/socket.io/node_modules/ms/license.md
+├─ ms@2.1.3
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/vercel/ms
+│  └─ licenseFile: node_modules/nodemon/node_modules/ms/license.md
+├─ multer@1.4.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/expressjs/multer
+│  └─ licenseFile: node_modules/multer/LICENSE
+├─ negotiator@0.6.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jshttp/negotiator
+│  └─ licenseFile: node_modules/negotiator/LICENSE
+├─ nodemon@2.0.9
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/remy/nodemon
+│  ├─ publisher: Remy Sharp
+│  ├─ url: https://github.com/remy
+│  └─ licenseFile: node_modules/nodemon/LICENSE
+├─ nopt@1.0.10
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/isaacs/nopt
+│  ├─ publisher: Isaac Z. Schlueter
+│  ├─ url: http://blog.izs.me/
+│  └─ licenseFile: node_modules/nopt/LICENSE
+├─ normalize-path@3.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jonschlinkert/normalize-path
+│  ├─ publisher: Jon Schlinkert
+│  ├─ url: https://github.com/jonschlinkert
+│  └─ licenseFile: node_modules/normalize-path/LICENSE
+├─ normalize-url@4.5.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/normalize-url
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/normalize-url/license
+├─ object-assign@4.1.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/object-assign
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/object-assign/license
+├─ on-finished@2.3.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jshttp/on-finished
+│  └─ licenseFile: node_modules/on-finished/LICENSE
+├─ once@1.4.0
+│  ├─ licenses: ISC
+│  ├─ repository: https://github.com/isaacs/once
+│  ├─ publisher: Isaac Z. Schlueter
+│  ├─ url: http://blog.izs.me/
+│  └─ licenseFile: node_modules/once/LICENSE
+├─ p-cancelable@1.1.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/p-cancelable
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/p-cancelable/license
+├─ package-json@6.5.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/package-json
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/package-json/license
+├─ parseurl@1.3.3
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/pillarjs/parseurl
+│  └─ licenseFile: node_modules/parseurl/LICENSE
+├─ path-to-regexp@0.1.7
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/component/path-to-regexp
+│  └─ licenseFile: node_modules/path-to-regexp/LICENSE
+├─ picomatch@2.3.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/micromatch/picomatch
+│  ├─ publisher: Jon Schlinkert
+│  ├─ url: https://github.com/jonschlinkert
+│  └─ licenseFile: node_modules/picomatch/LICENSE
+├─ prepend-http@2.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/prepend-http
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/prepend-http/license
+├─ process-nextick-args@2.0.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/calvinmetcalf/process-nextick-args
+│  └─ licenseFile: node_modules/process-nextick-args/license.md
+├─ proxy-addr@2.0.7
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jshttp/proxy-addr
+│  ├─ publisher: Douglas Christopher Wilson
+│  └─ licenseFile: node_modules/proxy-addr/LICENSE
+├─ pstree.remy@1.1.8
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/remy/pstree
+│  ├─ publisher: Remy Sharp
+│  └─ licenseFile: node_modules/pstree.remy/LICENSE
+├─ pump@3.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/mafintosh/pump
+│  ├─ publisher: Mathias Buus Madsen
+│  └─ licenseFile: node_modules/pump/LICENSE
+├─ pupa@2.1.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/pupa
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/pupa/license
+├─ qs@6.7.0
+│  ├─ licenses: BSD-3-Clause
+│  ├─ repository: https://github.com/ljharb/qs
+│  └─ licenseFile: node_modules/qs/LICENSE
+├─ range-parser@1.2.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jshttp/range-parser
+│  ├─ publisher: TJ Holowaychuk
+│  ├─ url: http://tjholowaychuk.com
+│  └─ licenseFile: node_modules/range-parser/LICENSE
+├─ raw-body@2.4.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/stream-utils/raw-body
+│  ├─ publisher: Jonathan Ong
+│  ├─ url: http://jongleberry.com
+│  └─ licenseFile: node_modules/raw-body/LICENSE
+├─ rc@1.2.8
+│  ├─ licenses: (BSD-2-Clause OR MIT OR Apache-2.0)
+│  ├─ repository: https://github.com/dominictarr/rc
+│  ├─ publisher: Dominic Tarr
+│  ├─ url: dominictarr.com
+│  └─ licenseFile: node_modules/rc/LICENSE.APACHE2
+├─ readable-stream@1.1.14
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/isaacs/readable-stream
+│  ├─ publisher: Isaac Z. Schlueter
+│  ├─ url: http://blog.izs.me/
+│  └─ licenseFile: node_modules/readable-stream/LICENSE
+├─ readable-stream@2.3.7
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/nodejs/readable-stream
+│  └─ licenseFile: node_modules/concat-stream/node_modules/readable-stream/LICENSE
+├─ readdirp@3.6.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/paulmillr/readdirp
+│  ├─ publisher: Thorsten Lorenz
+│  ├─ url: thlorenz.com
+│  └─ licenseFile: node_modules/readdirp/LICENSE
+├─ registry-auth-token@4.2.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/rexxars/registry-auth-token
+│  ├─ publisher: Espen Hovlandsdal
+│  └─ licenseFile: node_modules/registry-auth-token/LICENSE
+├─ registry-url@5.1.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/registry-url
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/registry-url/license
+├─ responselike@1.0.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/lukechilds/responselike
+│  ├─ publisher: lukechilds
+│  └─ licenseFile: node_modules/responselike/LICENSE
+├─ safe-buffer@5.1.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/feross/safe-buffer
+│  ├─ publisher: Feross Aboukhadijeh
+│  ├─ url: http://feross.org
+│  └─ licenseFile: node_modules/safe-buffer/LICENSE
+├─ safer-buffer@2.1.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/ChALkeR/safer-buffer
+│  ├─ publisher: Nikita Skovoroda
+│  ├─ url: https://github.com/ChALkeR
+│  └─ licenseFile: node_modules/safer-buffer/LICENSE
+├─ semver-diff@3.1.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/semver-diff
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/semver-diff/license
+├─ semver@5.7.1
+│  ├─ licenses: ISC
+│  ├─ repository: https://github.com/npm/node-semver
+│  └─ licenseFile: node_modules/nodemon/node_modules/semver/LICENSE
+├─ semver@6.3.0
+│  ├─ licenses: ISC
+│  ├─ repository: https://github.com/npm/node-semver
+│  └─ licenseFile: node_modules/semver/LICENSE
+├─ send@0.17.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/pillarjs/send
+│  ├─ publisher: TJ Holowaychuk
+│  └─ licenseFile: node_modules/send/LICENSE
+├─ serve-static@1.14.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/expressjs/serve-static
+│  ├─ publisher: Douglas Christopher Wilson
+│  └─ licenseFile: node_modules/serve-static/LICENSE
+├─ setprototypeof@1.1.1
+│  ├─ licenses: ISC
+│  ├─ repository: https://github.com/wesleytodd/setprototypeof
+│  ├─ publisher: Wes Todd
+│  └─ licenseFile: node_modules/setprototypeof/LICENSE
+├─ signal-exit@3.0.3
+│  ├─ licenses: ISC
+│  ├─ repository: https://github.com/tapjs/signal-exit
+│  ├─ publisher: Ben Coe
+│  └─ licenseFile: node_modules/signal-exit/LICENSE.txt
+├─ socket.io-adapter@2.3.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/socketio/socket.io-adapter
+│  └─ licenseFile: node_modules/socket.io-adapter/LICENSE
+├─ socket.io-parser@4.0.4
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/socketio/socket.io-parser
+│  └─ licenseFile: node_modules/socket.io-parser/LICENSE
+├─ socket.io@4.1.3
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/socketio/socket.io
+│  └─ licenseFile: node_modules/socket.io/LICENSE
+├─ statuses@1.5.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jshttp/statuses
+│  └─ licenseFile: node_modules/statuses/LICENSE
+├─ streamsearch@0.1.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/mscdex/streamsearch
+│  ├─ publisher: Brian White
+│  └─ licenseFile: node_modules/streamsearch/LICENSE
+├─ string-width@3.1.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/string-width
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/ansi-align/node_modules/string-width/license
+├─ string-width@4.2.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/string-width
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/string-width/license
+├─ string_decoder@0.10.31
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/rvagg/string_decoder
+│  └─ licenseFile: node_modules/string_decoder/LICENSE
+├─ string_decoder@1.1.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/nodejs/string_decoder
+│  └─ licenseFile: node_modules/concat-stream/node_modules/string_decoder/LICENSE
+├─ strip-ansi@5.2.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/chalk/strip-ansi
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/ansi-align/node_modules/strip-ansi/license
+├─ strip-ansi@6.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/chalk/strip-ansi
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/strip-ansi/license
+├─ strip-json-comments@2.0.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/strip-json-comments
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/strip-json-comments/license
+├─ supports-color@5.5.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/chalk/supports-color
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/supports-color/license
+├─ supports-color@7.2.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/chalk/supports-color
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/chalk/node_modules/supports-color/license
+├─ term-size@2.2.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/term-size
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: https://sindresorhus.com
+│  └─ licenseFile: node_modules/term-size/license
+├─ through@2.3.8
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/dominictarr/through
+│  ├─ publisher: Dominic Tarr
+│  ├─ url: dominictarr.com
+│  └─ licenseFile: node_modules/through/LICENSE.APACHE2
+├─ to-readable-stream@1.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/to-readable-stream
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/to-readable-stream/license
+├─ to-regex-range@5.0.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/micromatch/to-regex-range
+│  ├─ publisher: Jon Schlinkert
+│  ├─ url: https://github.com/jonschlinkert
+│  └─ licenseFile: node_modules/to-regex-range/LICENSE
+├─ toidentifier@1.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/component/toidentifier
+│  ├─ publisher: Douglas Christopher Wilson
+│  └─ licenseFile: node_modules/toidentifier/LICENSE
+├─ touch@3.1.0
+│  ├─ licenses: ISC
+│  ├─ repository: https://github.com/isaacs/node-touch
+│  ├─ publisher: Isaac Z. Schlueter
+│  ├─ url: http://blog.izs.me/
+│  └─ licenseFile: node_modules/touch/LICENSE
+├─ type-fest@0.8.1
+│  ├─ licenses: (MIT OR CC0-1.0)
+│  ├─ repository: https://github.com/sindresorhus/type-fest
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/type-fest/license
+├─ type-is@1.6.18
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jshttp/type-is
+│  └─ licenseFile: node_modules/type-is/LICENSE
+├─ typedarray-to-buffer@3.1.5
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/feross/typedarray-to-buffer
+│  ├─ publisher: Feross Aboukhadijeh
+│  ├─ url: http://feross.org/
+│  └─ licenseFile: node_modules/typedarray-to-buffer/LICENSE
+├─ typedarray@0.0.6
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/substack/typedarray
+│  ├─ publisher: James Halliday
+│  ├─ url: http://substack.net
+│  └─ licenseFile: node_modules/typedarray/LICENSE
+├─ undefsafe@2.0.3
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/remy/undefsafe
+│  ├─ publisher: Remy Sharp
+│  └─ licenseFile: node_modules/undefsafe/LICENSE
+├─ unique-string@2.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/unique-string
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/unique-string/license
+├─ unpipe@1.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/stream-utils/unpipe
+│  ├─ publisher: Douglas Christopher Wilson
+│  └─ licenseFile: node_modules/unpipe/LICENSE
+├─ update-notifier@4.1.3
+│  ├─ licenses: BSD-2-Clause
+│  ├─ repository: https://github.com/yeoman/update-notifier
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: https://sindresorhus.com
+│  └─ licenseFile: node_modules/update-notifier/license
+├─ url-parse-lax@3.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/url-parse-lax
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/url-parse-lax/license
+├─ util-deprecate@1.0.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/TooTallNate/util-deprecate
+│  ├─ publisher: Nathan Rajlich
+│  ├─ url: http://n8.io/
+│  └─ licenseFile: node_modules/util-deprecate/LICENSE
+├─ utils-merge@1.0.1
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jaredhanson/utils-merge
+│  ├─ publisher: Jared Hanson
+│  ├─ url: http://www.jaredhanson.net/
+│  └─ licenseFile: node_modules/utils-merge/LICENSE
+├─ vary@1.1.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/jshttp/vary
+│  ├─ publisher: Douglas Christopher Wilson
+│  └─ licenseFile: node_modules/vary/LICENSE
+├─ widest-line@3.1.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/widest-line
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/widest-line/license
+├─ wrappy@1.0.2
+│  ├─ licenses: ISC
+│  ├─ repository: https://github.com/npm/wrappy
+│  ├─ publisher: Isaac Z. Schlueter
+│  ├─ url: http://blog.izs.me/
+│  └─ licenseFile: node_modules/wrappy/LICENSE
+├─ write-file-atomic@3.0.3
+│  ├─ licenses: ISC
+│  ├─ repository: https://github.com/npm/write-file-atomic
+│  ├─ publisher: Rebecca Turner
+│  ├─ url: http://re-becca.org
+│  └─ licenseFile: node_modules/write-file-atomic/LICENSE
+├─ ws@7.4.6
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/websockets/ws
+│  ├─ publisher: Einar Otto Stangvik
+│  ├─ url: http://2x.io
+│  └─ licenseFile: node_modules/ws/LICENSE
+├─ xdg-basedir@4.0.0
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/sindresorhus/xdg-basedir
+│  ├─ publisher: Sindre Sorhus
+│  ├─ url: sindresorhus.com
+│  └─ licenseFile: node_modules/xdg-basedir/license
+├─ xtend@4.0.2
+│  ├─ licenses: MIT
+│  ├─ repository: https://github.com/Raynos/xtend
+│  ├─ publisher: Raynos
+│  └─ licenseFile: node_modules/xtend/LICENSE
+└─ zlib@1.0.5
+   ├─ licenses: BSD
+   ├─ repository: https://github.com/kkaefer/node-zlib
+   ├─ publisher: Konstantin Käfer
+   └─ licenseFile: node_modules/zlib/LICENSE
+
