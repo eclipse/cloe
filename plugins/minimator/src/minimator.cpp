@@ -520,8 +520,9 @@ class MinimatorSimulator : public cloe::Simulator {
    */
   friend void to_json(cloe::Json& j, const MinimatorSimulator& b) {
     j = cloe::Json{
-        {"connected", b.connected_},        {"operational", b.operational_}, {"running", nullptr},
-        {"num_vehicles", b.num_vehicles()}, {"vehicles", b.vehicles_},
+        {"is_connected", b.connected_}, {"is_operational", b.operational_},
+        {"running", nullptr},           {"num_vehicles", b.num_vehicles()},
+        {"vehicles", b.vehicles_},
     };
   }
 
