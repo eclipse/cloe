@@ -6,7 +6,7 @@ ARG VTD_IMAGE=scratch
 FROM ${VTD_IMAGE} AS vtd
 WORKDIR /vtd
 
-FROM ubuntu:16.04
+FROM ubuntu:16.04 as cloe-base
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -94,6 +94,7 @@ RUN conan profile new --detect default && \
 ENV CONAN_NON_INTERACTIVE=yes
 
 # Build and Install Cloe
+FROM cloe-base as cloe-build
 WORKDIR /cloe
 ARG WITH_VTD=0
 ARG KEEP_SOURCES=0
