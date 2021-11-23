@@ -1,0 +1,117 @@
+CDR 1 - Cloe Design Resolution
+==============================
+
+| **Status:** DRAFT
+| **Version:** 1.0
+| **Date:** 2021-06-23
+
+The "CLOE DESIGN RESOLUTION", short "CDR", describes an aspect of the
+development or design of Cloe.
+
+Motivation
+----------
+Whenever a solution is developed to address a particular problem, that solution
+will affect future development. The solution may impede future development in
+one direction, while enabling it in another direction. It may make maintenance
+of the codebase easier, or more difficult. It may make the needs of one
+stakeholder easy to address, while making the needs of another stakeholder
+difficult to fulfill.
+
+In order to select the best solution not only for the current problem that is
+being addressed, but also for the lifetime of the product, we need as much
+information as possible on what will happen next. The following questions can
+help us approximate the answer to this vague question:
+
+- What other solutions are on the roadmap?
+- Will the proposed solution cause problems for some stakeholders?
+- Will the proposed solution impede upcoming solutions?
+- Will the proposed solution be used to solve other problems?
+- Does the proposed solution solve the problem its trying to solve?
+- Is the proposed solution maintainable?
+
+More generally, we need to know all about the requirements of the various
+stakeholders in order to be able to answer these questions. However, it is
+notoriously difficult to elicit the correct set of requirements from
+stakeholders, and this is compounded when the stakeholders are spread out: in
+focus, culturally, geographically.
+
+Cloe is a complex product with a lot of stakeholders. It is important that we
+find an efficient mode of communication with all these stakeholders so that
+they feel informed about design decisions as well as included in the
+development of these design decisions.
+
+This problem is not unique in our circumstances, it recurs in basically all
+long-lived, active projects with a spread out group of stakeholders. One of the
+ways in which other groups have dealt with this information and design problem
+is to build a lean process around the development of design decisions:
+A Request for Comments, more commonly known as an RFC:
+
+    An RFC is authored by individuals or groups of engineers and computer
+    scientists in the form of a memorandum describing methods, behaviors,
+    research, or innovations applicable to the working of the Internet and
+    Internet-connected systems.  It is submitted either for peer review or to
+    convey new concepts, information, or occasionally engineering humor. The
+    IETF adopts some of the proposals published as RFCs as Internet Standards.
+    However, many RFCs are informational or experimental in nature and are not
+    standards. The RFC system was invented by Steve Crocker in 1969 to help
+    record unofficial notes on the development of ARPANET. RFCs have since
+    become official documents of Internet specifications, communications
+    protocols, procedures, and events. According to Crocker, the documents
+    "shape the Internet's inner workings and have played a significant role in
+    its success", but are not well known outside the community.
+
+    Source: Wikipedia, 08.03.2021. https://en.wikipedia.org/wiki/Request_for_Comments
+
+Other projects that have adopted similar processes are:
+
+- Python Enhancement Proposals: https://www.python.org/dev/peps/pep-0001/
+- Rust Request for Comments: https://github.com/rust-lang/rfcs
+
+
+Proposal #1
+-----------
+Our proposal is to adopt a similar approach in order to solve the needs of our
+stakeholders as well as enable effective development of solutions. Not all
+solutions should have a CDR, only those that have or have the potential to
+have a significant impact on the solution and/or future development work.
+
+Workflow
+^^^^^^^^
+#. | Draft new CDR proposal
+   [State: DRAFT]
+
+   Create a draft CDR by copying the :doc:`0000-template` (``0000-template.rst``)
+   to a new document alongside the other CDRs with the name ``proposal-topic``,
+   where ``topic`` is a simple alphanumeric name describing the general topic.
+
+   Update the index of all CDRS in :doc:`../design`.
+
+   Write initial draft motivation and proposal. Link any relevant issues or
+   pull-requests.
+
+#. | Create a new pull-request with your changes.
+
+   When a CDR is in development, it does not have a number. Instead, it just
+   has a filename.
+
+#. | Option I: Merge pull-request
+   [State: ACCEPTED - VERSION 1.0]
+
+   Before merging, update the pull-request with the following changes:
+
+   - Give the CDR a unique number.
+   - Add the current date to the top section of metadata.
+
+#. | Option II: Decline pull-request
+   [State: REJECTED]
+
+#. | Update CDR with new pull-request
+   [State: ACCEPTED - VERSION X.Y]
+
+#. | Retire CDR
+   [State: RETIRED]
+
+
+Conclusion
+^^^^^^^^^^
+Our recommendation is to adopt Proposal #1.

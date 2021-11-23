@@ -1,0 +1,32 @@
+{
+    "logging": [
+        {
+            "name": "*",
+            "pattern": "%L%L %H:%M:%S.%e [%n] %v",
+            "level": "debug"
+        },
+        {
+            "name": "cloe/simulation",
+            "level": "debug",
+            "pattern": "%L%L %H:%M:%S.%e [%n] %v"
+        },
+        {
+            "name": "cloe/config",
+            "level": "debug"
+        }
+    ],
+    "simulation": {
+        "realtime_factor": 1.0
+    },
+    "simulator": {
+        "vtd": {
+            "connection": {
+                "host": "127.0.0.1",
+                "port": 48179,
+                "initial_sensor_port": 48195,
+                "retry_connect": 60,
+                "retry_sleep_s": 1.0
+            }
+        }
+    }
+}

@@ -5,7 +5,7 @@ Cloe empowers developers of automated-driving software components by providing
 a unified interface to closed-loop simulation. It achieves this by abstracting
 over environment and vehicle simulators and building upon these.
 
-![Screenshot of the Cloe UI](docs/images/screenshot.png)
+![Screenshot of the Cloe UI](docs/screenshot.png)
 
 Cloe isn't a single tool. It is a set of components written in different
 languages employing different tools that work together:

@@ -1,0 +1,44 @@
+digraph {
+    graph [splines=ortho, nodesep=1, rankdir=LR]
+
+    {
+        node [style=filled fillcolor=yellow]
+        Abort
+    };
+
+    {
+        node [style=filled fillcolor=grey]
+        Connect Disconnect
+    };
+
+    {
+        node [group=1]
+        Connect Start StepBegin StepSimulator StepController StepEnd Stop Disconnect
+    };
+
+    Connect -> Start;
+    Start -> StepBegin;
+    StepBegin -> StepSimulator;
+    StepSimulator -> StepController;
+    StepController -> StepEnd;
+    StepEnd -> StepBegin;
+    StepEnd -> Stop;
+    Stop -> Disconnect;
+
+    // Pause behavior
+    StepEnd -> Pause;
+    Pause -> Pause [splines=curved];
+    Pause -> Resume;
+    Resume -> StepBegin;
+
+    // Abort behavior
+    Connect -> Abort;
+    StepBegin -> Abort;
+    Pause -> Abort;
+    Abort -> Stop;
+    Abort -> Disconnect;
+
+    // Reset behvaior
+    Stop -> Reset;
+    Reset -> Start;
+}
