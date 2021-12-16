@@ -37,6 +37,12 @@ class VtdEgoSensor : public cloe::EgoSensor {
 
   const cloe::Object& sensed_state() const override { return data_->get_ego_object(); }
   double wheel_steering_angle() const override { return data_->get_ego_steering_angle(); }
+  double driver_request_acceleration() const override {
+    return task_control_->get_driver_request_acceleration(id_);
+  }
+  double driver_request_wheel_steering_angle() const override {
+    return task_control_->get_driver_request_steering_angle(id_);
+  }
   virtual double steering_wheel_speed() const override {
     return task_control_->get_steering_wheel_speed(id_);
   }

@@ -119,12 +119,35 @@ class TaskControl : public VtdOmniSensor {
 
   using VtdOmniSensor::process;
   void process(RDB_DRIVER_CTRL_t* driver_ctrl) override {
-    steering_wheel_speed_[driver_ctrl->playerId] = driver_ctrl->steeringSpeed;
+    // Steering speed at the front wheels [rad/s].
+    if (driver_ctrl->validityFlags & RDB_DRIVER_INPUT_VALIDITY_STEERING_SPEED) {
+      steering_wheel_speed_[driver_ctrl->playerId] = driver_ctrl->steeringSpeed;
+    } else {
+      vtd_logger()->warn("{}: steeringSpeed missing in RDB_DRIVER_CTRL_t", this->get_name());
+      steering_wheel_speed_[driver_ctrl->playerId] = 0.0;
+    }
+
+    // Longitudinal acceleration request [m/s2].
+    if (driver_ctrl->validityFlags & RDB_DRIVER_INPUT_VALIDITY_TGT_ACCEL) {
+      driver_request_accel_[driver_ctrl->playerId] = driver_ctrl->accelTgt;
+    } else {
+      vtd_logger()->warn("{}: accelTgt missing in RDB_DRIVER_CTRL_t", this->get_name());
+      driver_request_accel_[driver_ctrl->playerId] = 0.0;
+    }
+    // Steering request (angle at wheels) [rad].
+    if (driver_ctrl->validityFlags & RDB_DRIVER_INPUT_VALIDITY_TGT_STEERING) {
+      driver_request_steering_angle_[driver_ctrl->playerId] = driver_ctrl->steeringTgt;
+    } else {
+      vtd_logger()->warn("{}: steeringTgt missing in RDB_DRIVER_CTRL_t", this->get_name());
+      driver_request_steering_angle_[driver_ctrl->playerId] = 0.0;
+    }
   }
 
   void reset() override {
     VtdOmniSensor::reset();
     steering_wheel_speed_.clear();
+    driver_request_accel_.clear();
+    driver_request_steering_angle_.clear();
   }
 
   /**
@@ -182,9 +205,21 @@ class TaskControl : public VtdOmniSensor {
   }
 
   /**
-   * Get steering wheel speed of vehicle with given id.
+   * Get steering speed at front wheels of vehicle with given id [rad/s].
    */
   double get_steering_wheel_speed(uint64_t id) const { return steering_wheel_speed_.at(id); }
+
+  /**
+   * Get driver-requested longitudinal acceleration of vehicle with given id [m/s2].
+   */
+  double get_driver_request_acceleration(uint64_t id) const { return driver_request_accel_.at(id); }
+
+  /**
+   * Get driver-requested steering angle (at wheels) of vehicle with given id [rad].
+   */
+  double get_driver_request_steering_angle(uint64_t id) const {
+    return driver_request_steering_angle_.at(id);
+  }
 
   friend void to_json(cloe::Json& j, const TaskControl& tc) {
     j = cloe::Json{{"rdb_connection", tc.rdb_}};
@@ -194,6 +229,8 @@ class TaskControl : public VtdOmniSensor {
   /// RDBHandler helps us conveniently construct RDB messages.
   Framework::RDBHandler handler_;
   std::map<int, double> steering_wheel_speed_;
+  std::map<int, double> driver_request_accel_;
+  std::map<int, double> driver_request_steering_angle_;
 };
 
 }  // namespace vtd
