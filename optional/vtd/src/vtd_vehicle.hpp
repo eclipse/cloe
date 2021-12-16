@@ -84,7 +84,10 @@ class VtdVehicle : public cloe::Vehicle {
    */
   VtdVehicle(uint64_t id, const std::string& name, std::unique_ptr<RdbTransceiverTcp>&& rdb_client,
              std::shared_ptr<TaskControl> task_control)
-      : Vehicle(id, fmt::format("vtd_vehicle_{}", id)), vtd_name_(name) {
+      : Vehicle(id, fmt::format("vtd_vehicle_{}", id))
+      , vtd_name_(name)
+      , id_(id)
+      , task_control_(task_control) {
     // clang-format off
     sensor_port_ = rdb_client->tcp_port();
     vehicle_label_.tethered_to_player = name;
@@ -228,7 +231,10 @@ class VtdVehicle : public cloe::Vehicle {
       if (!sensors_.count(cfg.from)) {
         throw cloe::ModelError("reference to unknown sensor '{}'", cfg.from);
       }
-      auto sensor = this->sensors_.at(cfg.from);
+      std::shared_ptr<VtdSensorData> sensor;
+      if (cfg.from != "task_control") {
+        sensor = this->sensors_.at(cfg.from);
+      }
       auto new_or_override_component = [this](cloe::Component* c, std::string name, bool override) {
         if (override) {
           this->emplace_component(std::shared_ptr<cloe::Component>(c), name);
@@ -240,6 +246,8 @@ class VtdVehicle : public cloe::Vehicle {
         new_or_override_component(new VtdLaneBoundarySensor{sensor}, name, cfg.override);
       } else if (cfg.type == "object_sensor") {
         new_or_override_component(new VtdWorldSensor{sensor}, name, cfg.override);
+      } else if (cfg.type == "driver_request") {
+        new_or_override_component(new VtdDriverRequest{id_, task_control_}, name, cfg.override);
       } else {
         throw cloe::ModelError("unknown component type '{}'", cfg.type);
       }
@@ -250,6 +258,8 @@ class VtdVehicle : public cloe::Vehicle {
   const std::string DEFAULT_SENSOR_NAME = "cloe::vtd::sensor::default";
   std::string vtd_name_{};
   uint16_t sensor_port_{0};
+  uint16_t id_{0};
+  std::shared_ptr<TaskControl> task_control_{nullptr};
   std::map<std::string, std::shared_ptr<VtdSensorData>> sensors_;
   std::shared_ptr<VtdLatLongActuator> actuator_{nullptr};
   scp::LabelVehicle vehicle_label_;
