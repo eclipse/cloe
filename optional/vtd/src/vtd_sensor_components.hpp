@@ -19,9 +19,10 @@
  * \file vtd_sensor_components.hpp
  */
 
-#include <cloe/component/ego_sensor.hpp>     // for EgoSensor
-#include <cloe/component/lane_sensor.hpp>    // for LaneBoundarySensor
-#include <cloe/component/object_sensor.hpp>  // for ObjectSensor
+#include <cloe/component/driver_request.hpp>  // for DriverRequest
+#include <cloe/component/ego_sensor.hpp>      // for EgoSensor
+#include <cloe/component/lane_sensor.hpp>     // for LaneBoundarySensor
+#include <cloe/component/object_sensor.hpp>   // for ObjectSensor
 
 #include "task_control.hpp"     // for TaskControl
 #include "vtd_sensor_data.hpp"  // for VtdSensorData
@@ -75,6 +76,42 @@ class VtdLaneBoundarySensor : public cloe::LaneBoundarySensor {
 
  private:
   std::shared_ptr<VtdSensorData> data_;
+  std::shared_ptr<TaskControl> task_control_;
+};
+
+class VtdDriverRequest : public cloe::DriverRequest {
+ public:
+  explicit VtdDriverRequest(uint64_t id, std::shared_ptr<TaskControl> task_control)
+      : DriverRequest("vtd/driver_request"), id_(id), task_control_{task_control} {}
+
+  virtual ~VtdDriverRequest() = default;
+
+  bool has_acceleration() const override {
+    return task_control_->has_driver_request_acceleration(id_);
+  }
+
+  boost::optional<double> acceleration() const override {
+    boost::optional<double> accel;
+    if (this->has_acceleration()) {
+      accel = task_control_->get_driver_request_acceleration(id_);
+    }
+    return accel;
+  }
+
+  bool has_steering_angle() const override {
+    return task_control_->has_driver_request_steering_angle(id_);
+  }
+
+  boost::optional<double> steering_angle() const override {
+    boost::optional<double> angle;
+    if (this->has_steering_angle()) {
+      angle = task_control_->get_driver_request_steering_angle(id_);
+    }
+    return angle;
+  }
+
+ private:
+  uint64_t id_;
   std::shared_ptr<TaskControl> task_control_;
 };
 
