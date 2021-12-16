@@ -50,10 +50,25 @@ class EgoSensor : public Component {
   virtual double wheel_steering_angle() const = 0;
 
   /**
+   * Return the requested longitudinal acceleration in m/s2.
+   */
+  virtual double driver_request_acceleration() const = 0;
+
+  /**
+   * Return the requested front left wheel steering angle in radians.
+   */
+  virtual double driver_request_wheel_steering_angle() const = 0;
+
+  /**
    * Return the speed of the steering wheel rotation in radians/s.
    *
    * Positive values indicate clockwise rotation from the perspective of the
    * driver.
+   *
+   * FIXME(tobias): the way this is implemented in the vtd plugin is not
+   * consistent with what the function name/documentation suggests. Instead of
+   * the steering wheel speed, the driver-requested steering speed at the front
+   * wheels is returned. Either change the interface or the implementation.
    */
   virtual double steering_wheel_speed() const = 0;
 
@@ -78,16 +93,21 @@ class NopEgoSensor : public EgoSensor {
   virtual ~NopEgoSensor() noexcept = default;
   const Object& sensed_state() const override { return obj_; }
   double wheel_steering_angle() const override { return angle_; }
-  double steering_wheel_speed() const override { return steering_wheel_speed_; }
+  double driver_request_acceleration() const override { return driver_req_accel_; }
+  double driver_request_wheel_steering_angle() const override { return driver_req_angle_; }
+  virtual double steering_wheel_speed() const { return steering_wheel_speed_; }
   void reset() override {
     obj_ = Object{};
     angle_ = 0.0;
+    driver_req_angle_ = 0.0;
     steering_wheel_speed_ = 0.0;
   }
 
  protected:
   Object obj_{};
   double angle_{0.0};
+  double driver_req_accel_{0.0};
+  double driver_req_angle_{0.0};
   double steering_wheel_speed_{0.0};
 };
 

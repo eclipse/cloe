@@ -50,6 +50,12 @@ class EgoSensorCanon : public EgoSensor {
   explicit EgoSensorCanon(std::shared_ptr<const EgoSensor> ego) : ego_(ego) {}
   const Object& sensed_state() const override { return ego_->sensed_state(); }
   double wheel_steering_angle() const override { return ego_->wheel_steering_angle(); }
+  double driver_request_acceleration() const override {
+    return ego_->driver_request_acceleration();
+  }
+  double driver_request_wheel_steering_angle() const override {
+    return ego_->driver_request_wheel_steering_angle();
+  }
   double steering_wheel_speed() const override { return ego_->steering_wheel_speed(); }
   double vehicle_length() const { return sensed_state().dimensions.x(); }
   double vehicle_width() const { return sensed_state().dimensions.y(); }
