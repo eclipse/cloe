@@ -102,6 +102,8 @@ class Rendering extends Component {
       objSensorsToRender: [this.defaultSensor.Object],
       laneSensorsToRender: [this.defaultSensor.Lane]
     };
+    this.currentLabelIndex = 0;
+    this.labelAttributes = [["id", "prob"], ["class", "type"], "transl"];
   }
 
   render() {
@@ -158,6 +160,7 @@ class Rendering extends Component {
                 () => this.setState({ renderLabels: !renderLabels }),
                 renderLabels
               )}
+              {this.renderLabelAttributes(renderLabels)}
               {this.renderToggleSwitch("Axes", () => this.toggleHelperAxes(), helperAxesVisible)}
               {this.renderToggleSwitch("Grid", () => this.toggleGrid(), gridVisible)}
               <div className={gridVisible ? "" : "d-none"}>
@@ -219,6 +222,29 @@ class Rendering extends Component {
         <ToggleSwitch onChange={action} checked={isChecked} height={10} />
       </React.Fragment>
     );
+  };
+
+  renderLabelAttributes = (renderLabels) => {
+    if (renderLabels) {
+      return (
+        <React.Fragment>
+          <div
+            className="menu-switch"
+            onClick={() => this.switchLabelAttributes(this.currentLabelIndex++)}
+          >
+            <small className="mr-2 ml-2 mb-1">switch Attributes</small>
+          </div>
+        </React.Fragment>
+      );
+    } else {
+      return <React.Fragment></React.Fragment>;
+    }
+  };
+
+  switchLabelAttributes = (index) => {
+    if (index === this.labelAttributes.length - 1) {
+      this.currentLabelIndex = 0;
+    }
   };
 
   renderSensorSelect = (sensorType, selectSensors) => {
@@ -718,7 +744,19 @@ class Rendering extends Component {
     if (object.exist_prob !== undefined) {
       existProb = object.exist_prob;
     }
-    return `ID: ${object.id} \n Prob.: ${existProb.toFixed(2)}`;
+    let pose = object.pose || 0;
+    let translation = pose.translation || 0;
+    let transX = translation.x || 0;
+    switch (this.currentLabelIndex) {
+      case 0:
+        return `ID: ${object.id} \n Prob.: ${existProb.toFixed(2)}`;
+      case 1:
+        return `Class: ${object.class} \n Type: ${object.type}`;
+      case 2:
+        return `Transl.: \n X: ${transX.toFixed(3) || translation}`;
+      default:
+        break;
+    }
   };
 
   createDefaultLabel = (text, color) => {
