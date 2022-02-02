@@ -17,6 +17,9 @@ class CppNetlib(ConanFile):
     default_options = {
         "shared": False,
     }
+    exports_sources = [
+        "CMakeLists.txt",
+    ]
     generators = "cmake"
     requires = [
         # CppNetlib does not work with a boost that is newer than 1.69
@@ -42,7 +45,8 @@ class CppNetlib(ConanFile):
         self._cmake.definitions["CPP-NETLIB_ENABLE_HTTPS"] = True
         self._cmake.definitions["CPP-NETLIB_STATIC_BOOST"] = True
         self._cmake.definitions["CPP-NETLIB_STATIC_OPENSSL"] = True
-        self._cmake.configure(source_folder=self._source_folder)
+        self._cmake.definitions["Boost_NO_BOOST_CMAKE"] = True
+        self._cmake.configure()
         return self._cmake
 
     def build(self):
