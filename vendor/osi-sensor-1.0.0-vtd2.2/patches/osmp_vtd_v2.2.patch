@@ -1,20 +1,20 @@
-From 89e232aa639bc4d48b7c1ddb70e9d617aa3500f4 Mon Sep 17 00:00:00 2001
-Date: Wed, 20 May 2020 19:29:24 +0200
-Subject: [PATCH 2/2] Changes for vtd v2.2
+From 27438664fd96004c2c5d30a4548552196f74e804 Mon Sep 17 00:00:00 2001
+Date: Fri, 4 Feb 2022 11:15:14 +0100
+Subject: [PATCH] VTD v2.2 fixes
 
 ---
- examples/OSMPDummySensor/OSMPDummySensor.cpp | 31 +++++++++++++++++++++-------
+ examples/OSMPDummySensor/OSMPDummySensor.cpp | 43 +++++++++++++-------
  examples/OSMPDummySensor/OSMPDummySensor.h   |  1 +
- 2 files changed, 24 insertions(+), 8 deletions(-)
+ 2 files changed, 30 insertions(+), 14 deletions(-)
 
 diff --git a/examples/OSMPDummySensor/OSMPDummySensor.cpp b/examples/OSMPDummySensor/OSMPDummySensor.cpp
-index cade985..335a48e 100644
+index cade985..bba0f99 100644
 --- a/examples/OSMPDummySensor/OSMPDummySensor.cpp
 +++ b/examples/OSMPDummySensor/OSMPDummySensor.cpp
 @@ -140,6 +140,18 @@ bool COSMPDummySensor::get_fmi_sensor_view_in(osi3::SensorView& data)
      }
  }
- 
+
 +bool COSMPDummySensor::get_fmi_sensor_data_in(osi3::SensorData& data)
 +{
 +    if (integer_vars[FMI_INTEGER_SENSORVIEW_IN_SIZE_IDX] > 0) {
@@ -30,10 +30,23 @@ index cade985..335a48e 100644
  void COSMPDummySensor::set_fmi_sensor_data_out(const osi3::SensorData& data)
  {
      data.SerializeToString(&currentOutputBuffer);
+@@ -246,9 +258,9 @@ void rotatePoint(double x, double y, double z,double yaw,double pitch,double rol
+     double sin_pitch = sin(pitch);
+     double sin_roll = sin(roll);
+
+-    matrix[0][0] = cos_yaw*cos_pitch;  matrix[0][1]=cos_yaw*sin_pitch*sin_roll - sin_yaw*cos_roll; matrix[0][2]=cos_yaw*sin_pitch*cos_roll + sin_yaw*sin_roll;
+-    matrix[1][0] = sin_yaw*cos_pitch;  matrix[1][1]=sin_yaw*sin_pitch*sin_roll + cos_yaw*cos_roll; matrix[1][2]=sin_yaw*sin_pitch*cos_roll - cos_yaw*sin_roll;
+-    matrix[2][0] = -sin_pitch;         matrix[2][1]=cos_pitch*sin_roll;                            matrix[2][2]=cos_pitch*cos_roll;
++    matrix[0][0] = cos_yaw*cos_pitch;  matrix[1][0]=cos_yaw*sin_pitch*sin_roll - sin_yaw*cos_roll; matrix[2][0]=cos_yaw*sin_pitch*cos_roll + sin_yaw*sin_roll;
++    matrix[0][1] = sin_yaw*cos_pitch;  matrix[1][1]=sin_yaw*sin_pitch*sin_roll + cos_yaw*cos_roll; matrix[2][1]=sin_yaw*sin_pitch*cos_roll - cos_yaw*sin_roll;
++    matrix[0][2] = -sin_pitch;         matrix[1][2]=cos_pitch*sin_roll;                            matrix[2][2]=cos_pitch*cos_roll;
+
+     rx = matrix[0][0] * x + matrix[0][1] * y + matrix[0][2] * z;
+     ry = matrix[1][0] * x + matrix[1][1] * y + matrix[1][2] * z;
 @@ -259,15 +271,18 @@ fmi2Status COSMPDummySensor::doCalc(fmi2Real currentCommunicationPoint, fmi2Real
  {
      DEBUGBREAK();
- 
+
 -    osi3::SensorView currentIn;
 +    osi3::SensorData currentIn;
      osi3::SensorData currentOut;
@@ -59,7 +72,7 @@ index cade985..335a48e 100644
          /* Copy of SensorView */
 -        currentOut.add_sensor_view()->CopyFrom(currentIn);
 +        currentOut.add_sensor_view()->CopyFrom(currentSensorViewIn);
- 
+
          int i=0;
          double actual_range = fmi_nominal_range()*1.1;
 -        for_each(currentIn.global_ground_truth().moving_object().begin(),currentIn.global_ground_truth().moving_object().end(),
@@ -69,15 +82,21 @@ index cade985..335a48e 100644
                  if (veh.id().value() != ego_id.value()) {
                      // NOTE: We currently do not take sensor mounting position into account,
                      // i.e. sensor-relative coordinates are relative to center of bounding box
-@@ -308,7 +323,7 @@ fmi2Status COSMPDummySensor::doCalc(fmi2Real currentCommunicationPoint, fmi2Real
+@@ -308,10 +323,10 @@ fmi2Status COSMPDummySensor::doCalc(fmi2Real currentCommunicationPoint, fmi2Real
                          obj->mutable_header()->mutable_tracking_id()->set_value(i);
                          obj->mutable_header()->set_existence_probability(cos((2.0*distance-actual_range)/actual_range));
                          obj->mutable_header()->set_measurement_state(osi3::DetectedItemHeader_MeasurementState_MEASUREMENT_STATE_MEASURED);
 -                        obj->mutable_header()->add_sensor_id()->CopyFrom(currentIn.sensor_id());
+-                        obj->mutable_base()->mutable_position()->set_x(veh.base().position().x());
+-                        obj->mutable_base()->mutable_position()->set_y(veh.base().position().y());
+-                        obj->mutable_base()->mutable_position()->set_z(veh.base().position().z());
 +                        obj->mutable_header()->add_sensor_id()->CopyFrom(currentSensorViewIn.sensor_id());
-                         obj->mutable_base()->mutable_position()->set_x(veh.base().position().x());
-                         obj->mutable_base()->mutable_position()->set_y(veh.base().position().y());
-                         obj->mutable_base()->mutable_position()->set_z(veh.base().position().z());
++                        obj->mutable_base()->mutable_position()->set_x(rel_x);
++                        obj->mutable_base()->mutable_position()->set_y(rel_y);
++                        obj->mutable_base()->mutable_position()->set_z(rel_z);
+                         obj->mutable_base()->mutable_dimension()->set_length(veh.base().dimension().length());
+                         obj->mutable_base()->mutable_dimension()->set_width(veh.base().dimension().width());
+                         obj->mutable_base()->mutable_dimension()->set_height(veh.base().dimension().height());
 diff --git a/examples/OSMPDummySensor/OSMPDummySensor.h b/examples/OSMPDummySensor/OSMPDummySensor.h
 index 7f92690..d41b545 100644
 --- a/examples/OSMPDummySensor/OSMPDummySensor.h
@@ -89,7 +108,7 @@ index 7f92690..d41b545 100644
 +    bool get_fmi_sensor_data_in(osi3::SensorData &data);
      void set_fmi_sensor_data_out(const osi3::SensorData& data);
      void reset_fmi_sensor_data_out();
- 
--- 
-2.7.4
+
+--
+2.25.1
 
