@@ -85,17 +85,16 @@ class Controller extends Component {
           // No UI enabled.
           this.uiEnabled = false;
         });
-    }
-    // In replay mode the parent component provides the uiConfigData.
-    // Check if the provided uiConfigData has entries (should be done once).
-    else if (Object.keys(this.props.uiConfigData).length > 0) {
-      let data = this.props.uiConfigData.controller;
-      this.paths = data.paths;
-      this.layout = data.layout;
-      this.title = data.title;
-      this.action = data.action;
-      this.elements = this.generateElements(data.elements);
-      this.uiSpecificationLoaded = true;
+    } else {
+      if (Object.keys(this.props.uiConfigData).length > 0) {
+        let data = this.props.uiConfigData.controller;
+        this.paths = data.paths;
+        this.layout = data.layout;
+        this.title = data.title;
+        this.action = data.action;
+        this.elements = this.generateElements(data.elements);
+        this.uiSpecificationLoaded = true;
+      }
     }
   };
 

@@ -30,10 +30,7 @@ export function copyToClipboard(copyString, messageString) {
 
 export function download(data, filename) {
   var el = document.createElement("a");
-  el.setAttribute(
-    "href",
-    `data:text/plain;charset=utf-8,${encodeURIComponent(JSON.stringify(data))}`
-  );
+  el.setAttribute("href", data);
   el.setAttribute("download", filename);
 
   if (document.createEvent) {

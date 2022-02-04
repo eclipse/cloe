@@ -102,11 +102,13 @@ class Rendering extends Component {
       objSensorsToRender: [this.defaultSensor.Object],
       laneSensorsToRender: [this.defaultSensor.Lane]
     };
+    this.currentLabelIndex = 0;
+    this.labelAttributes = [["id", "prob"], ["class", "type"], "transl"];
   }
 
   render() {
     // Make sensors available for input fields.
-    const { sensors, replayState, streamingType, isRecording } = this.props;
+    const { sensors, replayState, streamingType, isRecording, isBuffering } = this.props;
     const selectObjSensors = this.getAvailSensors(sensors, this.sensorType.Object);
     const selectLaneSensors = this.getAvailSensors(sensors, this.sensorType.Lane);
 
@@ -126,6 +128,7 @@ class Rendering extends Component {
       <Card>
         <div
           id="scene"
+          className="position-relative"
           style={{ width: "100%", height: "400px" }}
           ref={(mount) => {
             this.mount = mount;
@@ -157,6 +160,7 @@ class Rendering extends Component {
                 () => this.setState({ renderLabels: !renderLabels }),
                 renderLabels
               )}
+              {this.renderLabelAttributes(renderLabels)}
               {this.renderToggleSwitch("Axes", () => this.toggleHelperAxes(), helperAxesVisible)}
               {this.renderToggleSwitch("Grid", () => this.toggleGrid(), gridVisible)}
               <div className={gridVisible ? "" : "d-none"}>
@@ -187,6 +191,7 @@ class Rendering extends Component {
             fastForward={this.fastForward}
             rewind={this.rewind}
             recordCanvas={this.recordCanvas}
+            isBuffering={isBuffering}
           ></ReplayControlls>
           <div
             className="m-0 mt-2 text-light"
@@ -217,6 +222,29 @@ class Rendering extends Component {
         <ToggleSwitch onChange={action} checked={isChecked} height={10} />
       </React.Fragment>
     );
+  };
+
+  renderLabelAttributes = (renderLabels) => {
+    if (renderLabels) {
+      return (
+        <React.Fragment>
+          <div
+            className="menu-switch"
+            onClick={() => this.switchLabelAttributes(this.currentLabelIndex++)}
+          >
+            <small className="mr-2 ml-2 mb-1">switch Attributes</small>
+          </div>
+        </React.Fragment>
+      );
+    } else {
+      return <React.Fragment></React.Fragment>;
+    }
+  };
+
+  switchLabelAttributes = (index) => {
+    if (index === this.labelAttributes.length - 1) {
+      this.currentLabelIndex = 0;
+    }
   };
 
   renderSensorSelect = (sensorType, selectSensors) => {
@@ -716,7 +744,19 @@ class Rendering extends Component {
     if (object.exist_prob !== undefined) {
       existProb = object.exist_prob;
     }
-    return `ID: ${object.id} \n Prob.: ${existProb.toFixed(2)}`;
+    let pose = object.pose || 0;
+    let translation = pose.translation || 0;
+    let transX = translation.x || 0;
+    switch (this.currentLabelIndex) {
+      case 0:
+        return `ID: ${object.id} \n Prob.: ${existProb.toFixed(2)}`;
+      case 1:
+        return `Class: ${object.class} \n Type: ${object.type}`;
+      case 2:
+        return `Transl.: \n X: ${transX.toFixed(3) || translation}`;
+      default:
+        break;
+    }
   };
 
   createDefaultLabel = (text, color) => {

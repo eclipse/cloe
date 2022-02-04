@@ -254,10 +254,10 @@ class Triggers extends Component {
                 )}
               </small>
             </div>
-            <div className="col-2">
+            <div className="col-3">
               <span className="float-left">{trigger.action.name}</span>
             </div>
-            <div className="col">
+            <div className="col-3">
               <small className="float-left font-weight-light text-info">
                 {truncString(
                   JSON.stringify(trigger.action, this.removeNameProperty).slice(1, -1),
@@ -630,7 +630,10 @@ class Triggers extends Component {
         <small
           className="link-button"
           onClick={() => {
-            download(triggerHistory, "triggers.json");
+            download(
+              `data:text/plain;charset=utf-8,${encodeURIComponent(JSON.stringify(triggerHistory))}`,
+              "triggers.json"
+            );
           }}
         >
           <div className="float-right ml-1">Export</div>

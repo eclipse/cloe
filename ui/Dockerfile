@@ -1,5 +1,5 @@
 # Prepare production build image
-FROM node:13.8.0-alpine3.11 AS production
+FROM node:14.16.1-alpine3.11 AS production
 
 # Configure yarn
 RUN yarn config set strict-ssl false
@@ -8,7 +8,7 @@ RUN yarn config set strict-ssl false
 RUN yarn global add serve
 
 # Create build image
-FROM node:13.8.0-alpine3.11 AS base
+FROM node:14.16.1-alpine3.11 AS base
 
 # Set working directory
 RUN mkdir /app
@@ -35,4 +35,4 @@ FROM production
 COPY --from=base /app/build /app
 
 # Start server
-ENTRYPOINT ["serve", "-s", "app"]
+ENTRYPOINT ["serve", "-s", "-p", "5000", "app"]
