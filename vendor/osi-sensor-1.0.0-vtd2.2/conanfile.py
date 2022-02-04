@@ -68,7 +68,15 @@ class VtdSensorConan(ConanFile):
         if not Path(str(osi_lib_dir) + "/libopen_simulation_interface.so").is_file():
             self.output.warn(f"VTD OSI library not found: {osi_lib_dir}")
         # apply patch for compatibility with VTD osi plugin
-        tools.patch(base_path=self._git_dir, patch_file=self._patch_vtd2p2)
+        trg_path = self._git_dir
+        patch_file = self._patch_vtd2p2
+        if not self.in_local_cache:
+            trg_path = self.source_folder + "/" + trg_path
+            patch_file = self.recipe_folder + "/" + patch_file
+        tools.patch(
+            base_path=trg_path,
+            patch_file=patch_file,
+        )
         # configure and build
         cmake = self._configure_cmake()
         cmake.build()
