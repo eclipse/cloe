@@ -22,25 +22,48 @@
 
 #include "oak/server.hpp"
 
+#include <chrono>
 #include <condition_variable>  // for condition_variable
-#include <functional>          // for bind
-#include <map>                 // for map<>
-#include <memory>              // for make_shared<>
-#include <mutex>               // for mutex, unique_lock
-#include <sstream>             // for stringstream
-#include <string>              // for string
+#include <ctime>
+#include <functional>  // for bind
+#include <iostream>
+#include <map>      // for map<>
+#include <memory>   // for make_shared<>
+#include <mutex>    // for mutex, unique_lock
+#include <sstream>  // for stringstream
+#include <string>   // for string
+#include <thread>   // for thread
 
+#include <boost/beast/core.hpp>  // for boost::beast
+#include <boost/beast/http.hpp>  // for boost::beast::http
+#include <boost/format.hpp>
 #include <boost/tokenizer.hpp>  // for tokenizer, char_separator
+#include <boost/version.hpp>    // for BOOST_VERSION
 
-// Requires: boost-wannabe cppnetlib
-#include <boost/network/include/http/server.hpp>
-#include <boost/network/utils/thread_pool.hpp>
+#include <cloe/core.hpp>        // for logger::get
+#include <cloe/handler.hpp>     // for Request
+#include "oak/requeststub.hpp"  // for RequestStub
+using namespace cloe;           // NOLINT(build/namespaces)
 
-#include <cloe/core.hpp>     // for logger::get
-#include <cloe/handler.hpp>  // for Request
-using namespace cloe;        // NOLINT(build/namespaces)
+// Alias namespaces
+namespace asio = boost::asio;
+namespace ip = boost::asio::ip;
+namespace beast = boost::beast;
+namespace http = boost::beast::http;
 
 namespace oak {
+
+// The type of the used socket
+using socket_type = ip::tcp::socket;
+// The type of the used flat buffer
+using flat_buffer_type = beast::flat_buffer;
+// The type of the request message
+using request_type = http::request<http::string_body>;
+// The type of the response message
+using response_type = http::response<http::dynamic_body>;
+
+// Forward declarations
+class http_connection;
 
 namespace {
 
@@ -66,93 +89,6 @@ std::map<std::string, std::string> parse_queries(std::string dest) {
   return queries;
 }
 
-/**
- * DataReceiver provides async and sync reading body from a request.
- * This needs to be implemented here because cpp-netlib does not support it.
- *
- * Much of the code here is based on the async_server_file_upload.cpp
- * example that is part of the 0.13 cpp-netlib release.
- */
-template <typename T>
-class DataReceiver {
-  const typename T::request& req_;
-  typename T::connection_ptr conn_;
-
-  size_t content_length_{0};
-  std::string data_{};
-  std::mutex mutex_{};
-  std::condition_variable condvar_{};
-
- public:
-  DataReceiver(const typename T::request& req, const typename T::connection_ptr& conn)
-      : req_(req), conn_(conn) {
-    for (auto item : req.headers) {
-      if (boost::to_lower_copy(item.name) == "content-length") {
-        content_length_ = std::stoul(item.value);
-        break;
-      }
-    }
-  }
-
-  std::string read_all() {
-    if (content_length_ > 0) {
-      std::unique_lock<std::mutex> guard{mutex_};
-      read_chunk(conn_);
-      condvar_.wait(guard);
-    }
-    return std::move(data_);
-  }
-
- private:
-  void read_chunk(typename T::connection_ptr conn) {
-    conn->read(std::bind(&DataReceiver<T>::on_data_ready, this, std::placeholders::_1,
-                         std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
-  }
-
-  void on_data_ready(typename T::connection::input_range chunk,
-                     boost::system::error_code error,
-                     size_t chunk_size,
-                     typename T::connection_ptr conn) {
-    if (chunk.size() != chunk_size) {
-      throw std::runtime_error("Got chunk of unexpected size from the network.");
-    }
-
-    if (error) {
-      oak::log()->error("Unexpected error occurred reading from network.");
-
-      std::unique_lock<std::mutex> lock{mutex_};
-      condvar_.notify_all();
-      return;
-    }
-
-    data_.append(chunk.begin(), chunk.end());
-    if (data_.size() < content_length_) {
-      read_chunk(conn);
-    } else {
-      std::unique_lock<std::mutex> lock{mutex_};
-      condvar_.notify_all();
-    }
-  }
-};
-
-/**
- * Convert a cloe::Response to the ServerImpl::response type.
- */
-void to_response_impl(const cloe::Response& r, ServerImpl::connection_ptr conn) {
-  auto code = ServerImpl::connection::status_t(static_cast<int>(r.status()));
-  auto type = cloe::as_cstr(r.type());
-  ServerImpl::response_header headers[] = {
-      {"Access-Control-Allow-Origin", "*"},  // Required by React.js
-      {"Content-Type", type},
-      {"Content-Length", std::to_string(r.body().size())},
-      {"Connection", "close"},
-  };
-
-  conn->set_status(code);
-  conn->set_headers(boost::make_iterator_range(headers, headers + 4));
-  conn->write(r.body());
-}
-
 }  // anonymous namespace
 
 /**
@@ -160,8 +96,9 @@ void to_response_impl(const cloe::Response& r, ServerImpl::connection_ptr conn) 
  */
 class Request : public cloe::Request {
  private:
-  const ServerImpl::request& req_;
-  ServerImpl::connection_ptr conn_;
+  const http_connection& connection_;
+  const request_type& request_;
+  const std::string uri_;
 
   // The endpoint and query map is parsed from req_.destination.
   std::string endpoint_;
@@ -175,75 +112,207 @@ class Request : public cloe::Request {
 
  public:
   /**
-   * Create a new Request from ServerImpl.
-   *
-   * - This should not panic.
+   * Creates a new Request from a http_connection
    */
-  explicit Request(const ServerImpl::request& req, const ServerImpl::connection_ptr& conn)
-      : req_(req)
-      , conn_(conn)
-      , endpoint_(Muxer<Handler>::normalize(req.destination))
-      , queries_(parse_queries(req.destination)) {
-    from_string(req.method, method_);
-    if (method_ == RequestMethod::POST) {
-      body_ = DataReceiver<ServerImpl>(req, conn).read_all();
-    }
-  }
+  explicit Request(const http_connection& connection);
 
   RequestMethod method() const override { return method_; }
   ContentType type() const override { return ContentType::UNKNOWN; }
   const std::string& body() const override { return body_; }
-  const std::string& uri() const override { return req_.destination; }
+  const std::string& uri() const override { return uri_; }
   const std::string& endpoint() const override { return endpoint_; }
   const std::map<std::string, std::string>& query_map() const override { return queries_; }
 };
 
-ServerImplHandler::ServerImplHandler() {
-  muxer.set_default([this](const cloe::Request& q, cloe::Response& r) {
+/**
+ * @brief Represents the http-connection
+ */
+class http_connection : public std::enable_shared_from_this<http_connection> {
+ public:
+  http_connection(ip::tcp::socket socket, Muxer<Handler>& muxer)
+      : socket_(std::move(socket))
+#if (BOOST_VERSION / 100000 == 1)
+#if (BOOST_VERSION / 100 % 1000 > 69)
+      , deadline_(socket_.get_executor())
+#else
+      , deadline_(socket.get_io_service())
+#endif
+#else
+#error unexpected boost version
+#endif
+      , muxer_(muxer) {
+    deadline_.expires_after(std::chrono::seconds(60));
+  }
+
+  void start() {
+    read_request();
+    check_deadline();
+  }
+
+  /**
+   * @brief Returns the boost::beast request
+   *
+   * @return const request_type& The boost::beast request
+   */
+  inline const request_type& getRequest() const { return request_; }
+
+ private:
+  /**
+   * @brief The socket for the currently connected client.
+   */
+  socket_type socket_;
+  /**
+   * @brief The buffer for performing reads.
+   */
+  flat_buffer_type buffer_{8192};
+  /**
+   * @brief The request message.
+   */
+  request_type request_;
+  /**
+   * @brief The response message.
+   */
+  response_type response_;
+  /**
+   * @brief The timer for timeout mechanism
+   */
+  asio::steady_timer deadline_;
+  /**
+   * @brief Cloe::muxer
+   */
+  Muxer<Handler>& muxer_;
+
+  /**
+   * @brief Asynchronously receives a complete request message.
+   */
+  void read_request() {
+    // Keep reference to this
+    auto self = shared_from_this();
+    // Commence async read
+    http::async_read(socket_, buffer_, request_,
+                     [self](beast::error_code ec, std::size_t bytes_transferred) {
+                       boost::ignore_unused(bytes_transferred);
+                       if (!ec) self->process_request();
+                     });
+  }
+
+  /**
+   * @brief Asynchronously transmits the response message.
+   */
+  void write_response() {
+    // Keep reference to this
+    auto self = shared_from_this();
+    // Set correct content length
+    response_.content_length(response_.body().size());
+    // Commence async write
+    http::async_write(socket_, response_, [self](beast::error_code ec, std::size_t) {
+      self->socket_.shutdown(ip::tcp::socket::shutdown_send, ec);
+      self->deadline_.cancel();
+    });
+  }
+
+  /**
+   * @brief Implements a timeout mechanism
+   */
+  void check_deadline() {
+    // Keep reference to this
+    auto self = shared_from_this();
+    deadline_.async_wait([self](beast::error_code ec) {
+      if (!ec) {
+        // Close socket to cancel any outstanding operation.
+        self->socket_.close(ec);
+      }
+    });
+  }
+
+  /**
+   * @brief Processes the request
+   */
+  void process_request() {
+    try {
+      Request q(*this);
+      ::oak::log()->debug("{} {}", as_cstr(q.method()), q.endpoint());
+      cloe::Response r;
+      muxer_.get(q.endpoint()).first(q, r);
+      to_response_impl(r);
+    } catch (const std::exception& e) {
+      Response err;
+      err.error(StatusCode::SERVER_ERROR, std::string(e.what()));
+      to_response_impl(err);
+    } catch (...) {
+      Response err;
+      err.error(StatusCode::SERVER_ERROR, std::string("unknown error occurred"));
+      to_response_impl(err);
+    }
+    write_response();
+  }
+  /**
+   * Convert a cloe::Response to response_type.
+   */
+  void to_response_impl(const cloe::Response& r) {
+    response_.result(static_cast<http::status>(
+        static_cast<std::underlying_type_t<cloe::StatusCode>>(r.status())));
+    response_.set(http::field::server, "cloe");
+    response_.set(http::field::access_control_allow_origin,
+                  "*");  // Required by React.js
+    response_.set(http::field::content_type, cloe::as_cstr(r.type()));
+    response_.set(http::field::content_length, std::to_string(r.body().size()));
+    response_.set(http::field::connection, "close");
+    http::dynamic_body::value_type body;
+    const auto body_length = r.body().length();
+    const auto body_data = static_cast<const void*>(r.body().c_str());
+    size_t n = asio::buffer_copy(body.prepare(body_length), asio::buffer(body_data, body_length));
+    body.commit(n);
+    response_.body() = std::move(body);
+  }
+};
+
+Request::Request(const http_connection& connection)
+    : connection_(connection)
+    , request_(connection.getRequest())
+    , uri_(request_.target())
+    , endpoint_(Muxer<Handler>::normalize(uri_))
+    , queries_(parse_queries(uri_)) {
+  // Convert boost request to Cloe::Request
+  switch (request_.method()) {
+    case http::verb::get:
+      method_ = RequestMethod::GET;
+      break;
+    case http::verb::post:
+      method_ = RequestMethod::POST;
+      break;
+    case http::verb::put:
+      method_ = RequestMethod::PUT;
+      break;
+    case http::verb::delete_:
+      method_ = RequestMethod::DELETE;
+      break;
+    default:
+      throw new std::runtime_error("unexpected http request-method");
+      break;
+  }
+  if (method_ == RequestMethod::POST) {
+    body_ = request_.body();
+  }
+}
+
+void Server::init() {
+  muxer_.set_default([this](const cloe::Request& q, cloe::Response& r) {
     ::oak::log()->debug("404 {}", q.endpoint());
     r.not_found(Json{
         {"error", "cannot find handler"},
-        {"endpoints", Json(this->muxer.routes())},
+        {"endpoints", Json(this->muxer_.routes())},
     });
   });
 }
 
-void ServerImplHandler::operator()(ServerImpl::request const& request,
-                                   ServerImpl::connection_ptr conn) {
-  try {
-    Request q(request, conn);
-    ::oak::log()->debug("{} {}", as_cstr(q.method()), q.endpoint());
-    cloe::Response r;
-    muxer.get(q.endpoint()).first(q, r);
-    to_response_impl(r, conn);
-  } catch (const std::exception& e) {
-    Response err;
-    err.error(StatusCode::SERVER_ERROR, std::string(e.what()));
-    to_response_impl(err, conn);
-  } catch (...) {
-    Response err;
-    err.error(StatusCode::SERVER_ERROR, std::string("unknown error occurred"));
-    to_response_impl(err, conn);
-  }
-}
-
-void ServerImplHandler::log(const ServerImpl::string_type& msg) {
-  // Don't show the error message if it's this bug from cppnetlib.
-  if (msg == "Bad file descriptor") {
-    return;
-  }
-  ::oak::log()->error("{}", msg);
-}
-
-void ServerImplHandler::add(const std::string& key, Handler h) { muxer.add(key, h); }
-
-cloe::Json ServerImplHandler::endpoints_to_json(const std::vector<std::string>& endpoints) const {
+cloe::Json Server::endpoints_to_json(const std::vector<std::string>& endpoints) const {
   cloe::Json j;
   for (const auto& endpoint : endpoints) {
     const RequestStub q;
     Response r;
     try {
-      muxer.get(endpoint).first(q, r);
+      muxer_.get(endpoint).first(q, r);
     } catch (std::logic_error& e) {
       // Silently ignore endpoints that require an implementation of any of
       // the Request's methods.
@@ -257,34 +326,77 @@ cloe::Json ServerImplHandler::endpoints_to_json(const std::vector<std::string>& 
 }
 
 void Server::listen() {
-  if (listening_) {
+  if (state_.load() != ServerState::Default) {
     throw std::runtime_error("already listening");
   }
-  listening_ = true;
 
-  options_.reset(new ServerImpl::options(handler_));
-  options_->reuse_address(true);
-  options_->thread_pool(std::make_shared<boost::network::utils::thread_pool>(listen_threads_));
-  options_->address(listen_addr_);
-  options_->port(std::to_string(listen_port_));
-  server_.reset(new ServerImpl(*options_));
-  thread_.reset(new boost::thread(boost::bind(&ServerImpl::run, server_.get())));
+  state_ = ServerState::Init;
+  try {
+    // Bind address and acceptor mechanism
+    auto const address = ip::make_address(listen_addr_);
+    unsigned short port = static_cast<unsigned short>(listen_port_);
+
+    acceptor_ = ip::tcp::acceptor(ioc_, {address, port});
+    acceptor_.set_option(ip::tcp::acceptor::reuse_address(true));
+    socket_ = ip::tcp::socket(ioc_);
+    serve(acceptor_, socket_);
+
+  } catch (boost::wrapexcept<boost::system::system_error>& /*ex*/) {
+    state_ = ServerState::Default;
+    return;
+  } catch (...) {
+    state_ = ServerState::Default;
+    return;
+  }
+  thread_ = std::move(std::thread([this]() { this->server_thread(); }));
+  while (state_.load() == ServerState::Init) {
+    boost::this_thread::sleep_for(boost::chrono::milliseconds{1});
+  }
+}
+
+void Server::serve(ip::tcp::acceptor& acceptor, ip::tcp::socket& socket) {
+  acceptor.async_accept(socket, [&](beast::error_code ec) {
+    if (!ec) std::make_shared<http_connection>(std::move(socket), muxer_)->start();
+    serve(acceptor, socket);
+  });
+}
+
+void Server::server_thread() {
+  // Create additional worker threads and pump messages on those and this one
+  auto worker_threads = std::max(listen_threads_, (unsigned int)1) - 1;
+  std::vector<std::thread> v;
+  v.reserve(worker_threads);
+  for (size_t i = 0; i < worker_threads; ++i) {
+    v.emplace_back([this] { this->server_thread_impl(); });
+  }
+  server_thread_impl();
+
+  // join all workers threads
+  for (auto& thread : v) {
+    thread.join();
+  }
+
+  // Server is stopped
+  state_ = ServerState::Stopped;
+}
+
+void Server::server_thread_impl() {
+  state_ = ServerState::Listening;
+  ioc_.run();  // discard return value
+  state_ = ServerState::Stopping;
 }
 
 void Server::stop() {
-  if (!listening_) {
+  if (state_.load() == ServerState::Default) {
     throw std::runtime_error("not listening");
   }
-
-  server_->stop();
-  thread_->interrupt();
-  if (thread_->joinable()) {
-    thread_->join();
+  // stop the IOContext
+  ioc_.stop();
+  // join our worker-thread(s)
+  if (thread_.joinable()) {
+    thread_.join();
   }
-  thread_.reset(nullptr);
-  server_.reset(nullptr);
-  options_.reset(nullptr);
-  listening_ = false;
+  state_ = ServerState::Default;
 }
 
 }  // namespace oak

@@ -26,8 +26,9 @@
 #include <memory>
 #include <string>
 
-#include <cloe/core.hpp>   // for Json, logger::get
-#include "oak/server.hpp"  // for Server
+#include <cloe/core.hpp>        // for Json, logger::get
+#include "oak/requeststub.hpp"  // for RequestStub
+#include "oak/server.hpp"       // for Server
 
 namespace oak {
 

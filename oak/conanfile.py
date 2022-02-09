@@ -27,9 +27,7 @@ class CloeOak(ConanFile):
         "src/*",
         "CMakeLists.txt",
     ]
-    requires = [
-        "cpp-netlib/0.13.0@cloe/stable",
-    ]
+    requires = ["boost/[>=1.66.0]"]
 
     _cmake = None
 

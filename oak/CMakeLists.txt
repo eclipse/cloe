@@ -30,7 +30,7 @@ target_include_directories(${target}
 target_link_libraries(${target}
   PUBLIC
     CONAN_PKG::cloe-runtime
-    CONAN_PKG::cpp-netlib
+    CONAN_PKG::boost
 )
 
 # Testing ------------------------------------------------------------
@@ -43,6 +43,7 @@ if(BuildTests)
     add_executable(test-oak
         # find src -type f -name "*_test.cpp"
         src/oak/route_muxer_test.cpp
+        src/oak/server_test.cpp
     )
     set_target_properties(test-oak PROPERTIES
         CXX_STANDARD 14

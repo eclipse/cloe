@@ -22,77 +22,43 @@
 
 #pragma once
 
+#include <atomic>  // for atomic<>
 #include <memory>  // for unique_ptr<>
 #include <string>  // for string
 #include <vector>  // for vector<>
 
-// Requires: cppnetlib
-#include <boost/network/include/http/server.hpp>
-#include <boost/network/utils/thread_pool.hpp>
+#include <boost/asio.hpp>    // for boost::asio::io_context
+#include <boost/thread.hpp>  // for boost::thread
 
 #include "oak/registrar.hpp"    // for StaticRegistrar, BufferRegistrar
 #include "oak/route_muxer.hpp"  // for Muxer<>
 
 namespace oak {
 
-// These forward-declarations are a necessary evil:
-class ServerImplHandler;
-using ServerImpl = boost::network::http::server<ServerImplHandler>;
-
-class RequestStub : public cloe::Request {
- public:
-  cloe::RequestMethod method() const override { throw ERROR; }
-  cloe::ContentType type() const override { throw ERROR; }
-  const std::string& body() const override { throw ERROR; }
-  const std::string& uri() const override { throw ERROR; }
-  const std::string& endpoint() const override { throw ERROR; }
-  const std::map<std::string, std::string>& query_map() const override { throw ERROR; }
-
- private:
-  const std::logic_error ERROR = std::logic_error("using the request in any way is erroneous");
-};
-
 /**
- * ServerImplHandler is the main request handler for the server.
- *
- * It implements an interface defined by boost::network::http::server.
+ * @brief Enumerates the state of the Server
  */
-class ServerImplHandler {
- public:
-  ServerImplHandler();
-
+enum class ServerState {
   /**
-   * Handle every request from the server.
-   *
-   * Every single request that passes through the server has to go through this
-   * handler. If the muxer has an endpoint that matches the request, then it
-   * gets passed through. The muxer has a default endpoint, so the nominal case
-   * is that every request is passed to some handler from the muxer.
+   * @brief Server is in default-idle state
    */
-  void operator()(ServerImpl::request const&, ServerImpl::connection_ptr);
-
+  Default,
   /**
-   * Log an error from the server.
+   * @brief Server initializes and is about to bind the address
    */
-  void log(const ServerImpl::string_type& msg);
-
+  Init,
   /**
-   * Add a handler for a specific endpoint.
+   * @brief Server is listening with one or more threads
    */
-  void add(const std::string& key, Handler h);
-
+  Listening,
   /**
-   * Return a list of all registered endpoints.
+   * @brief Server left listening state on one or more worker-threads
    */
-  std::vector<std::string> endpoints() const { return muxer.routes(); }
-
+  Stopping,
   /**
-   * Return endpoint data in json format.
+   * @brief Server stopped listening
    */
-  cloe::Json endpoints_to_json(const std::vector<std::string>& endpoints) const;
-
- private:
-  Muxer<Handler> muxer;
+  Stopped,
 };
 
 /**
@@ -102,10 +68,27 @@ class ServerImplHandler {
  */
 class Server {
  public:
-  Server(const std::string& addr, int port)
-      : listen_addr_(addr), listen_port_(port), listen_threads_(3), listening_(false) {}
+  /**
+  * @brief Construct a new Server object
+  *
+  * @param addr Address to bind (e.g. 0.0.0.0, ::1, 127.0.0.1)
+  * @param port TCP Port to bind
+  */
+  Server(const std::string& addr, unsigned short port)
+      : listen_addr_(addr)
+      , listen_port_(port)
+      , listen_threads_(10)
+      , state_{ServerState::Default}
+      , ioc_(1)
+      , acceptor_(ioc_)
+      , socket_(ioc_) {
+    init();
+  }
 
-  Server() : listen_addr_("127.0.0.1"), listen_port_(8080), listen_threads_(3), listening_(false) {}
+  /**
+   * @brief Construct a new Server on localhost:8080
+   */
+  Server() : Server("127.0.0.1", 8080) {}
 
   /**
    * When a Server goes out of scope, it will stop listening for you if you
@@ -124,6 +107,10 @@ class Server {
   void set_threads(int n) { listen_threads_ = n; }
 
   /**
+   * Get the address on which the server listens
+   */
+  inline const auto& address() const { return listen_addr_; }
+  /**
    * Set the address on which the server will listen.
    *
    * - Use 127.0.0.1 to only allow local connections.
@@ -134,6 +121,10 @@ class Server {
   void set_address(const std::string& addr) { listen_addr_ = addr; }
 
   /**
+   * Get the port on which the server listens
+   */
+  inline const auto port() const { return listen_port_; }
+  /**
    * Set the port on which to listen.
    */
   void set_port(int port) { listen_port_ = port; }
@@ -141,7 +132,7 @@ class Server {
   /**
    * Returns whether the server has started and is currently listening.
    */
-  bool is_listening() const { return listening_; }
+  bool is_listening() const { return state_.load() == ServerState::Listening; }
 
   /**
    * Start the server.
@@ -151,9 +142,7 @@ class Server {
   /**
    * Return endpoint data in json format.
    */
-  cloe::Json endpoints_to_json(const std::vector<std::string>& endpoints) const {
-    return handler_.endpoints_to_json(endpoints);
-  };
+  cloe::Json endpoints_to_json(const std::vector<std::string>& endpoints) const;
 
   /**
    * Stop the server.
@@ -163,7 +152,7 @@ class Server {
   /**
    * Return a list of all registered endpoints.
    */
-  std::vector<std::string> endpoints() const { return handler_.endpoints(); }
+  inline std::vector<std::string> endpoints() const { return muxer_.routes(); }
 
  protected:
   friend StaticRegistrar;
@@ -173,20 +162,62 @@ class Server {
   /**
    * Add a handler with the route muxer in the internal handler routine.
    */
-  void add_handler(const std::string& key, Handler h) { handler_.add(key, h); }
+  inline void add_handler(const std::string& key, Handler h) { muxer_.add(key, h); }
 
  private:
-  // Configuration
-  std::string listen_addr_;
-  int listen_port_;
-  int listen_threads_;
+  void init();
+  /**
+   * @brief Asynchronously accepts connections via the socket utilizing the acceptor
+   * @param acceptor Acceptor used for receiving connections
+   * @param socket Socket used for communication
+   */
+  void serve(boost::asio::ip::tcp::acceptor& acceptor, boost::asio::ip::tcp::socket& socket);
+  /**
+   * @brief Serves/Pumps the data
+   * @note This method blocks until the server is stopped
+   */
+  void server_thread();
+  /**
+   * @brief Actual serving/pumping method used by server_thread & worker-threads
+   */
+  void server_thread_impl();
 
-  // State
-  bool listening_;
-  ServerImplHandler handler_;
-  std::unique_ptr<ServerImpl::options> options_;
-  std::unique_ptr<ServerImpl> server_;
-  std::unique_ptr<boost::thread> thread_;
+  /**
+   * @brief IP-Address on which the server is listening (e.g. 0.0.0.0, ::1, 127.0.0.1)
+   */
+  std::string listen_addr_;
+  /**
+   * @brief TCP Port on which the server is listening
+   */
+  unsigned short listen_port_;
+  /**
+   * @brief
+   */
+  unsigned int listen_threads_;
+  /**
+   * @brief State of the server
+   */
+  std::atomic<ServerState> state_;
+  /**
+   * @brief Cloe endpoint multiplexer
+   */
+  Muxer<Handler> muxer_;
+  /**
+   * @brief Asio IOContext
+   */
+  boost::asio::io_context ioc_;
+  /**
+   * @brief The used Asio acceptor
+   */
+  boost::asio::ip::tcp::acceptor acceptor_;
+  /**
+   * @brief The used Asio socket
+   */
+  boost::asio::ip::tcp::socket socket_;
+  /**
+   * @brief Dedicated thread for server_thread()
+   */
+  std::thread thread_;
 };
 
 }  // namespace oak
