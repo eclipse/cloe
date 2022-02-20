@@ -385,11 +385,6 @@ class VtdBinding : public cloe::Simulator {
     // b) to catch any restart requests.
     this->readall_scp();
 
-    // Send items to TaskControl:
-    for (auto v : vehicles_) {
-      v->vtd_step_actuator(*scp_client_, config_.label_vehicle);
-    }
-
     // Process task control messages
     {
       timer::DurationTimer<timer::Milliseconds> t([this](timer::Milliseconds d) {
@@ -407,6 +402,11 @@ class VtdBinding : public cloe::Simulator {
       for (auto v : vehicles_) {
         sensor_time = v->vtd_step_sensors(sync);
       }
+    }
+
+    // Send items to TaskControl:
+    for (auto v : vehicles_) {
+      v->vtd_step_actuator(*scp_client_, config_.label_vehicle);
     }
 
     // Trigger VTD to simulation the next step
