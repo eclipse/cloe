@@ -27,7 +27,8 @@
 
 #include <RDBHandler.hh>
 
-#include <cloe/core.hpp>  // for Json
+#include <cloe/component/object.hpp>  // for Object
+#include <cloe/core.hpp>              // for Json
 
 #include "omni_sensor_component.hpp"  // for VtdOmniSensor
 #include "rdb_codec.hpp"              // for RdbCodec
@@ -72,6 +73,97 @@ struct DriverControl {
     };
   }
 };
+
+struct DynObjectState {
+  /// Object id.
+  uint32_t base_id{0};
+
+  /// Object category (player, sensor, ...).
+  uint8_t base_category{RDB_OBJECT_CATEGORY_PLAYER};
+
+  /// Object type (car, truck, ...).
+  uint8_t base_type{RDB_OBJECT_TYPE_NONE};
+
+  /// Visibility mask (e.g. visible for traffic and visible for data recorder).
+  uint16_t base_vis_mask{RDB_OBJECT_VIS_FLAG_TRAFFIC | RDB_OBJECT_VIS_FLAG_RECORDER};
+
+  /// Player name.
+  std::string base_name;
+
+  /// Object dimension and offset to cog.
+  RDB_GEOMETRY_t base_geo;
+
+  /// Object position and orientation.
+  RDB_COORD_t base_pos;
+
+  /// Object velocity and angular velocity.
+  RDB_COORD_t ext_speed;
+
+  /// Object acceleration and angular acceleration.
+  RDB_COORD_t ext_accel;
+
+  friend void to_json(cloe::Json& j, const DynObjectState& os) {
+    j = cloe::Json{
+        {"base_id", os.base_id},     {"base_category", os.base_category},
+        {"base_type", os.base_type}, {"base_vis_mask", os.base_vis_mask},
+        {"base_name", os.base_name},
+    };
+  }
+};
+
+/**
+ * Map to convert from Cloe to VTD object classification.
+ */
+const std::map<cloe::Object::Class, uint8_t> cloe_vtd_obj_class_map = {
+    {cloe::Object::Class::Car, RDB_OBJECT_TYPE_PLAYER_CAR},
+    {cloe::Object::Class::Truck, RDB_OBJECT_TYPE_PLAYER_TRUCK},
+    {cloe::Object::Class::Motorbike, RDB_OBJECT_TYPE_PLAYER_MOTORBIKE},
+    {cloe::Object::Class::Trailer, RDB_OBJECT_TYPE_PLAYER_TRAILER},
+};
+
+/**
+ * Convert object geometry VTD geometry.
+ */
+RDB_GEOMETRY_t rdb_geometry_from_object(const cloe::Object& obj) {
+  RDB_GEOMETRY_t geo;
+  geo.dimX = obj.dimensions.x();
+  geo.dimY = obj.dimensions.y();
+  geo.dimZ = obj.dimensions.z();
+  geo.offX = obj.cog_offset.x();
+  geo.offY = obj.cog_offset.y();
+  geo.offZ = obj.cog_offset.z();
+  return geo;
+}
+
+RDB_COORD_t rdb_coord_from_vector3d(const Eigen::Vector3d& position,
+                                    const Eigen::Vector3d& angle_rph) {
+  RDB_COORD_t coord;
+  coord.x = position.x();
+  coord.y = position.y();
+  coord.z = position.z();
+  coord.r = angle_rph.x();
+  coord.p = angle_rph.y();
+  coord.h = angle_rph.z();
+  coord.flags = RDB_COORD_FLAG_POINT_VALID | RDB_COORD_FLAG_ANGLES_VALID;
+  coord.type = RDB_COORD_TYPE_INERTIAL;
+  return coord;
+}
+
+RDB_COORD_t rdb_coord_from_object(const cloe::Object& obj) {
+  Eigen::Vector3d hpr = obj.pose.rotation().matrix().eulerAngles(2, 1, 0);
+  return rdb_coord_from_vector3d(obj.pose.translation(),
+                                 Eigen::Vector3d(hpr.z(), hpr.y(), hpr.x()));
+}
+
+RDB_COORD_t rdb_coord_pos_from_vector3d(const Eigen::Vector3d& position) {
+  RDB_COORD_t coord;
+  coord.x = position.x();
+  coord.y = position.y();
+  coord.z = position.z();
+  coord.flags = RDB_COORD_FLAG_POINT_VALID;
+  coord.type = RDB_COORD_TYPE_INERTIAL;
+  return coord;
+}
 
 /**
  * TaskControl contains the connection to the VTD task control server.
@@ -166,6 +258,28 @@ class TaskControl : public VtdOmniSensor {
     driverCtrl->steeringTgt = dc.target_steering;
     driverCtrl->flags = dc.driver_flags;
     driverCtrl->validityFlags = dc.validity_flags;
+  }
+
+  void add_dyn_object_state(const DynObjectState& os) {
+    // TODO(tobias): actual sim time and frame no. needed?
+    handler_.addPackage(0.0, 0, RDB_PKG_ID_START_OF_FRAME);
+    RDB_OBJECT_STATE_t* objState = reinterpret_cast<RDB_OBJECT_STATE_t*>(
+        handler_.addPackage(0.0, 0, RDB_PKG_ID_OBJECT_STATE, /*noElements=*/1,
+                            /*extended=*/true));
+    if (objState == nullptr) {
+      vtd_logger()->error("TaskControl: cannot add RDB_OBJECT_STATE package");
+      return;
+    }
+    objState->base.id = os.base_id;
+    objState->base.category = os.base_category;
+    objState->base.type = os.base_type;
+    objState->base.visMask = os.base_vis_mask;
+    std::strcpy(objState->base.name, os.base_name.c_str());
+    objState->base.geo = os.base_geo;
+    objState->base.pos = os.base_pos;
+    objState->ext.speed = os.ext_speed;
+    objState->ext.accel = os.ext_accel;
+    handler_.addPackage(0.0, 0, RDB_PKG_ID_END_OF_FRAME);
   }
 
   /**

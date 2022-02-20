@@ -92,7 +92,7 @@ class VtdVehicle : public cloe::Vehicle {
     auto sensor = std::make_shared<VtdOmniSensor>(std::move(rdb_client), id);
     sensors_[DEFAULT_SENSOR_NAME] = sensor;
     sensor->set_name(name + "_omni_sensor");
-    actuator_ = std::make_shared<VtdLatLongActuator>(task_control, id);
+    actuator_ = std::make_shared<VtdLatLongActuator>(task_control, id, vtd_name_);
 
     // Add ego sensor
     this->new_component(new VtdEgoSensor{id, sensor, task_control},
@@ -145,7 +145,7 @@ class VtdVehicle : public cloe::Vehicle {
    */
   void vtd_step_actuator(ScpTransceiver& tx, LabelConfiguration lbl) {
     // Send actuations
-    this->actuator_->add_driver_control();
+    this->actuator_->add_actuation();
     if (lbl != LabelConfiguration::Off) {
       this->update_label(tx, lbl);
     }
@@ -332,7 +332,9 @@ class VtdVehicleFactory {
             veh->sensors_[name] = osi;
             break;
           }
-          default: { throw cloe::Error("VtdVehicle: unknown sensor protocol"); }
+          default: {
+            throw cloe::Error("VtdVehicle: unknown sensor protocol");
+          }
         }
       }
       veh->configure_components(vcfg.components);
