@@ -1,0 +1,19 @@
+{
+  "version": "4",
+  "include": [
+    "config_gndtruth_smoketest.json"
+  ],
+  "controllers": [
+    {
+      "binding": "gndtruth_extractor",
+      "vehicle": "default",
+      "args": {
+        "output_type": "msgpack.gz",
+        "components": [
+          "cloe::gndtruth_lane_sensor",
+          "cloe::default_world_sensor"
+        ]
+      }
+    }
+  ]
+}
