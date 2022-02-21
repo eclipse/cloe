@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from conans import CMake, ConanFile, tools
+from conans import CMake, ConanFile, RunEnvironment, tools
 
 
 class CloeEngine(ConanFile):
@@ -53,7 +53,8 @@ class CloeEngine(ConanFile):
         cmake = self._configure_cmake()
         cmake.build()
         if self.options.test:
-            cmake.test()
+            with tools.environment_append(RunEnvironment(self).vars):
+                cmake.test()
 
     def package(self):
         cmake = self._configure_cmake()

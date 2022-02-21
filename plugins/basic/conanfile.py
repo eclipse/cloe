@@ -1,7 +1,7 @@
 from pathlib import Path
 from shutil import which
 
-from conans import CMake, ConanFile, tools
+from conans import CMake, ConanFile, RunEnvironment, tools
 from conans.errors import ConanInvalidConfiguration
 
 
@@ -51,7 +51,8 @@ class CloeControllerBasic(ConanFile):
         cmake = self._configure_cmake()
         cmake.build()
         if self.options.test:
-            cmake.test()
+            with tools.environment_append(RunEnvironment(self).vars):
+                cmake.test()
 
     def package(self):
         cmake = self._configure_cmake()
