@@ -14,14 +14,14 @@
         },
         {
             "event": "start",
-            "action": "log=info: Running vtd/basic smoketest."
+            "action": "log=info: Running gndtruth/smoketest."
         },
         {
             "event": "start",
             "action": "realtime_factor=-1"
         },
         {
-            "label": "Vehicle default should not reach 50 km/h with the vtd binding and basic controller.",
+            "label": "Testcase shall fail if default_speed is => 50.0kph.",
             "event": "default_speed/kmph=>50.0",
             "action": "fail"
         },

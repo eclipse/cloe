@@ -80,12 +80,14 @@ fn_unpack_bz2() {
 ################################################################################
 
 fn_test_gndtruth() {
-    EXPECTED_CYCLE_COUNT=49;
-    ACTUAL_CYCLE_COUNT=$(cat /tmp/cloe_gndtruth.$1 | grep -ao "cloe::gndtruth_lane_sensor" | wc -l)
+    local suffix=$1;
+    local tmpfile=/tmp/cloe_gndtruth.$suffix;
+    local EXPECTED_CYCLE_COUNT=49;
+    local ACTUAL_CYCLE_COUNT=$(cat $tmpfile | grep -ao "cloe::gndtruth_lane_sensor" | wc -l)
     if [[ "$ACTUAL_CYCLE_COUNT" != "$EXPECTED_CYCLE_COUNT" ]]; then
         exit 1;
     fi;
-    ACTUAL_CYCLE_COUNT=$(cat /tmp/cloe_gndtruth.$1 | grep -ao "cloe::default_world_sensor" | wc -l)
+    local ACTUAL_CYCLE_COUNT=$(cat /tmp/cloe_gndtruth.$1 | grep -ao "cloe::default_world_sensor" | wc -l)
     if [[ "$ACTUAL_CYCLE_COUNT" != "$EXPECTED_CYCLE_COUNT" ]]; then
         exit 1;
     fi;
