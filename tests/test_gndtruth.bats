@@ -81,44 +81,44 @@ fn_unpack_bz2() {
 
 fn_test_gndtruth() {
     local suffix=$1;
-    local tmpfile=/tmp/cloe_gndtruth.$suffix;
+    local implicitly_created_gndtruthfile=/tmp/cloe_gndtruth.$suffix;
     local EXPECTED_CYCLE_COUNT=49;
-    local ACTUAL_CYCLE_COUNT=$(cat $tmpfile | grep -ao "cloe::gndtruth_lane_sensor" | wc -l)
+    local ACTUAL_CYCLE_COUNT=$(cat $implicitly_created_gndtruthfile | grep -ao "cloe::gndtruth_lane_sensor" | wc -l)
     if [[ "$ACTUAL_CYCLE_COUNT" != "$EXPECTED_CYCLE_COUNT" ]]; then
         exit 1;
     fi;
-    local ACTUAL_CYCLE_COUNT=$(cat /tmp/cloe_gndtruth.$1 | grep -ao "cloe::default_world_sensor" | wc -l)
+    local ACTUAL_CYCLE_COUNT=$(cat $implicitly_created_gndtruthfile | grep -ao "cloe::default_world_sensor" | wc -l)
     if [[ "$ACTUAL_CYCLE_COUNT" != "$EXPECTED_CYCLE_COUNT" ]]; then
         exit 1;
     fi;
     fn_cleanup
 }
 
-@test "Expect json.gz : test_gndtruth_smoketest-json-gz.json (Test-ID b3a11bb5-6fd1-401e-b9fb-db76b4c338e5)" {
+@test "Expect json.gz : test_gndtruth_smoketest-json-gz.json  (Test-ID b3a11bb5-6fd1-401e-b9fb-db76b4c338e5)" {
     fn_run_and_test_compression json.gz "json-gz" "gzip compressed data"
     fn_unpack_gz json.gz
     fn_test_gndtruth json
 }
-@test "Expect json.bz2: test_gndtruth_smoketest-2.json (Test-ID d5f58690-e7bc-4170-ab7e-9b785a5866c3)" {
+@test "Expect json.bz2: test_gndtruth_smoketest-json.bz2.json (Test-ID d5f58690-e7bc-4170-ab7e-9b785a5866c3)" {
     fn_run_and_test_compression json.bz2 "json-bz2" "bzip2 compressed data"
     fn_unpack_bz2 json.bz2
     fn_test_gndtruth json
 }
-@test "Expect json    : test_gndtruth_smoketest-3.json (Test-ID 69eeb436-4b5e-4a31-9097-01f03cb0f71d)" {
+@test "Expect json    : test_gndtruth_smoketest-json.json     (Test-ID 69eeb436-4b5e-4a31-9097-01f03cb0f71d)" {
     fn_run_and_test_compression json "json" "ASCII text"
     fn_test_gndtruth json
 }
-@test "Expect msg.gz  : test_gndtruth_smoketest-4.json (Test-ID 40757b44-3aa0-4a46-8597-ebf2b8acfbab)" {
+@test "Expect msg.gz  : test_gndtruth_smoketest-msg.gz.json   (Test-ID 40757b44-3aa0-4a46-8597-ebf2b8acfbab)" {
     fn_run_and_test_compression msg.gz "msg-gz" "gzip compressed data"
     fn_unpack_gz msg.gz
     fn_test_gndtruth msg
 }
-@test "Expect msg.gz  : test_gndtruth_smoketest-5.json (Test-ID bf77683f-7c1a-4d70-b713-e26f440e71f7)" {
+@test "Expect msg.gz  : test_gndtruth_smoketest-msg.bz2.json  (Test-ID bf77683f-7c1a-4d70-b713-e26f440e71f7)" {
     fn_run_and_test_compression msg.bz2 "msg-bz2" "bzip2 compressed data"
     fn_unpack_bz2 msg.bz2
     fn_test_gndtruth msg
 }
-@test "Expect msg.gz  : test_gndtruth_smoketest-6.json (Test-ID c50350d5-9b63-43bb-9e00-d31646e50b0a)" {
+@test "Expect msg.gz  : test_gndtruth_smoketest-msg.json      (Test-ID c50350d5-9b63-43bb-9e00-d31646e50b0a)" {
     fn_run_and_test_compression msg "msg" "data"
     fn_test_gndtruth msg
 }
