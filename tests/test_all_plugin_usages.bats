@@ -16,7 +16,7 @@ setup() {
     export cloe_plugins
 }
 
-@test "Expect run success      : cloe-engine usage" {
+@test $(testname "Expect run success" "cloe-engine usage" "93c5a785-8f07-4df2-92ee-6d47e728f201") {
     for file in "${cloe_plugins[@]}"; do
         echo "Checking: $file"
         run cloe_engine usage $file
@@ -28,7 +28,7 @@ setup() {
     done
 }
 
-@test "Expect run success      : cloe-engine usage -j" {
+@test $(testname "Expect run success" "cloe-engine usage -j" "7576ad69-1d16-43f8-9809-af0bf408e4f1") {
     if ! type jq &>/dev/null; then
         skip "required program jq not present"
     fi

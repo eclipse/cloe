@@ -116,6 +116,9 @@ todos:
 	${AG} FIXME
 	${AG} XXX
 
+grep-uuids:
+	${AG} "\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b"
+
 find-missing-eol:
 	find . -type f -size +0 -exec gawk 'ENDFILE{if ($0 == "") print FILENAME}' {} \;
 
