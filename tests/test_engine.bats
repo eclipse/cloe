@@ -26,6 +26,19 @@ test_vtd_plugin_exists() {
     fi
 }
 
+@test $(testname "Expect stack equality" "test_engine_nop_smoketest_dump.json" "3b23bb69-b249-49c8-8b4c-2fa993d8677e") {
+    if ! type diff &>/dev/null; then
+        skip "required program diff not present"
+    fi
+
+    # The plugin section and the registry section have path references, which
+    # are not reproducible, so we need to rewrite them and delete these lines.
+    # This does not negatively affect the validity of the test.
+    diff <(cloe_engine dump config_nop_smoketest.json |
+           sed -r -e 's#"/home.*.conan/data/([^/]+)/.*"#"/.../\1/.../"#' -e '/\/home\/.*/d') \
+           test_engine_nop_smoketest_dump.json
+}
+
 @test $(testname "Expect check success" "test_engine_smoketest.json" "20c3f11e-4a93-4066-b61e-d485be5c8979") {
     cloe_engine check test_engine_smoketest.json
 }
