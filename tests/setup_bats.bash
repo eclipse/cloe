@@ -140,3 +140,10 @@ test_plugin_exists() {
 
     cloe_engine usage "${plugin}" &>/dev/null
 }
+
+testname() {
+    local expect="$1"
+    local schema="$2"
+    local uuid="$3"
+    printf "%-24s: %-46s : %s" "$expect" "$schema" "$uuid"
+}

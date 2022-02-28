@@ -100,3 +100,17 @@ JSON stack file.
 
 Each stack file tests a part of the Cloe runtime functionality, and is usually
 accompanied by a Bats file.
+
+Test UUIDs
+==========
+
+In order to make tracking quality measures possible, we assign tests UUIDs.
+These can be generated with the `uuidgen` program, for example. When creating
+a large amount of UUIDs, it can be useful to augment one's editor with the
+capability of inserting one quickly. For example, to map it to Ctrl+Y in Vim:
+
+    :imap <c-y> <esc>:read !uuidgen<cr>kJi
+
+Search the project for UUIDs with:
+
+    make grep-uuids

@@ -6,7 +6,7 @@
 
 load setup_bats
 
-@test "Expect exact replication: test_engine_replica_smoketest.json" {
+@test $(testname "Expect exact replication" "test_engine_replica_smoketest.json" "f4fa1794-cc78-4ae6-aa5e-6a3ed3c7913c") {
     # Clean up in case temporary registry already exists.
     if [[ -d "$cloe_tmp_registry" ]]; then
         rm -r "$cloe_tmp_registry" || true
