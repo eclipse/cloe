@@ -47,6 +47,7 @@
 #include "rdb_transceiver_tcp.hpp"  // for RdbTransceiverTcpFactory
 #include "scp_messages.hpp"         // for scp::*
 #include "scp_transceiver.hpp"      // for ScpTransceiver
+#include "scp_action.hpp"           // for ScpActionFactory
 #include "task_control.hpp"         // for TaskControl
 #include "vtd_conf.hpp"             // for VtdConfiguration
 #include "vtd_vehicle.hpp"          // for VtdVehicle
@@ -311,6 +312,7 @@ class VtdBinding : public cloe::Simulator {
                            cloe::handler::ToJson<VtdConfiguration>(&config_));
     r.register_api_handler("/statistics", cloe::HandlerType::BUFFERED,
                            cloe::handler::ToJson<VtdStatistics>(&stats_));
+    r.register_action<ScpActionFactory>(scp_client_, config_.scp_actions);
   }
 
   /**
@@ -742,7 +744,7 @@ class VtdBinding : public cloe::Simulator {
    *
    * \see  connect method
    */
-  std::unique_ptr<ScpTransceiver> scp_client_{};
+  std::shared_ptr<ScpTransceiver> scp_client_{};
 
   /**
    * Task Control client, set by incoming SCP message "<TaskControl>".
