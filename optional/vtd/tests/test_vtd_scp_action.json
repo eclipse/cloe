@@ -1,0 +1,33 @@
+{
+  "version": "4",
+  "include": [
+    "bootstrap_vtd.json",
+    "config_vtd_infinite.json"
+  ],
+  "defaults": {
+    "simulators": [
+      {
+        "binding": "vtd",
+        "args": {
+          "scp_actions": {
+            "stop": "<SimCtrl><[[cmd]]/></SimCtrl>"
+          }
+        }
+      }
+    ]
+  },
+  "triggers": [
+    { "event": "start", "action": "realtime_factor=-1" },
+    {
+      "event": "time=1",
+      "action": {
+        "name": "vtd/scp",
+        "template": "stop",
+        "data": {
+          "cmd": "Stop"
+        }
+      }
+    },
+    { "event": "time=5", "action": "fail" }
+  ]
+}

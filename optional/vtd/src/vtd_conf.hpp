@@ -265,6 +265,11 @@ struct VtdConfiguration : public cloe::Confable {
    */
   std::string dat_file = "";
 
+  /**
+   * A set of predefined SCP actions to be used by the action trigger.
+   */
+  std::map<std::string, std::string> scp_actions{};
+
  public:
   CONFABLE_SCHEMA(VtdConfiguration) {
     // clang-format off
@@ -283,6 +288,7 @@ struct VtdConfiguration : public cloe::Confable {
         {"project",             Schema(&project, "indicate which project to find the scenario in (informative)")},
         {"label_vehicle",       Schema(&label_vehicle, "how to label vehicle modes in VTD [off,text,human,symbol,unicode]")},
         {"dat_file",            Schema(&dat_file, "filepath to write VTD data output to")},
+        {"scp_actions",         Schema(&scp_actions, "predefined SCP actions for use by action trigger")},
         {"camera",              Schema({
                                       {"third_person",Schema(&camera_third_person, "whether to use third person camera")},
                                       {"focus_on",    Schema(&camera_focus_on, "player to focus on")},

@@ -17,7 +17,16 @@ teardown() {
         skip "required simulator vtd not present"
     fi
     cloe-engine check test_vtd_smoketest.json
-    cloe-engine run test_vtd_smoketest.json
+    run cloe-engine run test_vtd_smoketest.json
+    test $status -eq $CLOE_EXIT_STOPPED
+}
+
+@test "$(testname "Expect check/run success" "test_vtd_scp_action.json" "3d1ec074-8f64-460c-8d2f-57ffc30d793c")" {
+    if ! test_vtd_plugin_exists; then
+        skip "required simulator vtd not present"
+    fi
+    cloe-engine check test_vtd_scp_action.json
+    cloe-engine run test_vtd_scp_action.json
 }
 
 @test "$(testname "Expect check/run success" "test_vtd_api_recording.json" "71eaf779-2aa7-492b-83b5-27504ae92f9e")" {

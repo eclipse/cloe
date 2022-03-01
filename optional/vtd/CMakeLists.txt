@@ -46,6 +46,7 @@ cloe_add_plugin(
     TARGET ${PROJECT_NAME}
     OUTPUT_NAME simulator_vtd
     SOURCES
+        src/scp_action.cpp
         src/vtd_binding.cpp
     LINK_LIBRARIES
         vtd-object-lib

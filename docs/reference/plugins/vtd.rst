@@ -123,6 +123,13 @@ vehicles/<name>/components/<component_name>/override
     with the newly declared one or terminate with an error if no such component
     can be found.
 
+scp_actions
+    A dictionary defining keywords to SCP actions. These can then be referred
+    to by the ``scp`` action. For example::
+
+        "scp_actions": {
+          "stop": "<SimCtrl><Stop/></SimCtrl>"
+        }
 
 Ground Truth
 ------------
@@ -167,6 +174,91 @@ The above is sensible only for a single agent simulation. In case of a multi
 agent scenario you should define your sensors and map your sensor components
 explicitly as described in :ref:`configuration`: section.
 
+Triggers
+--------
+
+The following actions are provided by the plugin. Plugin trigger action names
+are dependent on the given name of a plugin in a simulation. This is by default
+the name of the plugin itself; this default name is used in this documentation.
+
+<vtd>/scp
+"""""""""
+The VTD plugin makes this action available to send SCP messages to the VTD
+simulator. The name of the action is prefixed by the given name of the plugin.
+
+There are two variants of this action. Either a template is predefined in the
+configuration ``/scp_actions`` field or raw XML is provided. If a template is
+defined, then variables can be specified via this syntax: ``[[ var ]]``.
+
+**XML Variant**
+
+==============  ==========  ==============  =====================================================
+Parameter       Required    Type            Description
+==============  ==========  ==============  =====================================================
+``xml``         yes         string          Raw XML data to send to simulator
+==============  ==========  ==============  =====================================================
+
+**Template Variant**
+
+==============  ==========  ==============  =====================================================
+Parameter       Required    Type            Description
+==============  ==========  ==============  =====================================================
+``template``    yes         string          | Switch to enable or disable
+``data``        no          bool            | Push button to cycle distance profiles.
+==============  ==========  ==============  =====================================================
+
+Inline short-form is supported as a reference to template to use. No data
+interpolation is supported in this form:
+
+.. code:: text
+
+    vtd/scp=stop
+
+**Examples**
+
+Given the following simulator configuration:
+
+.. code-block:: yaml
+
+    version: "4"
+    defaults:
+      simulators:
+        binding: vtd
+        args:
+          scp_actions:
+            simctrl: "<SimCtrl><[[cmd]]/></SimCtrl>"
+            stop: >
+                <SimCtrl>
+                    <Stop/>
+                </SimCtrl>
+
+The the following triggers are all identical:
+
+.. code-block:: json
+
+    [
+      {
+        "event": "time=5",
+        "action": "vtd/scp=stop"
+      },
+      {
+        "event": "time=5",
+        "action": {
+          "name": "vtd/scp",
+          "xml": "<SimCtrl><Stop/></SimCtrl>"
+        }
+      },
+      {
+        "event": "time=5",
+        "action": {
+          "name": "vtd/scp",
+          "template": "simctrl",
+          "data": {
+            "cmd": "Stop"
+          }
+        }
+      }
+    ]
 
 Example
 -------
