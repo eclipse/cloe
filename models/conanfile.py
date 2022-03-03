@@ -64,7 +64,7 @@ class CloeModels(ConanFile):
         cmake.install()
 
     def package_id(self):
-        self.info.requires["boost"].full_version_mode()
+        self.info.requires["boost"].full_package_mode()
 
     def package_info(self):
         # Make sure we can find the library, both in editable mode and in the

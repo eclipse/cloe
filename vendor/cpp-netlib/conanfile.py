@@ -58,7 +58,7 @@ class CppNetlib(ConanFile):
         cmake.install()
 
     def package_id(self):
-        self.info.requires["boost"].full_version_mode()
+        self.info.requires["boost"].full_package_mode()
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
