@@ -166,6 +166,8 @@ class LatLongActuator : public Component {
   utility::ActuationLevel level_;
   boost::optional<double> target_acceleration_;
   boost::optional<double> target_steering_angle_;
+  /// Vehicle state determined by a vehicle dynamics model.
+  /// Object pose, velocity, acceleration, angular_velocity in world coordinates.
   boost::optional<Object> vehicle_state_;
   std::function<void(void)> vehicle_state_callback_;
 };
