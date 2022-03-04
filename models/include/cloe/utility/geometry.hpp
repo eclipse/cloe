@@ -52,11 +52,31 @@ inline Eigen::Isometry3d pose_from_rotation_translation(const Eigen::Quaterniond
 }
 
 /**
- * Change a point's frame of reference.
- * Both the point and the child frame need to have the same parent frame.
+ * Compute the roll, pitch and yaw angles from a given pose.
+ *  - \param pose: Pose of which the rotation matrix shall be expressed in Euler angles.
  */
-inline void transform_to_child_frame(const Eigen::Isometry3d& child_frame, Eigen::Vector3d* point) {
-  *point = child_frame.inverse() * (*point);
+inline Eigen::Vector3d get_pose_roll_pitch_yaw(const Eigen::Isometry3d& pose) {
+  return pose.rotation().matrix().eulerAngles(2, 1, 0).reverse();
+}
+
+/**
+ * Change a point's frame of reference from the parent frame to the child frame.
+ *  - \param child_frame: Pose of the child reference frame w.r.t. the parent frame.
+ *  - \param pt_vec: Point coordinate vector w.r.t. the parent frame.
+ */
+inline void transform_point_to_child_frame(const Eigen::Isometry3d& child_frame,
+                                           Eigen::Vector3d* pt_vec) {
+  *pt_vec = child_frame.inverse() * (*pt_vec);
+}
+
+/**
+ * Change a point's frame of reference from the child frame to the parent frame.
+ *  - \param child_frame: Pose of the child reference frame w.r.t. the parent frame.
+ *  - \param pt_vec_child: Point coordinate vector w.r.t. the child frame.
+ */
+inline void transform_point_to_parent_frame(const Eigen::Isometry3d& child_frame,
+                                            Eigen::Vector3d* pt_vec_child) {
+  *pt_vec_child = child_frame * (*pt_vec_child);
 }
 
 }  // namespace utility

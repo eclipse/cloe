@@ -627,8 +627,8 @@ void OsiOmniSensor::from_osi_boundary_points(const osi3::LaneBoundary& osi_lb,
     const auto& osi_pt = osi_lb.boundary_line(i);
     Eigen::Vector3d position = osi_vector3d_xyz_to_vector3d(osi_pt.position());
     // Transform points from the inertial into the sensor reference frame.
-    cloe::utility::transform_to_child_frame(osi_ego_pose_, &position);
-    cloe::utility::transform_to_child_frame(osi_sensor_pose_, &position);
+    cloe::utility::transform_point_to_child_frame(osi_ego_pose_, &position);
+    cloe::utility::transform_point_to_child_frame(osi_sensor_pose_, &position);
     lb.points.push_back(position);
   }
   // Compute clothoid segment. TODO(tobias): implement curved segments.
