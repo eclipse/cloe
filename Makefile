@@ -80,7 +80,7 @@ docker-release:
 sphinx:
 	$(call print_header, "Generating Sphinx documentation...")
 	mkdir -p ${BUILD_DIR}/sphinx
-	${MAKE} -C docs html
+	${MAKE} -C docs html || echo -e "\nYou may try:\n  $$ ${MAKE} -C docs help\n"
 
 doxygen:
 	$(call print_header, "Generating Doxygen documentation...")
