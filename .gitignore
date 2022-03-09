@@ -3,6 +3,7 @@ VERSION
 # Standard out-of-source build
 build/
 compile_commands.json
+.clangd/
 
 # Conan options
 conan_options.txt
