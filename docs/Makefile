@@ -24,24 +24,8 @@ help:
 	echo "Available serving targets:"
 	echo "  serve          to serve the documentation on 0.0.0.0:8000"
 	echo "  livehtml       to autobuild and serve the documentation on localhost:8000"
-	echo
-	echo "Available setup targets:"
-	echo "  install-sphinx-deps    to install dependencies for sphinx"
 
-.PHONY: install-sphinx-deps serve livehtml
-
-SPHINXDEPS := \
-	sphinx_rtd_theme \
-	sphinxcontrib-runcmd \
-	sphinxcontrib-plantuml \
-	sphinxcontrib.asciinema \
-	jsx-lexer
-install-sphinx-deps:
-	pipx install sphinx
-	pipx inject sphinx ${SPHINXDEPS}
-	pipx install sphinx-autobuild
-	pipx inject sphinx-autobuild ${SPHINXDEPS}
-
+.PHONY: serve livehtml
 serve:
 	cd ${BUILDDIR}/html && python3 -m http.server
 
