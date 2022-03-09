@@ -1,0 +1,8 @@
+sphinx
+sphinx-autobuild
+sphinx_rtd_theme
+sphinxcontrib-runcmd
+sphinxcontrib-plantuml
+sphinxcontrib.asciinema
+jsx-lexer
+pygments>=2.7
