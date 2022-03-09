@@ -1,0 +1,38 @@
+name: Build Cloe
+on: [pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update &&
+          sudo apt-get install -y make locales &&
+          sudo make -f Makefile.setup \
+            WITHOUT_DEV_DEPS=yes \
+            DEBIAN_FRONTEND=noninteractive \
+            APT_ARGS="--no-install-recommends -y" \
+            install-system-deps \
+            &&
+          sudo locale-gen
+      - name: Install Python dependencies
+        run: |
+          sudo pip3 install --upgrade pip &&
+          sudo make -f Makefile.setup PIP_INSTALL_ARGS="" install-python-deps
+      - name: Configure Conan
+        run: |
+          conan profile new --detect default &&
+          conan profile update settings.build_type=RelWithDebInfo default &&
+          conan profile update settings.compiler.libcxx=libstdc++11 default
+      - name: Build cloe w/ package-auto
+        run: |
+          export CONAN_NON_INTERACTIVE=yes
+          make -f Makefile.all export-vendor &&
+          make package-auto
+      - name: Run smoketests
+        run: |
+          make smoketest
