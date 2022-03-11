@@ -1,0 +1,22 @@
+name: Build UI
+
+on:
+  pull_request:
+    paths:
+      - "ui/**"
+
+jobs:
+  node:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./ui
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "14"
+          cache: "yarn"
+          cache-dependency-path: ui/yarn.lock
+      - run: yarn install
+      - run: yarn run build

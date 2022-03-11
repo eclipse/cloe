@@ -1,0 +1,25 @@
+name: Build API Documentation
+
+on:
+  pull_request:
+    paths:
+      - "docs/**"
+      - "Doxyfile"
+      - "README.md"
+      - "*.cpp"
+      - "*.hpp"
+
+jobs:
+  doxygen:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - run: mkdir build
+      - name: Build Doxygen documentation
+        uses: mattnotmitt/doxygen-action@v1.9.2
+      - name: Upload documentation
+        uses: actions/upload-artifact@v3
+        with:
+          name: api-documentation
+          path: build/doxygen/html/
