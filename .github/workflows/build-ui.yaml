@@ -8,6 +8,9 @@ on:
 jobs:
   node:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [10, 12, 14]
     defaults:
       run:
         working-directory: ./ui
@@ -15,8 +18,8 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v2
         with:
-          node-version: "14"
-          cache: "yarn"
+          node-version: ${{ matrix.node }}
+          cache: yarn
           cache-dependency-path: ui/yarn.lock
       - run: yarn install
       - run: yarn run build
