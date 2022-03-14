@@ -19,6 +19,7 @@ jobs:
       - name: Build Doxygen documentation
         uses: mattnotmitt/doxygen-action@v1.9.2
       - name: Upload documentation
+        if: contains( github.ref_name, "release" )
         uses: actions/upload-artifact@v3
         with:
           name: api-documentation
