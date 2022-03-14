@@ -2,23 +2,34 @@ name: Build Cloe
 
 on:
   pull_request:
-    paths:
-      ignore:
-        - "*.md"
-        - ".gitignore"
-        - "Doxyfile"
-        - "LICENSE"
-        - "docs/**"
-        - "ui/**"
+    paths-ignore:
+      - "*.md"
+      - ".gitignore"
+      - "Doxyfile"
+      - "LICENSE"
+      - "dist/**"
+      - "docs/**"
+      - "ui/**"
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build-cloe:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-18.04, ubuntu-20.04 ]
+        build_type: [ RelWithDebInfo ]
+        package_target: [ package-auto ]
+    env:
+      CONAN_NON_INTERACTIVE: "yes"
+      DEBIAN_FRONTEND: noninteractive
+      LC_ALL: C.UTF-8
+      LANG: C.UTF-8
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+      - run: echo "$HOME/.local/bin" >> $GITHUB_PATH
       - name: Install system dependencies
         run: |
           sudo apt-get update &&
@@ -33,17 +44,16 @@ jobs:
       - name: Install Python dependencies
         run: |
           sudo pip3 install --upgrade pip &&
-          sudo make -f Makefile.setup PIP_INSTALL_ARGS="" install-python-deps
+          make -f Makefile.setup PIP_INSTALL_ARGS="" install-python-deps
       - name: Configure Conan
         run: |
           conan profile new --detect default &&
-          conan profile update settings.build_type=RelWithDebInfo default &&
+          conan profile update settings.build_type=${{ matrix.build_type }} default &&
           conan profile update settings.compiler.libcxx=libstdc++11 default
       - name: Build cloe w/ package-auto
         run: |
-          export CONAN_NON_INTERACTIVE=yes
           make -f Makefile.all export-vendor &&
-          make package-auto
+          make ${{ matrix.package_target }}
       - name: Run smoketests
         run: |
           make smoketest
