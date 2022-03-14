@@ -16,7 +16,7 @@
     "jsonpath": "^1.0.2",
     "less": "^3.9.0",
     "mathjs": "^7.5.1",
-    "node-sass": "^4.14.0",
+    "node-sass": "^7.0.0",
     "plotly.js": "^2.2.1",
     "randomcolor": "^0.5.4",
     "react": "^16.8.6",
