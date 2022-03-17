@@ -37,7 +37,7 @@ namespace utility {
  * square braces instead of curly braces, since we have configuration files
  * that are sent through the real Jinja first.
  */
-inja::Environment inja_env() {
+inline inja::Environment inja_env() {
   inja::Environment env;
   env.set_expression("[[", "]]");
   env.set_comment("[#", "#]");
