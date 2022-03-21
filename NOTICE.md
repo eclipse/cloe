@@ -78,7 +78,6 @@ installed with the help of Conan):
   - License: Unlicense
   - License-Source: https://github.com/graphitemaster/blob/master/UNLICENSE
   - Website: https://github.com/graphitemaster/incbin
-  - Source: runtime/include/cloe/vendor/incbin.hpp
   - Conan-Package: incbin
 
 - inja
