@@ -32,7 +32,7 @@ class CloeEngine(ConanFile):
         self.requires(f"cloe-runtime/{self.version}@cloe/develop")
         self.requires(f"cloe-models/{self.version}@cloe/develop")
         self.requires(f"cloe-oak/{self.version}@cloe/develop", private=True)
-        self.requires("cli11/1.9.1", private=True),
+        self.requires("cli11/[~=2.1.2]", private=True),
 
     def build_requirements(self):
         if self.options.test:
