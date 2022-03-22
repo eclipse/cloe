@@ -39,6 +39,7 @@ class Cloe(ConanFile):
         self.requires("fmt/[~=8.1.1]")
         self.requires("inja/[~=3.3.0]")
         self.requires("nlohmann_json/[~=3.10.5]")
+        self.requires("incbin/[~=0.88.0]@cloe/stable"),
         requires = [
             "cloe-runtime",
             "cloe-models",

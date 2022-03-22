@@ -6,14 +6,14 @@ from conans import CMake, ConanFile, tools
 
 class IncbinConan(ConanFile):
     name = "incbin"
-    # Note that the below version 1.X.Y is a fictional version, where X is the
+    # Note that the below version 0.X.Y is a fictional version, where X is the
     # number of commits in the repository and Y is the latest iteration of our
     # changes. This is necessary because incbin doesn't have a version.
-    version = "1.74.0"
+    version = "0.88.0"
     license = "Unlicense"
     url = "https://github.com/graphitemaster/incbin"
     git_url = "https://github.com/graphitemaster/incbin.git"
-    git_commit = "8cefe46d5380bf5ae4b4d87832d811f6692aae44"
+    git_commit = "6e576cae5ab5810f25e2631f2e0b80cbe7dc8cbf"
     git_dir = "incbin"
     no_copy_source = True
     description = "Include binary files in C/C++"

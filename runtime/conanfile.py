@@ -34,7 +34,7 @@ class CloeRuntime(ConanFile):
         "boost/[>=1.65.1]",
         "inja/[~=3.3.0]",
         "spdlog/[~=1.9.0]",
-        "incbin/[~=1.74.0]@cloe/stable",
+        "incbin/[~=0.88.0]@cloe/stable",
     ]
 
     _cmake = None
