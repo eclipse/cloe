@@ -1,7 +1,7 @@
 [requires]
 cli11/[~=2.1.2]
 fable/[>0.17.0, include_prerelease=True]@cloe/develop
-fmt/[~=6.2.0]
+fmt/[~=8.1.1]
 
 [generators]
 cmake
