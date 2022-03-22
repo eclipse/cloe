@@ -36,6 +36,7 @@ class Cloe(ConanFile):
 
     def requirements(self):
         self.requires("boost/[~=1.69]", override=True)
+        self.requires("fmt/[~=8.1.1]")
         requires = [
             "cloe-runtime",
             "cloe-models",
