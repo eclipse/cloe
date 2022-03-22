@@ -29,7 +29,7 @@ class Fable(ConanFile):
     requires = [
         "boost/[>=1.65.1]",
         "fmt/[>=6.2.0]",
-        "nlohmann_json/[~=3.9.1]",
+        "nlohmann_json/[~=3.10.5]",
     ]
 
     _cmake = None
