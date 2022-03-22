@@ -35,7 +35,7 @@ class Cloe(ConanFile):
             self.version = git.run("describe --dirty=-dirty")[1:]
 
     def requirements(self):
-        self.requires("boost/[<1.70]", override=True)
+        self.requires("boost/[~=1.69]", override=True)
         requires = [
             "cloe-runtime",
             "cloe-models",
