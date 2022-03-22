@@ -32,7 +32,7 @@ class CloeRuntime(ConanFile):
     ]
     requires = [
         "boost/[>=1.65.1]",
-        "inja/[~=3.0.0]",
+        "inja/[~=3.3.0]",
         "spdlog/[~=1.9.0]",
         "incbin/[~=1.74.0]@cloe/stable",
     ]
