@@ -26,6 +26,7 @@ add_library(${libstack}
 )
 set_target_properties(${libstack} PROPERTIES
     CXX_STANDARD 14
+    CXX_STANDARD_REQUIRED ON
 )
 target_include_directories(${libstack}
   PRIVATE
