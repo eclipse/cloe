@@ -83,7 +83,7 @@ class options:
             required=required,
             type=click.STRING,
             help=help,
-            autocompletion=complete,
+            shell_complete=complete,
         )
 
     @classmethod
