@@ -35,9 +35,14 @@ test_vtd_plugin_exists() {
     # The plugin section and the registry section have path references, which
     # are not reproducible, so we need to rewrite them and delete these lines.
     # This does not negatively affect the validity of the test.
+    if test_vtd_plugin_exists; then
+      reference_file=test_engine_nop_smoketest_dump_with_vtd.json
+    else
+      reference_file=test_engine_nop_smoketest_dump.json
+    fi
     diff <(cloe_engine dump config_nop_smoketest.json |
-        sed -r -e 's#"/(home|root).*.conan/data/([^/]+)/.*"#"/.../\2/.../"#' -e '/\/(home|root)\/.*/d') \
-           test_engine_nop_smoketest_dump.json
+        sed -r -e 's#"/.*\/.*.conan/data/([^/]+)/.*"#"/.../\1/.../"#' -e '/\/(home|root)\/.*/d') \
+           ${reference_file}
 }
 
 @test "$(testname "Expect check success" "test_engine_smoketest.json" "20c3f11e-4a93-4066-b61e-d485be5c8979")" {
