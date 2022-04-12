@@ -1,13 +1,5 @@
-Cloe
-====
-
-These are the TODOs that need to be fixed before we can open source.
-You can also search the repository for ``.. todo::`` to get a list
-that you can use in your editor.
-
-.. todolist::
-
-----
+Eclipse Cloe
+============
 
 Cloe empowers developers of automated-driving software components by providing
 a unified middleware interface to closed-loop simulation. It achieves this by
@@ -33,9 +25,10 @@ acts as a binding between Cloe and the system-under-test (for example,
 a traffic jam pilot).
 
 For long-term development, the current strategy is to enable Cloe to be used
-for massively scaled continuous-testing and evaluation with a multitude of
-scenarios. Additionally, Cloe aims to simplify orchestration of simulation
-suites.
+for scaled continuous-testing and evaluation with a multitude of scenarios.
+Additionally, Cloe aims to simplify orchestration of simulation suites.
+
+See the repository at `GitHub`_.
 
 .. rubric:: Requirements
 
@@ -90,6 +83,7 @@ to run on Windows as well.
    design
    faq
 
+.. _GitHub: https://github.com/eclipse/cloe/
 .. _Vires VTD: https://vires.mscsoftware.com/
 .. _IPG CarMaker: https://ipg-automotive.com/products-services/simulation-software/carmaker/
 .. _Eclipse SUMO: https://sumo.dlr.de/docs/index.html
