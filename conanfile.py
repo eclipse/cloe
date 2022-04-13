@@ -36,10 +36,10 @@ class Cloe(ConanFile):
 
     def requirements(self):
         self.requires("boost/[~=1.69]", override=True)
-        self.requires("fmt/[~=8.1.1]")
-        self.requires("inja/[~=3.3.0]")
-        self.requires("nlohmann_json/[~=3.10.5]")
-        self.requires("incbin/[~=0.88.0]@cloe/stable"),
+        self.requires("fmt/[~=8.1.1]", override=True)
+        self.requires("inja/[~=3.3.0]", override=True)
+        self.requires("nlohmann_json/[~=3.10.5]", override=True)
+        self.requires("incbin/[~=0.88.0]@cloe/stable", override=True),
         requires = [
             "cloe-runtime",
             "cloe-models",
