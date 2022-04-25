@@ -123,7 +123,7 @@ endif
 install-python-deps::
 	command -v ${PIP} >/dev/null 2>&1
 	${PIP} install ${PIP_INSTALL_ARGS} \
-		"click>=8.0" \
+		click \
 		conan \
 		libtmux \
 		toml \
