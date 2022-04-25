@@ -82,6 +82,7 @@ to run on Windows as well.
    api </api/index.html>
    design
    faq
+   changelog
 
 .. _GitHub: https://github.com/eclipse/cloe/
 .. _Vires VTD: https://vires.mscsoftware.com/
