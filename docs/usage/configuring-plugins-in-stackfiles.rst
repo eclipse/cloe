@@ -35,6 +35,5 @@ To see the configuration options of the controller ``basic``, do::
 
     cloe-launch exec -P ./conantest.py -- usage basic
 
-.. runcmd:: cloe-launch exec -P ../conanfile.py -- usage basic
-   :replace: "Path:.*\\//Path: <SOME_PATH>\\/"
-   :syntax: yaml
+.. literalinclude:: ../reference/plugins/basic.yaml
+   :language: yaml

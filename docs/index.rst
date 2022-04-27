@@ -79,7 +79,6 @@ to run on Windows as well.
    usage
    develop
    reference
-   api </api/index.html>
    design
    faq
    changelog
