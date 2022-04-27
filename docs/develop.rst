@@ -49,11 +49,9 @@ certainly require some changes before accepting.
    develop/directory-structure
    develop/plugin-structure
 
-   develop/creating-a-plugin
-   develop/creating-a-controller
+   develop/new-controller
    develop/integrating-a-controller
    develop/debugging-a-controller
-   develop/adding-a-controller-webui
    develop/debugging-cloe
 
    develop/recording-with-asciinema

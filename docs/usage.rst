@@ -25,5 +25,3 @@ guides will give you a better feel for how Cloe works and how it is built up.
    usage/using-the-engine-watchdog
    usage/changing-the-simulation-timestep
    usage/analyzing-performance
-
-   usage/getting-help
