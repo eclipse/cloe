@@ -1,0 +1,56 @@
+Name: vtd
+Type: simulator
+Path: ~/.conan/data/cloe-plugin-vtd/0.18.0/cloe/develop/package/90dd9a631e7673d301935b8e632b8e6494780da3/lib/cloe/simulator_vtd.so
+Usage: {
+  "camera": {
+    "focus_on": "string :: player to focus on",
+    "third_person": "boolean :: whether to use third person camera"
+  },
+  "configuration_retry_attempts": "integer :: attempts to retry connection on broken pipe",
+  "connection": "object :: scp connection parameters",
+  "dat_file": "string :: filepath to write VTD data output to",
+  "image_generator": "boolean :: switch whether VTD should use image generator",
+  "label_vehicle": "string :: how to label vehicle modes in VTD [off,text,human,symbol,unicode]",
+  "paramserver": "object :: parameter sever connection parameters",
+  "project": "string :: indicate which project to find the scenario in (informative)",
+  "rdb_params": "object :: rdb connection parameters",
+  "scenario": "string :: VTD scenario to use (project must already be loaded)",
+  "sensor_initial_port": "integer :: initial port for sensor communication",
+  "setup": "string :: indicate which setup you are using",
+  "task_control_params": "object :: task control connection parameters",
+  "vehicles": "object :: vehicle configuration like sensors and component mapping"
+}
+Defaults: {
+  "camera": {
+    "focus_on": "",
+    "third_person": true
+  },
+  "configuration_retry_attempts": 10,
+  "connection": {
+    "host": "localhost",
+    "port": 48179,
+    "retry_attempts": 60,
+    "retry_delay_s": 1.0
+  },
+  "dat_file": "",
+  "image_generator": true,
+  "label_vehicle": "text",
+  "paramserver": {
+    "host": "localhost",
+    "port": 54345,
+    "retry_attempts": 60,
+    "retry_delay_s": 1.0
+  },
+  "project": "",
+  "rdb_params": {
+    "retry_attempts": 60,
+    "retry_delay_s": 0.5
+  },
+  "scenario": "",
+  "sensor_initial_port": 48196,
+  "setup": "Cloe.Default",
+  "task_control_params": {
+    "retry_attempts": 60,
+    "retry_delay_s": 0.5
+  }
+}

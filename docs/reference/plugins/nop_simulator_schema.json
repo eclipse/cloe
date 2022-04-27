@@ -1,0 +1,17 @@
+{
+  "$id": "",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "description": "stand-in no-operation simulator",
+  "properties": {
+    "vehicles": {
+      "description": "list of vehicle names to make available",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "title": "nop",
+  "type": "object"
+}

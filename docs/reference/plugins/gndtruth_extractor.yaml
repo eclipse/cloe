@@ -1,0 +1,13 @@
+Name: gndtruth_extractor
+Type: controller
+Path: ~/.conan/data/cloe-plugin-gndtruth-extractor/0.18.0/cloe/develop/package/fbb95bbe77eb69c8ff0c71440c4f0cb7241e0155/lib/cloe/controller_gndtruth_extractor.so
+Usage: {
+  "components": "array of string :: array of components to be extracted",
+  "output_file": "string :: file path to write groundtruth output to",
+  "output_type": "string :: type of output file to write"
+}
+Defaults: {
+  "components": [],
+  "output_file": "",
+  "output_type": "json.gz"
+}

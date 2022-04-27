@@ -1,0 +1,147 @@
+{
+  "$id": "~/.conan/data/cloe-plugin-basic/0.18.0/cloe/develop/package/f7f832fa3477bcda2f0ec9fdf2f22aa46d8ff1e2/lib/cloe/controller_basic.so",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "description": "very basic vehicle controller",
+  "properties": {
+    "acc": {
+      "additionalProperties": false,
+      "description": "ACC configuration",
+      "properties": {
+        "derivative_factor_dist_control": {
+          "description": "factor to tune the D term of the PID distance controller",
+          "maximum": 1.7976931348623157e+308,
+          "minimum": -1.7976931348623157e+308,
+          "type": "number"
+        },
+        "derivative_factor_speed_control": {
+          "description": "factor to tune the D term of the PID speed controller",
+          "maximum": 1.7976931348623157e+308,
+          "minimum": -1.7976931348623157e+308,
+          "type": "number"
+        },
+        "ego_sensor": {
+          "description": "ego sensor component to read from",
+          "type": "string"
+        },
+        "integral_factor_dist_control": {
+          "description": "factor to tune the I term of the PID distance controller",
+          "maximum": 1.7976931348623157e+308,
+          "minimum": -1.7976931348623157e+308,
+          "type": "number"
+        },
+        "integral_factor_speed_control": {
+          "description": "factor to tune the I term of the PID speed controller",
+          "maximum": 1.7976931348623157e+308,
+          "minimum": -1.7976931348623157e+308,
+          "type": "number"
+        },
+        "latlong_actuator": {
+          "description": "actuator to write to",
+          "type": "string"
+        },
+        "limit_acceleration": {
+          "description": "acceleration limit in [m/s^2]",
+          "maximum": 1.7976931348623157e+308,
+          "minimum": -1.7976931348623157e+308,
+          "type": "number"
+        },
+        "limit_deceleration": {
+          "description": "how much deceleration is allowed, in [m/s^2]",
+          "maximum": 1.7976931348623157e+308,
+          "minimum": -1.7976931348623157e+308,
+          "type": "number"
+        },
+        "proportional_factor_dist_control": {
+          "description": "factor to tune the P term of the PID distance controller",
+          "maximum": 1.7976931348623157e+308,
+          "minimum": -1.7976931348623157e+308,
+          "type": "number"
+        },
+        "proportional_factor_speed_control": {
+          "description": "factor to tune the P term of the PID speed controller",
+          "maximum": 1.7976931348623157e+308,
+          "minimum": -1.7976931348623157e+308,
+          "type": "number"
+        },
+        "world_sensor": {
+          "description": "world_sensor component to read from",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "aeb": {
+      "additionalProperties": false,
+      "description": "AEB configuration",
+      "properties": {
+        "always_full_stop": {
+          "description": "whether to brake to a full-stop on activation",
+          "type": "boolean"
+        },
+        "ego_sensor": {
+          "description": "ego sensor component to read from",
+          "type": "string"
+        },
+        "enabled": {
+          "description": "whether automatic emergency braking is enabled",
+          "type": "boolean"
+        },
+        "latlong_actuator": {
+          "description": "actuator to write to",
+          "type": "string"
+        },
+        "limit_deceleration": {
+          "description": "how much deceleration is allowed, in [m/s^2]",
+          "maximum": 1.7976931348623157e+308,
+          "minimum": -1.7976931348623157e+308,
+          "type": "number"
+        },
+        "world_sensor": {
+          "description": "world_sensor component to read from",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "lka": {
+      "additionalProperties": false,
+      "description": "LKA configuration",
+      "properties": {
+        "adjustment_rad": {
+          "description": "wheel angle adjustment in [rad]",
+          "maximum": 1.7976931348623157e+308,
+          "minimum": -1.7976931348623157e+308,
+          "type": "number"
+        },
+        "enabled": {
+          "description": "whether lane keeping assist is enabled",
+          "type": "boolean"
+        },
+        "latlong_actuator": {
+          "description": "actuator to write to",
+          "type": "string"
+        },
+        "lerp_factor": {
+          "description": "linear interpolation factor with domain (0-1]",
+          "maximum": 1.7976931348623157e+308,
+          "minimum": -1.7976931348623157e+308,
+          "type": "number"
+        },
+        "tolerance": {
+          "description": "absolute tolerance in [m]",
+          "maximum": 1.7976931348623157e+308,
+          "minimum": -1.7976931348623157e+308,
+          "type": "number"
+        },
+        "world_sensor": {
+          "description": "world_sensor component to read from",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "title": "basic",
+  "type": "object"
+}

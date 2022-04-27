@@ -1,0 +1,35 @@
+{
+  "$id": "~/.conan/data/cloe-plugin-gndtruth-extractor/0.18.0/cloe/develop/package/fbb95bbe77eb69c8ff0c71440c4f0cb7241e0155/lib/cloe/controller_gndtruth_extractor.so",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "description": "extracts information from the simulation",
+  "properties": {
+    "components": {
+      "description": "array of components to be extracted",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "output_file": {
+      "description": "file path to write groundtruth output to",
+      "type": "string"
+    },
+    "output_type": {
+      "description": "type of output file to write",
+      "enum": [
+        "json.bz2",
+        "json.gz",
+        "json.zip",
+        "json",
+        "msgpack.bz2",
+        "msgpack.gz",
+        "msgpack.zip",
+        "msgpack"
+      ],
+      "type": "string"
+    }
+  },
+  "title": "gndtruth_extractor",
+  "type": "object"
+}

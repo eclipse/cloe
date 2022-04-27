@@ -1,19 +1,33 @@
-Demo Stuck
-==========
+.. reference-gen: demo_stuck
 
-This controller is a controller that can be configured to run very slowly and
-get stuck at certain point in the simulation. This is primarily used for system
-testing.
+Demo-Stuck Controller
+=====================
 
-The following help can be viewed with ``cloe-engine usage demo_stuck``:
+The :program:`demo_stuck` controller plugin is a controller that can be
+configured to run very slowly and get stuck at certain point in the simulation.
+This is primarily used for system testing.
 
-.. runcmd:: cloe-launch exec -P ../conanfile.py -- usage demo_stuck
-   :replace: "Path:.*\\//Path: <SOME_PATH>\\/"
-   :syntax: yaml
+Examples
+--------
+
+You can see the plugin in action in the system test at
+``tests/test_engine_stuck_controller.json``, among other tests.
+
+.. literalinclude:: ../../../tests/test_engine_stuck_controller.json
+   :language: json
+
+Defaults
+--------
+
+The following help can be viewed with :command:`cloe-engine usage demo_stuck`:
+
+.. literalinclude:: demo_stuck.yaml
+   :language: yaml
 
 JSON Schema
 -----------
 
-.. runcmd:: cloe-launch exec -P ../conanfile.py -- usage --json demo_stuck
-   :replace: "\"\\$id\":.*\\//\"\\$id\": \"<SOME_PATH>\\/"
-   :syntax: json
+The following can be viewed with :command:`cloe-engine usage --json demo_stuck`:
+
+.. literalinclude:: demo_stuck_schema.json
+   :language: json

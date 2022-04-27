@@ -1,0 +1,5 @@
+Name: demo_printer
+Type: controller
+Path: ~/.conan/data/cloe-plugin-mocks/0.18.0/cloe/develop/package/bda8d3d78a67309415d4c0e74fde62c437101f28/lib/cloe/controller_demo_printer.so
+Usage: "object"
+Defaults: null

@@ -1,0 +1,251 @@
+{
+  "$id": "~/.conan/data/cloe-plugin-vtd/0.18.0/cloe/develop/package/90dd9a631e7673d301935b8e632b8e6494780da3/lib/cloe/simulator_vtd.so",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "description": "VIRES Virtual Test Drive",
+  "properties": {
+    "camera": {
+      "additionalProperties": false,
+      "properties": {
+        "focus_on": {
+          "description": "player to focus on",
+          "type": "string"
+        },
+        "third_person": {
+          "description": "whether to use third person camera",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "configuration_retry_attempts": {
+      "description": "attempts to retry connection on broken pipe",
+      "maximum": 65535,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "connection": {
+      "additionalProperties": false,
+      "description": "scp connection parameters",
+      "properties": {
+        "host": {
+          "description": "hostname of connection",
+          "type": "string"
+        },
+        "port": {
+          "description": "port of connection",
+          "maximum": 65535,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "retry_attempts": {
+          "description": "connection retry attempts",
+          "maximum": 2147483647,
+          "minimum": -2147483648,
+          "type": "integer"
+        },
+        "retry_delay_s": {
+          "description": "time delay between connection attempts",
+          "maximum": 3.4028234663852886e+38,
+          "minimum": -3.4028234663852886e+38,
+          "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "dat_file": {
+      "description": "filepath to write VTD data output to",
+      "type": "string"
+    },
+    "image_generator": {
+      "description": "switch whether VTD should use image generator",
+      "type": "boolean"
+    },
+    "label_vehicle": {
+      "description": "how to label vehicle modes in VTD [off,text,human,symbol,unicode]",
+      "enum": [
+        "off",
+        "text",
+        "human",
+        "symbol",
+        "unicode"
+      ],
+      "type": "string"
+    },
+    "paramserver": {
+      "additionalProperties": false,
+      "description": "parameter sever connection parameters",
+      "properties": {
+        "host": {
+          "description": "hostname of connection",
+          "type": "string"
+        },
+        "port": {
+          "description": "port of connection",
+          "maximum": 65535,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "retry_attempts": {
+          "description": "connection retry attempts",
+          "maximum": 2147483647,
+          "minimum": -2147483648,
+          "type": "integer"
+        },
+        "retry_delay_s": {
+          "description": "time delay between connection attempts",
+          "maximum": 3.4028234663852886e+38,
+          "minimum": -3.4028234663852886e+38,
+          "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "project": {
+      "description": "indicate which project to find the scenario in (informative)",
+      "type": "string"
+    },
+    "rdb_params": {
+      "additionalProperties": false,
+      "description": "rdb connection parameters",
+      "properties": {
+        "retry_attempts": {
+          "description": "connection retry attempts",
+          "maximum": 2147483647,
+          "minimum": -2147483648,
+          "type": "integer"
+        },
+        "retry_delay_s": {
+          "description": "time delay between connection attempts",
+          "maximum": 3.4028234663852886e+38,
+          "minimum": -3.4028234663852886e+38,
+          "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "scenario": {
+      "description": "VTD scenario to use (project must already be loaded)",
+      "type": "string"
+    },
+    "sensor_initial_port": {
+      "description": "initial port for sensor communication",
+      "maximum": 65535,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "setup": {
+      "description": "indicate which setup you are using",
+      "type": "string"
+    },
+    "task_control_params": {
+      "additionalProperties": false,
+      "description": "task control connection parameters",
+      "properties": {
+        "retry_attempts": {
+          "description": "connection retry attempts",
+          "maximum": 2147483647,
+          "minimum": -2147483648,
+          "type": "integer"
+        },
+        "retry_delay_s": {
+          "description": "time delay between connection attempts",
+          "maximum": 3.4028234663852886e+38,
+          "minimum": -3.4028234663852886e+38,
+          "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "vehicles": {
+      "additionalProperties": {
+        "additionalProperties": false,
+        "properties": {
+          "components": {
+            "additionalProperties": {
+              "additionalProperties": false,
+              "properties": {
+                "from": {
+                  "description": "VTD sensor to retrieve the component data from",
+                  "type": "string"
+                },
+                "override": {
+                  "description": "Override an existing component with the same name",
+                  "type": "boolean"
+                },
+                "type": {
+                  "description": "Component type to register",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "description": "component definitions",
+            "type": "object"
+          },
+          "sensors": {
+            "additionalProperties": {
+              "additionalProperties": false,
+              "properties": {
+                "mock_level": {
+                  "additionalProperties": false,
+                  "description": "Sensor data mock level",
+                  "properties": {
+                    "detected_lane_boundaries": {
+                      "description": "mock level for detected lane boundaries",
+                      "enum": [
+                        "overwrite_none",
+                        "interpolate_missing",
+                        "overwrite_all"
+                      ],
+                      "type": "string"
+                    },
+                    "detected_moving_objects": {
+                      "description": "mock level for detected moving objects",
+                      "enum": [
+                        "overwrite_none",
+                        "interpolate_missing",
+                        "overwrite_all"
+                      ],
+                      "type": "string"
+                    },
+                    "mounting_position": {
+                      "description": "mock level for sensor mounting position",
+                      "enum": [
+                        "overwrite_none",
+                        "interpolate_missing",
+                        "overwrite_all"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "protocol": {
+                  "description": "VTD module manager sensor connection protocol ( rdb | osi )",
+                  "enum": [
+                    "rdb",
+                    "osi"
+                  ],
+                  "type": "string"
+                },
+                "xml": {
+                  "description": "VTD module manager sensor configuration",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "description": "sensor definitions",
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "description": "vehicle configuration like sensors and component mapping",
+      "type": "object"
+    }
+  },
+  "title": "vtd",
+  "type": "object"
+}

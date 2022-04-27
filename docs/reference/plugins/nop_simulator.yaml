@@ -1,0 +1,11 @@
+Name: nop
+Type: simulator
+Path: n/a
+Usage: {
+  "vehicles": "array of string :: list of vehicle names to make available"
+}
+Defaults: {
+  "vehicles": [
+    "default"
+  ]
+}

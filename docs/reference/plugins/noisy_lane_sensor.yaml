@@ -1,0 +1,15 @@
+Name: noisy_lane_sensor
+Type: component
+Path: ~/.conan/data/cloe-plugin-noisy-sensor/0.18.0/cloe/develop/package/f7f832fa3477bcda2f0ec9fdf2f22aa46d8ff1e2/lib/cloe/component_noisy_lane_sensor.so
+Usage: {
+  "enable": "boolean :: enable or disable component",
+  "noise": "array of object :: configure noisy parameters",
+  "reuse_seed": "boolean :: whether to get a new seed on reset",
+  "seed": "integer :: set random engine seed (effective on reset)"
+}
+Defaults: {
+  "enable": true,
+  "noise": [],
+  "reuse_seed": true,
+  "seed": 0
+}
