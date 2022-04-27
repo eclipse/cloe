@@ -26,6 +26,7 @@ VENDOR_TARGET :=
 PACKAGE_TARGET :=
 BUILD_TYPE :=
 WITH_VTD :=
+KEEP_SOURCES :=
 
 DOCKER_BUILD_ARGS += ${DOCKER_NETWORK}
 DOCKER_BUILD_ARGS += --build-arg PROJECT_VERSION=${PROJECT_VERSION}
@@ -56,6 +57,11 @@ VTD_VERSION := $(shell make --no-print-directory -C ${PROJECT_ROOT}/vendor/vtd i
 VTD_IMAGE   := cloe/vtd-conan-package:${VTD_VERSION}
 DOCKER_BUILD_ARGS += --build-arg WITH_VTD=${WITH_VTD}
 DOCKER_BUILD_ARGS += --build-arg VTD_IMAGE=${VTD_IMAGE}
+endif
+
+ifeq (${WITH_VTD},1)
+DOCKER_IMAGE := ${DOCKER_IMAGE}-with-src
+DOCKER_BUILD_ARGS += --build-arg KEEP_SOURCES=1
 endif
 
 DOCKER_ARGS := ${DOCKER_BUILD_ARGS}
