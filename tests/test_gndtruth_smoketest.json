@@ -31,6 +31,6 @@
       "label": "Vehicle default should not reach 50 km/h with the vtd binding and basic controller.",
       "event": "default_speed/kmph=>50.0", "action": "fail"
     },
-    {"event": "time=30", "action": "succeed"}
+    {"event": "time=10", "action": "succeed"}
   ]
 }

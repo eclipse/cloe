@@ -29,8 +29,8 @@
       "label": "Vehicle default should not reach 50 km/h with the vtd binding and basic controller.",
       "event": "default_speed/kmph=>50.0", "action": "fail"
     },
-    {"event": "time=25", "action": {"name": "noisy_lane_sensor/noise_activation", "enable": false}},
-    {"event": "time=25", "action": "noisy_object_sensor/noise_activation=true"},
-    {"event": "time=60", "action": "succeed"}
+    {"event": "time=10", "action": {"name": "noisy_lane_sensor/noise_activation", "enable": false}},
+    {"event": "time=10", "action": "noisy_object_sensor/noise_activation=true"},
+    {"event": "time=15", "action": "succeed"}
   ]
 }

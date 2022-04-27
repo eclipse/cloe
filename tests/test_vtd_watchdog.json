@@ -27,7 +27,7 @@
   "triggers": [
     {
       "label": "Kill VTD taskControl to simulate the simulator not progressing",
-      "event": "time=10",
+      "event": "time=5",
       "action": {
         "name": "command",
         "command": "killall -9 taskControl"
