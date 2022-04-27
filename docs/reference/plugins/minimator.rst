@@ -8,15 +8,15 @@ Minimator Simulator
 Defaults
 --------
 
-The following help can be viewed with :command:`cloe-engine usage basic`:
+The following help can be viewed with :command:`cloe-engine usage minimator`:
 
-.. literalinclude:: basic.yaml
+.. literalinclude:: minimator.yaml
    :language: yaml
 
 JSON Schema
 -----------
 
-The following can be viewed with :command:`cloe-engine usage --json basic`:
+The following can be viewed with :command:`cloe-engine usage --json minimator`:
 
-.. literalinclude:: basic_schema.json
+.. literalinclude:: minimator_schema.json
    :language: json
