@@ -1,0 +1,11 @@
+Name: minimator
+Type: simulator
+Path: ~/.conan/data/cloe-plugin-minimator/0.18.0/cloe/develop/package/bda8d3d78a67309415d4c0e74fde62c437101f28/lib/cloe/simulator_minimator.so
+Usage: {
+  "vehicles": "array of string :: list of vehicle names to make available"
+}
+Defaults: {
+  "vehicles": [
+    "default"
+  ]
+}

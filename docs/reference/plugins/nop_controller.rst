@@ -1,13 +1,23 @@
-Nop
-===
+.. reference-gen: builtin://controller/nop
 
-The following help can be viewed with ``cloe-engine usage builtin://controller/nop``:
+Nop Controller
+==============
 
-.. runcmd:: cloe-launch exec -P ../conanfile.py -- usage builtin://controller/nop
-   :syntax: yaml
+The :program:`nop` builtin controller plugin does nothing but fulfill the basic
+interface of a controller.
+
+Defaults
+--------
+
+The following help can be viewed with :command:`cloe-engine usage builtin://controller/nop`:
+
+.. literalinclude:: nop_controller.yaml
+   :language: yaml
 
 JSON Schema
 -----------
 
-.. runcmd:: cloe-launch exec -P ../conanfile.py -- usage --json builtin://controller/nop
-   :syntax: json
+The following can be viewed with :command:`cloe-engine usage --json builtin://controller/nop`:
+
+.. literalinclude:: nop_controller_schema.json
+   :language: json

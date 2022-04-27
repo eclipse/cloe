@@ -1,35 +1,32 @@
+.. reference-gen: gndtruth_extractor
+
 Groundtruth Extractor
 =====================
 
-The following help can be viewed with ``cloe-engine usage gndtruth_extractor``:
+The :program:`gndtruth_extractor` controller plugin doesn't actually control
+the vehicle in anyway. Instead it is used as a utility to dump specified
+vehicle components to file.
 
-.. runcmd:: cloe-launch exec -P ../conanfile.py -- usage gndtruth_extractor
-   :replace: "Path:.*\\//Path: <SOME_PATH>\\/"
-   :syntax: yaml
+================  =============
+File Type         Output Type
+================  =============
+JSON              "json"
+JSON.gz           "json.gz"
+MessagePack       "msgpack"
+MessagePack.gz    "msgpack.gz"
+================  =============
 
-+----------------+--------------+
-| File-Type      | output_type  |
-+================+==============+
-| JSON           | "json"       |
-+----------------+--------------+
-| JSON.gz        | "json.gz"    |
-+----------------+--------------+
-| MessagePack    | "msgpack"    |
-+----------------+--------------+
-| MessagePack.gz | "msgpack.gz" |
-+----------------+--------------+
-
-Note: The filename is taken literally. I.e. no file-extensions are added automatically.
-
-JSON Schema
------------
-
-.. runcmd:: cloe-launch exec -P ../conanfile.py -- usage --json gndtruth_extractor
-   :replace: "\"\\$id\":.*\\//\"\\$id\": \"<SOME_PATH>\\/"
-   :syntax: json
+.. note::
+   The filename is taken literally, i.e., no file-extensions are added
+   automatically.
 
 Example
 -------
+
+See the following file used in the tests: ``tests/controller_gndtruth.json``:
+
+.. literalinclude:: ../../../tests/controller_gndtruth.json
+   :language: json
 
 .. highlight:: json
 
@@ -41,15 +38,31 @@ Given the following configuration::
      ]
    }
 
-Then this would be the output if JSON is used:::
+Then this would be the output if JSON is used::
 
-  {
-    "components": {
-      "cloe::gndtruth_lane_sensor": {
-        "etc": "..."
-      }
-    }
-  }
+   {
+     "components": {
+       "cloe::gndtruth_lane_sensor": {
+         "etc": "..."
+       }
+     }
+   }
 
 The content of the output depends on the YAML and the respective simulation
 tool and therefore is not part of this documentation.
+
+Defaults
+--------
+
+The following help can be viewed with :command:`cloe-engine usage gndtruth_extractor`:
+
+.. literalinclude:: gndtruth_extractor.yaml
+   :language: yaml
+
+JSON Schema
+-----------
+
+The following can be viewed with :command:`cloe-engine usage --json gndtruth_extractor`:
+
+.. literalinclude:: gndtruth_extractor_schema.json
+   :language: json

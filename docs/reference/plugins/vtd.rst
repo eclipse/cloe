@@ -1,3 +1,5 @@
+.. reference-gen: vtd
+
 VTD Simulator Binding
 =====================
 
@@ -244,18 +246,18 @@ Example
               host_path: .
   ...
 
-Usage
------
+Defaults
+--------
 
-The following help can be viewed with ``cloe-engine usage vtd``:
+The following help can be viewed with :command:`cloe-engine usage vtd`:
 
-.. runcmd:: cloe-launch exec -P ../conanfile.py -o:o with_vtd=True -- usage vtd
-   :replace: "Path:.*\\//Path: <SOME_PATH>\\/"
-   :syntax: yaml
+.. literalinclude:: vtd.yaml
+   :language: yaml
 
 JSON Schema
 -----------
 
-.. runcmd:: cloe-launch exec -P ../conanfile.py -o:o with_vtd=True -- usage --json vtd
-   :replace: "\"\\$id\":.*\\//\"\\$id\": \"<SOME_PATH>\\/"
-   :syntax: json
+The following can be viewed with :command:`cloe-engine usage --json vtd`:
+
+.. literalinclude:: vtd_schema.json
+   :language: json

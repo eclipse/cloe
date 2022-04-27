@@ -1,0 +1,39 @@
+Name: basic
+Type: controller
+Path: ~/.conan/data/cloe-plugin-basic/0.18.0/cloe/develop/package/f7f832fa3477bcda2f0ec9fdf2f22aa46d8ff1e2/lib/cloe/controller_basic.so
+Usage: {
+  "acc": "object :: ACC configuration",
+  "aeb": "object :: AEB configuration",
+  "lka": "object :: LKA configuration"
+}
+Defaults: {
+  "acc": {
+    "derivative_factor_dist_control": 5.0,
+    "derivative_factor_speed_control": 5.0,
+    "ego_sensor": "cloe::default_ego_sensor",
+    "integral_factor_dist_control": 0.0,
+    "integral_factor_speed_control": 0.0,
+    "latlong_actuator": "cloe::default_latlong_actuator",
+    "limit_acceleration": 3.0,
+    "limit_deceleration": 5.0,
+    "proportional_factor_dist_control": 0.8,
+    "proportional_factor_speed_control": 0.8,
+    "world_sensor": "cloe::default_world_sensor"
+  },
+  "aeb": {
+    "always_full_stop": false,
+    "ego_sensor": "cloe::default_ego_sensor",
+    "enabled": true,
+    "latlong_actuator": "cloe::default_latlong_actuator",
+    "limit_deceleration": 8.0,
+    "world_sensor": "cloe::default_world_sensor"
+  },
+  "lka": {
+    "adjustment_rad": 0.02,
+    "enabled": false,
+    "latlong_actuator": "cloe::default_latlong_actuator",
+    "lerp_factor": 0.1,
+    "tolerance": 0.1,
+    "world_sensor": "cloe::default_world_sensor"
+  }
+}

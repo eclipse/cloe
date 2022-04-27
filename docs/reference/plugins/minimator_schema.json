@@ -1,0 +1,17 @@
+{
+  "$id": "~/.conan/data/cloe-plugin-minimator/0.18.0/cloe/develop/package/bda8d3d78a67309415d4c0e74fde62c437101f28/lib/cloe/simulator_minimator.so",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "description": "minimalistic simulator",
+  "properties": {
+    "vehicles": {
+      "description": "list of vehicle names to make available",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "title": "minimator",
+  "type": "object"
+}

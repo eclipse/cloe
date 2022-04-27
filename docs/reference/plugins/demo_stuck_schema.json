@@ -1,0 +1,22 @@
+{
+  "$id": "~/.conan/data/cloe-plugin-mocks/0.18.0/cloe/develop/package/bda8d3d78a67309415d4c0e74fde62c437101f28/lib/cloe/controller_demo_stuck.so",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "description": "slowly progressing demo controller",
+  "properties": {
+    "halt_progress_at": {
+      "description": "time in ns at which to halt all progress",
+      "maximum": 9223372036854775807,
+      "minimum": -9223372036854775808,
+      "type": "integer"
+    },
+    "progress_per_step": {
+      "description": "progress to make each step",
+      "maximum": 9223372036854775807,
+      "minimum": -9223372036854775808,
+      "type": "integer"
+    }
+  },
+  "title": "demo_stuck",
+  "type": "object"
+}

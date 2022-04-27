@@ -1,13 +1,23 @@
-Nop
-===
+.. reference-gen: builtin://simulator/nop
 
-The following help can be viewed with ``cloe-engine usage builtin://simulator/nop``:
+Nop Simulator
+=============
 
-.. runcmd:: cloe-launch exec -P ../conanfile.py -- usage builtin://simulator/nop
-   :syntax: yaml
+The :program:`nop` builtin simulator plugin does nothing but fulfill the basic
+interface of a simulator.
+
+Defaults
+--------
+
+The following help can be viewed with :command:`cloe-engine usage builtin://simulator/nop`:
+
+.. literalinclude:: nop_simulator.yaml
+   :language: yaml
 
 JSON Schema
 -----------
 
-.. runcmd:: cloe-launch exec -P ../conanfile.py -- usage --json builtin://simulator/nop
-   :syntax: json
+The following can be viewed with :command:`cloe-engine usage --json builtin://simulator/nop`:
+
+.. literalinclude:: nop_simulator_schema.json
+   :language: json
