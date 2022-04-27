@@ -10,6 +10,47 @@ here what changes for each package.
    We currently do not release any binaries, each "release" is just a way of
    refering to a tagged set of all packages.
 
+..
+   When creating new release notes, use the following procedure:
+
+   1. Use changelog-gen.sh script to generate grouped entries of commits for
+      the release. You can pass it the range it should consider, such as
+      `v0.18.0..HEAD` for everything since v0.18.0:
+
+         ./changelog-gen.sh v0.18.0..HEAD
+
+   2. Add **bold** "headings" for the following groups:
+      - CLI
+      - Engine
+      - Core Libraries
+      - Plugins
+      - Web UI
+      - Tooling & Dependencies
+
+   3. Delete items that are not really relevant for the end-user:
+      - Changes to documentation
+      - Changes to vendored packages
+      - Changes to CI
+      - Changes to Node dependencies
+      - Refactoring
+      - Net-zero changes (commits within the release that introduce bugs and
+        then fix them, for example)
+
+   4. Change or delete items that are not worded clearly:
+      - "Fix bugs" is not very helpful.
+
+   5. Use the following format for the section heading:
+
+         VERSION (YYYY-MM-DD)
+         --------------------
+
+         Followed by one or more sentences or paragraphs describing on a high
+         level what the release is about or if there are any important breaking
+         changes that are relevant.
+
+      Note that the most recent release is at the *top* of the document.
+
+
 0.18.0 (2022-04-26)
 -------------------
 
