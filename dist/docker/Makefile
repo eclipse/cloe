@@ -115,7 +115,7 @@ release:
 			$(subst --build-arg,-e,${DOCKER_NETWORK}) \
 			--mount "type=bind,source=$(CURDIR)/setup.sh,target=/root/setup.sh" \
 			${DOCKER_IMAGE}-$${dist} \
-			bash -c '. /root/setup.sh && conan upload --all -no -c "*"'; \
+			bash -c '. /root/setup.sh && conan upload --force --all -c "*"'; \
 	done
 
 .PHONY: purge-current purge-all
