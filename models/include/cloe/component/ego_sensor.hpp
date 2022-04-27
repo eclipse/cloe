@@ -78,7 +78,7 @@ class NopEgoSensor : public EgoSensor {
   virtual ~NopEgoSensor() noexcept = default;
   const Object& sensed_state() const override { return obj_; }
   double wheel_steering_angle() const override { return angle_; }
-  virtual double steering_wheel_speed() const { return steering_wheel_speed_; }
+  double steering_wheel_speed() const override { return steering_wheel_speed_; }
   void reset() override {
     obj_ = Object{};
     angle_ = 0.0;
