@@ -96,6 +96,7 @@ ENV CONAN_NON_INTERACTIVE=yes
 # Build and Install Cloe
 WORKDIR /cloe
 ARG WITH_VTD=0
+ARG KEEP_SOURCES=0
 
 # Download or build dependencies:
 COPY vendor /cloe/vendor
@@ -108,9 +109,13 @@ RUN --mount=type=cache,target=/ccache \
     if [ -r /root/setup.sh ]; then . /root/setup.sh; fi && \
     make -f Makefile.all WITH_VTD=${WITH_VTD} ${VENDOR_TARGET} && \
     # Clean up:
-    find /root/.conan/data -name dl -type d -maxdepth 5 -exec rm -r {} + && \
-    conan remove \* -s -b -f && \
-    conan user --clean
+    conan user --clean && \
+    if [ ${KEEP_SOURCES} -eq 0 ]; then \
+        find /root/.conan/data -name dl -type d -maxdepth 5 -exec rm -r {} + && \
+        conan remove \* -s -b -f; \
+    else \
+        conan remove \* -b -f; \
+    fi
 
 # Build Cloe.
 COPY . /cloe
@@ -122,9 +127,13 @@ RUN --mount=type=cache,target=/ccache \
     echo "${PROJECT_VERSION}" > /cloe/VERSION && \
     make WITH_VTD=${WITH_VTD} ${PACKAGE_TARGET} && \
     # Clean up:
-    find /root/.conan/data -name dl -type d -maxdepth 5 -exec rm -r {} + && \
-    conan remove \* -s -b -f && \
-    conan user --clean
+    conan user --clean && \
+    if [ ${KEEP_SOURCES} -eq 0 ]; then \
+        find /root/.conan/data -name dl -type d -maxdepth 5 -exec rm -r {} + && \
+        conan remove \* -s -b -f; \
+    else \
+        conan remove \* -b -f; \
+    fi
 
 # Run smoketests.
 RUN --mount=type=secret,target=/root/setup.sh,id=setup,mode=0400 \
