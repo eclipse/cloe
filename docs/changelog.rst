@@ -8,7 +8,7 @@ here what changes for each package.
 
 .. note::
    We currently do not release any binaries, each "release" is just a way of
-   refering to a tagged set of all packages.
+   referring to a tagged set of all packages.
 
 ..
    When creating new release notes, use the following procedure:
@@ -72,7 +72,7 @@ This marks the initial "release" of the Cloe packages.
 - engine: Fix in ComponentConf serialization                             `[0ab2bc2] <https://github.com/eclipse/cloe/commit/0ab2bc2>`_
 - engine: Fix package bin path for in-source builds                      `[988bf3d] <https://github.com/eclipse/cloe/commit/988bf3d>`_
 - engine: Fix plugin clobbering not working                              `[820ff72] <https://github.com/eclipse/cloe/commit/820ff72>`_
-- engine: Stream json api data to a file                                 `[08938d6] <https://github.com/eclipse/cloe/commit/08938d6>`_
+- engine: Stream JSON api data to a file                                 `[08938d6] <https://github.com/eclipse/cloe/commit/08938d6>`_
 - engine: Avoid compiler bug in xenial build                             `[4c08424] <https://github.com/eclipse/cloe/commit/4c08424>`_
 - engine: Fix missing CXX_STANDARD_REQUIRED for libstack                 `[db0a41f] <https://github.com/eclipse/cloe/commit/db0a41f>`_
 
@@ -106,7 +106,7 @@ This marks the initial "release" of the Cloe packages.
 - gndtruth_extractor: Replace enumconfable by fable                      `[21e8f53] <https://github.com/eclipse/cloe/commit/21e8f53>`_
 
 - minimator: Provide lanes of a straight road                            `[f9b60c2] <https://github.com/eclipse/cloe/commit/f9b60c2>`_
-- minimator: Fix json api                                                `[5df6e9d] <https://github.com/eclipse/cloe/commit/5df6e9d>`_
+- minimator: Fix JSON api                                                `[5df6e9d] <https://github.com/eclipse/cloe/commit/5df6e9d>`_
 
 - noisy_sensor: Extend to lane boundaries and refine noise configuration `[a00f64f] <https://github.com/eclipse/cloe/commit/a00f64f>`_
 - noisy_sensor: Add trigger for noise activation                         `[f8e488f] <https://github.com/eclipse/cloe/commit/f8e488f>`_
@@ -133,13 +133,13 @@ This marks the initial "release" of the Cloe packages.
 
 **Web UI:**
 
-- ui: Add option to rendor object labels                                 `[06e1c25] <https://github.com/eclipse/cloe/commit/06e1c25>`_
+- ui: Add option to render object labels                                 `[06e1c25] <https://github.com/eclipse/cloe/commit/06e1c25>`_
 - ui: Change rendering color palette                                     `[3d8585b] <https://github.com/eclipse/cloe/commit/3d8585b>`_
 - ui: Fix existence probability output                                   `[d77a66a] <https://github.com/eclipse/cloe/commit/d77a66a>`_
 - ui: Fix orbit control axes orientation                                 `[4094d04] <https://github.com/eclipse/cloe/commit/4094d04>`_
 - ui: Add replay functionality                                           `[f88eba5] <https://github.com/eclipse/cloe/commit/f88eba5>`_
 - ui: Add canvas recording functionality                                 `[798b3f9] <https://github.com/eclipse/cloe/commit/798b3f9>`_
-- ui: Add webserver for replay feature                                   `[4ee6475] <https://github.com/eclipse/cloe/commit/4ee6475>`_
+- ui: Add web server for replay feature                                   `[4ee6475] <https://github.com/eclipse/cloe/commit/4ee6475>`_
 - ui: Add Plotly graph import function for replay                        `[a9102fd] <https://github.com/eclipse/cloe/commit/a9102fd>`_
 - ui: Add python cli script to launch data replay                        `[3ed385c] <https://github.com/eclipse/cloe/commit/3ed385c>`_
 - ui: Add button to switch between label attributes                      `[aa6ae75] <https://github.com/eclipse/cloe/commit/aa6ae75>`_

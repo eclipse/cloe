@@ -26,7 +26,10 @@ directory of every Cloe package (e.g. in ``plugins/basic/``):
     output of ``make help`` in the respective package directory for a list of
     the available targets (here: ``make -C ./models help``):
 
-    .. runcmd:: make -C ../../models help
+    .. comment:
+       The path below is relative to the project docs folder, not this file.
+
+    .. runcmd:: make -C ../models help
        :replace: "PACKAGE_DIR:.*\\//PACKAGE_DIR:     <SOME_PATH>\\/"
 
 ``conanfile.py``
