@@ -17,6 +17,7 @@ installation of these simulators.
    :maxdepth: 1
 
    plugins/nop_simulator
+   plugins/minimator
    plugins/vtd
 
 .. rubric:: Controller Plugins
