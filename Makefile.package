@@ -15,6 +15,10 @@
 # You should also adjust the PACKAGE_CHANNEL variable.
 #
 
+define _check_param_zero_one
+$(if $(filter-out 0 1,${$1}), $(error Parameter $1 can be either 0 or 1))
+endef
+
 PROJECT_ROOT     := $(dir $(abspath $(lastword ${MAKEFILE_LIST})))
 PROJECT_VERSION  := $(shell [ -r ${PROJECT_ROOT}/VERSION ] && cat ${PROJECT_ROOT}/VERSION || echo unknown)
 
@@ -42,6 +46,12 @@ BUILD_CONANINFO  := ${BUILD_DIR}/conanbuildinfo.cmake
 BUILD_CMAKECACHE := ${BUILD_DIR}/CMakeCache.txt
 BUILD_LAYOUT     := ${PROJECT_ROOT}/.conan-layout.ini
 BUILD_POLICY     := missing
+
+# Create a lockfile from ${PROJECT_ROOT}/conanfile.py to set the configuration (
+# dependencies, options, settings) for in-source builds.
+CONFIG_FROM_PROJECT    := 1
+$(call _check_param_zero_one,CONFIG_FROM_PROJECT)
+
 
 # Normally, you should set this in your profile, but if you just want to build
 # the package in debug mode once, you can do it this way, although it will
@@ -103,11 +113,13 @@ help::
 	echo "  clean       to remove build directory                   [in-source]"
 	echo
 	echo "Configuration:"
-	echo "  SOURCE_DIR:      ${SOURCE_DIR}"
-	echo "  BUILD_DIR:       ${BUILD_DIR}"
-	echo "  BUILD_POLICY:    ${BUILD_POLICY}"
-	echo "  BUILD_TYPE:      ${BUILD_TYPE}"
-	echo "  CONAN_OPTIONS:   ${CONAN_OPTIONS}"
+	echo "  SOURCE_DIR:             ${SOURCE_DIR}"
+	echo "  BUILD_DIR:              ${BUILD_DIR}"
+	echo "  BUILD_POLICY:           ${BUILD_POLICY}"
+	echo "  BUILD_TYPE:             ${BUILD_TYPE}"
+	echo "  CONFIG_FROM_PROJECT:    ${CONFIG_FROM_PROJECT}"
+	echo "  CONAN_OPTIONS:          ${CONAN_OPTIONS}"
+
 	echo
 	echo "Package information:"
 	echo "  PACKAGE_NAME:    ${PACKAGE_NAME}"
@@ -308,11 +320,28 @@ ${BUILD_CONANINFO}: ${SOURCE_CONANFILE}
 	# Install package dependencies and prepare in-source build.
 	#
 	mkdir -p ${BUILD_DIR}
+	@$(eval CONAN_LOCK_ERROR_FILE := conan_lock_create.log)
+	@$(eval CONAN_BUILD_CONFIG := $(shell \
+		if [ "${CONFIG_FROM_PROJECT}" -gt "0" ]; then \
+			conan lock create --lockfile-out ${BUILD_DIR}/cloe-project.lock \
+			--build ${PACKAGE_NAME} \
+			--build=${BUILD_POLICY} \
+			-s ${PACKAGE_NAME}:build_type=${BUILD_TYPE} \
+			${CONAN_OPTIONS} \
+			${PROJECT_ROOT}/conanfile.py > ${CONAN_LOCK_ERROR_FILE} 2>&1 \
+      && rm -f ${CONAN_LOCK_ERROR_FILE}; \
+			echo "--lockfile ${BUILD_DIR}/cloe-project.lock"; \
+		else \
+			echo "-s ${PACKAGE_NAME}:build_type=${BUILD_TYPE} ${CONAN_OPTIONS}"; \
+		fi \
+	))
+	@[ ! -f ${CONAN_LOCK_ERROR_FILE} ] \
+	|| (echo "conan lock create failed!" \
+	&& cat ${CONAN_LOCK_ERROR_FILE} && rm -f ${CONAN_LOCK_ERROR_FILE} && exit 1)
 	conan install . ${PACKAGE_FQN} \
 		--install-folder=${BUILD_DIR} \
-		-s ${PACKAGE_NAME}:build_type=${BUILD_TYPE} \
-		--build=${BUILD_POLICY} \
-		${CONAN_OPTIONS}
+		${CONAN_BUILD_CONFIG} \
+		--build=${BUILD_POLICY}
 	touch ${BUILD_CONANINFO}
 
 ${BUILD_CMAKECACHE}: ${BUILD_CONANINFO} ${SOURCE_CMAKELISTS}
