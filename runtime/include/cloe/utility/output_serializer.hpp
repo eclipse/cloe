@@ -47,7 +47,7 @@ class OutputStream {
   using char_iterator = std::vector<char>::iterator;
   using uint8_iterator = std::vector<uint8_t>::iterator;
 
-  explicit OutputStream(Logger& logger) : logger_(logger) {}
+  explicit OutputStream(Logger logger) : logger_(logger) {}
   virtual ~OutputStream() = default;
   virtual std::string make_default_filename(const std::string& default_filename) = 0;
   virtual bool open_stream() = 0;
@@ -55,7 +55,7 @@ class OutputStream {
   virtual void close_stream() = 0;
 
  protected:
-  Logger& logger_;
+  Logger logger_;
 };
 
 template <typename... TSerializerArgs>
@@ -106,7 +106,7 @@ class FileOutputStream : public BasicFileOutputStream {
 
 class FilteringOutputStream : public BasicFileOutputStream {
  public:
-  explicit FilteringOutputStream(Logger& logger)
+  explicit FilteringOutputStream(Logger logger)
       : BasicFileOutputStream(logger), filter_(), out_(&filter_) {}
   virtual ~FilteringOutputStream() = default;
   bool open_file(const std::string& filename, const std::string& default_filename) override;
@@ -170,7 +170,7 @@ class Bzip2OutputStream : public FilteringOutputStream {
 template <typename TSerializer, typename TOutputStream, typename... TSerializerArgs>
 class FileSerializer {
  public:
-  explicit FileSerializer(Logger& logger)
+  explicit FileSerializer(Logger logger)
       : outputstream_(logger)
       , serializer_((void (OutputStream::*)(const char*, std::streamsize)) & TOutputStream::write,
                     &outputstream_) {}

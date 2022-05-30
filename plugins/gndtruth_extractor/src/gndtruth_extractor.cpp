@@ -100,7 +100,7 @@ class GndTruthSerializerImpl
   typedef SequentialFileSerializer<TSerializer, TOutputStream, const Sync&, const GndTruth&> base1;
 
  public:
-  GndTruthSerializerImpl(Logger& logger) : base1(logger), GndTruthSerializer() {}
+  GndTruthSerializerImpl(Logger logger) : base1(logger), GndTruthSerializer() {}
   virtual ~GndTruthSerializerImpl() override;
   using base1::open_file;
   virtual void open_file(const std::string& filename) override {
