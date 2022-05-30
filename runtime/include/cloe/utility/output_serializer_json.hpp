@@ -102,7 +102,7 @@ class JsonFileSerializerImpl
       SequentialFileSerializer<SimpleJsonSerializer, TOutputStream, const Json&, bool>;
 
  public:
-  JsonFileSerializerImpl(Logger& logger) : file_base(logger), JsonFileSerializer() {}
+  JsonFileSerializerImpl(Logger logger) : file_base(logger), JsonFileSerializer() {}
   virtual ~JsonFileSerializerImpl() = default;
   using file_base::open_file;
   void open_file(const std::string& filename) override {
