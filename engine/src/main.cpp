@@ -114,6 +114,14 @@ int main(int argc, char** argv) {
   app.add_flag("--interpolate-undefined", stack_options.interpolate_undefined,
                "Interpolate undefined variables with empty strings");
 
+  // The --strict flag here is useful for all our smoketests, since this is the
+  // combination of flags we use for maximum reproducibility / isolation.
+  // Note: This option also affects / overwrites options for the run subcommand!
+  app.add_flag("-t,--strict", stack_options.strict_mode,
+               "Forces flags: --no-system-plugins --no-system-confs --require-success");
+  app.add_flag("-s,--secure", stack_options.secure_mode,
+               "Forces flags: --strict --no-hooks --no-interpolate");
+
   // ----------------------------------------------------------------------- //
 
   CLI11_PARSE(app, argc, argv);
@@ -131,7 +139,17 @@ int main(int argc, char** argv) {
     cloe::logger::set_level(level);
   }
 
-  // Setup stack and provide launch command.
+  // Setup stack, applying strict/secure mode if necessary, and provide launch command.
+  if (stack_options.secure_mode) {
+    stack_options.strict_mode = true;
+    stack_options.no_hooks = true;
+    stack_options.interpolate_vars = false;
+  }
+  if (stack_options.strict_mode) {
+    stack_options.no_system_plugins = true;
+    stack_options.no_system_confs = true;
+    run_options.require_success = true;
+  }
   stack_options.environment->prefer_external(false);
   stack_options.environment->allow_undefined(stack_options.interpolate_undefined);
   stack_options.environment->insert(CLOE_SIMULATION_UUID_VAR, "${" CLOE_SIMULATION_UUID_VAR "}");

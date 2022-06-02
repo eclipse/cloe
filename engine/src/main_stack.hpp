@@ -34,6 +34,7 @@
 
 namespace cloe {
 
+// See main.cpp for descriptions of flags.
 struct StackOptions {
   boost::optional<std::ostream&> error = std::cerr;
   std::shared_ptr<fable::Environment> environment;
@@ -47,6 +48,8 @@ struct StackOptions {
   bool no_hooks = false;
   bool interpolate_vars = true;
   bool interpolate_undefined = false;
+  bool strict_mode = false;
+  bool secure_mode = false;
 };
 
 Stack new_stack(const StackOptions& opt);
