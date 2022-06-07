@@ -29,7 +29,7 @@ class CloeModels(ConanFile):
     ]
     requires = [
         "boost/[>=1.65.1]",
-        "eigen/[~=3.3.7]",
+        "eigen/[~=3.4.0]",
     ]
 
     _cmake = None
