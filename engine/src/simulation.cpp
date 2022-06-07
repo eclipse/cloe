@@ -807,7 +807,10 @@ StateId SimulationMachine::StepSimulators::impl(SimulationContext& ctx) {
   ctx.foreach_simulator([&ctx](cloe::Simulator& simulator) {
     try {
       cloe::Duration sim_time = simulator.process(ctx.sync);
-      assert(sim_time == ctx.sync.time());
+      if (sim_time != ctx.sync.time()) {
+
+        throw cloe::ModelError("simulator {} did not progress to required time: got {}ms, expected {}ms", simulator.name(), sim_time.count()/1'000'000, ctx.sync.time().count()/1'000'000);
+      }
     } catch (cloe::ModelReset& e) {
       throw;
     } catch (cloe::ModelAbort& e) {
