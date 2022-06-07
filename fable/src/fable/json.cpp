@@ -20,11 +20,22 @@
  * \see  fable/json.hpp
  */
 
+#ifndef PARSE_JSON_USE_EXCEPTIONS
+#define PARSE_JSON_USE_EXCEPTIONS true
+#endif
+
+#ifndef PARSE_JSON_WITH_COMMENTS
+#define PARSE_JSON_WITH_COMMENTS true
+#endif
+
 #include <fable/json.hpp>
 
 #include <string>  // for string
 
 namespace fable {
+
+bool NLOHMANN_JSON_USE_EXCEPTIONS = PARSE_JSON_USE_EXCEPTIONS;
+bool NLOHMANN_JSON_ALLOW_COMMENTS = PARSE_JSON_WITH_COMMENTS;
 
 std::string to_string(JsonType type) {
   switch (type) {

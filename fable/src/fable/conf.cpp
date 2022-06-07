@@ -30,6 +30,7 @@
 #include <boost/filesystem.hpp>  // for path
 
 #include <fable/error.hpp>  // for ConfError, WrongType, MissingProperty
+#include <fable/json.hpp>   // for NLOHMANN_JSON_ALLOW_COMMENTS
 
 namespace fable {
 
@@ -39,7 +40,7 @@ Conf::Conf(const std::string& file) : file_(file) {
     throw Error("could not open file {}: {}", file, strerror(errno));
   }
   try {
-    ifs >> data_;
+    data_ = parse_json(ifs);
   } catch (std::exception& e) {
     throw Error("unable to parse file {}: {}", file, e.what());
   }

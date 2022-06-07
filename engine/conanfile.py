@@ -14,6 +14,9 @@ class CloeEngine(ConanFile):
         "pedantic": [True, False],
     }
     default_options = {
+        "fable:allow_comments": True,
+
+        # These don't change the output.
         "test": True,
         "pedantic": True,
     }

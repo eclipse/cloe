@@ -40,9 +40,7 @@ Json read_json_from_file(const char* filepath) {
     throw std::runtime_error(std::string("could not open file: ") + filepath);
   }
 
-  Json j;
-  ifs >> j;
-  return j;
+  return parse_json(ifs);
 }
 
 Json read_json_from_stdin() {
@@ -64,7 +62,7 @@ Json read_json_with_interpolation(const std::string& filepath_or_stdin, const En
     std::istreambuf_iterator<char> begin(std::cin), end;
     std::string s(begin, end);
     s = interpolate_vars(s, env);
-    return Json::parse(s);
+    return parse_json(s);
   } else {
     std::ifstream ifs(filepath_or_stdin);
     if (ifs.fail()) {
@@ -73,7 +71,7 @@ Json read_json_with_interpolation(const std::string& filepath_or_stdin, const En
     std::istreambuf_iterator<char> begin(ifs), end;
     std::string s(begin, end);
     s = interpolate_vars(s, env);
-    return Json::parse(s);
+    return parse_json(s);
   }
 }
 

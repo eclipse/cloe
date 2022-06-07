@@ -9,11 +9,13 @@ class Fable(ConanFile):
     description = "JSON schema and configuration library"
     settings = "os", "compiler", "build_type", "arch"
     options = {
+        "allow_comments": [True, False],
         "shared": [True, False],
         "fPIC": [True, False],
         "test": [True, False],
     }
     default_options = {
+        "allow_comments": True,
         "shared": False,
         "fPIC": True,
         "test": True,
@@ -53,6 +55,7 @@ class Fable(ConanFile):
         self._cmake = CMake(self)
         self._cmake.definitions["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
         self._cmake.definitions["FABLE_VERSION"] = self.version
+        self._cmake.definitions["AllowComments"] = self.options.allow_comments
         self._cmake.definitions["BuildTests"] = self.options.test
         self._cmake.configure()
         return self._cmake
