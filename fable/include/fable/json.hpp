@@ -33,6 +33,25 @@
 namespace fable {
 
 /**
+ * When parsing JSON from fable, should comments be allowed or lead to an
+ * exception? Value is controlled by `PARSE_JSON_WITH_COMMENTS` define.
+ * Default value is true.
+ *
+ * This does not automatically apply to use of `Json::parse`. Instead you
+ * should use the parse_json helper function defined in this file.
+ */
+extern bool NLOHMANN_JSON_ALLOW_COMMENTS;
+
+/**
+ * When parsing JSON from fable, should exceptions be used?
+ * Default value is set by `PARSE_JSON_WITH_COMMENTS` define.
+ *
+ * This is here for completeness. The fable library will not work
+ * correctly if exceptions are disabled, so this should always be set to true.
+ */
+extern bool NLOHMANN_JSON_USE_EXCEPTIONS;
+
+/**
  * The Json type maps to nlohmann::json.
  *
  * Bringing it into the fable namespace makes it much easier to use.
@@ -74,6 +93,19 @@ using JsonType = Json::value_t;
  *     unknown
  */
 std::string to_string(JsonType);
+
+/**
+ * Return the result of Json::parse, with the options to use exceptions and
+ * allow comments as set in this library, from NLOHMANN_JSON_USE_EXCEPTIONS and
+ * NLOHMANN_JSON_ALLOW_COMMENTS.
+ *
+ * See the documentation on each of these global variables for more details.
+ */
+template <typename InputType>
+inline Json parse_json(InputType&& input) {
+  return Json::parse(std::forward<InputType>(input), nullptr, NLOHMANN_JSON_USE_EXCEPTIONS,
+                     NLOHMANN_JSON_ALLOW_COMMENTS);
+}
 
 }  // namespace fable
 

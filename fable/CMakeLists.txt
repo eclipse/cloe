@@ -39,6 +39,13 @@ target_link_libraries(${target}
     CONAN_PKG::nlohmann_json
 )
 
+option(AllowComments "Allow comments when parsing JSON?" ON)
+if(AllowComments)
+    target_compile_definitions(${target} PRIVATE PARSE_JSON_WITH_COMMENTS=true)
+else()
+    target_compile_definitions(${target} PRIVATE PARSE_JSON_WITH_COMMENTS=false)
+endif()
+
 # Testing ------------------------------------------------------------
 option(BuildTests "Build tests?" ON)
 if(BuildTests)

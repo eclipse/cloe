@@ -47,7 +47,7 @@ inline void assert_schema_eq(const Confable& x, const Json& expect) {
 }
 
 inline void assert_schema_eq(const Confable& x, const char expect[]) {
-  assert_eq(x.schema().json_schema(), Json::parse(expect));
+  assert_eq(x.schema().json_schema(), parse_json(expect));
 }
 
 inline void assert_validate(const Confable& x, const Conf& input) {
@@ -60,7 +60,7 @@ inline void assert_validate(const Confable& x, const Conf& input) {
 }
 
 inline void assert_validate(const Confable& x, const char json_input[]) {
-  assert_validate(x, Conf{Json::parse(json_input)});
+  assert_validate(x, Conf{parse_json(json_input)});
 }
 
 inline void assert_invalidate(const Confable& x, const Conf& input) {
@@ -68,7 +68,7 @@ inline void assert_invalidate(const Confable& x, const Conf& input) {
 }
 
 inline void assert_invalidate(const Confable& x, const char json_input[]) {
-  assert_invalidate(x, Conf{Json::parse(json_input)});
+  assert_invalidate(x, Conf{parse_json(json_input)});
 }
 
 template <typename T>
@@ -78,7 +78,7 @@ inline void assert_to_json(const T& x, const Json& expect) {
 
 template <typename T>
 inline void assert_to_json(const T& x, const char json_expect[]) {
-  assert_to_json(x, Json::parse(json_expect));
+  assert_to_json(x, parse_json(json_expect));
 }
 
 inline void assert_from_conf_throw(Confable& x, const Conf& input) {
@@ -88,7 +88,7 @@ inline void assert_from_conf_throw(Confable& x, const Conf& input) {
 }
 
 inline void assert_from_conf_throw(Confable& x, const char json_input[]) {
-  assert_from_conf_throw(x, Conf{Json::parse(json_input)});
+  assert_from_conf_throw(x, Conf{parse_json(json_input)});
 }
 
 template <typename T>
@@ -98,7 +98,7 @@ inline void assert_from_conf(T& x, const Conf& input) {
 
 template <typename T>
 inline void assert_from_conf(T& x, const char json_input[]) {
-  assert_from_conf(x, Conf{Json::parse(json_input)});
+  assert_from_conf(x, Conf{parse_json(json_input)});
 }
 
 template <typename T>
@@ -109,7 +109,7 @@ inline void assert_from_eq_to(T& x, const Json& identity) {
 
 template <typename T>
 inline void assert_from_eq_to(T& x, const char json_input[]) {
-  assert_from_eq_to(x, Json::parse(json_input));
+  assert_from_eq_to(x, parse_json(json_input));
 }
 
 }  // namespace fable
