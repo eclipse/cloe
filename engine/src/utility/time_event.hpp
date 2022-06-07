@@ -95,15 +95,6 @@ struct TimeTrigger {
 
 using TimeEmplaceHook = std::function<void(const cloe::Trigger&, cloe::Duration)>;
 
-struct TimeTriggerCompare : public std::binary_function<std::shared_ptr<TimeTrigger>,
-                                                        std::shared_ptr<TimeTrigger>,
-                                                        bool> {
-  bool operator()(const std::shared_ptr<TimeTrigger>& x,
-                  const std::shared_ptr<TimeTrigger>& y) const {
-    return x->time > y->time;
-  }
-};
-
 class TimeCallback : public cloe::Callback {
  public:
   TimeCallback(cloe::Logger log, TimeEmplaceHook h) : log_(log), hook_(h) {}
@@ -148,10 +139,11 @@ class TimeCallback : public cloe::Callback {
   // This is ridiculous: We need to wrap the unique_ptr of Trigger in
   // a shared_ptr because you can only get objects by copy out of
   // a priority_queue.
-  std::priority_queue<std::shared_ptr<TimeTrigger>,
-                      std::vector<std::shared_ptr<TimeTrigger>>,
-                      TimeTriggerCompare>
-      storage_;
+  std::priority_queue<
+      std::shared_ptr<TimeTrigger>, std::vector<std::shared_ptr<TimeTrigger>>,
+      std::function<bool(const std::shared_ptr<TimeTrigger>&, const std::shared_ptr<TimeTrigger>&)>>
+      storage_{[](const std::shared_ptr<TimeTrigger>& x,
+                  const std::shared_ptr<TimeTrigger>& y) -> bool { return x->time > y->time; }};
 };
 
 class NextFactory : public cloe::EventFactory {
