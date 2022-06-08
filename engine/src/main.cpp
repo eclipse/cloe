@@ -80,11 +80,17 @@ int main(int argc, char** argv) {
   std::vector<std::string> run_files;
   auto run = app.add_subcommand("run", "Run a simulation with (merged) stack files.");
   run->add_option("-J,--json-indent", run_options.json_indent, "JSON indentation level");
-  run->add_option("-u,--uuid", run_options.uuid, "Override simulation UUID");
+  run->add_option("-u,--uuid", run_options.uuid, "Override simulation UUID")
+      ->envname("CLOE_SIMULATION_UUID");
   run->add_flag("--allow-empty", run_options.allow_empty, "Allow empty simulations");
-  run->add_flag("!--no-write-output", run_options.write_output, "Do not write any output files");
-  run->add_flag("!--no-progress", run_options.report_progress, "Do not report progress");
-  run->add_flag("--require-success", run_options.require_success, "Require simulation success");
+  run->add_flag("--write-output,!--no-write-output", run_options.write_output,
+                "Do (not) write any output files")
+      ->envname("CLOE_WRITE_OUTPUT");
+  run->add_flag("--progress,!--no-progress", run_options.report_progress,
+                "Do (not) report progress");
+  run->add_flag("--require-success,!--no-require-success", run_options.require_success,
+                "Require simulation success")
+      ->envname("CLOE_REQUIRE_SUCCESS");
   run->add_option("files", run_files, "Files to merge into a single stackfile")->required();
 
   // One of the above subcommands must be used.
@@ -93,7 +99,9 @@ int main(int argc, char** argv) {
   // Global Options:
   std::string log_level = "warn";
   app.set_help_all_flag("-H,--help-all", "Print all help messages and exit");
-  app.add_option("-l,--level", log_level, "Default logging level");
+  app.add_option("-l,--level", log_level,
+                 "Default logging level, one of [trace, debug, info, warn, error, critical]")
+      ->envname("CLOE_LOG_LEVEL");
 
   // Stack Options:
   cloe::StackOptions stack_options;
@@ -117,10 +125,12 @@ int main(int argc, char** argv) {
   // The --strict flag here is useful for all our smoketests, since this is the
   // combination of flags we use for maximum reproducibility / isolation.
   // Note: This option also affects / overwrites options for the run subcommand!
-  app.add_flag("-t,--strict", stack_options.strict_mode,
-               "Forces flags: --no-system-plugins --no-system-confs --require-success");
-  app.add_flag("-s,--secure", stack_options.secure_mode,
-               "Forces flags: --strict --no-hooks --no-interpolate");
+  app.add_flag("-t,--strict,!--no-strict", stack_options.strict_mode,
+               "Forces flags: --no-system-plugins --no-system-confs --require-success")
+      ->envname("CLOE_STRICT_MODE");
+  app.add_flag("-s,--secure,!--no-secure", stack_options.secure_mode,
+               "Forces flags: --strict --no-hooks --no-interpolate")
+      ->envname("CLOE_SECURE_MODE");
 
   // ----------------------------------------------------------------------- //
 
