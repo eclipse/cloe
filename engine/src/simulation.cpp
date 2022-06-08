@@ -1159,7 +1159,7 @@ Simulation::Simulation(const cloe::Stack& config, const std::string& uuid)
 SimulationResult Simulation::run() {
   // Input:
   SimulationContext ctx;
-  ctx.server.reset(new Server{config_.server});
+  ctx.server = make_server(config_.server);
   ctx.coordinator.reset(new Coordinator{});
   ctx.registrar.reset(new Registrar{*ctx.server, ctx.coordinator});
   ctx.commander.reset(new CommandExecuter{logger()});
