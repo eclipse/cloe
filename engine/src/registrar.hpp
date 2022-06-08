@@ -27,45 +27,37 @@
 #include <cloe/registrar.hpp>  // for cloe::Registrar
 
 #include "coordinator.hpp"  // for Coordinator
-#include "server.hpp"       // for Server, oak::ProxyRegistrar
+#include "server.hpp"       // for Server, ServerRegistrar
 
 namespace engine {
 
 class Registrar : public cloe::Registrar {
  public:
-  Registrar(Server& s, std::shared_ptr<Coordinator> c)
-      : static_registrar_(s.static_registrar())
-      , api_registrar_(s.api_registrar())
+  Registrar(std::unique_ptr<ServerRegistrar> r, std::shared_ptr<Coordinator> c)
+      : server_registrar_(std::move(r))
       , coordinator_(std::move(c)) {}
 
   Registrar(const Registrar& ar,
             const std::string& trigger_prefix,
             const std::string& static_prefix,
             const std::string& api_prefix)
-      : static_registrar_(ar.static_registrar_)
-      , api_registrar_(ar.api_registrar_)
-      , coordinator_(ar.coordinator_) {
+      : coordinator_(ar.coordinator_) {
     if (trigger_prefix.empty()) {
       trigger_prefix_ = ar.trigger_prefix_;
     } else {
       trigger_prefix_ = ar.trigger_prefix_ + trigger_prefix;
     }
-    if (!static_prefix.empty()) {
-      static_registrar_ = ar.static_registrar_.with_prefix(static_prefix);
-    }
-    if (!api_prefix.empty()) {
-      api_registrar_ = ar.api_registrar_.with_prefix(api_prefix);
-    }
+    server_registrar_ = ar.server_registrar_->with_prefix(static_prefix, api_prefix);
   }
 
   void register_static_handler(const std::string& endpoint, cloe::Handler h) override {
-    static_registrar_.register_handler(endpoint, h);
+    server_registrar_->register_static_handler(endpoint, h);
   }
 
   void register_api_handler(const std::string& endpoint,
                             cloe::HandlerType t,
                             cloe::Handler h) override {
-    api_registrar_.register_handler(endpoint, t, h);
+    server_registrar_->register_api_handler(endpoint, t, h);
   }
 
   std::unique_ptr<cloe::Registrar> clone() const {
@@ -113,8 +105,7 @@ class Registrar : public cloe::Registrar {
   }
 
  private:
-  oak::Registrar static_registrar_;
-  oak::ProxyRegistrar<cloe::HandlerType> api_registrar_;
+  std::unique_ptr<ServerRegistrar> server_registrar_;
   std::shared_ptr<Coordinator> coordinator_;
   std::string trigger_prefix_;
 };

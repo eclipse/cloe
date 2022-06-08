@@ -1161,7 +1161,7 @@ SimulationResult Simulation::run() {
   SimulationContext ctx;
   ctx.server = make_server(config_.server);
   ctx.coordinator.reset(new Coordinator{});
-  ctx.registrar.reset(new Registrar{*ctx.server, ctx.coordinator});
+  ctx.registrar.reset(new Registrar{ctx.server->server_registrar(), ctx.coordinator});
   ctx.commander.reset(new CommandExecuter{logger()});
   ctx.sync = SimulationSync(config_.simulation.model_step_width);
   ctx.config = config_;

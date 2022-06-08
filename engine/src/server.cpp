@@ -22,15 +22,52 @@
 
 #include "server.hpp"
 
-#include <memory>   // for unique_ptr<>
+#include <memory>   // for unique_ptr<>, make_unique
 #include <utility>  // for make_pair
 
-#include <cloe/registrar.hpp> // for HandlerType
+#include <cloe/registrar.hpp>                       // for HandlerType
 #include <cloe/utility/output_serializer_json.hpp>  // for JsonFileSerializer
 
 #include <oak/server.hpp>  // for Server, StaticRegistrar, ...
 
 namespace engine {
+
+class ServerRegistrarImpl : public ServerRegistrar {
+ public:
+  ServerRegistrarImpl(
+      oak::Registrar static_reg, oak::ProxyRegistrar<cloe::HandlerType> api_reg)
+      : static_registrar_(static_reg), api_registrar_(api_reg) {}
+
+  std::unique_ptr<ServerRegistrar> clone() const override {
+    return std::make_unique<ServerRegistrarImpl>(static_registrar_, api_registrar_);
+  }
+
+  std::unique_ptr<ServerRegistrar> with_prefix(const std::string& static_prefix,
+                                               const std::string& api_prefix) const override {
+    auto static_reg = static_registrar_;
+    if (!static_prefix.empty()) {
+      static_reg = static_registrar_.with_prefix(static_prefix);
+    }
+    auto api_reg = api_registrar_;
+    if (!api_prefix.empty()) {
+      api_reg = api_registrar_.with_prefix(api_prefix);
+    }
+    return std::make_unique<ServerRegistrarImpl>(static_reg, api_reg);
+  }
+
+  void register_static_handler(const std::string& endpoint, cloe::Handler h) override {
+    static_registrar_.register_handler(endpoint, h);
+  }
+
+  void register_api_handler(const std::string& endpoint, cloe::HandlerType t,
+                                    cloe::Handler h) override {
+    api_registrar_.register_handler(endpoint, t, h);
+  }
+
+ private:
+  oak::Registrar static_registrar_;
+  oak::ProxyRegistrar<cloe::HandlerType> api_registrar_;
+};
 
 class ServerImpl : public Server {
  public:
@@ -98,9 +135,13 @@ class ServerImpl : public Server {
         [this](const cloe::Request&, cloe::Response& r) { r.write(this->server_.endpoints()); });
   }
 
-  oak::Registrar static_registrar() override { return static_registrar_.with("", nullptr); }
+  std::unique_ptr<ServerRegistrar> server_registrar() override {
+    return std::make_unique<ServerRegistrarImpl>(static_registrar(), api_registrar());
+  }
 
-  oak::ProxyRegistrar<cloe::HandlerType> api_registrar() override {
+  oak::Registrar static_registrar() { return static_registrar_.with("", nullptr); }
+
+  oak::ProxyRegistrar<cloe::HandlerType> api_registrar() {
     return oak::ProxyRegistrar<cloe::HandlerType>({
         std::make_pair(cloe::HandlerType::STATIC, &static_api_registrar_),
         std::make_pair(cloe::HandlerType::DYNAMIC, &locked_api_registrar_),
