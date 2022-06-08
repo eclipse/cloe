@@ -20,7 +20,7 @@ setup() {
 @test "$(testname "Expect run success" "cloe-engine usage" "93c5a785-8f07-4df2-92ee-6d47e728f201")" {
     for file in "${cloe_plugins[@]}"; do
         echo "Checking: $file"
-        run cloe_engine usage $file
+        run cloe-engine usage $file
         if [[ $status -ne 0 ]]; then
             echo -e $output
         fi
@@ -37,7 +37,7 @@ setup() {
 
     for file in "${cloe_plugins[@]}"; do
         echo "Checking: $file"
-        run cloe_engine usage -j $file
+        run cloe-engine usage -j $file
         if [[ $status -ne 0 ]]; then
             echo -e $output
         fi

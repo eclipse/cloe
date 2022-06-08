@@ -1,0 +1,6 @@
+{
+    "version": "4",
+    "include": [
+        "test_engine_include_self.json"
+    ]
+}

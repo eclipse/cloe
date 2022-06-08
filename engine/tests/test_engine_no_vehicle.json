@@ -1,0 +1,23 @@
+// This test checks that cloe-engine will find the error that the vehicles
+// section is missing.
+//
+// This stack file is complete except for missing a "vehicles" section where
+// the controller is assigned a vehicle from the simulator.
+{
+  "version": "4",
+  "server": {
+    "listen_port": 23456
+  },
+  "simulators": [
+    {
+      "binding": "nop",
+      "name": "default"
+    }
+  ],
+  "controllers": [
+    {
+      "binding": "basic",
+      "vehicle": "ego"
+    }
+  ]
+}

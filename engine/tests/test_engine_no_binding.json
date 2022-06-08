@@ -1,0 +1,25 @@
+// This test checks that cloe-engine will find the error that the simulator
+// binding is not configured.
+//
+// The stack file is complete except for the missing "simulators" section.
+{
+  "version": "4",
+  "server": {
+    "listen_port": 23456
+  },
+  "vehicles": [
+    {
+      "from": {
+        "simulator": "nop",
+        "index": 0
+      },
+      "name": "default"
+    }
+  ],
+  "controllers": [
+    {
+      "binding": "basic",
+      "vehicle": "default"
+    }
+  ]
+}

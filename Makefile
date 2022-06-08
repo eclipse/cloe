@@ -41,7 +41,7 @@ include Makefile.setup
 include Makefile.all
 
 # Workspace targets -----------------------------------------------------------
-.PHONY: lockfile status deploy sphinx doxygen docker-all docker-test docker-release purge-all smoketest
+.PHONY: lockfile status deploy sphinx doxygen docker-all docker-test docker-release purge-all smoketest smoketest-deps
 help::
 	echo "Available workspace targets:"
 	echo "  smoketest       to run BATS system tests"
@@ -98,11 +98,11 @@ doxygen:
 	mkdir -p ${BUILD_DIR}/doxygen
 	doxygen Doxyfile
 
-smoketest:
+smoketest-deps: smoketest-deps-select
 	# Call this target with WITH_VTD=1 to include VTD binding tests.
-	$(call print_header, "Running smoke tests...")
-	@${CLOE_LAUNCH} clean -P conantest.py
-	@\time -f "\nTotal smoketest time (real) = %e sec" bash -c "source tests/setup_testname.bash && bats tests"
+
+smoketest: smoketest-select
+	# Call this target with WITH_VTD=1 to include VTD binding tests.
 
 purge-all:
 	$(call print_header, "Removing all cloe Conan packages...")

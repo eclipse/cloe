@@ -1,0 +1,33 @@
+{
+  "version": "4",
+  "include": [
+    "config_vtd_smoketest.json",
+    "bootstrap_vtd.json"
+  ],
+  "engine": {
+    "security": {
+      "enable_command_action": true
+    },
+    "polling_interval": 60000,
+    "watchdog": {
+      "mode": "kill",
+      "default_timeout": 0,
+      "state_timeouts": {
+        "STEP_SIMULATORS": 1000
+      }
+    }
+  },
+  "server": {
+    "listen": false
+  },
+  "triggers": [
+    {
+      "label": "Kill VTD taskControl to simulate the simulator not progressing",
+      "event": "time=5",
+      "action": {
+        "name": "command",
+        "command": "killall -9 taskControl"
+      }
+    }
+  ]
+}

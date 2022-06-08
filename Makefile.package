@@ -18,6 +18,10 @@
 PROJECT_ROOT     := $(dir $(abspath $(lastword ${MAKEFILE_LIST})))
 PROJECT_VERSION  := $(shell [ -r ${PROJECT_ROOT}/VERSION ] && cat ${PROJECT_ROOT}/VERSION || echo unknown)
 
+CLOE_ROOT   := ${PROJECT_ROOT}
+CLOE_LAUNCH := PYTHONPATH="${CLOE_ROOT}/cli" python3 -m cloe_launch
+
+SHELL := /bin/bash
 DATE := $(shell date +"%Y%m%d")
 TIMESTAMP := $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 
@@ -115,8 +119,8 @@ endif
 
 # INFORMATIONAL TARGETS -------------------------------------------------------
 .DEFAULT: help
-.SILENT: help status parse-info parse-editable info-name info-version info-channel info-fqn info
-.PHONY: help status parse-info parse-editable info-name info-version info-channel info-fqn info
+.SILENT: help status parse-info parse-editable info-name info-version info-channel info-fqn info smoketest smoketest-deps
+.PHONY: help status parse-info parse-editable info-name info-version info-channel info-fqn info smoketest smoketest-deps
 help:: parse-info parse-editable
 	echo "Usage: make <target>"
 	echo
@@ -124,9 +128,11 @@ help:: parse-info parse-editable
 	echo "editable (local in-source) and uneditable (in the Conan cache) modes."
 	echo
 	echo "Available targets:"
-	echo "  help        to show this help"
-	echo "  status      to show status of package"
-	echo "  info        to show detailed package info"
+	echo "  help            to show this help"
+	echo "  status          to show status of package"
+	echo "  info            to show detailed package info"
+	echo "  smoketest-deps  to build smoketest dependencies for package"
+	echo "  smoketest       to run smoketests for package (requires built packages)"
 	echo
 	echo "  export            to export recipe and sources        [conan-cache]"
 	echo "  download          to download or create package       [conan-cache]"
@@ -217,6 +223,20 @@ info: parse-info
 	else \
 		echo ${PACKAGE_INFO}; \
 	fi
+
+smoketest:
+	@for profile in tests/profile_*.py; do \
+		test -f "$${profile}" || continue; \
+		printf "Running BATS tests with profile: $${profile}\n\n"; \
+		SHELL=/bin/bash ${CLOE_LAUNCH} shell -P "$${profile}" -- -c "source ${CLOE_ROOT}/tests/setup_testname.bash; bats tests"; \
+	done
+
+smoketest-deps:
+	@for profile in tests/profile_*.py; do \
+		test -f "$${profile}" || continue; \
+		echo "Building dependencies for profile: $${profile}"; \
+		${CLOE_LAUNCH} prepare -P "$${profile}"; \
+	done
 
 # CONFIGURATION TARGETS -------------------------------------------------------
 .PHONY: editable uneditable

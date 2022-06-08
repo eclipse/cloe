@@ -1,0 +1,30 @@
+{
+  "version": "4",
+  "include": [
+    "config_nop_smoketest.json"
+  ],
+  "engine": {
+    "security": {
+      "enable_command_action": true
+    },
+    "polling_interval": 60000,
+    "watchdog": {
+      "mode": "kill",
+      "default_timeout": 1000
+    }
+  },
+  "server": {
+    "listen": false
+  },
+  "triggers": [
+    {"event": "time=45", "action": "pause"},
+    {
+      "label": "Insert resume trigger via curl to test the pause-resume behavior.",
+      "event": "pause",
+      "action": {
+        "name": "command",
+        "command": "echo '{\"event\": \"pause\", \"action\": \"resume\"}' | curl -d @- http://localhost:23456/api/triggers/input"
+      }
+    }
+  ]
+}

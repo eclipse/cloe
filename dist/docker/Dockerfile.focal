@@ -85,7 +85,7 @@ RUN --mount=type=cache,target=/ccache \
 # Build Cloe.
 COPY . /cloe
 ARG PROJECT_VERSION=unknown
-ARG PACKAGE_TARGET=package-auto
+ARG PACKAGE_TARGET="package-auto smoketest-deps"
 RUN --mount=type=cache,target=/ccache \
     --mount=type=secret,target=/root/setup.sh,id=setup,mode=0400 \
     if [ -r /root/setup.sh ]; then . /root/setup.sh; fi && \

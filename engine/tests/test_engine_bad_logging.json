@@ -1,0 +1,9 @@
+{
+  "version": "4",
+  "logging": [
+    {
+      // This logging object is invalid because it omits the "level" key.
+      "name": "cloe"
+    }
+  ]
+}

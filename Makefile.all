@@ -130,8 +130,8 @@ $(filter-out cloe, ${ALL_PKGS} ${ALL_VENDOR_PKGS}):
 # Re-define cloe target to use Makefile.package, and only run for targets
 # where it makes sense, since "cloe" is a Conan meta-package.
 cloe:
-	for case in export package package-outdated list purge clean; do \
-		if [[ "$$(echo '${MAKECMDGOALS}' | sed -re ${REGEX_TARGET})" == "$${case}" ]]; then \
+	for case in export package package-outdated list purge clean smoketest smoketest-deps; do \
+		if [ "$$(echo '${MAKECMDGOALS}' | sed -re ${REGEX_TARGET})" == "$${case}" ]; then \
 			${MAKE} -f Makefile.package CONAN_OPTIONS="${CONAN_OPTIONS}" $${case} || exit 1; \
 		fi \
 	done
@@ -261,6 +261,9 @@ $(call make_select_target, export-select,      "export selected packages        
 $(call make_select_target, package-select,     "create selected packages with policy        [conan-cache]")
 $(call make_select_target, list-select,        "list selected package install files         [conan-cache]")
 $(call make_select_target, purge-select,       "remove selected packages from cache         [conan-cache]")
+
+$(call make_select_target, smoketest-select,        "run tests for selected packages             [conan-cache]")
+$(call make_select_target, smoketest-deps-select,   "build test deps for selected packages       [conan-cache]")
 
 help::
 	echo
