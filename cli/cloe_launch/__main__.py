@@ -198,9 +198,9 @@ def cli_exec(
     options.deny_profile_and_path(profile, profile_path)
     conf = Configuration(profile)
     engine = Engine(conf, conanfile=profile_path)
-    engine.conan_args = conan_arg
-    engine.conan_options = conan_option
-    engine.conan_settings = conan_setting
+    engine.conan_args = list(conan_arg)
+    engine.conan_options = list(conan_option)
+    engine.conan_settings = list(conan_setting)
 
     engine.preserve_env = preserve_env
 
@@ -248,9 +248,9 @@ def cli_shell(
     conf = Configuration(profile)
     engine = Engine(conf, conanfile=profile_path)
     engine.preserve_env = preserve_env
-    engine.conan_args = conan_arg
-    engine.conan_options = conan_option
-    engine.conan_settings = conan_setting
+    engine.conan_args = list(conan_arg)
+    engine.conan_options = list(conan_option)
+    engine.conan_settings = list(conan_setting)
 
     # Replace process with shell.
     engine.shell(shell_args, use_cache=cache)
@@ -305,12 +305,43 @@ def cli_activate(
     options.deny_profile_and_path(profile, profile_path)
     conf = Configuration(profile)
     engine = Engine(conf, conanfile=profile_path)
-    engine.conan_args = conan_arg
-    engine.conan_options = conan_option
-    engine.conan_settings = conan_setting
+    engine.conan_args = list(conan_arg)
+    engine.conan_options = list(conan_option)
+    engine.conan_settings = list(conan_setting)
 
-    # Replace process with shell.
     engine.activate(use_cache=cache)
+
+
+# _________________________________________________________________________
+# Command: prepare [--cache] [--profile=PROFILE | --profile-path=CONANFILE]
+@main.command("prepare")
+@options.profile()
+@options.profile_path()
+@options.conan_arg()
+@options.conan_option()
+@options.conan_setting()
+@click.pass_obj
+def cli_prepare(
+    opt,
+    profile: str,
+    profile_path: str,
+    conan_arg: List[str],
+    conan_option: List[str],
+    conan_setting: List[str],
+) -> None:
+    """Prepare environment for selected profile.
+
+    This involves downloading missing and available packages and building
+    outdated packages.
+    """
+    options.deny_profile_and_path(profile, profile_path)
+    conf = Configuration(profile)
+    engine = Engine(conf, conanfile=profile_path)
+    engine.conan_args = list(conan_arg)
+    engine.conan_options = list(conan_option)
+    engine.conan_settings = list(conan_setting)
+
+    engine.prepare()
 
 
 # _________________________________________________________________________

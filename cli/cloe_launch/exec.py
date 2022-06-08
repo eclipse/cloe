@@ -353,9 +353,10 @@ class Engine:
         self.engine_pre_args = conf._conf["engine"]["pre_arguments"]
         self.engine_post_args = conf._conf["engine"]["post_arguments"]
         self.preserve_env = False
-        self.conan_args = []
-        self.conan_options = []
-        self.conan_settings = []
+        self.conan_args = list()
+        self.conan_options = list()
+        self.conan_settings = list()
+        self.capture_output = True
 
         logging.info(f"Profile name: {self.profile}")
         logging.info("Configuration:")
@@ -591,6 +592,15 @@ class Engine:
             print(f'export {var}="{env[var]}"')
         print(f'export CLOE_SHELL="{self.runtime_env_path()}"')
 
+    def prepare(self, build_policy: str = "outdated") -> None:
+        """Prepare (by downloading or building) dependencies for the profile."""
+        self.capture_output = False
+        if build_policy == "":
+            self.conan_args.append("--build")
+        else:
+            self.conan_args.append(f"--build={build_policy}")
+        self._prepare_runtime_env(use_cache=False)
+
     def exec(
         self,
         args: List[str],
@@ -636,4 +646,4 @@ class Engine:
         return result
 
     def _run_cmd(self, cmd, must_succeed=True) -> subprocess.CompletedProcess:
-        return run_cmd(cmd, must_succeed=must_succeed)
+        return run_cmd(cmd, must_succeed=must_succeed, capture_output=self.capture_output)
