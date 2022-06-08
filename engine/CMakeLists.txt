@@ -72,6 +72,7 @@ add_executable(${target}
     src/plugins/nop_simulator.cpp
     src/simulation.cpp
     src/simulation_context.cpp
+    src/simulation_performance.cpp
     src/utility/command.cpp
 )
 set_target_properties(${target} PROPERTIES

@@ -42,6 +42,7 @@ struct SimulationResult {
   cloe::Duration elapsed;
   SimulationOutcome outcome;
   SimulationStatistics statistics;
+  SimulationPerformance performance;
   cloe::Json triggers;
   boost::optional<boost::filesystem::path> output_dir;
 
@@ -123,12 +124,37 @@ class Simulation {
   size_t write_output(const SimulationResult&) const;
 
   /**
+   * Write the plugin performance files, and generate plots if requested and
+   * gnuplot available.
+   *
+   * Return number of files written.
+   */
+  size_t write_performance_files(const boost::filesystem::path& dir, const SimulationPerformance& r) const;
+
+  /**
    * Write the given JSON output into the file. Return true if successful.
    */
   bool write_output_file(const boost::filesystem::path& filepath, const cloe::Json& j) const;
 
   /**
-   * Check if the given filepath may be opened, respecting clobber options.
+   * Lazily write to the output file if it can be opened for writing.
+   *
+   * This is better than accepting a string, because generation can be delayed
+   * until we are sure we can use it. This uses `is_writable()` to determine
+   * if the file in question can be written to.
+   *
+   * Return whether the operation was successful or not. This may not
+   * necessarily stem from an error; if it does, an error message will be
+   * logged.
+   */
+  bool write_output_file(const boost::filesystem::path& filepath,
+                         std::function<void(std::ostream& os)> func) const;
+
+  /**
+   * Return whether the given filepath may be opened for writing, respecting
+   * clobber options.
+   *
+   * The clobber option is set in the engine configuration section.
    */
   bool is_writable(const boost::filesystem::path& filepath) const;
 

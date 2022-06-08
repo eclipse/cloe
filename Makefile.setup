@@ -98,6 +98,7 @@ install-ubuntu-deps::
 		curl \
 		file \
 		git \
+		gnuplot \
 		graphviz \
 		jq \
 		patchelf \
@@ -125,6 +126,7 @@ install-archlinux-deps::
 		curl \
 		doxygen \
 		git \
+		gnuplot \
 		graphviz \
 		jq \
 		patchelf \

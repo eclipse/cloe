@@ -69,6 +69,17 @@ std::shared_ptr<cloe::Registrar> SimulationContext::simulation_registrar() {
   }
 }
 
+cloe::Duration SimulationContext::process_model(cloe::Model& m) {
+  timer::DurationTimer<cloe::Duration> t([this, &m](cloe::Duration d) {
+    auto ms = std::chrono::duration_cast<cloe::Milliseconds>(d);
+    this->statistics.plugin_time_ms[m.name()].push_back(ms.count());
+    if (this->config.engine.performance_profile_plugins) {
+      this->performance.push_back(m.name(), ms.count());
+    }
+  });
+  return m.process(this->sync);
+}
+
 bool SimulationContext::foreach_model(std::function<bool(cloe::Model&, const char*)> f) {
   for (auto& kv : controllers) {
     auto ok = f(*kv.second, "controller");

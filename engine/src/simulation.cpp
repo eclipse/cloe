@@ -730,6 +730,11 @@ StateId SimulationMachine::Start::impl(SimulationContext& ctx) {
   // Begin execution progress
   ctx.progress.exec_begin();
 
+  // Initialize statistics
+  if (ctx.config.engine.performance_profile_plugins) {
+    ctx.performance.reset();
+  }
+
   // Insert triggers from the config
   auto r = ctx.coordinator->trigger_registrar(cloe::Source::FILESYSTEM);
   for (const auto& c : ctx.config.triggers) {
@@ -754,6 +759,7 @@ StateId SimulationMachine::Start::impl(SimulationContext& ctx) {
   // Process initial context
   ctx.foreach_model([this, &ctx](cloe::Model& m, const char* type) {
     logger()->trace("Start {} {}", type, m.name());
+    ctx.statistics.plugin_time_ms[m.name()] = cloe::utility::Accumulator();
     m.start(ctx.sync);
     return true;  // next model
   });
@@ -784,6 +790,9 @@ StateId SimulationMachine::StepBegin::impl(SimulationContext& ctx) {
   if (ctx.report_progress && ctx.progress.exec_report()) {
     logger()->info("Execution progress: {}%",
                    static_cast<int>(ctx.progress.execution.percent() * 100.0));
+  }
+  if (ctx.config.engine.performance_profile_plugins) {
+    ctx.performance.init_step(ctx.sync.step());
   }
 
   // Refresh the double buffer
@@ -828,10 +837,11 @@ StateId SimulationMachine::StepSimulators::impl(SimulationContext& ctx) {
   // Call the simulator bindings:
   ctx.foreach_simulator([&ctx](cloe::Simulator& simulator) {
     try {
-      cloe::Duration sim_time = simulator.process(ctx.sync);
+      cloe::Duration sim_time = ctx.process_model(simulator);
       if (sim_time != ctx.sync.time()) {
-
-        throw cloe::ModelError("simulator {} did not progress to required time: got {}ms, expected {}ms", simulator.name(), sim_time.count()/1'000'000, ctx.sync.time().count()/1'000'000);
+        throw cloe::ModelError(
+            "simulator {} did not progress to required time: got {}ms, expected {}ms",
+            simulator.name(), sim_time.count() / 1'000'000, ctx.sync.time().count() / 1'000'000);
       }
     } catch (cloe::ModelReset& e) {
       throw;
@@ -885,7 +895,7 @@ StateId SimulationMachine::StepControllers::impl(SimulationContext& ctx) {
     try {
       int64_t retries = 0;
       for (;;) {
-        ctrl_time = ctrl.process(ctx.sync);
+        ctrl_time = ctx.process_model(ctrl);
 
         // If we are underneath our target, sleep and try again.
         if (ctrl_time < ctx.sync.time()) {
@@ -980,11 +990,14 @@ StateId SimulationMachine::StepEnd::impl(SimulationContext& ctx) {
   }
 
   auto guard = ctx.server->lock();
-  ctx.statistics.cycle_time_ms.push_back(
-      std::chrono::duration_cast<cloe::Milliseconds>(elapsed).count());
-  ctx.statistics.padding_time_ms.push_back(
-      std::chrono::duration_cast<cloe::Milliseconds>(padding).count());
+  double elapsed_ms = std::chrono::duration_cast<cloe::Milliseconds>(elapsed).count();
+  double padding_ms = std::chrono::duration_cast<cloe::Milliseconds>(padding).count();
+  ctx.statistics.cycle_time_ms.push_back(elapsed_ms);
+  ctx.statistics.padding_time_ms.push_back(padding_ms);
   ctx.sync.increment_step();
+  if (ctx.config.engine.performance_profile_plugins) {
+    ctx.performance.commit_step(padding_ms, elapsed_ms);
+  }
 
   // Process all inserted triggers now.
   ctx.coordinator->process(ctx.sync);
@@ -1284,6 +1297,7 @@ SimulationResult Simulation::run() {
   }
   r.sync = ctx.sync;
   r.statistics = ctx.statistics;
+  r.performance = ctx.performance;
   r.elapsed = ctx.progress.elapsed();
   r.triggers = ctx.coordinator->history();
 
@@ -1297,13 +1311,15 @@ size_t Simulation::write_output(const SimulationResult& r) const {
   }
 
   size_t files_written = 0;
-  auto write_file = [&](auto filename, cloe::Json output) {
+  // This lambda is a "generic" lambda and requires C++14.
+  auto write_file = [&](auto filename, auto json_or_func) {
     if (!filename) {
+      // No filename means no write.
       return;
     }
 
     boost::filesystem::path filepath = r.get_output_filepath(*filename);
-    if (write_output_file(filepath, output)) {
+    if (write_output_file(filepath, json_or_func)) {
       files_written++;
     }
   };
@@ -1311,13 +1327,47 @@ size_t Simulation::write_output(const SimulationResult& r) const {
   write_file(r.config.engine.output_file_result, r);
   write_file(r.config.engine.output_file_config, r.config);
   write_file(r.config.engine.output_file_triggers, r.triggers);
+
+  if (r.config.engine.performance_profile_plugins) {
+    if (r.config.engine.output_dir_performance) {
+      files_written += write_performance_files(r.get_output_filepath(*r.config.engine.output_dir_performance), r.performance);
+    } else {
+      logger()->error("No output directory specified for performance measurement files.");
+      logger()->error("Note: make sure the configuration value at `/engine/output/dirs/performance` is set and valid.");
+    }
+  }
   logger()->info("Wrote {} output files.", files_written);
 
   return files_written;
 }
 
+size_t Simulation::write_performance_files(const boost::filesystem::path& dir, const SimulationPerformance& s) const {
+  write_output_file(dir / "plugin_timings_ms.json", s);
+
+  std::function<void(std::ostream&)> func1 = [&](std::ostream& os) -> void { write_csv(os, s); };
+  write_output_file(dir / "plugin_timings_ms.csv", func1);
+
+  auto plot_file = dir / "plugin_timings_ms.gnuplot";
+  std::function<void(std::ostream&)> func2 = [&](std::ostream& os) -> void { write_gnuplot(os, s); };
+  write_output_file(plot_file, func2);
+#if 0
+  if (config_.engine.performance_generate_plots) {
+    cloe::Command cmd("gnuplot", {plot_file.native()});
+    CommandExecuter exec(cloe::logger::get("cloe"));
+    exec.run(cmd);
+  }
+#endif
+
+  return 2;
+}
+
 bool Simulation::write_output_file(const boost::filesystem::path& filepath,
                                    const cloe::Json& j) const {
+  return write_output_file(filepath, [j](std::ostream& os) { os << j.dump(2) << std::endl; });
+}
+
+bool Simulation::write_output_file(
+    const boost::filesystem::path& filepath, std::function<void(std::ostream& ofs)> func) const {
   if (!is_writable(filepath)) {
     return false;
   }
@@ -1329,7 +1379,7 @@ bool Simulation::write_output_file(const boost::filesystem::path& filepath,
     return false;
   }
   logger()->debug("Writing file: {}", native);
-  ofs << j.dump(2) << std::endl;
+  func(ofs);
   return true;
 }
 

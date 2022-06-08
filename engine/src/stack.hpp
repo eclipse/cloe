@@ -326,7 +326,15 @@ struct EngineConf : public Confable {
   boost::optional<boost::filesystem::path> output_file_result{"result.json"};
   boost::optional<boost::filesystem::path> output_file_triggers{"triggers.json"};
   boost::optional<boost::filesystem::path> output_file_data_stream;
+  boost::optional<boost::filesystem::path> output_dir_performance{"performance"};
   bool output_clobber_files{true};
+
+  // Performance:
+  bool performance_profile_plugins{false};
+  bool performance_generate_plots{true};
+
+  // Executables:
+  boost::filesystem::path executable_gnuplot{"gnuplot"};
 
   /**
    * Number of milliseconds between states when waiting for continuation.
@@ -429,6 +437,16 @@ struct EngineConf : public Confable {
               {"triggers", make_schema(&output_file_triggers, file_proto(), "file to store triggers in")},
               {"api_recording", make_schema(&output_file_data_stream, file_proto(), "file to store api data stream")},
            }},
+           {"dirs", Struct{
+              {"performance", make_schema(&output_dir_performance, dir_proto(), "directory to store plugin performance in")},
+           }},
+        }},
+        {"performance", Struct{
+          {"profile_plugins", make_schema(&performance_profile_plugins, "whether to profile plugin performance and write output files; see config /engine/output/dirs/performance")},
+          {"generate_plots", make_schema(&performance_generate_plots, "whether to use gnuplot to generate plots; see config /engine/executables/gnuplot")},
+        }},
+        {"executables", Struct{
+          {"gnuplot", make_schema(&executable_gnuplot, "path to gnuplot executable")},
         }},
         {"triggers", Struct{
            {"ignore_source", make_schema(&triggers_ignore_source, "ignore trigger source when reading in triggers")},

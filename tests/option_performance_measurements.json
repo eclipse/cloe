@@ -1,0 +1,9 @@
+{
+  "version": "4",
+  "engine": {
+    "performance": {
+      "profile_plugins": true,
+      "generate_plots": true
+    }
+  }
+}

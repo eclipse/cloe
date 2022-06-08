@@ -41,13 +41,14 @@
 #include <cloe/utility/timer.hpp>       // for DurationTimer
 #include <cloe/vehicle.hpp>             // for Vehicle
 
-#include "coordinator.hpp"         // for Coordinator
-#include "registrar.hpp"           // for Registrar
-#include "server.hpp"              // for Server
-#include "stack.hpp"               // for Stack
-#include "utility/command.hpp"     // for CommandExecuter
-#include "utility/progress.hpp"    // for Progress
-#include "utility/time_event.hpp"  // for TimeCallback
+#include "coordinator.hpp"            // for Coordinator
+#include "registrar.hpp"              // for Registrar
+#include "server.hpp"                 // for Server
+#include "stack.hpp"                  // for Stack
+#include "simulation_performance.hpp" // for SimulationPerformance
+#include "utility/command.hpp"        // for CommandExecuter
+#include "utility/progress.hpp"       // for Progress
+#include "utility/time_event.hpp"     // for TimeCallback
 
 namespace engine {
 
@@ -262,6 +263,7 @@ struct SimulationStatistics {
   cloe::utility::Accumulator controller_time_ms;
   cloe::utility::Accumulator padding_time_ms;
   cloe::utility::Accumulator controller_retries;
+  std::map<std::string, cloe::utility::Accumulator> plugin_time_ms;
 
   void reset() {
     engine_time_ms.reset();
@@ -270,6 +272,9 @@ struct SimulationStatistics {
     controller_time_ms.reset();
     padding_time_ms.reset();
     controller_retries.reset();
+    for (auto& kv : plugin_time_ms) {
+      kv.second.reset();
+    }
   }
 
   friend void to_json(cloe::Json& j, const SimulationStatistics& s) {
@@ -277,6 +282,7 @@ struct SimulationStatistics {
         {"engine_time_ms", s.engine_time_ms},         {"simulator_time_ms", s.simulator_time_ms},
         {"controller_time_ms", s.controller_time_ms}, {"padding_time_ms", s.padding_time_ms},
         {"cycle_time_ms", s.cycle_time_ms},           {"controller_retries", s.controller_retries},
+        {"plugin_time_ms", s.plugin_time_ms},
     };
   }
 };
@@ -346,6 +352,7 @@ struct SimulationContext {
   SimulationSync sync;
   SimulationProgress progress;
   SimulationStatistics statistics;
+  SimulationPerformance performance;
   cloe::Model* now_initializing{nullptr};
   std::map<std::string, std::unique_ptr<cloe::Simulator>> simulators;
   std::map<std::string, std::shared_ptr<cloe::Vehicle>> vehicles;
@@ -375,6 +382,7 @@ struct SimulationContext {
   std::vector<std::string> vehicle_ids() const;
   std::vector<std::string> plugin_ids() const;
 
+  cloe::Duration process_model(cloe::Model& m);
   bool foreach_model(std::function<bool(cloe::Model&, const char* type)> f);
   bool foreach_model(std::function<bool(const cloe::Model&, const char* type)> f) const;
   bool foreach_simulator(std::function<bool(cloe::Simulator&)> f);
