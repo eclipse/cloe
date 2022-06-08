@@ -155,5 +155,5 @@ RUN conan create conanfile.py ${PACKAGE_FQN} && \
     conan remove -b -s -f vtd && \
     find /root/.conan/data -type d -name "dl" -exec rm -rf {} +
 
-FROM scratch
+FROM ubuntu:18.04
 COPY --from=build /root/.conan/data/vtd /vtd
