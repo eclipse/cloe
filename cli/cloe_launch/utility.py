@@ -10,6 +10,7 @@ def run_cmd(
     cmd: List[str],
     env: Optional[Dict[str, str]] = None,
     must_succeed: bool = True,
+    capture_output: bool = True,
 ) -> subprocess.CompletedProcess:
     """Run a command quietly, only printing stderr if the command fails."""
 
@@ -17,8 +18,8 @@ def run_cmd(
     result = subprocess.run(
         cmd,
         check=False,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
+        stdout=subprocess.PIPE if capture_output else None,
+        stderr=subprocess.STDOUT if capture_output else None,
         universal_newlines=True,
         env=env,
     )
