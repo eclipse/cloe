@@ -169,6 +169,8 @@ else
 ALL_PKGS := $(filter-out plugins/vtd, ${ALL_PKGS})
 ALL_VENDOR_PKGS := $(filter-out $(wildcard vendor/vtd*), ${ALL_VENDOR_PKGS})
 ALL_VENDOR_PKGS := $(filter-out $(wildcard vendor/osi*), ${ALL_VENDOR_PKGS})
+ALL_VENDOR_PKGS := $(filter-out $(wildcard vendor/open-simulation-interface*), ${ALL_VENDOR_PKGS})
+ALL_VENDOR_PKGS := $(filter-out $(wildcard vendor/protobuf*), ${ALL_VENDOR_PKGS})
 endif
 
 ifeq (${BUILD_TESTS},0)
