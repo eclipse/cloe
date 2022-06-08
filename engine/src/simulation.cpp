@@ -80,6 +80,7 @@
 #include <future>   // for future<>, async
 #include <sstream>  // for stringstream
 #include <string>   // for string
+#include <thread>   // for sleep_for
 
 #include <boost/filesystem.hpp>  // for is_directory, is_regular_file, ...
 
