@@ -69,6 +69,7 @@ add_executable(${target}
     src/coordinator.cpp
     src/plugins/nop_controller.cpp
     src/plugins/nop_simulator.cpp
+    src/server.cpp
     src/simulation.cpp
     src/simulation_context.cpp
     src/utility/command.cpp

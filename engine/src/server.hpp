@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Robert Bosch GmbH
+ * Copyright 2022 Robert Bosch GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,173 +17,107 @@
  */
 /**
  * \file server.hpp
+ * \see  server.cpp
  */
 
 #pragma once
 
-#include <memory>   // for unique_ptr
-#include <utility>  // for make_pair
+#include <memory>  // for unique_ptr<>
 
-#include <cloe/handler.hpp>                         // for Request, Response
-#include <cloe/registrar.hpp>                       // for Registrar
-#include <cloe/utility/output_serializer_json.hpp>  // for JsonFileSerializer
+#include <cloe/registrar.hpp>  // for Registrar
+#include <oak/registrar.hpp>   // for oak::Registrar, oak::ProxyRegistrar
 
-#include "oak/server.hpp"  // for Server, StaticRegistrar, ...
-#include "stack.hpp"       // for ServerConf
+#include "stack.hpp"          // for ServerConf
+#include "utility/defer.hpp"  // for Defer
 
 namespace engine {
 
+/**
+ * Server interface to make altering the implementation easier.
+ *
+ * Use `make_server()` to create an instance that you can use.
+ */
 class Server {
- public:  // Configuration
-  const cloe::ServerConf config;
-
- public:  // Construction & Destruction
-  Server(const cloe::ServerConf& c) : config(c) {
-    auto rl = logger();
-
-    // clang-format off
-    static_registrar_.set_prefix(config.static_prefix);
-    static_registrar_.set_logger([rl] (auto endpoint) {
-        rl->debug("Register static endpoint:   {}", endpoint);
-    });
-
-    static_api_registrar_.set_prefix(config.api_prefix);
-    static_api_registrar_.set_logger([rl] (auto endpoint) {
-        rl->debug("Register static endpoint:   {}", endpoint);
-    });
-
-    locked_api_registrar_.set_prefix(config.api_prefix);
-    locked_api_registrar_.set_logger([rl] (auto endpoint) {
-        rl->debug("Register dynamic endpoint:  {}", endpoint);
-    });
-
-    buffer_api_registrar_.set_prefix(config.api_prefix);
-    buffer_api_registrar_.set_logger([rl] (auto endpoint) {
-        rl->debug("Register buffered endpoint: {}", endpoint);
-    });
-    // clang-format on
-  }
-
-  ~Server() { stop(); }
-
  public:
-  bool is_listening() { return server_.is_listening(); }
+  Server(const cloe::ServerConf& config) : config_(config) {}
+  virtual ~Server() = default;
 
-  bool is_streaming() { return is_streaming_; }
+  /**
+   * Return the server configuration.
+   */
+  const cloe::ServerConf& config() const { return config_; }
+
+  /**
+   * Return whether the server is alive and listening for requests.
+   */
+  virtual bool is_listening() const = 0;
+
+  /**
+   * Return whether the server is currently streaming buffer data to a file.
+   *
+   * If it is, expect performance to be bad.
+   */
+  virtual bool is_streaming() const = 0;
 
   /**
    * Start the web server.
    */
-  void start() {
-    assert(!is_listening());
+  virtual void start() = 0;
 
-    logger()->info("Listening at: http://{}:{}", config.listen_address, config.listen_port);
-    server_.set_address(config.listen_address);
-    server_.set_port(config.listen_port);
-    server_.set_threads(config.listen_threads);
-    server_.listen();
-  }
+  /**
+   * Stop all server-related procedures.
+   */
+  virtual void stop() = 0;
 
   /**
    * Open a file for api data streaming. This does not require a running web
    * server.
    */
-  void init_stream(const std::string& filename) {
-    serializer_ = make_json_file_serializer(cloe::utility::JsonFileType::JSON_GZIP, logger());
-    serializer_->open_file(filename);
-  }
-
-  /**
-   * Stop all server-related procedures.
-   */
-  void stop() {
-    if (is_listening()) {
-      logger()->info("Stopping server...");
-      server_.stop();
-    }
-    if (serializer_ != nullptr) {
-      serializer_->close_file();
-    }
-  }
+  virtual void init_stream(const std::string& filename) = 0;
 
   /**
    * Register a list of all endpoints.
    */
-  void enroll(cloe::Registrar& r) {
-    r.register_api_handler(
-        "/endpoints", cloe::HandlerType::STATIC,
-        [this](const cloe::Request&, cloe::Response& r) { r.write(this->server_.endpoints()); });
-  }
+  virtual void enroll(cloe::Registrar& r) = 0;
 
   /**
    * Return the static content registrar.
    */
-  oak::Registrar static_registrar() const { return static_registrar_.with("", nullptr); }
+  virtual oak::Registrar static_registrar() = 0;
 
   /**
    * Return the API registrar.
    */
-  oak::ProxyRegistrar<cloe::HandlerType> api_registrar() {
-    return oak::ProxyRegistrar<cloe::HandlerType>({
-        std::make_pair(cloe::HandlerType::STATIC, &static_api_registrar_),
-        std::make_pair(cloe::HandlerType::DYNAMIC, &locked_api_registrar_),
-        std::make_pair(cloe::HandlerType::BUFFERED, &buffer_api_registrar_),
-    });
-  }
+  virtual oak::ProxyRegistrar<cloe::HandlerType> api_registrar() = 0;
 
   /**
    * Refresh and/or start streaming api data to a file.
    */
-  void refresh_buffer_start_stream() {
-    is_streaming_ = serializer_ != nullptr;
-    if (is_listening() || is_streaming()) {
-      buffer_api_registrar_.refresh_buffer();
-    }
-    if (is_streaming()) {
-      // Write static endpoints at the beginning of the file.
-      write_data_stream(static_api_registrar_.endpoints());
-      write_data_stream(locked_api_registrar_.endpoints());
-      write_data_stream(buffer_api_registrar_.endpoints());
-    }
-  }
+  virtual void refresh_buffer_start_stream() = 0;
 
   /**
    * Refresh and/or write api data to a file.
    */
-  void refresh_buffer() {
-    if (is_listening() || is_streaming()) {
-      buffer_api_registrar_.refresh_buffer();
-    }
-    if (is_streaming()) {
-      write_data_stream(locked_api_registrar_.endpoints());
-      write_data_stream(buffer_api_registrar_.endpoints());
-    }
-  }
+  virtual void refresh_buffer() = 0;
 
   /**
-   * Return a write lock on the server.
+   * Return a write lock guard on the server.
+   *
+   * Keep the returned value alive for as long as the server should be locked.
+   * Once the destructor is called, the lock is released.
+   *
+   * \return Lock guard
    */
-  boost::unique_lock<boost::shared_mutex> lock() { return locked_api_registrar_.lock(); }
+  virtual Defer lock() = 0;
 
  protected:
   cloe::Logger logger() const { return cloe::logger::get("cloe"); }
-
- private:
-  void write_data_stream(const std::vector<std::string>& endpoints) const {
-    auto j = server_.endpoints_to_json(endpoints);
-    if (!j.empty()) {
-      serializer_->serialize(j);
-    }
-  };
-
- private:  // State
-  oak::Server server_;
-  oak::StaticRegistrar static_registrar_{&server_, config.static_prefix, nullptr};
-  oak::StaticRegistrar static_api_registrar_{&server_, config.api_prefix, nullptr};
-  oak::LockedRegistrar locked_api_registrar_{&server_, config.api_prefix, nullptr};
-  oak::BufferRegistrar buffer_api_registrar_{&server_, config.api_prefix, nullptr};
-  bool is_streaming_{false};
-  std::unique_ptr<cloe::utility::JsonFileSerializer> serializer_;
+  cloe::ServerConf config_;
 };
+
+/**
+ * Create a new Server instance with the given configuration.
+ */
+std::unique_ptr<Server> make_server(const cloe::ServerConf&);
 
 }  // namespace engine
