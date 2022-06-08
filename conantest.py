@@ -7,9 +7,11 @@ class CloeTest(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     options = {
         "with_vtd": [True, False],
+        "with_server": [True, False],
     }
     default_options = {
         "with_vtd": False,
+        "with_server": True,
     }
     no_copy_source = True
 
@@ -29,3 +31,4 @@ class CloeTest(ConanFile):
 
     def configure(self):
         self.options["cloe"].with_vtd = self.options.with_vtd
+        self.options["cloe"].with_server = self.options.with_server

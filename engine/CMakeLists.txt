@@ -7,6 +7,7 @@ set(output cloe-engine)
 set(libstack cloe-stack)
 
 option(BuildTests "Build tests?" ON)
+option(WithServer "Enable integrated server component?" ON)
 
 # Conan / Editor -----------------------------------------------------
 include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
@@ -69,7 +70,6 @@ add_executable(${target}
     src/coordinator.cpp
     src/plugins/nop_controller.cpp
     src/plugins/nop_simulator.cpp
-    src/server.cpp
     src/simulation.cpp
     src/simulation_context.cpp
     src/utility/command.cpp
@@ -80,9 +80,10 @@ set_target_properties(${target} PROPERTIES
     OUTPUT_NAME ${output}
 )
 target_compile_definitions(${target}
-    PRIVATE
-        CLOE_ENGINE_VERSION="${CLOE_ENGINE_VERSION}"
-        CLOE_ENGINE_TIMESTAMP="${CLOE_ENGINE_TIMESTAMP}"
+  PRIVATE
+    CLOE_ENGINE_VERSION="${CLOE_ENGINE_VERSION}"
+    CLOE_ENGINE_TIMESTAMP="${CLOE_ENGINE_TIMESTAMP}"
+    PROJECT_SOURCE_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}\"
 )
 set_target_linting(${target})
 target_include_directories(${target}
@@ -92,14 +93,35 @@ target_include_directories(${target}
 target_link_libraries(${target}
   PRIVATE
     CONAN_PKG::cli11
-    CONAN_PKG::cloe-oak
     CONAN_PKG::cloe-models
     ${libstack}
 )
-target_compile_definitions(${target}
-  PRIVATE
-    PROJECT_SOURCE_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}\"
-)
+
+if(${WithServer})
+  message(STATUS "-> Enable server component")
+  target_sources(${target}
+    PRIVATE
+      src/server.cpp
+  )
+  target_link_libraries(${target}
+    PRIVATE
+      CONAN_PKG::cloe-oak
+  )
+  target_compile_definitions(${target}
+    PRIVATE
+      CLOE_ENGINE_WITH_SERVER=1
+  )
+else()
+  message(STATUS "-> Disable server component")
+  target_sources(${target}
+    PRIVATE
+      src/server_mock.cpp
+  )
+  target_compile_definitions(${target}
+    PRIVATE
+      CLOE_ENGINE_WITH_SERVER=0
+  )
+endif()
 
 # Installation -------------------------------------------------------
 include(GNUInstallDirs)

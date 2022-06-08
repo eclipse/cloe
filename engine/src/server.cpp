@@ -18,6 +18,8 @@
 /**
  * \file server.cpp
  * \see  server.hpp
+ *
+ * This file is included in the build when the server component is enabled.
  */
 
 #include "server.hpp"
