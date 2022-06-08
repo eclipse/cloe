@@ -15,6 +15,12 @@ augroup rstsettings
     autocmd Filetype rst set tw=79 cc=80
 augroup end
 
+if &filetype == "json"
+  setlocal filetype=json5
+  syntax off
+  syntax on
+endif
+
 doau Filetype
 
 " Define AddPackageToPath function that can be used

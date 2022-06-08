@@ -1,0 +1,90 @@
+{
+  "version": "4",
+  "server": {
+    "listen": false
+  },
+  "simulators": [
+    {
+      "binding": "nop"
+    }
+  ],
+  "vehicles": [
+    {
+      "name": "default",
+      "from": {
+        "simulator": "nop",
+        "index": 0
+      },
+      "components": {
+        "cloe::speedometer": {
+          "binding": "speedometer",
+          "name": "default_speed",
+          "from": "cloe::gndtruth_ego_sensor"
+        },
+        "cloe::default_world_sensor": {
+          "binding": "noisy_object_sensor",
+          "name": "noisy_object_sensor",
+          "from": "cloe::default_world_sensor",
+          "args": {
+            "noise": [
+              {
+                "target": "translation",
+                "distribution": {
+                  "binding": "normal",
+                  "mean": 0.0,
+                  "std_deviation": 0.3
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "controllers": [
+    {
+      "binding": "basic",
+      "vehicle": "default"
+    },
+    {
+      "binding": "virtue",
+      "vehicle": "default"
+    }
+  ],
+  "simulation": {
+    "namespace": "sim"
+  },
+  "triggers": [
+    {"event": "virtue/failure", "action": "sim/fail"},
+    {
+      "label": "Vehicle default should never move with the nop binding.",
+      "event": "default_speed/kmph=>0.0", "action": "sim/fail"
+    },
+    {"event": "sim/start",   "action": "sim/log=info: Running nop/basic smoketest."},
+    {"event": "sim/start",   "action": "sim/realtime_factor=-1"},
+    {"event": "sim/time=60", "action": "sim/succeed"},
+    {
+      "event": "sim/start",
+      "action": {
+        "name": "sim/bundle",
+        "actions": [
+          "basic/hmi=!enable"
+        ]
+      }
+    },
+    { "event": "sim/next=1",   "action": "basic/hmi=enable" },
+    { "event": "sim/time=5",   "action": "basic/hmi=resume" },
+    { "event": "sim/time=5.5", "action": "basic/hmi=!resume" },
+    {
+      "label": "Push and release basic/hmi=plus",
+      "event": "sim/time=6",
+      "action": {
+        "name": "sim/insert",
+        "triggers": [
+          { "event": "sim/next", "action": "basic/hmi=plus" },
+          { "event": "sim/next=1", "action": "basic/hmi=!plus" }
+        ]
+      }
+    }
+  ]
+}

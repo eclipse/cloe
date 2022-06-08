@@ -54,6 +54,9 @@ jobs:
         run: |
           make -f Makefile.all export-vendor &&
           make ${{ matrix.package_target }}
+      - name: Build smoketest dependencies
+        run: |
+          make smoketest-deps
       - name: Run smoketests
         run: |
           make smoketest

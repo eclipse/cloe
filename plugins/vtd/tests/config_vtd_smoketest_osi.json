@@ -1,0 +1,30 @@
+{
+  "version": "4",
+  "include": [
+    "config_vtd_infinite_osi.json"
+  ],
+  "server": {
+    "listen": false,
+    "listen_port": 23456
+  },
+  "defaults": {
+    "simulators": [
+      {
+        "binding": "vtd",
+        "args": {
+          "image_generator": false
+        }
+      }
+    ]
+  },
+  "triggers": [
+    {"event": "virtue/failure", "action": "fail"},
+    {"event": "start",   "action": "log=info: Running vtd/osi smoketest."},
+    {"event": "start",   "action": "realtime_factor=-1"},
+    {
+      "label": "Vehicle default should not reach 50 km/h with the vtd binding and basic controller.",
+      "event": "default_speed/kmph=>50.0", "action": "fail"
+    },
+    {"event": "time=15", "action": "succeed"}
+  ]
+}

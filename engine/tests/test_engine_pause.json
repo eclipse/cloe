@@ -1,0 +1,32 @@
+{
+  "version": "4",
+  "include": [
+    "config_nop_smoketest.json"
+  ],
+  "engine": {
+    "security": {
+      "enable_command_action": true
+    }
+  },
+  "server": {
+    "listen": false
+  },
+  "triggers": [
+    // Even though the option /server/listen = false, when we enter into the PAUSE
+    // state there is no way to get out except by starting the server to accept
+    // connections from outside.
+    {"event": "time=45", "action": "pause"},
+
+    // For this test, we inject the resume trigger via a trigger itself, which
+    // fires in the PAUSE event. I hope it goes without saying that this makes
+    // little sense in normal usage.
+    {
+      "label": "Insert resume trigger via curl to test the pause-resume behavior.",
+      "event": "pause",
+      "action": {
+        "name": "command",
+        "command": "echo '{\"event\": \"pause\", \"action\": \"resume\"}' | curl -d @- http://localhost:23456/api/triggers/input"
+      }
+    }
+  ]
+}

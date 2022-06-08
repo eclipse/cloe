@@ -1,118 +1,29 @@
 #!/usr/bin/env bats
 
-cd ${BATS_TEST_DIRNAME}
-export CLOE_ROOT="${BATS_TEST_DIRNAME}/.."
+# The following variables are read automatically by cloe-engine to set defaults
+# for flags. They can be overridden by specifying alternative flags.
+export CLOE_LOG_LEVEL=${CLOE_LOG_LEVEL-debug}
+export CLOE_STRICT_MODE=1
+export CLOE_WRITE_OUTPUT=0
 
-export exit_outcome_success=0
-export exit_outcome_unknown=1
-export exit_outcome_nostart=4
-export exit_outcome_stopped=8
-export exit_outcome_failure=9
-export exit_outcome_aborted=16
+# The path to use whenever we need a temporary registry. Whenever we use this, we
+# probably want to specify the `--write-output` flag too, otherwise nothing will
+# be written to the registry.
+export CLOE_TMP_REGISTRY="${HOME}/.cache/cloe/tmp-registry"
 
-# This exit outcome is different for each environment.
-# In Python it's 250 and in Bash it's 134, for example.
-export exit_outcome_syskill=250
+# The following exit codes are used by cloe-engine and can be used to assert
+# that the outcome of the test is as expected.
+export CLOE_EXIT_SUCCESS=0
+export CLOE_EXIT_UNKNOWN=1
+export CLOE_EXIT_NOSTART=4
+export CLOE_EXIT_STOPPED=8
+export CLOE_EXIT_FAILURE=9
+export CLOE_EXIT_ABORTED=16
 
-# We now only support using cloe-launch to run tests. This has several
-# reasons:
-#
-#   1. We can use plugin module.py configuration for smoketests.
-#   2. It forces us to support all use-cases with cloe-launch.
-#   3. It provides one clear way to do things.
-#
-# The following extra variables are read:
-#
-#   CLOE_LOG_LEVEL      : string
-#   CLOE_PROFILE_FILE   : path
-#   CLOE_OVERRIDE_ENV   : array of strings
-#   CLOE_WRITE_OUTPUT   : bool
-cloe_engine() {
-    local cloe_log_level="${CLOE_LOG_LEVEL-debug}"
-    local cloe_profile_file="${CLOE_PROFILE_FILE-${CLOE_ROOT}/conantest.py}"
-    local cloe_launch_exe=(python3 -m cloe_launch)
-    local cloe_launch_args=(-vv exec -c -P "${cloe_profile_file}")
-    local cloe_engine_args=(--no-system-confs --no-system-plugins --level ${cloe_log_level})
-
-    for var in ${CLOE_OVERRIDE_ENV[@]}; do
-        cloe_launch_args+=(--override-env=${var})
-    done
-    if [[ "${WITH_VTD}" -eq "1" ]]; then
-        cloe_launch_args+=(-o:o)
-        cloe_launch_args+=("with_vtd=True")
-    fi
-    for var in ${CLOE_LAUNCH_ARGS[@]}; do
-        cloe_launch_args+=(${var})
-    done
-
-    local user_args=()
-    while [[ $# -ne 0 ]]; do
-        case $1 in
-            run)
-                if [[ -n ${CLOE_WRITE_OUTPUT} ]]; then
-                    user_args+=(run --require-success "${BATS_OPTIONAL_STACKS}")
-                else
-                    user_args+=(run --no-write-output --require-success "${BATS_OPTIONAL_STACKS}")
-                fi
-                ;;
-            check)
-                user_args+=(check "${BATS_OPTIONAL_STACKS}")
-                ;;
-            *)
-                user_args+=("$1")
-                ;;
-        esac
-        shift
-    done
-
-    # Run the prepared command:
-    (
-        echo "Running:" "${cloe_launch_exe[@]}" "${cloe_launch_args[@]}" -- "${cloe_engine_args[@]}" "${user_args[@]}" >&2
-        export PYTHONPATH="${CLOE_ROOT}/cli"
-        "${cloe_launch_exe[@]}" "${cloe_launch_args[@]}" -- "${cloe_engine_args[@]}" "${user_args[@]}"
-    )
-}
-
-export cloe_tmp_registry="${HOME}/.cache/cloe/tmp-registry"
-
-cloe_engine_with_tmp_registry() {
-    test $1 == "run"
-    shift
-
-    (
-        export CLOE_WRITE_OUTPUT=true
-        export CLOE_TMP_REGISTRY=${cloe_tmp_registry}
-        export CLOE_OVERRIDE_ENV=(CLOE_TMP_REGISTRY)
-        cloe_engine run <(echo '{"version":"4","engine":{"registry_path":"${CLOE_TMP_REGISTRY}"}}') "$@"
-    )
-}
-
-cloe_shell() {
-    local cloe_log_level="${CLOE_LOG_LEVEL-debug}"
-    local cloe_profile_file="${CLOE_PROFILE_FILE-${CLOE_ROOT}/conantest.py}"
-    local cloe_launch_exe=(python3 -m cloe_launch)
-    local cloe_launch_args=(-vv shell -c -P "${cloe_profile_file}")
-
-    for var in ${CLOE_OVERRIDE_ENV[@]}; do
-        cloe_launch_args+=(--override-env=${var})
-    done
-    if [[ "${WITH_VTD}" -eq "1" ]]; then
-        cloe_launch_args+=(-o:o)
-        cloe_launch_args+=("with_vtd=True")
-    fi
-    for var in ${CLOE_LAUNCH_ARGS[@]}; do
-        cloe_launch_args+=(${var})
-    done
-
-    local user_args=("$@")
-
-    # Run the prepared command:
-    (
-        echo "Running:" "${cloe_launch_exe[@]}" "${cloe_launch_args[@]}" -- "${user_args[@]}" >&2
-        export PYTHONPATH="${CLOE_ROOT}/cli"
-        "${cloe_launch_exe[@]}" "${cloe_launch_args[@]}" -- "${user_args[@]}"
-    )
-}
+# This exit outcome is different for each environment: In Python it's 250 and
+# in Bash it's 134, for example. Since we are running cloe-engine directly from
+# BATS, we expect 134 when cloe-engine is force-killed.
+export CLOE_EXIT_SYSKILL=134
 
 assert_not_empty() {
     [[ $(echo "${@}" | tr -d '[:space:]') != "" ]]
@@ -138,5 +49,5 @@ assert_check_failure() {
 test_plugin_exists() {
     local plugin="$1"
 
-    cloe_engine usage "${plugin}" &>/dev/null
+    cloe-engine usage "${plugin}" &>/dev/null
 }
