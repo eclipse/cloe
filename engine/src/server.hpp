@@ -25,12 +25,32 @@
 #include <memory>  // for unique_ptr<>
 
 #include <cloe/registrar.hpp>  // for Registrar
-#include <oak/registrar.hpp>   // for oak::Registrar, oak::ProxyRegistrar
 
 #include "stack.hpp"          // for ServerConf
 #include "utility/defer.hpp"  // for Defer
 
 namespace engine {
+
+/**
+ * Server registrar interface.
+ *
+ * This lets you register static and API endpoints with the server.
+ * Get a new one from Server::server_registrar().
+ */
+class ServerRegistrar {
+ public:
+  virtual ~ServerRegistrar() = default;
+
+  virtual std::unique_ptr<ServerRegistrar> clone() const = 0;
+
+  virtual std::unique_ptr<ServerRegistrar> with_prefix(const std::string& static_prefix,
+                                                       const std::string& api_prefix) const = 0;
+
+  virtual void register_static_handler(const std::string& endpoint, cloe::Handler h) = 0;
+
+  virtual void register_api_handler(const std::string& endpoint, cloe::HandlerType t,
+                                    cloe::Handler h) = 0;
+};
 
 /**
  * Server interface to make altering the implementation easier.
@@ -81,14 +101,10 @@ class Server {
   virtual void enroll(cloe::Registrar& r) = 0;
 
   /**
-   * Return the static content registrar.
+   * Return a new ServerRegistrar that lets you register static content and
+   * API endpoints with the web server.
    */
-  virtual oak::Registrar static_registrar() = 0;
-
-  /**
-   * Return the API registrar.
-   */
-  virtual oak::ProxyRegistrar<cloe::HandlerType> api_registrar() = 0;
+  virtual std::unique_ptr<ServerRegistrar> server_registrar() = 0;
 
   /**
    * Refresh and/or start streaming api data to a file.
