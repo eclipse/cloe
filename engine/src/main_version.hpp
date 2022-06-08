@@ -43,10 +43,11 @@ struct VersionOptions {
 
 inline int version(const VersionOptions& opt) {
   cloe::Json v{
-      {"engine", CLOE_ENGINE_VERSION},
-      {"build_date", CLOE_ENGINE_TIMESTAMP},
-      {"stack", CLOE_STACK_VERSION},
-      {"plugin_manifest", CLOE_PLUGIN_MANIFEST_VERSION},
+      {"engine", CLOE_ENGINE_VERSION},                             // from CMakeLists.txt
+      {"build_date", CLOE_ENGINE_TIMESTAMP},                       // from CMakeLists.txt
+      {"stack", CLOE_STACK_VERSION},                               // from "stack.hpp"
+      {"plugin_manifest", CLOE_PLUGIN_MANIFEST_VERSION},           // from <cloe/plugin.hpp>
+      {"feature_server", CLOE_ENGINE_WITH_SERVER ? true : false},  // from CMakeLists.txt
   };
 
   if (opt.output_json) {
@@ -59,6 +60,8 @@ Engine Version:  [[engine]]
 Build Date:      [[build_date]]
 Stack:           [[stack]]
 Plugin Manifest: [[plugin_manifest]]
+Features:
+  server: [[feature_server]]
 )",
                              v);
   }

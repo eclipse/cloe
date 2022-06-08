@@ -10,15 +10,25 @@ class CloeEngine(ConanFile):
     description = "Cloe engine to execute simulations"
     settings = "os", "compiler", "build_type", "arch"
     options = {
+        # Whether the server feature is compiled and built into the Cloe engine.
+        # Not building this may make compiling the engine possible if the web
+        # server dependencies are incompatible with your target system.
+        "server": [True, False],
+
+        # Build and run unit tests.
         "test": [True, False],
+
+        # Make the compiler be strict and pedantic.
+        # Disable if you upgrade compilers and run into new warnings preventing
+        # the build from completing. May be removed in the future.
         "pedantic": [True, False],
     }
     default_options = {
-        "fable:allow_comments": True,
-
-        # These don't change the output.
+        "server": True,
         "test": True,
         "pedantic": True,
+
+        "fable:allow_comments": True,
     }
     generators = "cmake"
     no_copy_source = True
@@ -39,11 +49,16 @@ class CloeEngine(ConanFile):
             self.version = git.run("describe --dirty=-dirty")[1:]
 
     def requirements(self):
-        self.requires("boost/[>=1.65.1]"),
         self.requires(f"cloe-runtime/{self.version}@cloe/develop")
         self.requires(f"cloe-models/{self.version}@cloe/develop")
-        self.requires(f"cloe-oak/{self.version}@cloe/develop", private=True)
-        self.requires("cli11/[~=2.1.2]", private=True),
+        self.requires("cli11/[~=2.1.2]", private=True)
+        if self.options.server:
+            self.requires(f"cloe-oak/{self.version}@cloe/develop", private=True)
+            self.requires("boost/[>=1.65.1,<1.70.0]")
+        else:
+            self.requires("boost/[>=1.65.1]")
+        self.requires("fmt/8.0.1", override=True)
+        self.requires("nlohmann_json/3.10.5", override=True)
 
     def build_requirements(self):
         if self.options.test:
@@ -55,6 +70,7 @@ class CloeEngine(ConanFile):
         self._cmake = CMake(self)
         self._cmake.definitions["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
         self._cmake.definitions["BuildTests"] = self.options.test
+        self._cmake.definitions["WithServer"] = self.options.server
         self._cmake.definitions["TargetLintingExtended"] = self.options.pedantic
         self._cmake.definitions["CLOE_PROJECT_VERSION"] = self.version
         self._cmake.configure()

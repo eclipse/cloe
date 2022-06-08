@@ -87,6 +87,12 @@ CONAN_OPTIONS :=
 WITH_ENGINE := 1
 $(call assert_numeric_bool, WITH_ENGINE)
 
+## WITH_SERVER
+##   Usage: make WITH_SERVER=0 <targets>
+##   Default: 1
+##
+WITH_SERVER := 1
+
 ## WITH_VTD
 ##   Usage: make WITH_VTD=1 <targets>
 ##   Default: 0
@@ -150,6 +156,11 @@ ifeq (${WITH_ENGINE},0)
 ALL_PKGS := $(filter-out oak, ${ALL_PKGS})
 ALL_PKGS := $(filter-out engine, ${ALL_PKGS})
 override CONAN_OPTIONS += -o cloe:with_engine=False
+endif
+
+ifeq (${WITH_SERVER},0)
+ALL_PKGS := $(filter-out oak, ${ALL_PKGS})
+override CONAN_OPTIONS += -o cloe-engine:server=False
 endif
 
 ifeq (${WITH_VTD},1)
