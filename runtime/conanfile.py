@@ -78,6 +78,8 @@ class CloeRuntime(ConanFile):
 
     def package_id(self):
         self.info.requires["boost"].full_package_mode()
+        del self.info.options.test
+        del self.info.options.pedantic
 
     def package_info(self):
         # Make sure we can find the libs and *.cmake files, both in editable

@@ -113,3 +113,7 @@ class CloeSimulatorVTD(ConanFile):
     def package_info(self):
         self.env_info.VTD_LAUNCH = f"{self.package_folder}/bin/vtd-launch"
         self.env_info.VTD_SETUP_DIR = f"{self.package_folder}/{self._setup_folder}"
+
+    def package_id(self):
+        del self.info.options.test
+        del self.info.options.pedantic

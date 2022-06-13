@@ -10,16 +10,19 @@ class Cloe(ConanFile):
     topics = ["simulation"]
     settings = "os", "compiler", "build_type", "arch"
     options = {
-        "test": [True, False],
-        "pedantic": [True, False],
         "with_vtd": [True, False],
         "with_engine": [True, False],
+
+        # Doesn't affect package ID:
+        "test": [True, False],
+        "pedantic": [True, False],
     }
     default_options = {
-        "test": True,
-        "pedantic": True,
         "with_vtd": False,
         "with_engine": True,
+
+        "test": True,
+        "pedantic": True,
     }
     generators = "cmake"
     no_copy_source = True
@@ -84,3 +87,7 @@ class Cloe(ConanFile):
         if not self.in_local_cache:
             cmake = self._configure_cmake()
             cmake.install()
+
+    def package_id(self):
+        del self.info.options.test
+        del self.info.options.pedantic

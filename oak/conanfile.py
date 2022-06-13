@@ -74,3 +74,7 @@ class CloeOak(ConanFile):
             self.cpp_info.libs = tools.collect_libs(self)
         else:
             self.cpp_info.libs = ["cloe-oak"]
+
+    def package_id(self):
+        del self.info.options.test
+        del self.info.options.pedantic
