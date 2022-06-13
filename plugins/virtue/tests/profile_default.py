@@ -6,6 +6,9 @@ class CloeTest(ConanFile):
     name = "cloe-minimator-test"
     settings = "os", "compiler", "build_type", "arch"
     generators = "virtualenv", "virtualrunenv"
+    default_options = {
+        "cloe-engine:server": False,
+    }
 
     def set_version(self):
         version_file = Path(self.recipe_folder) / "../../../VERSION"

@@ -65,3 +65,7 @@ class CloeControllerBasic(ConanFile):
     def package(self):
         cmake = self._configure_cmake()
         cmake.install()
+
+    def package_id(self):
+        del self.info.options.test
+        del self.info.options.pedantic
