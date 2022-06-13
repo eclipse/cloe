@@ -88,7 +88,7 @@ class ResourceHandler {
  */
 void to_json(cloe::Json& j, const ResourceLoader& c) {
   try {
-    j = cloe::Json::parse(c.to_string());
+    j = fable::parse_json(c.to_string());
   } catch (cloe::Json::type_error& e) {
     j = {c.res_.filepath(), c.to_string()};
   }
