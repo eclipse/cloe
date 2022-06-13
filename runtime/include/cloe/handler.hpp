@@ -150,7 +150,7 @@ class Request {
   /**
    * Helper method that tries to convert the body to a JSON object.
    */
-  virtual Json as_json() const { return Json::parse(body()); }
+  virtual Json as_json() const { return fable::parse_json(body()); }
 };
 
 /**

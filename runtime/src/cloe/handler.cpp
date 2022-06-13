@@ -103,7 +103,7 @@ void FromConf::operator()(const cloe::Request& q, cloe::Response& r) {
       if (convert_ && !q.query_map().empty()) {
         Json j;
         for (auto const& kv : q.query_map()) {
-          j[kv.first] = Json::parse(kv.second);
+          j[kv.first] = fable::parse_json(kv.second);
         }
         try {
           ptr_->from_conf(Conf{q.as_json()});
