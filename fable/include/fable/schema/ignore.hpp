@@ -50,7 +50,7 @@ class Ignore : public Base<Ignore> {
 
  public:  // Overrides
   Json json_schema() const override {
-    Json j;
+    Json j = Json::object({});
     this->augment_schema(j);
     return j;
   }

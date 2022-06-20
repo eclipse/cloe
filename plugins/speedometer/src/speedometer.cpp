@@ -27,7 +27,9 @@
 #include <cloe/vehicle.hpp>                             // for Vehicle
 using namespace cloe;
 
-struct SpeedometerConf : public Confable {};
+struct SpeedometerConf : public Confable {
+  CONFABLE_FRIENDS(SpeedometerConf)
+};
 
 class Speedometer : public Component {
  public:

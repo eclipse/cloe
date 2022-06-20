@@ -635,31 +635,17 @@ struct ComponentConf : public Confable {
         {"binding", make_const_str(binding, "name of binding").require()},
         {"name", make_schema(&name, id_prototype(), "globally unique identifier for component")},
         {"from", Variant{
+             make_schema(&from, "component inputs for binding"),
              CustomDeserializer(
                  make_prototype<std::string>("component input for binding"),
                  [this](CustomDeserializer*, const Conf& c) {
                    this->from.push_back(c.get<std::string>());
                  }
              ),
-             CustomDeserializer(
-                 make_prototype<std::vector<std::string>>("component inputs for binding"),
-                 [this](CustomDeserializer*, const Conf& c) {
-                   this->from = c.get<std::vector<std::string>>();
-                 }
-             ),
         }},
         {"args", make_schema(&args, factory->schema(), "factory-specific args")},
     };
     // clang-format on
-  }
-
-  void to_json(Json& j) const override {
-    j = Json{
-        {"binding", binding},
-        {"name", name},
-        {"from", from},
-        {"args", args},
-    };
   }
 };
 

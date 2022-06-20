@@ -188,7 +188,6 @@
           "name": "noisy_object_sensor"
         },
         "cloe::speedometer": {
-          "args": null,
           "binding": "speedometer",
           "from": [
             "cloe::gndtruth_ego_sensor"

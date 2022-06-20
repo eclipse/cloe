@@ -85,7 +85,7 @@ TEST(fable_schema_factory, schema) {
             "properties": {
               "args": {
                 "additionalProperties": false,
-                "properties": null,
+                "properties": {},
                 "type": "object"
               },
               "factory": {

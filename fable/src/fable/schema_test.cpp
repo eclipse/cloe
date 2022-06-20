@@ -153,6 +153,16 @@ TEST(fable_schema, schema_wrapper) {
   fable::assert_eq(s1.json_schema(), s2.schema().json_schema());
 }
 
+TEST(fable_schema, empty_schema) {
+  using namespace fable;  // NOLINT(build/namespaces)
+
+  auto s1 = Schema();
+  auto s2 = Schema{};
+
+  fable::assert_eq(s1.json_schema(), "{}");
+  fable::assert_eq(s2.json_schema(), "{}");
+}
+
 TEST(fable_schema, json_schema) {
   MyStruct tmp;
   ASSERT_FALSE(tmp.my_required);

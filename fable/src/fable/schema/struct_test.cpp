@@ -63,6 +63,17 @@ struct StructFoo : public fable::Confable {
 
 }  // anonymous namespace
 
+TEST(fable_schema_struct, empty_schema) {
+  auto s = fable::schema::Struct();
+  fable::assert_eq(s.json_schema(), R"({
+    "additionalProperties": false,
+    "properties": {},
+    "type": "object"
+  })");
+
+  fable::assert_eq(s.to_json(), "{}");
+}
+
 TEST(fable_schema_struct, foo_schema) {
   StructFoo tmp;
   fable::assert_schema_eq(tmp, R"({
