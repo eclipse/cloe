@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [10, 12, 14]
+        node: [14, 16, 18, 20]
     defaults:
       run:
         working-directory: ./ui
