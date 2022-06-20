@@ -9,6 +9,10 @@ SHELL := /bin/bash
 GNUMAKEFLAGS := --no-print-directory
 SUBMAKEFLAGS :=
 
+define assert_numeric_bool
+$(if $(filter-out 0 1,${$1}), $(error Unexpected value for parameter $1, expect either 0 or 1))
+endef
+
 ## USE_NPROC
 ##   Usage: make USE_NPROC=1 <targets>
 ##   Default: 0
@@ -22,6 +26,8 @@ SUBMAKEFLAGS :=
 ##       make USE_NPROC=1 NPROC=3 <targets>
 ##
 USE_NPROC := 0
+$(call assert_numeric_bool, USE_NPROC)
+
 ifeq (${USE_NPROC},1)
 NPROC := $(shell nproc 2>/dev/null)
 ifdef NPROC
@@ -79,12 +85,14 @@ CONAN_OPTIONS :=
 ##   Default: 1
 ##
 WITH_ENGINE := 1
+$(call assert_numeric_bool, WITH_ENGINE)
 
 ## WITH_VTD
 ##   Usage: make WITH_VTD=1 <targets>
 ##   Default: 0
 ##
 WITH_VTD := 0
+$(call assert_numeric_bool, WITH_VTD)
 
 ## BUILD_TESTS
 ##   Usage: make BUILD_TESTS=0 package
@@ -95,6 +103,7 @@ WITH_VTD := 0
 ##   to showcase how to correctly pass options to all packages.
 ##
 BUILD_TESTS := 1
+$(call assert_numeric_bool, WITH_TESTS)
 
 # --------------------------------------------------------------------------- #
 
