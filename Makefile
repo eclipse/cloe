@@ -19,13 +19,16 @@ define print_header
 	@printf ":: %s\n" ${1}
 endef
 
-CLOE_ROOT   := .
+CLOE_ROOT   := $(shell pwd)
 CLOE_LAUNCH := PYTHONPATH="${CLOE_ROOT}/cli" python3 -m cloe_launch
 
 # Build configuration:
-BUILD_DIR     := build
-INSTALL_DIR   := /usr/local
-CONAN_OPTIONS :=
+BUILD_DIR       := build
+LOCKFILE_SOURCE := conanfile.py
+BUILD_LOCKFILE  := ${BUILD_DIR}/conan.lock
+LOCKFILE_OPTION := --lockfile="${CLOE_ROOT}/${BUILD_LOCKFILE}"
+INSTALL_DIR     := /usr/local
+CONAN_OPTIONS   :=
 
 .PHONY: help
 .DEFAULT: help
@@ -38,7 +41,7 @@ include Makefile.setup
 include Makefile.all
 
 # Workspace targets -----------------------------------------------------------
-.PHONY: status deploy sphinx doxygen docker-all docker-test docker-release purge-all smoketest
+.PHONY: lockfile status deploy sphinx doxygen docker-all docker-test docker-release purge-all smoketest
 help::
 	echo "Available workspace targets:"
 	echo "  smoketest       to run BATS system tests"
@@ -52,8 +55,16 @@ help::
 	echo "  docker-release  to upload all Conan packages from Docker images"
 	echo
 
-status:
-	@for pkg in ${ALL_PKGS}; do [ -d $${pkg} ] && ${MAKE} -C $${pkg} status || true; done
+${BUILD_LOCKFILE}:
+	${MAKE} -f Makefile.package LOCKFILE_SOURCE=${LOCKFILE_SOURCE} ${BUILD_LOCKFILE}
+
+lockfile: ${BUILD_LOCKFILE}
+
+status: ${BUILD_LOCKFILE}
+	@for pkg in ${ALL_PKGS}; do \
+		[ -d $${pkg} ] || continue; \
+		${MAKE} LOCKFILE_SOURCE="" LOCKFILE_OPTION=${LOCKFILE_OPTION} -C $${pkg} status || true; \
+	done
 
 deploy:
 	$(call print_header, "Deploying binaries to ${INSTALL_DIR}...")
