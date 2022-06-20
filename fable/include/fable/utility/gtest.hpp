@@ -38,8 +38,16 @@ inline void assert_eq(const Json& j, const Json& k) {
   ASSERT_EQ(std::string(j.dump(2)), std::string(k.dump(2)));
 }
 
+inline void assert_eq(const Json& j, const char expect[]) {
+  assert_eq(j, parse_json(expect));
+}
+
 inline void assert_ne(const Json& j, const Json& k) {
   ASSERT_NE(std::string(j.dump(2)), std::string(k.dump(2)));
+}
+
+inline void assert_ne(const Json& j, const char expect[]) {
+  assert_ne(j, parse_json(expect));
 }
 
 inline void assert_schema_eq(const Confable& x, const Json& expect) {

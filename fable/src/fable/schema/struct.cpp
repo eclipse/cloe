@@ -90,7 +90,7 @@ Json Struct::usage() const {
 }
 
 Json Struct::json_schema() const {
-  Json props;
+  Json props = Json::object();
   for (const auto& kv : properties_) {
     props[kv.first] = kv.second.json_schema();
   }

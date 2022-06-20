@@ -173,7 +173,11 @@
           {
             "additionalProperties": false,
             "properties": {
-              "args": null,
+              "args": {
+                "additionalProperties": false,
+                "properties": {},
+                "type": "object"
+              },
               "binding": {
                 "const": "demo_printer",
                 "description": "name of factory"
@@ -236,7 +240,11 @@
           {
             "additionalProperties": false,
             "properties": {
-              "args": null,
+              "args": {
+                "additionalProperties": false,
+                "properties": {},
+                "type": "object"
+              },
               "binding": {
                 "const": "nop",
                 "description": "name of factory"
@@ -1381,7 +1389,11 @@
                 {
                   "additionalProperties": false,
                   "properties": {
-                    "args": null,
+                    "args": {
+                      "additionalProperties": false,
+                      "properties": {},
+                      "type": "object"
+                    },
                     "binding": {
                       "const": "speedometer",
                       "description": "name of factory"

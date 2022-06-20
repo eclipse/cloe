@@ -144,7 +144,7 @@ class Confable {
    * object is created or moved, since Schema contains references to fields
    * that (should be) in the object.
    */
-  virtual Schema schema_impl() { return Schema(); }
+  virtual Schema schema_impl() { return schema::Struct(); }
 
  private:
   mutable std::unique_ptr<Schema> schema_{nullptr};
