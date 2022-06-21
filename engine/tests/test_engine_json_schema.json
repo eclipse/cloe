@@ -1,6 +1,17 @@
 {
   "additionalProperties": false,
   "properties": {
+    "$schema": {
+      "description": "valid URI to schema describing this cloe stack version",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
     "controllers": {
       "description": "controller configuration",
       "items": {

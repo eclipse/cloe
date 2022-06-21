@@ -880,6 +880,7 @@ using ConfReader = std::function<Conf(const std::string&)>;
 class Stack : public Confable {
  private:  // Constants (1)
   std::vector<std::string> reserved_ids_;
+  boost::optional<std::string> schema_ref_;
 
  public:  // Configuration (13)
   EngineConf engine;
@@ -1085,6 +1086,7 @@ class Stack : public Confable {
     using namespace schema;  // NOLINT(build/namespaces)
 
     return Struct{
+        {"$schema", make_schema(&schema_ref_, "valid URI to schema describing this cloe stack version")},
         {"version", make_const_str(CLOE_STACK_VERSION, "version of stackfile").require()},
         {"engine", engine_schema},
         {"include", include_schema},
