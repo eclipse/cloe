@@ -114,11 +114,6 @@ Files
     Conan recipe for the ``cloe`` meta-package
     (s. :doc:`Understanding Cloe Packages<../usage/understanding-cloe-packages>`).
 
-``conantest.py``
-
-    Conan execution profile for running the provided system tests
-    (s. ``tests/``).
-
 ``LICENSE``
 
     Terms and conditions for use, reproduction and distribution of Cloe.
@@ -139,9 +134,18 @@ Files
     By default, the Cloe version is determined using ``git describe`` (try the
     command). Alternatively, the Cloe version can be directly specified by creating
     the ``VERSION`` file, which must contain the version string only
-    (e.g. ``0.18.0-rc1``). You can verify that this version is used by
+    (e.g. ``0.18.0-nightly``). You can verify that this version is used by
     executing::
 
         make -f Makefile.package info-version
 
     The ``VERSION`` file is not checked in to the repository.
+
+    Generally we want packages to be immutable. So if I refer to
+    ``cloe/0.18.0-rc1``, I expect to always get the package built from the
+    code checked out from the ``v0.18.0-rc1`` tag.
+    On the other hand, during development it can lead to a lot of unnecessary
+    re-compilation, especially when structuring commits and rebasing. To this
+    end, we can set ``VERSION`` to contain a version with a suffix that is
+    understood to be transient, such as ``0.18.0-nightly`` or the name of the
+    branch in question, such as ``master``.
