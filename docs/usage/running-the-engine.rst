@@ -160,9 +160,14 @@ In the next session, we'll introduce the ``cloe-launch`` tool.
 ----
 
 .. rubric:: Suggested Exercises
+
 #. | Display the list of available Conan packages in your cache.
-   (Hint: See what the ``search`` subcommand can do for you.)
+   | (Hint: See what the ``search`` subcommand can do for you.)
+
 #. | Inspect the contents of a Conan package.
+
 #. | Create a Conan virtual run environment for ``cloe-engine``.
+
 #. | Check the output of ``cloe-engine version``.
+
 #. | Read the output of ``cloe-engine usage``.

@@ -14,15 +14,15 @@ Triggers
 Examples
 --------
 
-The ``tests/test_vtd_smoketest.json`` test makes use of this plugin. First, the
-plugin is defined in ``tests/config_vtd_infinite.json``:
+The ``plugins/vtd/tests/test_vtd_smoketest.json`` test makes use of this plugin. First, the
+plugin is defined in ``plugins/vtd/tests/config_vtd_infinite.json``:
 
-.. literalinclude:: ../../../tests/config_vtd_infinite.json
+.. literalinclude:: ../../../plugins/vtd/tests/config_vtd_infinite.json
    :language: json
 
-Then it is activated in ``tests/test_vtd_smoketest.json``
+Then it is activated in ``plugins/vtd/tests/test_vtd_smoketest.json``
 
-.. literalinclude:: ../../../tests/test_vtd_smoketest.json
+.. literalinclude:: ../../../plugins/vtd/tests/test_vtd_smoketest.json
    :language: json
 
 Defaults

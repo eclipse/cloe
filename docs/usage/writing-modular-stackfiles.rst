@@ -10,7 +10,7 @@ Cloe supports merging multiple stackfiles into one contiguous simulation
 description. This section will show you techniques and strategies you can use
 to get this done.
 
-A simple example is provided in ``tests/test_engine_smoketest.json``:
+A simple example is provided in ``engine/tests/test_engine_smoketest.json``:
 
-.. literalinclude:: ../../tests/test_engine_smoketest.json
+ .. literalinclude:: ../../engine/tests/test_engine_smoketest.json
     :language: json

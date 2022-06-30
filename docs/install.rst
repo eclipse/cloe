@@ -96,7 +96,7 @@ Run System Tests
 To check that everything is working as it should, we recommend you run the
 included test suite once before commencing with anything else::
 
-    make smoketest
+    make export-select smoketest-deps smoketest
 
 .. _Conan: https://conan.io
 .. _Conan documentation: https://docs.conan.io/en/latest/

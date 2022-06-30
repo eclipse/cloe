@@ -141,12 +141,15 @@ recipe.
 ----
 
 .. rubric:: Suggested Exercises
+
 #. | Clone the Cloe repository, if you haven't already.
-   (Hint: See the previous section.)
+   | (Hint: See the previous section.)
+
 #. | Build the Cloe Conan packages, if you haven't already.
-   (Hint: See the previous section.)
+   | (Hint: See the previous section.)
+
 #. | Have a look at the ``cloe`` Conan recipe.
-   (Hint: This is the ``conanfile.py`` file in the repository root.)
+   | (Hint: This is the ``conanfile.py`` file in the repository root.)
+
 #. | Inspect the dependency graph of the ``cloe-engine`` package.
-   (Hint: You need to specify the full reference,
-   ``cloe-engine/VERSION@cloe/develop``.)
+   | (Hint: You need to specify the full reference, ``cloe-engine/VERSION@cloe/develop``.)

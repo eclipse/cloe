@@ -23,9 +23,9 @@ MessagePack.gz    "msgpack.gz"
 Example
 -------
 
-See the following file used in the tests: ``tests/controller_gndtruth.json``:
+See the following file used in the tests: ``plugins/vtd/tests/controller_gndtruth.json``:
 
-.. literalinclude:: ../../../tests/controller_gndtruth.json
+.. literalinclude:: ../../../plugins/vtd/tests/controller_gndtruth.json
    :language: json
 
 .. highlight:: json

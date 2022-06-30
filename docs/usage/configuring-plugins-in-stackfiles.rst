@@ -6,9 +6,9 @@ stackfiles. This section will show you how you can find out which configuration
 is possible for each plugin.
 
 Try the following command to see which plugins are available based on your
-``conantest.py``::
+conanfile profile, such as the example ``tests/profile_default.py``::
 
-    $ cloe-launch exec -P ./conantest.py -- usage
+    $ cloe-launch exec -P tests/profile_default.py -- usage
 
     [...]
 
@@ -33,7 +33,7 @@ Try the following command to see which plugins are available based on your
 
 To see the configuration options of the controller ``basic``, do::
 
-    cloe-launch exec -P ./conantest.py -- usage basic
+    cloe-launch exec -P tests/profile_default.py -- usage basic
 
 .. literalinclude:: ../reference/plugins/basic.yaml
    :language: yaml
