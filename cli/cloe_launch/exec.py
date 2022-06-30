@@ -421,6 +421,9 @@ class Engine:
             self.runtime_dir / "activate_run.sh",
             self.runtime_dir / "activate.sh",
         ]
+        cloe_launch_env = self.runtime_dir / "cloe_launch_env.sh"
+        if cloe_launch_env.exists():
+            env_paths.insert(0, cloe_launch_env)
         preserve = None if not self.preserve_env else list(os.environ.keys())
         return Environment(env_paths, preserve=preserve)
 

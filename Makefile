@@ -76,6 +76,9 @@ deploy-cli:
 	$(call print_header, "Deploying cloe-launch binary with pip...")
 	${MAKE} -C cli install
 
+export-cli:
+	${MAKE} -C cli conan-profile
+
 docker-test:
 	$(call print_header, "Building ubuntu-18.04 Docker image...")
 	${MAKE} -C dist/docker ubuntu-18.04
@@ -98,7 +101,7 @@ doxygen:
 	mkdir -p ${BUILD_DIR}/doxygen
 	doxygen Doxyfile
 
-smoketest-deps: smoketest-deps-select
+smoketest-deps: | export-cli smoketest-deps-select
 	# Call this target with WITH_VTD=1 to include VTD binding tests.
 
 smoketest: smoketest-select
