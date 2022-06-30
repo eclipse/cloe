@@ -1,12 +1,26 @@
 {
+  // Include to enable callgrind profiling after simulation start.
+  // You can do this on the command line:
+  //
+  //   # cloe-launch shell -P profile_default.py
+  //   # valgrind --tool=callgrind --instr-atstart=no \
+  //       cloe-engine run config_nop_smoketest.json debug_callgrind.json
+  //
+  // The trigger will cause callgrind to start profiling once the simulation
+  // itself has started. You can also just omit the `--instr-atstart=no`
+  // argument to valgrind, and then you don't need this file at all. Or you can
+  // even use this all in a single line:
+  //
+  //   # valgrind --tool=callgrind --instr-atstart=no \
+  //       cloe-launch exec -P profile_default.py -- \
+  //       run config_nop_smoketest.json debug_callgrind.json
+  //
   "version": "4",
-
   "engine": {
     "security": {
       "enable_command_action": true
     }
   },
-
   "triggers": [
     {"event": "start", "action": "command=callgrind_control -i on"}
   ]

@@ -14,8 +14,8 @@ This is why Cloe comes with a command line wrapper for executing ``cloe-engine``
 in a virtual run environment that doesn't affect your current shell. This tool
 is called ``cloe-launch`` and can be installed with pip or pipx.
 
-.. image:: cloe-launch-overview.png
-   :alt: Overview of methods to run cloe-engine
+ .. image:: cloe-launch-overview.png
+    :alt: Overview of methods to run cloe-engine
 
 Installation
 ------------
@@ -48,33 +48,34 @@ The steps 1-6 can be performed as one with the cloe-launch ``exec`` command:
 
 For example::
 
-   $ cloe-launch exec -P conantest.py -- run tests/test_minimator_smoketest.json
-   {
-     "elapsed": "17.837523ms",
-     "outcome": "success",
-     "simulation": {
-       "achievable_realtime_factor": 4046.944556859571,
-       "eta": {
-         "ms": 60000,
-         "str": "60s"
-       },
-       "realtime_factor": -1.0,
-       "step": 3000,
-       "step_width": "20ms",
-       "time": {
-         "ms": 60000,
-         "str": "60s"
-       }
-     },
-     [... snip ...]
-   }
+    $ cloe-launch exec -P tests/default_profile.py -- run tests/config_nop_smoketest.json
+    {
+      "elapsed": "17.837523ms",
+      "outcome": "success",
+      "simulation": {
+        "achievable_realtime_factor": 4046.944556859571,
+        "eta": {
+          "ms": 60000,
+          "str": "60s"
+        },
+        "realtime_factor": -1.0,
+        "step": 3000,
+        "step_width": "20ms",
+        "time": {
+          "ms": 60000,
+          "str": "60s"
+        }
+      },
+      [... snip ...]
+    }
 
 .. rubric:: The ``--`` argument
+
 The ``--`` separates cloe-launch arguments and options from those that should
 be passed directly to cloe-engine. If you want to see the cloe-engine
 help for example, you would need to run::
 
-   $ cloe-launch exec -P conantest.py -- --help
+    $ cloe-launch exec -P tests/default_profile.py -- --help
 
 If you omit the ``--`` part, then you will see cloe-launch help instead.
 
@@ -91,67 +92,84 @@ If you pass any further arguments to the shell command (after specifying
 launching a new shell. This can be useful for accessing environment variables
 that would be defined in the runtime shell::
 
-   $ cloe-launch shell -P conantest.py -o:o with_vtd=True -- -c '${VTD_LAUNCH} --help'
+    $ cloe-launch shell -P tests/profile_default.py -o:o cloe:with_vtd=True -- -c '${VTD_LAUNCH} --help'
 
 Activate Command
 ^^^^^^^^^^^^^^^^
 If you want to modify your current shell instead of creating a new one, you can
 use the ``activate`` command::
 
-   $ cloe-launch activate -P conantest.py
-   # Please see `cloe-launch activate --help` before activating this.
+    $ cloe-launch activate -P tests/profile_default.py
+    # Please see `cloe-launch activate --help` before activating this.
 
-   source /home/captain/.cache/cloe/launcher/167cfb520dd89cc6124d02369b3ae77632f7b6c8/activate.sh
-   source /home/captain/.cache/cloe/launcher/167cfb520dd89cc6124d02369b3ae77632f7b6c8/activate_run.sh
-   export CLOE_PROFILE_HASH="167cfb520dd89cc6124d02369b3ae77632f7b6c8"
-   export CLOE_ENGINE="/home/captain/.conan/data/cloe-engine/0.18.0/cloe/develop/package/e228d2ea7272de48dde779ca 1121f71dc15701ef/bin/cloe-engine"
-   export CLOE_PLUGIN_PATH="/home/captain/.conan/data/cloe-plugin-basic/0.18.0/cloe/develop/package/0d1d27c64c16f68e9e2954e64fcdecb7d58ac604/lib/cloe:/home/captain/.conan/data/cloe-plugin-gndtruth-extractor/0.18.0/cloe/develop/package/67f1df5a769c4e2d868b98f0321cd1276c790f54/lib/cloe:/home/captain/.conan/data/cloe-plugin-minimator/0.18.0/cloe/develop/package/8be15f1a1eb9591d8097d2eb65b0ccbbfd9cfca8/lib/cloe:/home/captain/.conan/data/cloe-plugin-mocks/0.18.0/cloe/develop/package/8be15f1a1eb9591d8097d2eb65b0ccbbfd9cfca8/lib/cloe:/home/captain/.conan/data/cloe-plugin-noisy-sensor/0.18.0/cloe/develop/package/0d1d27c64c16f68e9e2954e64fcdecb7d58ac604/lib/cloe:/home/captain/.conan/data/cloe-plugin-speedometer/0.18.0/cloe/develop/package/8be15f1a1eb9591d8097d2eb65b0ccbbfd9cfca8/lib/cloe:/home/captain/.conan/data/cloe-plugin-virtue/0.18.0/cloe/develop/package/8be15f1a1eb9591d8097d2eb65b0ccbbfd9cfca8/lib/cloe"
-   export CLOE_SHELL="/home/captain/.cache/cloe/launcher/167cfb520dd89cc6124d02369b3ae77632f7b6c8/launcher_env.sh"
+    source /home/captain/.cache/cloe/launcher/167cfb520dd89cc6124d02369b3ae77632f7b6c8/activate.sh
+    source /home/captain/.cache/cloe/launcher/167cfb520dd89cc6124d02369b3ae77632f7b6c8/activate_run.sh
+    export CLOE_PROFILE_HASH="167cfb520dd89cc6124d02369b3ae77632f7b6c8"
+    export CLOE_ENGINE="/home/captain/.conan/data/cloe-engine/0.18.0/cloe/develop/package/e228d2ea7272de48dde779ca 1121f71dc15701ef/bin/cloe-engine"
+    export CLOE_PLUGIN_PATH="/home/captain/.conan/data/cloe-plugin-basic/0.18.0/cloe/develop/package/0d1d27c64c16f68e9e2954e64fcdecb7d58ac604/lib/cloe:/home/captain/.conan/data/cloe-plugin-gndtruth-extractor/0.18.0/cloe/develop/package/67f1df5a769c4e2d868b98f0321cd1276c790f54/lib/cloe:/home/captain/.conan/data/cloe-plugin-minimator/0.18.0/cloe/develop/package/8be15f1a1eb9591d8097d2eb65b0ccbbfd9cfca8/lib/cloe:/home/captain/.conan/data/cloe-plugin-mocks/0.18.0/cloe/develop/package/8be15f1a1eb9591d8097d2eb65b0ccbbfd9cfca8/lib/cloe:/home/captain/.conan/data/cloe-plugin-noisy-sensor/0.18.0/cloe/develop/package/0d1d27c64c16f68e9e2954e64fcdecb7d58ac604/lib/cloe:/home/captain/.conan/data/cloe-plugin-speedometer/0.18.0/cloe/develop/package/8be15f1a1eb9591d8097d2eb65b0ccbbfd9cfca8/lib/cloe:/home/captain/.conan/data/cloe-plugin-virtue/0.18.0/cloe/develop/package/8be15f1a1eb9591d8097d2eb65b0ccbbfd9cfca8/lib/cloe"
+    export CLOE_SHELL="/home/captain/.cache/cloe/launcher/167cfb520dd89cc6124d02369b3ae77632f7b6c8/launcher_env.sh"
 
 You can then use the ``source`` feature of your shell to integrate these
 commands::
 
-   $ source <(cloe-launch activate -P conantest.py)
+    $ source <(cloe-launch activate -P tests/profile_default.py)
 
 Or use the ``eval`` command::
 
-   $ eval $(cloe-launch activate -P conantest.py)
+    $ eval $(cloe-launch activate -P tests/profile_default.py)
+
+Prepare Command
+^^^^^^^^^^^^^^^
+The other commands we've seen so far only print output once they are done, and
+in addition they by default don't build any missing or outdated packages.
+They also always want to do something after calling Conan, such as start a
+shell or run a command.
+
+The ``prepare`` command is for the use-case where all you want to do is prepare
+the virtual runtime environment, and you want to see the Conan output without
+interference or delay::
+
+    $ cloe-launch prepare -P tests/profile_default.py
+
+This is used by the make target ``smoketest-deps``, which just prepares all
+the virtual environments, which might take some time in case any packages need
+to be built.
 
 Profiles
 ^^^^^^^^
 In general, you'll want to use a conanfile from some directory you're working
 in, in which case you can specify this file with the ``-P`` (uppercase) option::
 
-   $ cloe-launch exec -P conanfile.txt -- [cloe-engine arguments]
+    $ cloe-launch exec -P conanfile.txt -- [cloe-engine arguments]
 
 If you find you are using the same profile all the time, you can "bake" this
 profile into the cloe-launch user configuration::
 
-   $ cloe-launch profile add --profile my_default conanfile.txt
+    $ cloe-launch profile add --profile my_default conanfile.txt
 
 You can then specify it with the ``-p`` (lowercase) option::
 
-   $ cloe-launch exec -p my_default -- [cloe-engine arguments]
+    $ cloe-launch exec -p my_default -- [cloe-engine arguments]
 
 And if you make it the default, you don't need to specify ``-p`` or ``-P`` at
 all::
 
-   $ cloe-launch profile default --profile my_default
+    $ cloe-launch profile default --profile my_default
 
 You can see which profiles you have and manage them with the ``profile``
 command.
 
-.. note::
-   You cannot use Python-based conanfiles as profiles that depend on files
-   that are relative to the original conanfile. This is the case with
-   ``conanfile.py`` and ``conantest.py`` that are in the Cloe repository,
-   for example.
+ .. note::
+    You cannot use Python-based conanfiles as profiles that depend on files
+    that are relative to the original conanfile. This is the case with
+    ``conanfile.py`` and ``tests/profile_default.py`` that are in the Cloe repository,
+    for example.
 
-   If you do add such an invalid conanfile as a profile, cloe-launch will not
-   complain, but you will get a Conan error.
+    If you do add such an invalid conanfile as a profile, cloe-launch will not
+    complain, but you will get a Conan error.
 
-   You can convert almost any specific use of ``conanfile.py`` into an
-   equivalent ``conanfile.txt``.
+    You can convert almost any specific use of ``conanfile.py`` into an
+    equivalent ``conanfile.txt``.
 
 Runtime Cache
 ^^^^^^^^^^^^^
@@ -165,12 +183,21 @@ You can use this cache for the ``exec``, ``shell``, and ``activate`` commands.
 
 Conan Options
 ^^^^^^^^^^^^^
-The three main commands ``exec``, ``shell``, and ``activate`` let you pass
-further arguments to Conan.
+Under the hood, cloe-launch uses Conan to do a lot of the heavy lifting,
+in particular it uses the ``conan install`` command with the two generators
+``virtualenv`` and ``virtualrunenv`` and the profile you specify.
+This ``install`` command accepts a whole host of options, which you can see
+with ``conan install --help``.
+
+The four main cloe-launch commands ``exec``, ``shell``, ``activate``, and
+``prepare`` let you pass such further arguments to Conan.
 
 For example, to instruct Conan to build any missing dependencies::
 
-   $ cloe-launch exec -P conantest.py -o:o with_vtd=True -o --build=missing -- usage
+    $ cloe-launch exec -P tests/profile_default.py -o:o cloe:with_vtd=True -o --build=missing -- usage
+
+(This is somewhat contrived example, since it's preferable to use the
+``prepare`` command for this use-case. But it goes to show you don't *need* to.)
 
 There are three options cloe-launch provides:
 
@@ -183,10 +210,32 @@ There are three options cloe-launch provides:
 ``-o:s ARG``
    This option will pass ``--settings ARG`` to Conan.
 
-.. note::
-   The hash used for the cache is not dependent on these options, so if you
-   specify any Conan options, you probably should **not** re-use the cache, or
-   make sure you clean the cache before the first invocation.
+ .. note::
+    The hash used for the cache is not dependent on these options, so if you
+    specify any Conan options, you probably should **not** re-use the cache, or
+    make sure you clean the cache before the first invocation.
+
+A plausible usage example is::
+
+    cloe-launch prepare -P tests/profile_default.py -o:o cloe-engine:server=False
+
+The option, ``-o:o cloe-engine:server=False`` evaluates to ``-o
+cloe-engine:server=False`` on the Conan command line and tells Conan to change
+the default option ``server`` of the ``cloe-engine`` package to ``False``. This instructs
+Conan to use a different package, and because it's not built by default, the
+``-o --build=missing`` (which evaluates directly to ``--build=missing`` on the Conan
+command line) tells Conan to build the package if it's missing.
+
+This is a plausible call to make, since cloe-launch doesn't build missing
+packages by default (to avoid unintentionally running something you didn't want
+to run).
+
+ .. note::
+    Which options you use where should be more clear now: Conan options are for
+    selecting and configuring Conan packages, which might include your own
+    packages. You might want to use a debug build, for example. As a rule of thumb,
+    if you don't know what options are available, you probably don't use Conan
+    enough to need them. You can see them by running ``conan install --help``.
 
 Getting Help
 ^^^^^^^^^^^^
@@ -206,6 +255,7 @@ itself anytime with the ``--help`` flag::
       activate  Launch shell with the correct environment from a profile.
       clean     Clean launcher profile cache.
       exec      Launch cloe-engine with a profile.
+      prepare   Prepare environment for selected profile.
       profile   Manage launcher profiles.
       shell     Launch shell with the correct environment from a profile.
 
@@ -219,8 +269,8 @@ Conan, which is used under-the-hood.
 
 In this case, you might see in the first few lines::
 
-    $ cloe-launch exec -P conantest.py -- check tests/test_minimator_smoketest.json
-    Error running: conan install --install-folder /home/captain/.cache/cloe/launcher/167cfb520dd89cc6124d02369b3ae77632f7b6c8 -g virtualenv conantest.py
+    $ cloe-launch exec -P tests/profile_default.py -- check tests/test_minimator_smoketest.json
+    Error running: conan install --install-folder /home/captain/.cache/cloe/launcher/167cfb520dd89cc6124d02369b3ae77632f7b6c8 -g virtualenv tests/profile_default.py
     Configuration:
     [settings]
     arch=x86_64
@@ -233,12 +283,12 @@ the output looking for any error statements, we might find something::
     cloe/0.18.0@cloe/develop: Not found in local cache, looking in remotes...
     cloe/0.18.0@cloe/develop: Trying with 'artifactory'...
     cloe/0.18.0@cloe/develop: Trying with 'conan-center'...
-    ERROR: Failed requirement 'cloe/0.18.0@cloe/develop' from 'conantest.py (cloe-test/0.18.0)'
+    ERROR: Failed requirement 'cloe/0.18.0@cloe/develop' from 'tests/profile_default.py (cloe-test/0.18.0)'
     ERROR: Unable to find 'cloe/0.18.0@cloe/develop' in remotes
     [... snip ...]
 
 Here we find the actual source of the problem: The ``cloe`` package, which is
-referred to in the profile we used (``conantest.py``), cannot be found. This
+referred to in the profile we used (``tests/profile_default.py``), cannot be found. This
 usually means you haven't built it yet, and can be dealt with the process
 described in :doc:`../install`.
 
@@ -281,25 +331,28 @@ The Python trace is useful for developing ``cloe-launch`` and for reporting
 bugs, as it lets us find the point in the code where the exception occurred and
 was handled.
 
-.. note::
-   For many errors, there may not be any Python traceback. That usually
-   indicates that the problem is a user error. Which errors cause tracebacks
-   and which do not may be changed in future versions of ``cloe-launch``.
+ .. note::
+    For many errors, there may not be any Python traceback. That usually
+    indicates that the problem is a user error. Which errors cause tracebacks
+    and which do not may be changed in future versions of ``cloe-launch``.
 
 ----
 
 .. rubric:: Suggested Exercises
+
 #. | Install cloe-launch locally and view the help.
-   (Hint: Have a look at the ``cli/Makefile`` file in the repository.)
+   | (Hint: Have a look at the ``cli/Makefile`` file in the repository.)
+
 #. | Create a simple profile to be used with cloe-launch.
-   (Hint: See :doc:`understanding-cloe-packages` for help on creating
-   a ``conanfile.txt``)
+   | (Hint: See :doc:`understanding-cloe-packages` for help on creating a ``conanfile.txt``)
+
 #. | Run the cloe-engine ``usage`` command with the help of cloe-launch.
-   (Hint: Use the ``exec`` command.)
+   | (Hint: Use the ``exec`` command.)
+
 #. | Use the global ``-vv`` argument for several cloe-launch commands.
    | Do you understand the value of the information you now see?
-   (Hint: This needs to be provided *before* the command you want to execute,
-   for example: ``cloe-launch -vv exec``.)
+   | (Hint: This needs to be provided *before* the command you want to execute, for example: ``cloe-launch -vv exec``.)
+
 #. | Find the cloe-launch cache location for your default profile.
    | Do you recognize the contents?
-   (Hint: See the output of the commands when you increase verbosity.)
+   | (Hint: See the output of the commands when you increase verbosity.)

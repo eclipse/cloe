@@ -46,6 +46,9 @@ certainly require some changes before accepting.
    :maxdepth: 2
 
    develop/building-cloe
+   develop/testing-cloe
+   develop/deploying-cloe
+   develop/debugging-cloe
    develop/directory-structure
    develop/plugin-structure
    develop/makefile-package
@@ -53,12 +56,13 @@ certainly require some changes before accepting.
    develop/new-controller
    develop/integrating-a-controller
    develop/debugging-a-controller
-   develop/debugging-cloe
 
    develop/recording-with-asciinema
+
    develop/git-guidelines
    develop/cpp-guidelines
    develop/python-guidelines
+
    develop/cloe-ui
 
 .. _cloe-dev@eclipse.org: mailto:cloe-dev@eclipse.org?subject=Planning%20a%20contribution%20to%20Cloe

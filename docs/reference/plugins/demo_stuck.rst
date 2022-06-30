@@ -11,9 +11,9 @@ Examples
 --------
 
 You can see the plugin in action in the system test at
-``tests/test_engine_stuck_controller.json``, among other tests.
+``engine/tests/test_engine_stuck_controller.json``, among other tests.
 
-.. literalinclude:: ../../../tests/test_engine_stuck_controller.json
+.. literalinclude:: ../../../engine/tests/test_engine_stuck_controller.json
    :language: json
 
 Defaults

@@ -1,5 +1,5 @@
-Building a Cloe Package
-=======================
+Building Cloe
+=============
 
 .. note::
   Before you follow any of the steps described below, please make sure that you
@@ -92,44 +92,7 @@ If you execute the latter command from the top-level directory, you will see the
 status of all Cloe packages.
 
 
-Testing Cloe
-------------
-
-With the help of CMake and the Google Test framework, unit tests can be run
-with::
-
-    make test
-
-Available unit tests are automatically executed after each package was built, if
-the Conan recipe option ``test`` is set to ``True`` (default: ``True``).
-
-
-Distributing Cloe Packages
---------------------------
-
-It is recommended to distribute Cloe binary packages via your Conan remote
-repository. To understand the workflow and upload packages to a local Conan
-server for testing, refer to the provided dockerized Conan server example
-(s. ``tools/conan-server/README.md``) and the `Conan package upload`_
-documentation.
-
-The Cloe package release process has been automated for multiple Linux
-distributions. Please make sure you understand the instructions in
-``dist/docker/README.md``, particularly with respect to the provided
-``dist/docker/setup.sh.example`` file.
-
-You may start the release process from the top-level directory like so::
-
-  make docker-release
-
-This will build and test all Cloe packages in multiple Linux environments and
-upload the binaries to the Conan remote repository specified in
-``dist/docker/setup.sh``.
-
-
-.. _Cloe repository: https://github.com/eclipse/cloe
 .. _Conan local cache: https://docs.conan.io/en/latest/mastering/custom_cache.html
 .. _Conan CMake integration: https://docs.conan.io/en/latest/integrations/build_system/cmake.html
 .. _Conan recipe reference: https://docs.conan.io/en/latest/reference/conanfile.html
 .. _Conan packages in editable mode: https://docs.conan.io/en/latest/developing_packages/editable_packages.html
-.. _Conan package upload: https://docs.conan.io/en/latest/uploading_packages.html

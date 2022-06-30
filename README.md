@@ -29,6 +29,8 @@ backfiring with increased support issues.
 Getting Started
 ---------------
 
+For in-depth documentation, see our [website](https://cloe.readthedocs.io).
+
 For building, deploying, and running the runtime and engine we use [Conan][1],
 a modern C++ package manager. We currently have not published any Conan
 packages that can be downloaded directly. Building them yourself is pretty
@@ -59,9 +61,9 @@ point. In a pinch, the following steps should suffice:
     ```
     conan profile new --detect default
     conan profile update settings.compiler.libcxx=libstdc++11 default
-    conan profile update settings.build_type=RelWithDebInfo
+    conan profile update settings.build_type=RelWithDebInfo default
     ```
-    If everything works out, your Conan profile should look something like this.
+    If everything works out, your Conan profile should look *something like* this.
     ```console
     $ conan profile show default
     Configuration for profile default:
@@ -73,7 +75,7 @@ point. In a pinch, the following steps should suffice:
       compiler         = gcc
       compiler.version = 9
       compiler.libcxx  = libstdc++11
-      build_type       = Release
+      build_type       = RelWithDebInfo
     ```
 
  3. Increase the request timeout to work around performance [issues][5] with the
@@ -153,6 +155,23 @@ Once the `cloe-launch` tool is available, you can do one of the following:
     Cloe 0.18.0-nightly (2020-10-01)
     ...
     ```
+
+### Running Tests
+
+Integration and system tests can be run to ensure that all the packages built
+are working together as expected:
+
+    make smoketest-deps
+    make smoketest
+
+This will build packages in the required configurations as defined by the
+profiles in the `tests` directories in the various packages. Then it will
+run all available BATS tests with each of the profiles.
+
+Unit tests are compiled and run during the build step of each package, so
+this shouldn't need to be performed manually.
+
+See the documentation on testing Cloe for more details.
 
 [1]: https://conan.io
 [2]: https://docs.microsoft.com/en-us/windows/wsl/about
