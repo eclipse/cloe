@@ -22,8 +22,8 @@ help:
 	echo "  install       to install cloe-launch locally"
 	echo "  editable      to install cloe-launch locally in editable mode"
 
-.PHONY: install editable
-install:
+.PHONY: install editable conan-profile
+install: conan-profile
 	command -v ${PIP} >/dev/null 2>&1
 	mv pyproject.toml pyproject.toml.bak
 	${PIP} install ${PIP_INSTALL_ARGS} . || ( \
@@ -32,7 +32,7 @@ install:
 	)
 	mv pyproject.toml.bak pyproject.toml
 
-editable:
+editable: conan-profile
 	command -v ${PIP} >/dev/null 2>&1
 	mv pyproject.toml pyproject.toml.bak
 	${PIP} install -e ${PIP_INSTALL_ARGS} . || ( \
@@ -40,3 +40,6 @@ editable:
 		exit 1; \
 	)
 	mv pyproject.toml.bak pyproject.toml
+
+conan-profile:
+	conan export .
