@@ -1,11 +1,5 @@
 #!/usr/bin/env bats
 
-# The following variables are read automatically by cloe-engine to set defaults
-# for flags. They can be overridden by specifying alternative flags.
-export CLOE_LOG_LEVEL=${CLOE_LOG_LEVEL-debug}
-export CLOE_STRICT_MODE=1
-export CLOE_WRITE_OUTPUT=0
-
 # The path to use whenever we need a temporary registry. Whenever we use this, we
 # probably want to specify the `--write-output` flag too, otherwise nothing will
 # be written to the registry.
