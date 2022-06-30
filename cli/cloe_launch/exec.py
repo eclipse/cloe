@@ -9,12 +9,12 @@ import hashlib
 import importlib.util
 import logging
 import os
-import os.path
 import re
 import shutil
 import subprocess
 import sys
 
+from pathlib import Path
 from collections import OrderedDict
 from typing import Dict
 from typing import List
@@ -89,7 +89,7 @@ class Environment:
 
     def __init__(
         self,
-        env: Union[str, List[str], Dict[str, str], None],
+        env: Union[str, List[Path], Dict[str, str], None],
         preserve: List[str] = None,
         source_file: bool = True,
     ):
@@ -121,9 +121,9 @@ class Environment:
             if regex.match(key):
                 self._shell_env[key] = base[key]
 
-    def init_from_file(self, filepath: str) -> None:
+    def init_from_file(self, filepath: Path) -> None:
         """Init variables from a file containing KEY=VALUE pairs."""
-        with open(filepath) as file:
+        with filepath.open() as file:
             data = file.read()
         self.init_from_str(data)
 
@@ -131,7 +131,7 @@ class Environment:
         """Init variables from a dictionary."""
         self._data = env
 
-    def init_from_shell(self, filepath: str, shell: str = None) -> None:
+    def init_from_shell(self, filepath: Path, shell: str = None) -> None:
         """Init variables from a shell sourcing a file."""
         if shell is None:
             shell = self._shell_path
@@ -197,31 +197,31 @@ class Environment:
         buf += "}"
         return buf
 
-    def path_append(self, key: str, value: str) -> None:
+    def path_append(self, key: str, value: Union[Path, str]) -> None:
         """
         Append the value to the path-like variable key.
 
         This uses ":" as the separator between multiple values in the path.
         """
         if key in self._data:
-            self._data[key] += self._sep + value
+            self._data[key] += self._sep + str(value)
         else:
-            self._data[key] = value
+            self._data[key] = str(value)
 
-    def path_prepend(self, key: str, value: str) -> None:
+    def path_prepend(self, key: str, value: Union[Path, str]) -> None:
         """
         Prepend the value to the path-like variable key.
 
         This uses ":" as the separator between multiple values in the path.
         """
         if key in self._data:
-            self._data[key] = self._sep + value + self._data[key]
+            self._data[key] = self._sep + str(value) + self._data[key]
         else:
-            self._data[key] = value
+            self._data[key] = str(value)
 
-    def path_set(self, key: str, values: List[str]) -> None:
+    def path_set(self, key: str, values: List[Union[Path, str]]) -> None:
         """Set the key to a :-separated list."""
-        self._data[key] = self._sep.join(values)
+        self._data[key] = self._sep.join([str(v) for v in values])
 
     def deduplicate_list(self, key: str) -> None:
         """Remove duplicates from the specified key."""
@@ -241,9 +241,9 @@ class Environment:
             return self._data[key].split(self._sep)
         return default
 
-    def set(self, key: str, value: str) -> None:
+    def set(self, key: str, value: Union[Path, str]) -> None:
         """Set the value."""
-        self._data[key] = value
+        self._data[key] = str(value)
 
     def set_default(self, key: str, value: str) -> None:
         """Set the value if it has not already been set."""
@@ -322,7 +322,7 @@ class PluginSetup:
         """Perform plugin teardown after simulation."""
 
 
-def _find_plugin_setups(file: str) -> List[Type[PluginSetup]]:
+def _find_plugin_setups(file: Path) -> List[Type[PluginSetup]]:
     """Open a Python module and find all PluginSetups."""
     name = os.path.splitext(file)[0]
     spec = importlib.util.spec_from_file_location(name, file)
@@ -342,14 +342,14 @@ class Engine:
 
     def __init__(self, conf, conanfile=None):
         # Set options:
-        self.conan_path = conf._conf["conan_path"]
-        self.shell_path = conf._conf["shell_path"]
+        self.conan_path = Path(conf._conf["conan_path"])
+        self.shell_path = Path(conf._conf["shell_path"])
         self.relay_anonymous_files = conf._conf["relay_anonymous_files"]
         if conanfile is None:
             self._read_conf_profile(conf)
         else:
             self._read_anonymous_profile(conanfile)
-        self.runtime_dir = conf.profile_runtime(self.profile)
+        self.runtime_dir = Path(conf.profile_runtime(self.profile))
         self.engine_pre_args = conf._conf["engine"]["pre_arguments"]
         self.engine_post_args = conf._conf["engine"]["post_arguments"]
         self.preserve_env = False
@@ -379,79 +379,80 @@ class Engine:
         hasher.update(self.profile_data.encode())
         self.profile = hasher.hexdigest()
 
-    def runtime_env_path(self) -> str:
-        return os.path.join(self.runtime_dir, "launcher_env.sh")
+    def runtime_env_path(self) -> Path:
+        return self.runtime_dir / "launcher_env.sh"
 
     def _prepare_runtime_dir(self) -> None:
         # Clean and create runtime directory
         self.clean()
         logging.debug(f"Create: {self.runtime_dir}")
-        os.makedirs(self.runtime_dir)
+        self.runtime_dir.mkdir(parents = True)
 
     def _prepare_virtualenv(self) -> None:
         # Get conan to create a virtualenv AND virtualrunenv for us:
         # One gives us the LD_LIBRARY_PATH and the other gives us env_info
         # variables set in packages.
-        for generator in ["virtualenv", "virtualrunenv"]:
-            conan_cmd = [
-                self.conan_path,
-                "install",
-                "--install-folder",
-                self.runtime_dir,
-                "-g",
-                generator,
-            ]
-            for arg in self.conan_args:
-                conan_cmd.append(arg)
-            for option in self.conan_options:
-                conan_cmd.append("-o")
-                conan_cmd.append(option)
-            for setting in self.conan_settings:
-                conan_cmd.append("-s")
-                conan_cmd.append(setting)
-            conan_cmd.append(self.profile_path)
-            self._run_cmd(conan_cmd, must_succeed=True)
+        conan_cmd = [
+            str(self.conan_path),
+            "install",
+            "--install-folder",
+            str(self.runtime_dir),
+            "-g",
+            "virtualenv",
+            "-g",
+            "virtualrunenv",
+        ]
+        for arg in self.conan_args:
+            conan_cmd.append(arg)
+        for option in self.conan_options:
+            conan_cmd.append("-o")
+            conan_cmd.append(option)
+        for setting in self.conan_settings:
+            conan_cmd.append("-s")
+            conan_cmd.append(setting)
+        conan_cmd.append(self.profile_path)
+        self._run_cmd(conan_cmd, must_succeed=True)
 
     def _read_conan_env(self) -> Environment:
         # The order of the items in env_paths is important because variables
         # will be overwritten.
         # TODO: Should be replaced by merging in the future.
         env_paths = [
-            os.path.join(self.runtime_dir, "activate_run.sh"),
-            os.path.join(self.runtime_dir, "activate.sh"),
+            self.runtime_dir / "activate_run.sh",
+            self.runtime_dir / "activate.sh",
         ]
         preserve = None if not self.preserve_env else list(os.environ.keys())
         return Environment(env_paths, preserve=preserve)
 
-    def _extract_engine_path(self, env) -> str:
+    def _extract_engine_path(self, env) -> Path:
         """Return the first cloe-engine we find in the PATH."""
         for bindir in env.get_list("PATH", default=[]):
-            pp = os.path.join(bindir, "cloe-engine")
-            if os.path.exists(pp):
+            pp = Path(bindir) / "cloe-engine"
+            if pp.exists():
                 return pp
         raise RuntimeError("cannot locate cloe-engine executable")
 
-    def _extract_plugin_paths(self, env) -> List[str]:
+    def _extract_plugin_paths(self, env) -> List[Path]:
         """Return all Cloe plugin paths we find in LD_LIBRARY_PATH."""
         plugin_paths = []
         for libdir in env.get_list("LD_LIBRARY_PATH", default=[]):
-            pp = os.path.join(libdir, "cloe")
-            if os.path.exists(pp):
+            pp = Path(libdir) / "cloe"
+            if pp.exists():
                 plugin_paths.append(pp)
         return plugin_paths
 
-    def _extract_plugin_setups(self, lib_paths: List[str]) -> List[Type[PluginSetup]]:
+    def _extract_plugin_setups(self, lib_paths: List[Path]) -> List[Type[PluginSetup]]:
         for lib_dir in lib_paths:
-            for file in os.listdir(lib_dir):
-                if not file.endswith(".py"):
+            for file in lib_dir.iterdir():
+                if not file.suffix == ".py":
                     continue
-                path = os.path.join(lib_dir, file)
+                path = lib_dir / file
                 logging.info(f"Loading plugin setup: {path}")
                 _find_plugin_setups(path)
         return PluginSetup.__subclasses__()
 
     def _prepare_runtime_env(self, use_cache: bool = False) -> Environment:
-        if os.path.exists(self.runtime_env_path()) and use_cache:
+        if self.runtime_env_path().exists() and use_cache:
             logging.debug("Re-using existing runtime directory.")
         else:
             logging.debug("Initializing runtime directory ...")
@@ -480,7 +481,7 @@ class Engine:
             return src_path
 
         dst_file = src_path.replace("/", "_")
-        dst_path = os.path.join(self.runtime_dir, dst_file)
+        dst_path = self.runtime_dir / dst_file
         logging.info(f"Relay anonymous file {src_path} into {dst_path}")
         with open(src_path) as src:
             with open(dst_path, "w") as dst:
@@ -519,7 +520,7 @@ class Engine:
 
     def clean(self) -> None:
         """Clean the runtime directory."""
-        if os.path.exists(self.runtime_dir):
+        if self.runtime_dir.exists():
             logging.debug(f"Remove: {self.runtime_dir}")
             shutil.rmtree(self.runtime_dir, ignore_errors=True)
 
@@ -586,8 +587,8 @@ class Engine:
 
         print("# Please see `cloe-launch activate --help` before activating this.")
         print()
-        print(f"source {os.path.join(self.runtime_dir, 'activate.sh')}")
-        print(f"source {os.path.join(self.runtime_dir, 'activate_run.sh')}")
+        print(f"source {self.runtime_dir / 'activate.sh'}")
+        print(f"source {self.runtime_dir / 'activate_run.sh'}")
         for var in ["CLOE_PROFILE_HASH", "CLOE_ENGINE", "CLOE_PLUGIN_PATH"]:
             print(f'export {var}="{env[var]}"')
         print(f'export CLOE_SHELL="{self.runtime_env_path()}"')
