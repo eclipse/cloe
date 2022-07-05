@@ -27,6 +27,14 @@ class CloeEngine(ConanFile):
 
     _cmake = None
 
+    def set_version(self):
+        version_file = Path(self.recipe_folder) / "../VERSION"
+        if version_file.exists():
+            self.version = tools.load(version_file).strip()
+        else:
+            git = tools.Git(folder=self.recipe_folder)
+            self.version = git.run("describe --dirty=-dirty")[1:]
+
     def requirements(self):
         self.requires("boost/[>=1.65.1]"),
         self.requires(f"cloe-runtime/{self.version}@cloe/develop")
