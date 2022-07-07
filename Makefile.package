@@ -60,8 +60,12 @@ PACKAGE_FQN     := ${PACKAGE_NAME}/${PACKAGE_VERSION}@${PACKAGE_CHANNEL}
 # only apply to local builds.
 #
 # This can be one of: None, Debug, Release, RelWithDebInfo, MinSizeRel
-BUILD_TYPE := RelWithDebInfo
+BUILD_TYPE :=
+ifneq "${BUILD_TYPE}" ""
 BUILD_TYPE_OPTION := -s ${PACKAGE_NAME}:build_type=${BUILD_TYPE}
+else
+BUILD_TYPE_OPTION :=
+endif
 
 # These options can be set to influence package and configure.
 CONAN_OPTIONS :=
