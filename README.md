@@ -59,6 +59,7 @@ point. In a pinch, the following steps should suffice:
     ```
     conan profile new --detect default
     conan profile update settings.compiler.libcxx=libstdc++11 default
+    conan profile update settings.build_type=RelWithDebInfo
     ```
     If everything works out, your Conan profile should look something like this.
     ```console
@@ -75,11 +76,11 @@ point. In a pinch, the following steps should suffice:
       build_type       = Release
     ```
 
-3. Increase the request timeout to work around performance [issues][5] with the
-   Conan Center.
-   ```
-   conan config set general.request_timeout=360
-   ```
+ 3. Increase the request timeout to work around performance [issues][5] with the
+    Conan Center.
+    ```
+    conan config set general.request_timeout=360
+    ```
 See the Conan [documentation][6] for more information on how to do this.
 
 ### Building the Cloe Packages
