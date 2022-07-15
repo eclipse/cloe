@@ -56,7 +56,7 @@ help::
 	echo
 
 ${BUILD_LOCKFILE}:
-	${MAKE} -f Makefile.package LOCKFILE_SOURCE=${LOCKFILE_SOURCE} ${BUILD_LOCKFILE}
+	${MAKE} -f Makefile.package SOURCE_CONANFILE=/dev/null LOCKFILE_SOURCE=${LOCKFILE_SOURCE} ${BUILD_LOCKFILE}
 
 lockfile: ${BUILD_LOCKFILE}
 
