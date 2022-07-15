@@ -55,6 +55,29 @@ PACKAGE_VERSION := $(or \
 PACKAGE_CHANNEL := cloe/develop
 PACKAGE_FQN     := ${PACKAGE_NAME}/${PACKAGE_VERSION}@${PACKAGE_CHANNEL}
 
+# It is an order of magnitude faster to parse ~/.conan/editable_packages.json
+# ourselves than to get conan to do it for us. This should only take us 20ms,
+# while conan needs 250ms. Also, this will tell us if the package is editable,
+# or the path to the current conanfile.py is marked as editable. This helps
+# inform the user when they make a package editable, but then check out another
+# state of the tree with a different version.
+SOURCE_CONANFILE_REALPATH := $(realpath ${SOURCE_CONANFILE})
+define JQ_PACKAGE_EDITABLE
+	if has(\"${PACKAGE_FQN}\") then
+		if .[\"${PACKAGE_FQN}\"].path == \"${SOURCE_CONANFILE_REALPATH}\" then
+			\"editable\"
+		else
+			\"editable-elsewhere\"
+		end
+	else
+		if ([.[].path] | any(. == \"${SOURCE_CONANFILE_REALPATH}\")) then
+			\"editable-other-name\"
+		else
+			\"not-editable\"
+		end
+	end
+endef
+
 # Normally, you should set this in your profile, but if you just want to build
 # the package in debug mode once, you can do it this way, although it will
 # only apply to local builds.
@@ -92,9 +115,9 @@ endif
 
 # INFORMATIONAL TARGETS -------------------------------------------------------
 .DEFAULT: help
-.SILENT: help status parse-info info-name info-version info-channel info-fqn info
-.PHONY: help status parse-info info-name info-version info-channel info-fqn info
-help:: parse-info
+.SILENT: help status parse-info parse-editable info-name info-version info-channel info-fqn info
+.PHONY: help status parse-info parse-editable info-name info-version info-channel info-fqn info
+help:: parse-info parse-editable
 	echo "Usage: make <target>"
 	echo
 	echo "The following targets define common operations with this package in"
@@ -136,6 +159,7 @@ help:: parse-info
 	echo "  PACKAGE_VERSION: ${PACKAGE_VERSION}"
 	echo "  PACKAGE_CHANNEL: ${PACKAGE_CHANNEL}"
 	echo "  PACKAGE_FQN:     ${PACKAGE_FQN}"
+	echo "  PACKAGE_EDITABLE:${PACKAGE_EDITABLE}"
 	echo "  PACKAGE_ID:      ${PACKAGE_ID}"
 	echo "  PACKAGE_DIR:     ${PACKAGE_DIR}"
 	echo "  PACKAGE_DATE:    ${PACKAGE_DATE}"
@@ -149,12 +173,15 @@ parse-info: ${BUILD_LOCKFILE}
 	#   target needs one of these variables, they should depend on this target
 	#   to ensure that these variables are set.
 	#
-	$(eval PACKAGE_INFO := $(shell conan info ${ALL_OPTIONS} "${PACKAGE_FQN}" --package-filter "${PACKAGE_FQN}" --paths | sed -r 's/$$/\\n/'))
+	$(eval PACKAGE_INFO := $(shell conan info ${ALL_OPTIONS} "${PACKAGE_FQN}" --package-filter "${PACKAGE_FQN}" --paths 2>/dev/null | sed -r 's/$$/\\n/'))
 	$(eval PACKAGE_ID := $(shell echo -e "${PACKAGE_INFO}" | sed -rn 's/^ *ID: *(.*)$$/\1/p'))
 	$(eval PACKAGE_DIR := $(shell echo -e "${PACKAGE_INFO}" | sed -rn 's/^ *package_folder: *(.*)$$/\1/p'))
 	$(eval PACKAGE_DATE := $(shell echo -e "${PACKAGE_INFO}" | sed -rn 's/^ *Creation date: *(.*)$$/\1/p'))
 
-status: parse-info
+parse-editable:
+	$(eval PACKAGE_EDITABLE := $(shell [ -e ~/.conan/editable_packages.json ] && jq -r "${JQ_PACKAGE_EDITABLE}" ~/.conan/editable_packages.json || echo "not-editable"))
+
+status: parse-info parse-editable
 	# Show the *approximate* status of each package in the cloe workspace.
 	#
 	#   This lets you know whether a package is in editable mode or not,
@@ -162,15 +189,14 @@ status: parse-info
 	#   directory has been modified more recently than the package in the
 	#   Conan cache.
 	#
-	_editable=$$(conan editable list | grep "${PACKAGE_FQN}"); \
-	if [ -z "$${_editable}" ]; then \
+	if [ "${PACKAGE_EDITABLE}" != "not-editable" ] ; then \
+		echo "${PACKAGE_EDITABLE} : ${PACKAGE_FQN}"; \
+	else \
 		if [ -n "${PACKAGE_DATE}" ] && [ -z "$$(find -type f -newermt "${PACKAGE_DATE}")" ]; then \
 			echo "ok       : ${PACKAGE_FQN}"; \
 		else \
 			echo "outdated : ${PACKAGE_FQN}"; \
 		fi \
-	else \
-		echo "editable : ${PACKAGE_FQN}"; \
 	fi
 
 info-name:
@@ -218,13 +244,13 @@ uneditable:
 # CONAN TARGETS ---------------------------------------------------------------
 .PHONY: export package package-all package-missing package-outdated purge list
 
-export:
+export: parse-editable
 	# Export sources to Conan cache.
 	#
 	#   This does not build this package but provides the sources and the
 	#   build recipe to Conan for on-demand building.
 	#
-	conan export . ${PACKAGE_FQN}
+	if [ "${PACKAGE_EDITABLE}" = "not-editable" ] || [ "${PACKAGE_EDITABLE}" = "editable-other-name" ]; then conan export . ${PACKAGE_FQN}; fi
 
 download:
 	# Try to download the package to Conan cache.
