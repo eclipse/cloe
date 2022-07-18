@@ -48,6 +48,7 @@ certainly require some changes before accepting.
    develop/building-cloe
    develop/directory-structure
    develop/plugin-structure
+   develop/makefile-package
 
    develop/new-controller
    develop/integrating-a-controller
