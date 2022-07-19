@@ -1,14 +1,23 @@
 # syntax = docker/dockerfile:1.2
-# Dockerfile.focal
+# Dockerfile.jammy
 #
-# See Dockerfile.jammy for documentation of each of the lines.
+# This file acts partly as a Docker recipe for building Cloe on Ubuntu.
+#
+# If you are behind a proxy, make sure to pass in the respective HTTP_PROXY,
+# HTTPS_PROXY, and NO_PROXY variables.
+
+# This is a work-around to not being able to use variables in RUN --mount=from:
+# If you want to use VTD in this image, you need to specify the Docker image
+# containing the distribution that can be mounted at /root/.conan/data/
 ARG VTD_IMAGE=scratch
 FROM ${VTD_IMAGE} AS vtd
 WORKDIR /vtd
 
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 # Install System Packages
+#
+# These packages are required for building and testing Cloe.
 COPY Makefile.setup /cloe/Makefile.setup
 RUN --mount=type=cache,id=focal-cache,target=/var/cache/apt \
     --mount=type=cache,id=focal-lib,target=/var/lib/apt \
@@ -33,13 +42,24 @@ RUN pip3 install --upgrade pip && \
         install-python-deps
 
 # Install and Setup Conan
+#
+# You may not want to use the default Conan remote (conan-center), so we use
+# whatever is stored in the build arguments CONAN_REMOTE. Currently, only
+# anonymous access is possible in this Dockerfile.
+#
+# The following profiles are available: default, cloe-release, cloe-debug
 COPY dist/conan /cloe/dist/conan
 ARG CONAN_PROFILE=cloe-release
 ENV CONAN_NON_INTERACTIVE=yes
 RUN make -f /cloe/Makefile.setup setup-conan && \
-    conan config set general.default_profile=${CONAN_PROFILE}
+    conan config set general.default_profile=${CONAN_PROFILE} && \
+    conan profile update options.cloe-engine:server=False ${CONAN_PROFILE}
 
 # Build and Install Cloe
+#
+# All common processes are made easy to apply by writing target recipes in the
+# Makefile at the root of the repository. This also acts as a form of
+# documentation.
 WORKDIR /cloe
 ARG WITH_VTD=0
 ARG KEEP_SOURCES=0
