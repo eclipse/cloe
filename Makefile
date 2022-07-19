@@ -19,7 +19,7 @@ define print_header
 	@printf ":: %s\n" ${1}
 endef
 
-CLOE_ROOT   := $(shell pwd)
+CLOE_ROOT   := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 CLOE_LAUNCH := PYTHONPATH="${CLOE_ROOT}/cli" python3 -m cloe_launch
 
 # Build configuration:
@@ -41,7 +41,7 @@ include Makefile.setup
 include Makefile.all
 
 # Workspace targets -----------------------------------------------------------
-.PHONY: lockfile status deploy sphinx doxygen docker-all docker-test docker-release purge-all smoketest smoketest-deps
+.PHONY: lockfile status deploy sphinx doxygen docker-all docker-test docker-release purge-all export-cli smoketest smoketest-deps
 help::
 	echo "Available workspace targets:"
 	echo "  smoketest       to run BATS system tests"
@@ -49,6 +49,7 @@ help::
 	echo "  doxygen         to generate Doxygen documentation"
 	echo "  deploy          to deploy Cloe to INSTALL_DIR [=${INSTALL_DIR}]"
 	echo "  deploy-cli      to install cloe-launch with pip"
+	echo "  export-cli      to export cloe-launch-profile conan recipe"
 	echo
 	echo "  docker-test     to build only a single Docker image"
 	echo "  docker-all      to build all Docker images"
@@ -101,7 +102,7 @@ doxygen:
 	mkdir -p ${BUILD_DIR}/doxygen
 	doxygen Doxyfile
 
-smoketest-deps: | export-cli smoketest-deps-select
+smoketest-deps: export-cli smoketest-deps-select
 	# Call this target with WITH_VTD=1 to include VTD binding tests.
 
 smoketest: smoketest-select

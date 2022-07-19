@@ -4,8 +4,11 @@
 # Usage: make -f Makefile.setup setup
 #
 # This Makefile defines targets for setting up a development environment.
-# If you just want the bare minimum, define WITHOUT_DEV_DEPS.
+# It is separate from the project Makefile in order to minimize Docker
+# cache invalidation and also to improve readability.
 #
+
+CLOE_ROOT := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 
 APT := $(or \
 	$(shell command -v apt 2>/dev/null), \
@@ -39,17 +42,42 @@ endif
 help::
 	echo "Available setup targets:"
 	echo "  setup                 to perform Git repository setup"
+	echo "  setup-conan           to install Conan profile"
 	echo "  install-system-deps   to install build (and development) system requirements"
 	echo "  install-python-deps   to install Python runtime requirements with ${PIP}"
 	echo "  install-sphinx-deps   to install Sphinx runtime requirements with ${PIP}"
 	echo "  install-python-tools  to install Python development tools with ${PIPX}"
 	echo
 
-.PHONY: setup
+.PHONY: setup setup-conan
 setup:
 	git config --local core.hooksPath .git-hooks/
 
-.PHONY: install-system-deps install-ubuntu-deps install-archlinux-deps install-python-deps install-python-tools
+CONAN_DIR=$(shell conan config home)
+setup-conan:
+	# Install Conan if it is not available.
+	if ! command -v conan >/dev/null 2>&1; then ${PIP} install --user conan; fi
+	# Initialize Conan configuration if it doesn't already exist.
+	#
+	# Since running any conan command, even conan --help creates ${CONAN_DIR}
+	# and the default configuration, we rely on the existence of the default
+	# profile as an indication that we have a "fresh" setup where we can
+	# make our override.
+	if [ ! -f ${CONAN_DIR}/profiles/default ]; then \
+		conan config init; \
+		conan profile update settings.compiler.libcxx=libstdc++11 default; \
+		conan profile update settings.build_type=RelWithDebInfo default; \
+	fi
+	if ! conan config get general.revisions_enabled >/dev/null 2>&1; then \
+		conan config set general.revisions_enabled=True; \
+	fi
+	# Install cloe-debug and cloe-release profiles.
+	if [ -d "${CLOE_ROOT}/dist/conan" ]; then \
+		install "${CLOE_ROOT}/dist/conan/cloe-debug.profile" "${CONAN_DIR}/profiles/cloe-debug"; \
+		install "${CLOE_ROOT}/dist/conan/cloe-release.profile" "${CONAN_DIR}/profiles/cloe-release"; \
+	fi
+
+.PHONY: install-system-deps install-ubuntu-deps install-archlinux-deps install-python-deps install-python-tools install-sphinx-deps
 install-system-deps::
 
 # Ubuntu ----------------------------------------------------------------------
@@ -62,6 +90,7 @@ install-ubuntu-deps::
 	${APT} install ${APT_ARGS} \
 		bats \
 		build-essential \
+		clang-format \
 		cmake \
 		doxygen \
 		curl \
@@ -73,18 +102,10 @@ install-ubuntu-deps::
 		psmisc \
 		python3-setuptools \
 		python3-pip \
+        python3-venv \
 		time \
 		tmux \
 		;
-
-ifndef WITHOUT_DEV_DEPS
-install-ubuntu-deps::
-	command -v ${APT} >/dev/null 2>&1
-	${APT} install ${APT_ARGS} \
-		clang-format \
-        python3-venv \
-		;
-endif
 
 # Archlinux -------------------------------------------------------------------
 ifdef PACMAN
@@ -97,6 +118,7 @@ install-archlinux-deps::
 		base-devel \
 		bash \
 		bash-bats \
+		clang \
 		cmake \
 		curl \
 		doxygen \
@@ -106,18 +128,10 @@ install-archlinux-deps::
 		patchelf \
 		psmisc \
 		python-pip \
+		python-virtualenv \
 		time \
 		tmux \
 		;
-
-ifndef WITHOUT_DEV_DEPS
-install-archlinux-deps::
-	command -v ${PACMAN} >/dev/null 2>&1
-	${PACMAN} -S ${PACMAN_ARGS} \
-		clang \
-		python-virtualenv \
-		;
-endif
 
 # Python ----------------------------------------------------------------------
 install-python-deps::

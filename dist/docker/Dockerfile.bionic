@@ -1,7 +1,7 @@
 # syntax = docker/dockerfile:1.2
 # Dockerfile.bionic
 #
-# See Dockerfile.focal for documentation of each of the lines.
+# See Dockerfile.jammy for documentation of each of the lines.
 ARG VTD_IMAGE=scratch
 FROM ${VTD_IMAGE} AS vtd
 WORKDIR /vtd
@@ -15,7 +15,6 @@ RUN --mount=type=cache,id=bionic-cache,target=/var/cache/apt \
     apt-get update && \
     apt-get install -y make ccache locales libbsd0 && \
     make -f /cloe/Makefile.setup \
-        WITHOUT_DEV_DEPS=yes \
         DEBIAN_FRONTEND=noninteractive \
         APT_ARGS="--no-install-recommends -y" \
         install-system-deps \
@@ -34,12 +33,11 @@ RUN pip3 install --upgrade pip && \
         install-python-deps
 
 # Install and Setup Conan
-ARG BUILD_TYPE=RelWithDebInfo
-RUN conan profile new --detect default && \
-    conan profile update settings.build_type=${BUILD_TYPE} default && \
-    conan profile update settings.compiler.libcxx=libstdc++11 default
-
+COPY dist/conan /cloe/dist/conan
+ARG CONAN_PROFILE=cloe-release
 ENV CONAN_NON_INTERACTIVE=yes
+RUN make -f /cloe/Makefile.setup setup-conan && \
+    conan config set general.default_profile=${CONAN_PROFILE}
 
 # Build and Install Cloe
 WORKDIR /cloe

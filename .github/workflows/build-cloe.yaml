@@ -35,7 +35,6 @@ jobs:
           sudo apt-get update &&
           sudo apt-get install -y make locales &&
           sudo make -f Makefile.setup \
-            WITHOUT_DEV_DEPS=yes \
             DEBIAN_FRONTEND=noninteractive \
             APT_ARGS="--no-install-recommends -y" \
             install-system-deps \

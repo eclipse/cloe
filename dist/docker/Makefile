@@ -24,7 +24,7 @@ DOCKER_CONTEXT := ${PROJECT_ROOT}
 # Default build arguments
 VENDOR_TARGET :=
 PACKAGE_TARGET :=
-BUILD_TYPE :=
+CONAN_PROFILE :=
 WITH_VTD :=
 KEEP_SOURCES :=
 
@@ -39,8 +39,8 @@ ifeq (${DEBUG},1)
 DOCKER_BUILD_ARGS += --progress=plain
 endif
 
-ifneq (${BUILD_TYPE},)
-DOCKER_BUILD_ARGS += --build-arg BUILD_TYPE=${BUILD_TYPE}
+ifneq (${CONAN_PROFILE},)
+DOCKER_BUILD_ARGS += --build-arg CONAN_PROFILE=${CONAN_PROFILE}
 endif
 
 ifneq (${VENDOR_TARGET},)
@@ -74,9 +74,10 @@ help:
 	echo
 	echo "Available build targets:"
 	echo "  all            to build all stable docker images"
-	echo "  ubuntu-20.04   to build the Ubuntu 20.04 image"
-	echo "  ubuntu-18.04   to build the Ubuntu 18.04 image"
-	echo "  ubuntu-16.04   to build the Ubuntu 18.04 image"
+	echo "  ubuntu-22.04   to build the Ubuntu 22.04/jammy image"
+	echo "  ubuntu-20.04   to build the Ubuntu 20.04/focal image"
+	echo "  ubuntu-18.04   to build the Ubuntu 18.04/bionic image"
+	echo "  ubuntu-16.04   to build the Ubuntu 16.04/xenial image"
 	echo "  archlinux      to build the Archlinux image"
 	echo
 	echo "Available system targets:"
@@ -89,8 +90,8 @@ help:
 	echo "  DOCKER_CONTEXT: ${DOCKER_CONTEXT}"
 	echo "  DOCKER_ARGS:    ${DOCKER_ARGS}"
 
-.PHONY: all ubuntu-16.04 ubuntu-18.04 ubuntu-20.04 archlinux
-all: ubuntu-20.04 ubuntu-18.04 ubuntu-16.04
+.PHONY: all ubuntu-16.04 ubuntu-18.04 ubuntu-20.04 ubuntu-22.04 archlinux
+all: ubuntu-22.04 ubuntu-20.04 ubuntu-18.04 ubuntu-16.04
 
 ubuntu-16.04: Dockerfile.xenial
 	@echo ===================================================================================
@@ -104,13 +105,17 @@ ubuntu-20.04: Dockerfile.focal
 	@echo ===================================================================================
 	${DOCKER} build -f $< ${DOCKER_ARGS} -t ${DOCKER_IMAGE}-$@ ${DOCKER_CONTEXT}
 
+ubuntu-22.04: Dockerfile.jammy
+	@echo ===================================================================================
+	${DOCKER} build -f $< ${DOCKER_ARGS} -t ${DOCKER_IMAGE}-$@ ${DOCKER_CONTEXT}
+
 archlinux: Dockerfile.archlinux
 	@echo ===================================================================================
 	${DOCKER} build -f $< ${DOCKER_ARGS} -t ${DOCKER_IMAGE}-$@ ${DOCKER_CONTEXT}
 
 release:
 	@test -f setup.sh || echo 'Error: require setup.sh for user authentication'
-	for dist in ubuntu-16.04 ubuntu-18.04 ubuntu-20.04; do \
+	for dist in ubuntu-16.04 ubuntu-18.04 ubuntu-20.04 ubuntu-22.04; do \
 		${DOCKER} run --rm \
 			$(subst --build-arg,-e,${DOCKER_NETWORK}) \
 			--mount "type=bind,source=$(CURDIR)/setup.sh,target=/root/setup.sh" \
