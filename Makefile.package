@@ -97,16 +97,20 @@ endif
 # These options can be set to influence package and configure.
 CONAN_OPTIONS :=
 
-.PHONY: ${BUILD_LOCKFILE}
 ifneq "${LOCKFILE_SOURCE}" ""
+.PHONY: ${BUILD_LOCKFILE}
 ifeq "$(realpath ${LOCKFILE_SOURCE})" "$(realpath ${SOURCE_CONANFILE})"
 $(error "LOCKFILE_SOURCE must contain superset of SOURCE_CONANFILE package and dependencies")
 endif
 LOCKFILE_OPTION := --lockfile="${BUILD_LOCKFILE}"
-${BUILD_LOCKFILE}: ${LOCKFILE_SOURCE} | ${BUILD_DIR} export
+${BUILD_LOCKFILE}: ${LOCKFILE_SOURCE} export
 	# Create lockfile from LOCKFILE_SOURCE.
 	#
+	mkdir -p "${BUILD_DIR}"
 	conan lock create --lockfile-out "${BUILD_LOCKFILE}" ${BUILD_TYPE_OPTION} ${CONAN_OPTIONS} --build -- "${LOCKFILE_SOURCE}" >/dev/null
+else
+# Lockfile will be created automatically by conan install command.
+${BUILD_LOCKFILE}:
 endif
 
 # When using a --lockfile option, we cannot use profile, settings, options, env
@@ -330,7 +334,7 @@ list: parse-info
 
 # IN-SOURCE TARGETS -----------------------------------------------------------
 .PHONY: all clean conan configure test export-pkg
-all: ${SOURCE_DIR} ${BUILD_CONANINFO}
+all: ${BUILD_CONANINFO} | ${SOURCE_DIR}
 	# Build the package in-source.
 	#
 	conan build . --source-folder="${SOURCE_DIR}" --build-folder="${BUILD_DIR}"
@@ -379,14 +383,12 @@ ${SOURCE_DIR}:
 	[ "$(shell readlink -f "${SOURCE_DIR}")" != "$(shell readlink -f .)" ]
 	conan source . --source-folder="${SOURCE_DIR}"
 
-${BUILD_DIR}:
-	mkdir -p "${BUILD_DIR}"
+${SOURCE_CMAKELISTS}: | ${SOURCE_DIR}
 
-${SOURCE_CMAKELISTS}: ${SOURCE_DIR}
-
-${BUILD_CONANINFO}: ${SOURCE_CONANFILE} ${BUILD_DIR} ${BUILD_LOCKFILE}
+${BUILD_CONANINFO}: ${SOURCE_CONANFILE} ${BUILD_LOCKFILE}
 	# Install package dependencies and prepare in-source build.
 	#
+	mkdir -p "${BUILD_DIR}"
 	conan install . ${PACKAGE_FQN} --install-folder="${BUILD_DIR}" --build=${BUILD_POLICY} ${ALL_OPTIONS}
 	touch ${BUILD_CONANINFO}
 
