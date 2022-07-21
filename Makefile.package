@@ -25,7 +25,7 @@ SHELL := /bin/bash
 DATE := $(shell date +"%Y%m%d")
 TIMESTAMP := $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 
-HAS_GIT := $(shell [ -d ${PROJECT_ROOT}/.git ] && echo "true")
+HAS_GIT := $(shell [ -e ${PROJECT_ROOT}/.git ] && echo "true")
 ifeq (${PROJECT_VERSION},unknown)
 ifeq (${HAS_GIT},true)
 GIT_COMMIT_HASH  := $(shell git log -1 --format=%h)
