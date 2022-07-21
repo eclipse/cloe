@@ -35,3 +35,10 @@ docker:
 		-t cloe/vtd-conan-package:${PACKAGE_VERSION} \
 		--build-arg PACKAGE_FQN=${PACKAGE_FQN} \
 		.
+
+.PHONY: extract-conan-package
+extract-conan-package:
+	touch ~/.conan/data/.user_id.tmp
+	docker run --rm -v ~/.conan/data:/mnt cloe/vtd-conan-package:2.2.0 bash -c \
+		"cp -a /vtd/ /mnt/vtd && chown -R --reference=/mnt/.user_id.tmp /mnt/vtd"
+	rm ~/.conan/data/.user_id.tmp
