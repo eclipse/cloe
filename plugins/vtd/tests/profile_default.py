@@ -6,6 +6,10 @@ class CloeTest(ConanFile):
     python_requires = "cloe-launch-profile/[~=0.19.0]@cloe/develop"
     python_requires_extend = "cloe-launch-profile.Base"
 
+    default_options = {
+        "cloe-engine:server": True,
+    }
+
     @property
     def cloe_launch_env(self):
         return {
@@ -29,3 +33,6 @@ class CloeTest(ConanFile):
         # Runtime requirements for VTD.
         self.requires("osi-sensor/1.0.0-vtd2.2@cloe/stable")
         self.requires("vtd/2.2.0@cloe-restricted/stable")
+
+        if self.options["cloe-engine"].server:
+            self.requires("boost/[<1.70]", override=True)

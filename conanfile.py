@@ -23,6 +23,8 @@ class Cloe(ConanFile):
 
         "test": True,
         "pedantic": True,
+
+        "cloe-engine:server": True,
     }
     generators = "cmake"
     no_copy_source = True
@@ -38,30 +40,33 @@ class Cloe(ConanFile):
             self.version = git.run("describe --dirty=-dirty")[1:]
 
     def requirements(self):
-        self.requires("boost/[~=1.69]", override=True)
+        def cloe_requires(dep):
+            self.requires(f"{dep}/{self.version}@cloe/develop")
+
+        cloe_requires("cloe-runtime")
+        cloe_requires("cloe-models")
+        cloe_requires("cloe-plugin-basic")
+        cloe_requires("cloe-plugin-gndtruth-extractor")
+        cloe_requires("cloe-plugin-minimator")
+        cloe_requires("cloe-plugin-mocks")
+        cloe_requires("cloe-plugin-noisy-sensor")
+        cloe_requires("cloe-plugin-speedometer")
+        cloe_requires("cloe-plugin-virtue")
+        if self.options.with_vtd:
+            cloe_requires("cloe-plugin-vtd")
+
+        boost_version = "[>=1.65.0]"
+        if self.options.with_engine:
+            cloe_requires("cloe-engine")
+            if self.options["cloe-engine"].server:
+                boost_version = "[<1.70]"
+
+        # Overrides:
         self.requires("fmt/[~=8.1.1]", override=True)
         self.requires("inja/[~=3.3.0]", override=True)
         self.requires("nlohmann_json/[~=3.10.5]", override=True)
         self.requires("incbin/[~=0.88.0]@cloe/stable", override=True),
-        requires = [
-            "cloe-runtime",
-            "cloe-models",
-            "cloe-plugin-basic",
-            "cloe-plugin-gndtruth-extractor",
-            "cloe-plugin-minimator",
-            "cloe-plugin-mocks",
-            "cloe-plugin-noisy-sensor",
-            "cloe-plugin-speedometer",
-            "cloe-plugin-virtue",
-        ]
-        if self.options.with_vtd:
-            requires.append("cloe-plugin-vtd")
-
-        if self.options.with_engine:
-            requires.append("cloe-engine")
-
-        for dep in requires:
-            self.requires(f"{dep}/{self.version}@cloe/develop")
+        self.requires(f"boost/{boost_version}", override=True)
 
     def _configure_cmake(self):
         if self._cmake:
