@@ -27,4 +27,4 @@ class CloeTest(ConanFile):
         self.requires(f"cloe-plugin-speedometer/{self.version}@cloe/develop")
         self.requires(f"cloe-plugin-virtue/{self.version}@cloe/develop")
 
-        self.requires("boost/[~=1.69]", override=True)
+        self.requires("boost/[<1.70]", override=True)
