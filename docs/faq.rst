@@ -29,19 +29,36 @@ is not limited to:
 - Doxygen
 
 
-Does Cloe support feature X for my controller Y?
-""""""""""""""""""""""""""""""""""""""""""""""""
+How do I avoid constant version changes like "0.18.0-38-g46e9b0b"?
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-This will be documented in the future.
+Generally, producing an immutable package is a good thing. Each commit that
+can be checked out should produce a differently versioned package, since the
+contents are also different. During development, this can produce a plethora
+of packages and leads to forced recompilation every time a commit is made or
+the git hash is changed.
+
+For example, running ``make smoketest-deps smoketest`` in the background and
+then committing work while it is running will lead to smoketests failing
+because Conan can't find the new package version.
+
+The solution is to set the version explicitly, which can be done by writing
+a string to the ``VERSION`` file in the repository root. This version should
+have a suffix that makes clear that it is a volatile package, such as
+``-nightly``. For example, in the repository root:
+
+    echo "0.19.0-nightly" > VERSION
+
+The ``VERSION`` file is listed in the ``.gitignore`` and is not committed.
+Just remember when you are using it, that every package you compile from that
+repository will have that version, even if you check out different states.
 
 
-Will you implement my controller?
-"""""""""""""""""""""""""""""""""
+How do I get rid of the "-dirty" suffix on my versions?
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-No, we will not. However, we will help you. See :doc:`develop/new-controller`.
+This indicates you have uncommited changes in the repository. Commit your
+changes or set the version explicitly in the ``VERSION`` file in your
+repository root.
 
-
-How do I integrate Cloe in my CI pipeline?
-""""""""""""""""""""""""""""""""""""""""""
-
-This will be documented in the future.
+See the previous question.
