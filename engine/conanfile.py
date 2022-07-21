@@ -57,8 +57,8 @@ class CloeEngine(ConanFile):
             self.requires("boost/[>=1.65.1,<1.70.0]")
         else:
             self.requires("boost/[>=1.65.1]")
-        self.requires("fmt/8.0.1", override=True)
-        self.requires("nlohmann_json/3.10.5", override=True)
+        self.requires("fmt/[~=8.1.1]", override=True)
+        self.requires("nlohmann_json/[~=3.10.5]", override=True)
 
     def build_requirements(self):
         if self.options.test:
