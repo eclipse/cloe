@@ -787,6 +787,18 @@ StateId SimulationMachine::StepBegin::impl(SimulationContext& ctx) {
   }
 
   // Refresh the double buffer
+  //
+  // Note: this line can easily break your time budget with the current server
+  // implementation. If you need better performance, disable the server in the
+  // stack file configuration:
+  //
+  //   {
+  //     "version": "4",
+  //     "server": {
+  //       "listen": false
+  //     }
+  //   }
+  //
   ctx.server->refresh_buffer();
 
   // Run time-based triggers
