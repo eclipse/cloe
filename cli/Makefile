@@ -25,7 +25,7 @@ help:
 .PHONY: install editable conan-profile
 install: conan-profile
 	command -v ${PIP} >/dev/null 2>&1
-	mv pyproject.toml pyproject.toml.bak
+	-mv pyproject.toml pyproject.toml.bak
 	${PIP} install ${PIP_INSTALL_ARGS} . || ( \
 		mv pyproject.toml.bak pyproject.toml; \
 		exit 1; \
@@ -34,7 +34,7 @@ install: conan-profile
 
 editable: conan-profile
 	command -v ${PIP} >/dev/null 2>&1
-	mv pyproject.toml pyproject.toml.bak
+	-mv pyproject.toml pyproject.toml.bak
 	${PIP} install -e ${PIP_INSTALL_ARGS} . || ( \
 		mv pyproject.toml.bak pyproject.toml; \
 		exit 1; \

@@ -71,6 +71,8 @@ class Environment:
         "LANGUAGE",
         "LANG",
         "LC_.*",
+        # Required for Zsh
+        "ZDOTDIR",
         # Required for resolving relative paths:
         "PWD",
         # Required for graphical output:
@@ -383,10 +385,76 @@ class Engine:
         return self.runtime_dir / "launcher_env.sh"
 
     def _prepare_runtime_dir(self) -> None:
-        # Clean and create runtime directory
+        """Clean and create runtime directory."""
         self.clean()
         logging.debug(f"Create: {self.runtime_dir}")
         self.runtime_dir.mkdir(parents = True)
+        self._write_prompt_sh()
+        self._write_bashrc()
+        self._write_zshrc()
+
+    def _write_prompt_sh(self) -> None:
+        """Write prompt.sh file."""
+        prompt_sh_file = self.runtime_dir / "prompt.sh"
+        prompt_sh_data = """\
+        CLOE_PROMPT="\u001b[2m[cloe-shell]\u001b[0m"
+
+        prompt_cloe() {
+            if [[ -n $CLOE_SHELL ]]; then
+                PROMPT="%{%F{242}%}[cloe-shell]%f ${PROMPT}"
+            fi
+        }
+
+        CURRENT_SHELL=$(basename $0)
+        if [[ $CURRENT_SHELL = "zsh" ]]; then
+            autoload -Uz add-zsh-hook
+            add-zsh-hook precmd prompt_cloe
+        else
+            export PS1="$CLOE_PROMPT $PS1"
+        fi
+        """
+        logging.debug(f"Write: {prompt_sh_file}")
+        with prompt_sh_file.open("w") as file:
+            file.write(prompt_sh_data)
+
+    def _write_bashrc(self) -> None:
+        """Write .bashrc file.
+
+        When creating a new shell, it's not possible to just "source" a file
+        and continue with the normal interactive session. So we need to create
+        a bashrc file that will be used instead, which loads the normal
+        configuration, and then augments it with the extra variables we need.
+        """
+        bashrc_file = self.runtime_dir / ".bashrc"
+        bashrc_data = """\
+        source /etc/bash.bashrc
+        if [ -f ~/.bashrc ]; then
+            source ~/.bashrc
+        fi
+        OLD_PS1="$PS1"
+        source "$(dirname "$BASH_SOURCE[0]")/launcher_env.sh"
+        PS1="$OLD_PS1"
+        source "$(dirname "$BASH_SOURCE[0]")/prompt.sh"
+        """
+        logging.debug(f"Write: {bashrc_file}")
+        with bashrc_file.open("w") as file:
+            file.write(bashrc_data)
+
+    def _write_zshrc(self) -> None:
+        """Write .zshrc file."""
+        zshrc_file = self.runtime_dir / ".zshrc"
+        zshrc_data = f"""\
+        ZDOTDIR="${{OLD_ZDOTDIR:-$HOME}}"
+        source "${{ZDOTDIR}}/.zshenv"
+        source "${{ZDOTDIR}}/.zshrc"
+        OLD_PS1="$PS1"
+        source "{self.runtime_dir}/launcher_env.sh"
+        PS1="$OLD_PS1"
+        source "{self.runtime_dir}/prompt.sh"
+        """
+        logging.debug(f"Write: {zshrc_file}")
+        with zshrc_file.open("w") as file:
+            file.write(zshrc_data)
 
     def _prepare_virtualenv(self) -> None:
         # Get conan to create a virtualenv AND virtualrunenv for us:
@@ -567,8 +635,15 @@ class Engine:
         # Replace this process with the SHELL now.
         sys.stdout.flush()
         cmd = [shell]
-        if arguments is not None:
+        if arguments is not None and len(arguments) != 0:
             cmd.extend(arguments)
+        else:
+            if shell == "/bin/bash":
+                cmd.extend(["--init-file", str(self.runtime_dir/".bashrc")])
+            elif shell == "/bin/zsh":
+                env.set("OLD_ZDOTDIR", str(env.get("ZDOTDIR", "")))
+                env.set("ZDOTDIR", self.runtime_dir)
+        logging.debug(f"Exec: {shell} {' '.join(cmd)}")
         os.execvpe(shell, cmd, env.as_dict())
 
     def activate(
@@ -588,10 +663,14 @@ class Engine:
             )
             sys.exit(2)
 
+        env.set("CLOE_SHELL", self.runtime_env_path())
+        self._write_runtime_env(env)
+
         print("# Please see `cloe-launch activate --help` before activating this.")
         print()
         print(f"source {self.runtime_dir / 'activate.sh'}")
         print(f"source {self.runtime_dir / 'activate_run.sh'}")
+        print(f"source {self.runtime_dir / 'prompt.sh'}")
         for var in ["CLOE_PROFILE_HASH", "CLOE_ENGINE", "CLOE_PLUGIN_PATH"]:
             print(f'export {var}="{env[var]}"')
         print(f'export CLOE_SHELL="{self.runtime_env_path()}"')
