@@ -35,10 +35,6 @@ ifeq ($(shell [ -f setup.sh ] && echo "true"),true)
 DOCKER_BUILD_ARGS += --secret id=setup,src=setup.sh
 endif
 
-ifeq (${DEBUG},1)
-DOCKER_BUILD_ARGS += --progress=plain
-endif
-
 ifneq (${CONAN_PROFILE},)
 DOCKER_BUILD_ARGS += --build-arg CONAN_PROFILE=${CONAN_PROFILE}
 endif
