@@ -15,12 +15,10 @@ class OpenSimulationInterfaceConan(ConanFile):
     options = {
         "shared": [True, False],
         "fPIC": [True, False],
-        "protoc_from_protobuf": [True, False],
     }
     default_options = {
         "shared": True,
         "fPIC": True,
-        "protoc_from_protobuf": False,
     }
     generators = "cmake"
     build_policy = "missing"
@@ -29,7 +27,7 @@ class OpenSimulationInterfaceConan(ConanFile):
         "CMakeLists.txt",
     ]
     requires = [
-        "protobuf/[>=2.6.1]@bincrafters/stable",
+        "protobuf/2.6.1@cloe/stable"
     ]
 
     _git_url = (
@@ -39,10 +37,6 @@ class OpenSimulationInterfaceConan(ConanFile):
     _git_ref = f"v{version}"
 
     _cmake = None
-
-    def build_requirements(self):
-        if not self.options.protoc_from_protobuf:
-            self.build_requires("protoc_installer/[>=2.6.1]@bincrafters/stable")
 
     def source(self):
         git = tools.Git(folder=self._git_dir)
