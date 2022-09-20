@@ -44,8 +44,8 @@ command line when calling make:
 - `BUILD_TYPE`: optional, one of `Release`, `RelWithDebInfo`, `Debug`;
   defaults to `RelWithDebInfo`.
 - `VENDOR_TARGET`: optional; defaults to `export-vendor download-vendor`.
-- `PACKAGE_TARGET`: optional, one of `package`, `package-auto`,
-  `package-select`, and `package-all`; defaults to `package-auto`.
+- `PACKAGE_TARGET`: optional, one of `package`, `package`,
+  `package-select`, and `package-all`; defaults to `package`.
 
 If you want to use a different Conan remote from the default, you need to
 copy `setup.sh.example` to `setup.sh` and modify the values to match your

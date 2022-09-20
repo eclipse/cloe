@@ -251,10 +251,9 @@ help::
 	echo
 
 $(call make_every_target, export,              "export all package recipes                  [conan-cache]")
-$(call make_cloe_target, package,              "create cloe package with build policy       [conan-cache]")
 $(call make_cloe_target, package-all,          "create cloe package and all dependencies    [conan-cache]")
 $(call make_cloe_target, package-outdated,     "create cloe package if outdated             [conan-cache]")
-$(call make_help_target, package-auto,         "create select packages together with cloe   [conan-cache]")
+$(call make_help_target, package,              "create select packages together with cloe   [conan-cache]")
 
 help::
 	echo
@@ -301,8 +300,8 @@ help::
 	echo "  Please see Makefile.all for more details and usage tips."
 	echo
 
-.PHONY: package-auto
-package-auto: export-select
+.PHONY: package
+package: export-select
 	# Build cloe with all targets and options together.
 	#
 	#   This is different from the package target in that it always builds the
