@@ -26,11 +26,8 @@ class OpenSimulationInterfaceConan(ConanFile):
     exports_sources = [
         "CMakeLists.txt",
     ]
-    build_requires = [
-        "protoc_installer/[>=2.6.1]@bincrafters/stable",
-    ]
     requires = [
-        "protobuf/[>=2.6.1]@bincrafters/stable",
+        "protobuf/2.6.1@cloe/stable"
     ]
 
     _git_url = (
