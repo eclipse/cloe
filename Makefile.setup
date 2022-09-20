@@ -8,7 +8,10 @@
 # cache invalidation and also to improve readability.
 #
 
-CLOE_ROOT := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
+PROJECT_ROOT := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
+CONAN_DIR := $(shell conan config home 2>/dev/null || echo "$HOME/.conan")
+
+include ${PROJECT_ROOT}/Makefile.help
 
 APT := $(or \
 	$(shell command -v apt 2>/dev/null), \
@@ -40,20 +43,19 @@ endif
 .DEFAULT: help
 .SILENT: help
 help::
-	echo "Available setup targets:"
-	echo "  setup                 to perform Git repository setup"
-	echo "  setup-conan           to install Conan profile"
-	echo "  install-system-deps   to install build (and development) system requirements"
-	echo "  install-python-deps   to install Python runtime requirements with ${PIP}"
-	echo "  install-sphinx-deps   to install Sphinx runtime requirements with ${PIP}"
-	echo "  install-python-tools  to install Python development tools with ${PIPX}"
+	$(call print_help_section, "Available setup targets")
+	$(call print_help_target, setup-git, "perform Git repository setup")
+	$(call print_help_target, setup-conan, "install Conan profile")
+	$(call print_help_target, install-system-deps, "install build (and development) system requirements")
+	$(call print_help_target, install-python-deps, "install Python runtime requirements with ${_dim}${PIP}${_rst}")
+	$(call print_help_target, install-sphinx-deps, "install Sphinx runtime requirements with ${_dim}${PIP}${_rst}")
+	$(call print_help_target, install-python-tools, "install Python development tools with ${_dim}${PIPX}${_rst}")
 	echo
 
-.PHONY: setup setup-conan
-setup:
+.PHONY: setup-git setup-conan
+setup-git:
 	git config --local core.hooksPath .git-hooks/
 
-CONAN_DIR=$(shell conan config home)
 setup-conan:
 	# Install Conan if it is not available.
 	if ! command -v conan >/dev/null 2>&1; then ${PIP} install --user conan; fi
@@ -72,9 +74,9 @@ setup-conan:
 		conan config set general.revisions_enabled=True; \
 	fi
 	# Install cloe-debug and cloe-release profiles.
-	if [ -d "${CLOE_ROOT}/dist/conan" ]; then \
-		install "${CLOE_ROOT}/dist/conan/cloe-debug.profile" "${CONAN_DIR}/profiles/cloe-debug"; \
-		install "${CLOE_ROOT}/dist/conan/cloe-release.profile" "${CONAN_DIR}/profiles/cloe-release"; \
+	if [ -d "${PROJECT_ROOT}/dist/conan" ]; then \
+		install "${PROJECT_ROOT}/dist/conan/cloe-debug.profile" "${CONAN_DIR}/profiles/cloe-debug"; \
+		install "${PROJECT_ROOT}/dist/conan/cloe-release.profile" "${CONAN_DIR}/profiles/cloe-release"; \
 	fi
 
 .PHONY: install-system-deps install-ubuntu-deps install-archlinux-deps install-python-deps install-python-tools install-sphinx-deps
