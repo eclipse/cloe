@@ -1,9 +1,15 @@
 # vim: set ft=make noet:
 #
-# Usage:
+# This Makefile is written to be a generic entrypoint to building packages
+# with Conan. It is used for every Conan package in this project through
+# the `include` directive. You can override defaults here with the
+# `override` keyword. For example:
 #
-#   PROJECT_ROOT := ...
-#   include ${PROJECT_ROOT}/Makefile.package
+#     override SOURCE_DIR := .
+#     override BUILD_IN_SOURCE := true
+#     override CLEAN_SOURCE_DIR := false
+#     override PACKAGE_CHANNEL := cloe/develop
+#     include ../../Makefile.package
 #
 # This Makefile is used for every Conan package in this project.
 # It expects a conanfile.py to reside in the directory and reads
@@ -15,11 +21,12 @@
 # You should also adjust the PACKAGE_CHANNEL variable.
 #
 
-PROJECT_ROOT     := $(dir $(abspath $(lastword ${MAKEFILE_LIST})))
-PROJECT_VERSION  := $(shell [ -r ${PROJECT_ROOT}/VERSION ] && cat ${PROJECT_ROOT}/VERSION || echo unknown)
+PROJECT_ROOT := $(dir $(abspath $(lastword ${MAKEFILE_LIST})))
+PROJECT_VERSION := $(shell [ -r ${PROJECT_ROOT}/VERSION ] && cat ${PROJECT_ROOT}/VERSION || echo unknown)
 
-CLOE_ROOT   := ${PROJECT_ROOT}
-CLOE_LAUNCH := PYTHONPATH="${CLOE_ROOT}/cli" python3 -m cloe_launch
+include ${PROJECT_ROOT}/Makefile.help
+
+CLOE_LAUNCH := PYTHONPATH="${PROJECT_ROOT}/cli" python3 -m cloe_launch
 
 SHELL := /bin/bash
 DATE := $(shell date +"%Y%m%d")
@@ -30,11 +37,11 @@ ifeq (${PROJECT_VERSION},unknown)
 ifeq (${HAS_GIT},true)
 GIT_COMMIT_HASH  := $(shell git log -1 --format=%h)
 GIT_COMMIT_DIRTY := $(shell git diff --quiet || echo "-dirty")
-GIT_DESCRIBE     := $(shell git describe --dirty="-dirty" | sed -r "s/^v(.*)/\1/")
+GIT_DESCRIBE := $(shell git describe --dirty="-dirty" | sed -r "s/^v(.*)/\1/")
 else
-GIT_DESCRIBE     := "unknown"
+GIT_DESCRIBE := "unknown"
 endif
-PROJECT_VERSION  := ${GIT_DESCRIBE}
+PROJECT_VERSION := ${GIT_DESCRIBE}
 endif
 
 SOURCE_DIR       := .
@@ -43,6 +50,7 @@ SOURCE_CMAKELISTS:= ${SOURCE_DIR}/CMakeLists.txt
 LOCKFILE_SOURCE  :=
 LOCKFILE_OPTION  :=
 CLEAN_SOURCE_DIR := false
+BUILD_IN_SOURCE  := true
 BUILD_DIR        := build
 BUILD_CONANINFO  := ${BUILD_DIR}/conanbuildinfo.cmake
 BUILD_CMAKECACHE := ${BUILD_DIR}/CMakeCache.txt
@@ -50,14 +58,14 @@ BUILD_LOCKFILE   := ${BUILD_DIR}/conan.lock
 BUILD_LAYOUT     := ${PROJECT_ROOT}/.conan-layout.ini
 BUILD_POLICY     := missing
 
-PACKAGE_NAME    := $(shell sed -rn 's/.*name\s*=\s*"([^"]+)"$$/\1/p' ${SOURCE_CONANFILE})
-PACKAGE_VERSION := $(or \
+PACKAGE_NAME     := $(shell sed -rn 's/.*name\s*=\s*"([^"]+)"$$/\1/p' ${SOURCE_CONANFILE})
+PACKAGE_VERSION  := $(or \
 	$(shell sed -rn 's/\s+version\s*=\s*"([^"]+)"$$/\1/p' ${SOURCE_CONANFILE}), \
 	${PROJECT_VERSION}, \
 	unknown \
 )
-PACKAGE_CHANNEL := cloe/develop
-PACKAGE_FQN     := ${PACKAGE_NAME}/${PACKAGE_VERSION}@${PACKAGE_CHANNEL}
+PACKAGE_CHANNEL  := cloe/develop
+PACKAGE_FQN      := ${PACKAGE_NAME}/${PACKAGE_VERSION}@${PACKAGE_CHANNEL}
 
 # It is an order of magnitude faster to parse ~/.conan/editable_packages.json
 # ourselves than to get conan to do it for us. This should only take us 20ms,
@@ -103,6 +111,7 @@ ifeq "$(realpath ${LOCKFILE_SOURCE})" "$(realpath ${SOURCE_CONANFILE})"
 $(error "LOCKFILE_SOURCE must contain superset of SOURCE_CONANFILE package and dependencies")
 endif
 LOCKFILE_OPTION := --lockfile="${BUILD_LOCKFILE}"
+override CONAN_OPTIONS :=
 ${BUILD_LOCKFILE}: ${LOCKFILE_SOURCE} export
 	# Create lockfile from LOCKFILE_SOURCE.
 	#
@@ -122,58 +131,66 @@ ALL_OPTIONS := ${BUILD_TYPE_OPTION} ${CONAN_OPTIONS}
 endif
 
 # INFORMATIONAL TARGETS -------------------------------------------------------
-.DEFAULT: help
+.DEFAULT_GOAL := help
 .SILENT: help status parse-info parse-editable info-name info-version info-channel info-fqn info smoketest smoketest-deps
 .PHONY: help status parse-info parse-editable info-name info-version info-channel info-fqn info smoketest smoketest-deps
 help:: parse-info parse-editable
-	echo "Usage: make <target>"
+	$(call print_help_usage)
 	echo
 	echo "The following targets define common operations with this package in"
 	echo "editable (local in-source) and uneditable (in the Conan cache) modes."
 	echo
-	echo "Available targets:"
-	echo "  help            to show this help"
-	echo "  status          to show status of package"
-	echo "  info            to show detailed package info"
-	echo "  smoketest-deps  to build smoketest dependencies for package"
-	echo "  smoketest       to run smoketests for package (requires built packages)"
+	$(call print_help_section, "Available targets")
+	$(call print_help_target, help, "show this help")
+	$(call print_help_target, status, "show status of package")
+	$(call print_help_target, info, "show detailed package info")
+	$(call print_help_target, smoketest-deps, "build smoketest dependencies for package")
+	$(call print_help_target, smoketest, "run smoketests for package (requires built packages)")
 	echo
-	echo "  export            to export recipe and sources        [conan-cache]"
-	echo "  download          to download or create package       [conan-cache]"
-	echo "  package           to create package with build policy [conan-cache]"
-	echo "  package-all       to create package and dependencies  [conan-cache]"
-	echo "  package-outdated  to create package if outdated       [conan-cache]"
-	echo "  list              to list installed package files     [conan-cache]"
-	echo "  purge             to remove package from cache        [conan-cache]"
+	$(call print_help_target, export, "export recipe and sources", "[conan-cache]")
+	$(call print_help_target, download, "download or create package", "[conan-cache]")
+	$(call print_help_target, package, "create package with build policy", "[conan-cache]")
+	$(call print_help_target, package-all, "create package and dependencies", "[conan-cache]")
+	$(call print_help_target, package-outdated, "create package if outdated", "[conan-cache]")
+	$(call print_help_target, list, "list installed package files", "[conan-cache]")
+	$(call print_help_target, purge, "remove package from cache", "[conan-cache]")
 	echo
-	echo "  editable    to instruct Conan to use in-source build"
-	echo "  uneditable  to instruct Conan to use local cache"
+ifeq (${BUILD_IN_SOURCE}, true)
+	$(call print_help_target, editable, "instruct Conan to use in-source build")
+	$(call print_help_target, uneditable, "instruct Conan to use local cache")
 	echo
-	echo "  all         to build the package                        [in-source]"
-	echo "  conan       to configure Conan and install dependencies [in-source]"
-	echo "  configure   to configure CMake package                  [in-source]"
-	echo "  test        to run CMake tests if they are available    [in-source]"
-	echo "  export-pkg  to export build artifacts to Conan cache    [in-source]"
-	echo "  clean       to remove build directory                   [in-source]"
+	$(call print_help_target, all, "build the package", "[in-source]")
+	$(call print_help_target, conan, "configure Conan and install dependencies", "[in-source]")
+	$(call print_help_target, configure, "configure CMake package", "[in-source]")
+	$(call print_help_target, test, "run CMake tests if they are available", "[in-source]")
+	$(call print_help_target, export-pkg, "export build artifacts to Conan cache", "[in-source]")
+ifeq (${CLEAN_SOURCE_DIR}, true)
+	$(call print_help_target, clean, "remove source and build directories", "[in-source]")
+else
+	$(call print_help_target, clean, "remove build directory", "[in-source]")
+endif
 	echo
-	echo "Configuration:"
-	echo "  LOCKFILE_SOURCE: ${LOCKFILE_SOURCE}"
-	echo "  SOURCE_DIR:      ${SOURCE_DIR}"
-	echo "  BUILD_DIR:       ${BUILD_DIR}"
-	echo "  BUILD_POLICY:    ${BUILD_POLICY}"
-	echo "  BUILD_TYPE:      ${BUILD_TYPE}"
-	echo "  CONAN_OPTIONS:   ${CONAN_OPTIONS}"
+endif
+	$(call print_help_subsection, "Configuration")
+	$(call print_help_define_align, LOCKFILE_SOURCE, ${LOCKFILE_SOURCE})
+ifeq (${BUILD_IN_SOURCE}, true)
+	$(call print_help_define_align, SOURCE_DIR,      ${SOURCE_DIR})
+endif
+	$(call print_help_define_align, BUILD_DIR,       ${BUILD_DIR})
+	$(call print_help_define_align, BUILD_POLICY,    ${BUILD_POLICY})
+	$(call print_help_define_align, BUILD_TYPE,      ${BUILD_TYPE})
+	$(call print_help_define_align, CONAN_OPTIONS,   ${CONAN_OPTIONS})
 	echo
-	echo "Package information:"
-	echo "  PACKAGE_NAME:    ${PACKAGE_NAME}"
-	echo "  PACKAGE_VERSION: ${PACKAGE_VERSION}"
-	echo "  PACKAGE_CHANNEL: ${PACKAGE_CHANNEL}"
-	echo "  PACKAGE_FQN:     ${PACKAGE_FQN}"
-	echo "  PACKAGE_EDITABLE:${PACKAGE_EDITABLE}"
-	echo "  PACKAGE_ID:      ${PACKAGE_ID}"
-	echo "  PACKAGE_DIR:     ${PACKAGE_DIR}"
-	echo "  PACKAGE_DATE:    ${PACKAGE_DATE}"
-	echo "  GIT_COMMIT_HASH: ${GIT_COMMIT_HASH}"
+	$(call print_help_subsection, "Package information")
+	$(call print_help_define_align, PACKAGE_NAME,    ${PACKAGE_NAME})
+	$(call print_help_define_align, PACKAGE_VERSION, ${PACKAGE_VERSION})
+	$(call print_help_define_align, PACKAGE_CHANNEL, ${PACKAGE_CHANNEL})
+	$(call print_help_define_align, PACKAGE_FQN,     ${PACKAGE_FQN})
+	$(call print_help_define_align, PACKAGE_EDITABLE,${PACKAGE_EDITABLE})
+	$(call print_help_define_align, PACKAGE_ID,      ${PACKAGE_ID})
+	$(call print_help_define_align, PACKAGE_DIR,     ${PACKAGE_DIR})
+	$(call print_help_define_align, PACKAGE_DATE,    ${PACKAGE_DATE})
+	$(call print_help_define_align, GIT_COMMIT_HASH, ${GIT_COMMIT_HASH})
 	echo
 
 parse-info: ${BUILD_LOCKFILE}
@@ -183,7 +200,7 @@ parse-info: ${BUILD_LOCKFILE}
 	#   target needs one of these variables, they should depend on this target
 	#   to ensure that these variables are set.
 	#
-	$(eval PACKAGE_INFO := $(shell conan info ${ALL_OPTIONS} "${PACKAGE_FQN}" --package-filter "${PACKAGE_FQN}" --paths 2>/dev/null | sed -r 's/$$/\\n/'))
+	$(eval PACKAGE_INFO := $(shell CONAN_REQUEST_TIMEOUT=0.1 conan info ${ALL_OPTIONS} "${PACKAGE_FQN}" --package-filter "${PACKAGE_FQN}" --paths 2>/dev/null | sed -r 's/$$/\\n/'))
 	$(eval PACKAGE_ID := $(shell echo -e "${PACKAGE_INFO}" | sed -rn 's/^ *ID: *(.*)$$/\1/p'))
 	$(eval PACKAGE_DIR := $(shell echo -e "${PACKAGE_INFO}" | sed -rn 's/^ *package_folder: *(.*)$$/\1/p'))
 	$(eval PACKAGE_DATE := $(shell echo -e "${PACKAGE_INFO}" | sed -rn 's/^ *Creation date: *(.*)$$/\1/p'))
@@ -232,7 +249,7 @@ smoketest:
 	@for profile in tests/profile_*.py; do \
 		test -f "$${profile}" || continue; \
 		printf "Running BATS tests with profile: $${profile}\n\n"; \
-		SHELL=/bin/bash ${CLOE_LAUNCH} shell -P "$${profile}" -- -c "source ${CLOE_ROOT}/tests/setup_testname.bash; bats tests"; \
+		SHELL=/bin/bash ${CLOE_LAUNCH} shell -P "$${profile}" -- -c "source ${PROJECT_ROOT}/tests/setup_testname.bash; bats tests"; \
 	done
 
 smoketest-deps:
@@ -334,19 +351,26 @@ list: parse-info
 
 # IN-SOURCE TARGETS -----------------------------------------------------------
 .PHONY: all clean conan configure test export-pkg
-all: ${BUILD_CONANINFO} | ${SOURCE_DIR}
-	# Build the package in-source.
-	#
-	conan build . --source-folder="${SOURCE_DIR}" --build-folder="${BUILD_DIR}"
 
 clean:
 	# Clean the build directory and Python cache files.
 	#
 	rm -rf "${BUILD_DIR}"
 	rm -rf __pycache__
-	if ${CLEAN_SOURCE_DIR}; then \
-		rm -rf ${SOURCE_DIR}; \
-	fi
+ifeq (${CLEAN_SOURCE_DIR}, true)
+	[ "${SOURCE_DIR}" != "." ] && rm -rf "${SOURCE_DIR}"
+endif
+
+ifeq (${BUILD_IN_SOURCE}, false)
+all conan configure test export-pkg ${SOURCE_DIR} ${SOURCE_CMAKELISTS} ${BUILD_CONANINFO} ${BUILD_CMAKECACHE}:
+	@echo "Error: [in-source] targets are not supported for this package."
+	@echo "Note: please use [conan-cache] targets, such as 'package'."
+	exit 1
+else
+all: ${BUILD_CONANINFO} | ${SOURCE_DIR}
+	# Build the package in-source.
+	#
+	conan build . --source-folder="${SOURCE_DIR}" --build-folder="${BUILD_DIR}"
 
 conan: ${BUILD_CONANINFO}
 
@@ -396,3 +420,4 @@ ${BUILD_CMAKECACHE}: ${SOURCE_CMAKELISTS} ${BUILD_CONANINFO}
 	# Configure in-source build with CMake.
 	#
 	conan build --configure . --source-folder="${SOURCE_DIR}" --build-folder="${BUILD_DIR}"
+endif

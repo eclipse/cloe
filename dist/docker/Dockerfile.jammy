@@ -18,6 +18,7 @@ FROM ubuntu:22.04
 # Install System Packages
 #
 # These packages are required for building and testing Cloe.
+COPY Makefile.help  /cloe/Makefile.help
 COPY Makefile.setup /cloe/Makefile.setup
 RUN --mount=type=cache,id=focal-cache,target=/var/cache/apt \
     --mount=type=cache,id=focal-lib,target=/var/lib/apt \

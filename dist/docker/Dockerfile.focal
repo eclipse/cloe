@@ -9,6 +9,7 @@ WORKDIR /vtd
 FROM ubuntu:20.04
 
 # Install System Packages
+COPY Makefile.help  /cloe/Makefile.help
 COPY Makefile.setup /cloe/Makefile.setup
 RUN --mount=type=cache,id=focal-cache,target=/var/cache/apt \
     --mount=type=cache,id=focal-lib,target=/var/lib/apt \

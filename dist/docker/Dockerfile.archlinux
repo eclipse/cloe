@@ -9,6 +9,7 @@ WORKDIR /vtd
 FROM archlinux:latest
 
 # Install System Packages
+COPY Makefile.help  /cloe/Makefile.help
 COPY Makefile.setup /cloe/Makefile.setup
 RUN pacman -Syu --noconfirm --needed make ccache && \
     make -f /cloe/Makefile.setup \

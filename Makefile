@@ -3,6 +3,11 @@
 # This file contains Makefile targets for the cloe project.
 #
 
+CLOE_ROOT   := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
+CLOE_LAUNCH := PYTHONPATH="${CLOE_ROOT}/cli" python3 -m cloe_launch
+
+include ${CLOE_ROOT}/Makefile.help
+
 # Set the clang-format command line to use:
 CLANG_FORMAT := $(shell command -v clang-format 2>/dev/null)
 CLANG_FORMAT_ARGS := -style=file
@@ -12,15 +17,6 @@ AG := $(or \
 	$(shell command -v ag 2>/dev/null), \
 	"grep -r" \
 )
-
-define print_header
-	@printf "________________________________________"
-	@printf "________________________________________\n"
-	@printf ":: %s\n" ${1}
-endef
-
-CLOE_ROOT   := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
-CLOE_LAUNCH := PYTHONPATH="${CLOE_ROOT}/cli" python3 -m cloe_launch
 
 # Build configuration:
 BUILD_DIR       := build
@@ -34,26 +30,28 @@ CONAN_OPTIONS   :=
 .DEFAULT: help
 .SILENT: help
 help::
-	echo "Usage: make <target>"
+	$(call print_help_usage)
 	echo
 
+# Setup targets ---------------------------------------------------------------
 include Makefile.setup
-include Makefile.all
 
 # Workspace targets -----------------------------------------------------------
 .PHONY: lockfile status deploy sphinx doxygen docker-all docker-test docker-release purge-all export-cli smoketest smoketest-deps
 help::
-	echo "Available workspace targets:"
-	echo "  smoketest       to run BATS system tests"
-	echo "  sphinx          to generate Sphinx documentation"
-	echo "  doxygen         to generate Doxygen documentation"
-	echo "  deploy          to deploy Cloe to INSTALL_DIR [=${INSTALL_DIR}]"
-	echo "  deploy-cli      to install cloe-launch with pip"
-	echo "  export-cli      to export cloe-launch-profile conan recipe"
+	$(call print_help_section, "Available workspace targets")
+	$(call print_help_target, status, "show status of each of the Conan packages")
+	$(call print_help_target, smoketest-deps, "build system test pre-requisites")
+	$(call print_help_target, smoketest, "run system tests")
+	$(call print_help_target, sphinx, "generate Sphinx documentation")
+	$(call print_help_target, doxygen, "generate Doxygen documentation")
+	$(call print_help_target, deploy, "deploy Cloe to INSTALL_DIR [=${INSTALL_DIR}]")
+	$(call print_help_target, deploy-cli, "install ${_yel}cloe-launch${_rst} with ${_dim}${PIPX}${_rst}")
+	$(call print_help_target, export-cli, "export ${_yel}cloe-launch-profile${_rst} Conan recipe")
 	echo
-	echo "  docker-test     to build only a single Docker image"
-	echo "  docker-all      to build all Docker images"
-	echo "  docker-release  to upload all Conan packages from Docker images"
+	$(call print_help_target, docker-test, "build only a single Docker image")
+	$(call print_help_target, docker-all, "build all Docker images")
+	$(call print_help_target, docker-release, "upload all Conan packages from Docker images")
 	echo
 
 ${BUILD_LOCKFILE}:
@@ -97,16 +95,14 @@ sphinx:
 	mkdir -p ${BUILD_DIR}/sphinx
 	${MAKE} -C docs html
 
-doxygen:
+doxygen:keyboard tilt
 	$(call print_header, "Generating Doxygen documentation...")
 	mkdir -p ${BUILD_DIR}/doxygen
 	doxygen Doxyfile
 
 smoketest-deps: export-cli smoketest-deps-select
-	# Call this target with WITH_VTD=1 to include VTD binding tests.
 
 smoketest: smoketest-select
-	# Call this target with WITH_VTD=1 to include VTD binding tests.
 
 purge-all:
 	$(call print_header, "Removing all cloe Conan packages...")
@@ -117,13 +113,17 @@ purge-all:
 # Development targets ---------------------------------------------------------
 .PHONY: format todos find-missing-eol sanitize-files
 help::
-	echo "Available development targets:"
-	echo "  status          to show current workspace status"
-	echo "  format         to format Cloe source code with clang-format"
-	echo "  todos          to show all TODOs in Cloe source code"
+	$(call print_help_section, "Available development targets")
+	$(call print_help_target, format, "format Cloe source code with clang-format")
+	$(call print_help_target, todos, "show all TODOs in Cloe source code")
 	echo
 
 format:
+	# When you do this, isolate the change in a single commit and then add the
+	# commit hash to a file such as .git-blame-ignore-revs, so that git-blame
+	# continues to work as expected.
+	#
+	# See: https://www.moxio.com/blog/43/ignoring-bulk-change-commits-with-git-blame
 	find . -type f -not -path '*/\.git/*' -and \( -name '*.cpp' -o -name '*.hpp' \) -exec ${CLANG_FORMAT} ${CLANG_FORMAT_ARGS} -i {} \;
 
 todos:
@@ -139,3 +139,6 @@ find-missing-eol:
 
 sanitize-files:
 	git grep --cached -Ilz '' | while IFS= read -rd '' f; do tail -c1 < "$$f" | read -r _ || echo >> "$$f"; done
+
+# Build targets ---------------------------------------------------------------
+include Makefile.all
