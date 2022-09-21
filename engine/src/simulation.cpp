@@ -199,6 +199,15 @@ class SimulationMachine
         }
       } catch (cloe::AsyncAbort&) {
         this->push_interrupt(ABORT);
+      } catch (cloe::ModelReset& e) {
+        logger()->error("Unhandled reset request in {} state: {}", id, e.what());
+        this->push_interrupt(RESET);
+      } catch (cloe::ModelAbort& e) {
+        logger()->error("Unhandled abort request in {} state: {}", id, e.what());
+        this->push_interrupt(ABORT);
+      } catch (cloe::ModelError& e) {
+        logger()->error("Unhandled model error in {} state: {}", id, e.what());
+        this->push_interrupt(ABORT);
       } catch (std::exception& e) {
         logger()->critical("Fatal error in {} state: {}", id, e.what());
         throw;
