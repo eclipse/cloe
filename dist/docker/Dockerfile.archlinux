@@ -1,11 +1,7 @@
-# syntax = docker/dockerfile:1.2
+# syntax = docker/dockerfile:1.4.3
 # Dockerfile.archlinux
 #
-# See Dockerfile.jammy for documentation of each of the lines.
-ARG VTD_IMAGE=scratch
-FROM ${VTD_IMAGE} AS vtd
-WORKDIR /vtd
-
+# See Dockerfile.ubuntu for documentation of each of the lines.
 FROM archlinux:latest
 
 # Install System Packages
@@ -39,7 +35,6 @@ RUN make -f /cloe/Makefile.setup setup-conan && \
 
 # Build and Install Cloe
 WORKDIR /cloe
-ARG WITH_VTD=0
 ARG KEEP_SOURCES=0
 
 # Download or build dependencies:
@@ -51,7 +46,7 @@ RUN --mount=type=cache,target=/ccache \
     --mount=type=secret,target=/root/setup.sh,id=setup,mode=0400 \
     --mount=type=bind,target=/root/.conan/data/vtd,source=/vtd,from=vtd,rw \
     if [ -r /root/setup.sh ]; then . /root/setup.sh; fi && \
-    make -f Makefile.all WITH_VTD=${WITH_VTD} ${VENDOR_TARGET} && \
+    make -f Makefile.all ${VENDOR_TARGET} && \
     # Clean up:
     conan user --clean && \
     if [ ${KEEP_SOURCES} -eq 0 ]; then \
@@ -69,7 +64,7 @@ RUN --mount=type=cache,target=/ccache \
     --mount=type=secret,target=/root/setup.sh,id=setup,mode=0400 \
     if [ -r /root/setup.sh ]; then . /root/setup.sh; fi && \
     echo "${PROJECT_VERSION}" > /cloe/VERSION && \
-    make WITH_VTD=${WITH_VTD} ${PACKAGE_TARGET} && \
+    make ${PACKAGE_TARGET} && \
     # Clean up:
     conan user --clean && \
     if [ ${KEEP_SOURCES} -eq 0 ]; then \
@@ -83,5 +78,5 @@ RUN --mount=type=cache,target=/ccache \
 RUN --mount=type=secret,target=/root/setup.sh,id=setup,mode=0400 \
     --mount=type=bind,target=/root/.conan/data/vtd,source=/vtd,from=vtd,rw \
     if [ -r /root/setup.sh ]; then . /root/setup.sh; fi && \
-    make WITH_VTD=${WITH_VTD} smoketest && \
+    make smoketest && \
     conan user --clean

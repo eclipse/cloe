@@ -1,34 +1,27 @@
-# syntax = docker/dockerfile:1.2
-# Dockerfile.jammy
+# syntax = docker/dockerfile:1.4.3
+# Dockerfile.ubuntu
 #
 # This file acts partly as a Docker recipe for building Cloe on Ubuntu.
+# It is known to work with Ubuntu 18.04, 20.04, and 22.04.
 #
 # If you are behind a proxy, make sure to pass in the respective HTTP_PROXY,
 # HTTPS_PROXY, and NO_PROXY variables.
-
-# This is a work-around to not being able to use variables in RUN --mount=from:
-# If you want to use VTD in this image, you need to specify the Docker image
-# containing the distribution that can be mounted at /root/.conan/data/
-ARG VTD_IMAGE=scratch
-FROM ${VTD_IMAGE} AS vtd
-WORKDIR /vtd
-
-FROM ubuntu:22.04
+ARG UBUNTU_VERSION=20.04
+FROM ubuntu:${UBUNTU_VERSION}
 
 # Install System Packages
 #
 # These packages are required for building and testing Cloe.
 COPY Makefile.help  /cloe/Makefile.help
 COPY Makefile.setup /cloe/Makefile.setup
-RUN --mount=type=cache,id=focal-cache,target=/var/cache/apt \
-    --mount=type=cache,id=focal-lib,target=/var/lib/apt \
+RUN --mount=type=cache,id=ubuntu-${UBUNTU_VERSION}-cache,target=/var/cache/apt \
+    --mount=type=cache,id=ubuntu-${UBUNTU_VERSION}-lib,target=/var/lib/apt \
     apt-get update && \
-    apt-get install -y make ccache locales && \
+    apt-get install -y make ccache locales libbsd0 && \
     make -f /cloe/Makefile.setup \
         DEBIAN_FRONTEND=noninteractive \
         APT_ARGS="--no-install-recommends -y" \
-        install-system-deps \
-        && \
+        install-system-deps && \
     locale-gen && \
     rm -rf /var/lib/apt/lists/*
 
@@ -45,8 +38,10 @@ RUN pip3 install --upgrade pip && \
 # Install and Setup Conan
 #
 # You may not want to use the default Conan remote (conan-center), so we use
-# whatever is stored in the build arguments CONAN_REMOTE. Currently, only
-# anonymous access is possible in this Dockerfile.
+# whatever is stored in the build arguments CONAN_REMOTE.
+#
+# If you need to login to a Conan remote, make use of the setup.sh file, which
+# will be sourced for every run argument that uses the conan command.
 #
 # The following profiles are available: default, cloe-release, cloe-debug
 COPY dist/conan /cloe/dist/conan
@@ -62,7 +57,6 @@ RUN make -f /cloe/Makefile.setup setup-conan && \
 # Makefile at the root of the repository. This also acts as a form of
 # documentation.
 WORKDIR /cloe
-ARG WITH_VTD=0
 ARG KEEP_SOURCES=0
 
 # Download or build dependencies:
@@ -72,9 +66,8 @@ COPY Makefile.all /cloe
 ARG VENDOR_TARGET="export-vendor download-vendor"
 RUN --mount=type=cache,target=/ccache \
     --mount=type=secret,target=/root/setup.sh,id=setup,mode=0400 \
-    --mount=type=bind,target=/root/.conan/data/vtd,source=/vtd,from=vtd,rw \
     if [ -r /root/setup.sh ]; then . /root/setup.sh; fi && \
-    make -f Makefile.all WITH_VTD=${WITH_VTD} ${VENDOR_TARGET} && \
+    make -f Makefile.all ${VENDOR_TARGET} && \
     # Clean up:
     conan user --clean && \
     if [ ${KEEP_SOURCES} -eq 0 ]; then \
@@ -92,7 +85,7 @@ RUN --mount=type=cache,target=/ccache \
     --mount=type=secret,target=/root/setup.sh,id=setup,mode=0400 \
     if [ -r /root/setup.sh ]; then . /root/setup.sh; fi && \
     echo "${PROJECT_VERSION}" > /cloe/VERSION && \
-    make WITH_VTD=${WITH_VTD} ${PACKAGE_TARGET} && \
+    make ${PACKAGE_TARGET} && \
     # Clean up:
     conan user --clean && \
     if [ ${KEEP_SOURCES} -eq 0 ]; then \
@@ -104,7 +97,6 @@ RUN --mount=type=cache,target=/ccache \
 
 # Run smoketests.
 RUN --mount=type=secret,target=/root/setup.sh,id=setup,mode=0400 \
-    --mount=type=bind,target=/root/.conan/data/vtd,source=/vtd,from=vtd,rw \
     if [ -r /root/setup.sh ]; then . /root/setup.sh; fi && \
-    make WITH_VTD=${WITH_VTD} smoketest && \
+    make smoketest && \
     conan user --clean

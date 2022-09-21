@@ -4,6 +4,8 @@
 PROJECT_ROOT := ../..
 PROJECT_VERSION := $(shell make --no-print-directory -C ${PROJECT_ROOT} -f Makefile.package info-version)
 
+include ${PROJECT_ROOT}/Makefile.help
+
 DOCKER := DOCKER_BUILDKIT=1 docker
 
 DOCKER_NETWORK := \
@@ -25,7 +27,6 @@ DOCKER_CONTEXT := ${PROJECT_ROOT}
 VENDOR_TARGET :=
 PACKAGE_TARGET :=
 CONAN_PROFILE :=
-WITH_VTD :=
 KEEP_SOURCES :=
 
 DOCKER_BUILD_ARGS += ${DOCKER_NETWORK}
@@ -47,14 +48,6 @@ ifneq (${PACKAGE_TARGET},)
 DOCKER_BUILD_ARGS += --build-arg PACKAGE_TARGET=${PACKAGE_TARGET}
 endif
 
-ifeq (${WITH_VTD},1)
-DOCKER_IMAGE := ${DOCKER_IMAGE}-vtd
-VTD_VERSION := $(shell make --no-print-directory -C ${PROJECT_ROOT}/vendor/vtd info-version 2>/dev/null)
-VTD_IMAGE   := cloe/vtd-conan-package:${VTD_VERSION}
-DOCKER_BUILD_ARGS += --build-arg WITH_VTD=${WITH_VTD}
-DOCKER_BUILD_ARGS += --build-arg VTD_IMAGE=${VTD_IMAGE}
-endif
-
 ifeq (${KEEP_SOURCES},1)
 DOCKER_IMAGE := ${DOCKER_IMAGE}-with-src
 DOCKER_BUILD_ARGS += --build-arg KEEP_SOURCES=1
@@ -66,44 +59,32 @@ DOCKER_ARGS := ${DOCKER_BUILD_ARGS}
 .SILENT: help
 .DEFAULT: help
 help:
-	echo "Usage: make <target>"
+	$(call print_help_usage)
 	echo
-	echo "Available build targets:"
-	echo "  all            to build all stable docker images"
-	echo "  ubuntu-22.04   to build the Ubuntu 22.04/jammy image"
-	echo "  ubuntu-20.04   to build the Ubuntu 20.04/focal image"
-	echo "  ubuntu-18.04   to build the Ubuntu 18.04/bionic image"
-	echo "  ubuntu-16.04   to build the Ubuntu 16.04/xenial image"
-	echo "  archlinux      to build the Archlinux image"
+	$(call print_help_section, "Available build targets")
+	$(call print_help_target, all, "build all stable docker images")
+	$(call print_help_target, ubuntu-22.04, "build the Ubuntu 22.04/jammy image")
+	$(call print_help_target, ubuntu-20.04, "build the Ubuntu 20.04/focal image")
+	$(call print_help_target, ubuntu-18.04, "build the Ubuntu 18.04/bionic image")
+	$(call print_help_target, archlinux, "build the Archlinux image")
 	echo
-	echo "Available system targets:"
-	echo "  purge-current  to purge and prune current docker versions"
-	echo "  purge-all      to purge and prune all docker versions"
+	$(call print_help_section, "Available system targets")
+	$(call print_help_target, release, "push Conan packages from current images to remote")
+	$(call print_help_target, purge-current, "purge and prune current docker versions")
+	$(call print_help_target, purge-all, "purge and prune all docker versions")
 	echo
-	echo "Configuration:"
-	echo "  IMAGE_BASE:     ${IMAGE_BASE}"
-	echo "  IMAGE_VERSION:  ${IMAGE_VERSION}"
-	echo "  DOCKER_CONTEXT: ${DOCKER_CONTEXT}"
-	echo "  DOCKER_ARGS:    ${DOCKER_ARGS}"
+	$(call print_help_section, "Configuration")
+	$(call print_help_define, IMAGE_BASE, ${IMAGE_BASE})
+	$(call print_help_define, IMAGE_VERSION, ${IMAGE_VERSION})
+	$(call print_help_define, DOCKER_CONTEXT, ${DOCKER_CONTEXT})
+	$(call print_help_define_lines, DOCKER_ARGS, ${DOCKER_ARGS})
 
-.PHONY: all ubuntu-16.04 ubuntu-18.04 ubuntu-20.04 ubuntu-22.04 archlinux
-all: ubuntu-22.04 ubuntu-20.04 ubuntu-18.04 ubuntu-16.04
+.PHONY: all ubuntu-18.04 ubuntu-20.04 ubuntu-22.04 archlinux
+all: ubuntu-22.04 ubuntu-20.04 ubuntu-18.04
 
-ubuntu-16.04: Dockerfile.xenial
+ubuntu-18.04 ubuntu-20.04 ubuntu-22.04: Dockerfile.ubuntu
 	@echo ===================================================================================
-	${DOCKER} build -f $< ${DOCKER_ARGS} -t ${DOCKER_IMAGE}-$@ ${DOCKER_CONTEXT}
-
-ubuntu-18.04: Dockerfile.bionic
-	@echo ===================================================================================
-	${DOCKER} build -f $< ${DOCKER_ARGS} -t ${DOCKER_IMAGE}-$@ ${DOCKER_CONTEXT}
-
-ubuntu-20.04: Dockerfile.focal
-	@echo ===================================================================================
-	${DOCKER} build -f $< ${DOCKER_ARGS} -t ${DOCKER_IMAGE}-$@ ${DOCKER_CONTEXT}
-
-ubuntu-22.04: Dockerfile.jammy
-	@echo ===================================================================================
-	${DOCKER} build -f $< ${DOCKER_ARGS} -t ${DOCKER_IMAGE}-$@ ${DOCKER_CONTEXT}
+	${DOCKER} build -f Dockerfile.ubuntu --build-arg UBUNTU_VERSION=$(subst ubuntu-,,$@) ${DOCKER_ARGS} -t ${DOCKER_IMAGE}-$@ ${DOCKER_CONTEXT}
 
 archlinux: Dockerfile.archlinux
 	@echo ===================================================================================
@@ -111,7 +92,7 @@ archlinux: Dockerfile.archlinux
 
 release:
 	@test -f setup.sh || echo 'Error: require setup.sh for user authentication'
-	for dist in ubuntu-16.04 ubuntu-18.04 ubuntu-20.04 ubuntu-22.04; do \
+	for dist in ubuntu-18.04 ubuntu-20.04 ubuntu-22.04; do \
 		${DOCKER} run --rm \
 			$(subst --build-arg,-e,${DOCKER_NETWORK}) \
 			--mount "type=bind,source=$(CURDIR)/setup.sh,target=/root/setup.sh" \
