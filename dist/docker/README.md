@@ -11,11 +11,10 @@ Usage: make <target>
 
 Available targets:
   all           to build all stable docker images
-  ubuntu-20.04  to build the Ubuntu 20.04 image
-  ubuntu-18.04  to build the Ubuntu 18.04 image
-  ubuntu-16.04  to build the Ubuntu 18.04 image
+  ubuntu-22.04  to build the Ubuntu 22.04/jammy image
+  ubuntu-20.04  to build the Ubuntu 20.04/focal image
+  ubuntu-18.04  to build the Ubuntu 18.04/bionic image
   archlinux     to build the Archlinux image
-  vires         to build the required VTD sources image
 
 Configuration:
   IMAGE_BASE:     cloe/cloe-engine
@@ -40,7 +39,6 @@ detected in the host environment.
 The following build arguments are available and should be specified on the
 command line when calling make:
 
-- `WITH_VTD`: optional, one of `0` and `1`; defaults to `0`.
 - `BUILD_TYPE`: optional, one of `Release`, `RelWithDebInfo`, `Debug`;
   defaults to `RelWithDebInfo`.
 - `VENDOR_TARGET`: optional; defaults to `export-vendor download-vendor`.
