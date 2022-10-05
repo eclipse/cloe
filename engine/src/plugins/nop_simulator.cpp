@@ -27,16 +27,20 @@
 #include <string>      // for string
 #include <vector>      // for vector<>
 
-#include <cloe/component/ego_sensor.hpp>        // for NopEgoSensor
-#include <cloe/component/lane_sensor.hpp>       // for NopLaneSensor
-#include <cloe/component/latlong_actuator.hpp>  // for LatLongActuator
-#include <cloe/component/object_sensor.hpp>     // for NopObjectSensor
-#include <cloe/handler.hpp>                     // for ToJson
-#include <cloe/models.hpp>                      // for CloeComponent
-#include <cloe/registrar.hpp>                   // for Registrar
-#include <cloe/simulator.hpp>                   // for Simulator
-#include <cloe/sync.hpp>                        // for Sync
-#include <cloe/vehicle.hpp>                     // for Vehicle
+#include <cloe/component/brake_sensor.hpp>       // for NopBrakeSensor
+#include <cloe/component/ego_sensor.hpp>         // for NopEgoSensor
+#include <cloe/component/lane_sensor.hpp>        // for NopLaneSensor
+#include <cloe/component/latlong_actuator.hpp>   // for LatLongActuator
+#include <cloe/component/object_sensor.hpp>      // for NopObjectSensor
+#include <cloe/component/powertrain_sensor.hpp>  // for NopPowertrainSensor
+#include <cloe/component/steering_sensor.hpp>    // for NopSteeringSensor
+#include <cloe/component/wheel_sensor.hpp>       // for NopWheelSensor
+#include <cloe/handler.hpp>                      // for ToJson
+#include <cloe/models.hpp>                       // for CloeComponent
+#include <cloe/registrar.hpp>                    // for Registrar
+#include <cloe/simulator.hpp>                    // for Simulator
+#include <cloe/sync.hpp>                         // for Sync
+#include <cloe/vehicle.hpp>                      // for Vehicle
 
 namespace cloe {
 namespace simulator {
@@ -47,6 +51,18 @@ struct NopVehicle : public Vehicle {
     this->new_component(new NopEgoSensor(),
                         CloeComponent::GROUNDTRUTH_EGO_SENSOR,
                         CloeComponent::DEFAULT_EGO_SENSOR);
+    this->new_component(new NopPowertrainSensor(),
+                        CloeComponent::GROUNDTRUTH_POWERTRAIN_SENSOR,
+                        CloeComponent::DEFAULT_POWERTRAIN_SENSOR);
+    this->new_component(new NopBrakeSensor(),
+                        CloeComponent::GROUNDTRUTH_BRAKE_SENSOR,
+                        CloeComponent::DEFAULT_BRAKE_SENSOR);
+    this->new_component(new NopWheelSensor(),
+                        CloeComponent::GROUNDTRUTH_WHEEL_SENSOR,
+                        CloeComponent::DEFAULT_WHEEL_SENSOR);
+    this->new_component(new NopSteeringSensor(),
+                        CloeComponent::GROUNDTRUTH_STEERING_SENSOR,
+                        CloeComponent::DEFAULT_STEERING_SENSOR);
     this->new_component(new NopObjectSensor(),
                         CloeComponent::GROUNDTRUTH_WORLD_SENSOR,
                         CloeComponent::DEFAULT_WORLD_SENSOR);
