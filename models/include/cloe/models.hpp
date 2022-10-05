@@ -32,12 +32,20 @@ namespace cloe {
 enum class CloeComponent {
   // Groundtruth sensors should never be modified/replaced.
   GROUNDTRUTH_EGO_SENSOR,
+  GROUNDTRUTH_POWERTRAIN_SENSOR,
+  GROUNDTRUTH_BRAKE_SENSOR,
+  GROUNDTRUTH_WHEEL_SENSOR,
+  GROUNDTRUTH_STEERING_SENSOR,
   GROUNDTRUTH_WORLD_SENSOR,
   GROUNDTRUTH_LANE_SENSOR,
   GROUNDTRUTH_TRAFFIC_SIGN_SENSOR,
 
   // Default sensors are initially the same as the ground truth sensors
   DEFAULT_EGO_SENSOR,
+  DEFAULT_POWERTRAIN_SENSOR,
+  DEFAULT_BRAKE_SENSOR,
+  DEFAULT_WHEEL_SENSOR,
+  DEFAULT_STEERING_SENSOR,
   DEFAULT_WORLD_SENSOR,
   DEFAULT_LANE_SENSOR,
   DEFAULT_TRAFFIC_SIGN_SENSOR,
@@ -57,11 +65,19 @@ enum class CloeComponent {
 ENUM_SERIALIZATION(CloeComponent, ({
   // Groundtruth sensors
   {CloeComponent::GROUNDTRUTH_EGO_SENSOR, "cloe::gndtruth_ego_sensor"},
+  {CloeComponent::GROUNDTRUTH_POWERTRAIN_SENSOR, "cloe::gndtruth_powertrain_sensor"},
+  {CloeComponent::GROUNDTRUTH_BRAKE_SENSOR, "cloe::gndtruth_brake_sensor"},
+  {CloeComponent::GROUNDTRUTH_WHEEL_SENSOR, "cloe::gndtruth_wheel_sensor"},
+  {CloeComponent::GROUNDTRUTH_STEERING_SENSOR, "cloe::gndtruth_steering_sensor"},
   {CloeComponent::GROUNDTRUTH_WORLD_SENSOR, "cloe::gndtruth_world_sensor"},
   {CloeComponent::GROUNDTRUTH_LANE_SENSOR, "cloe::gndtruth_lane_sensor"},
 
   // Default sensors
   {CloeComponent::DEFAULT_EGO_SENSOR, "cloe::default_ego_sensor"},
+  {CloeComponent::DEFAULT_POWERTRAIN_SENSOR, "cloe::default_powertrain_sensor"},
+  {CloeComponent::DEFAULT_BRAKE_SENSOR, "cloe::default_brake_sensor"},
+  {CloeComponent::DEFAULT_WHEEL_SENSOR, "cloe::default_wheel_sensor"},
+  {CloeComponent::DEFAULT_STEERING_SENSOR, "cloe::default_steering_sensor"},
   {CloeComponent::DEFAULT_WORLD_SENSOR, "cloe::default_world_sensor"},
   {CloeComponent::DEFAULT_LANE_SENSOR, "cloe::default_lane_sensor"},
 
