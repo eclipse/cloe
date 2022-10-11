@@ -59,6 +59,9 @@ enum class CloeComponent {
   DEFAULT_LONG_ACTUATOR,
   DEFAULT_LAT_ACTUATOR,
   DEFAULT_LATLONG_ACTUATOR,
+  DEFAULT_GEARBOX_ACTUATOR,
+  DEFAULT_PEDAL_ACTUATOR,
+  DEFAULT_STEERING_ACTUATOR,
 };
 
 // clang-format off
@@ -90,6 +93,9 @@ ENUM_SERIALIZATION(CloeComponent, ({
   {CloeComponent::DEFAULT_LONG_ACTUATOR, "cloe::default_long_actuator"},
   {CloeComponent::DEFAULT_LAT_ACTUATOR, "cloe::default_lat_actuator"},
   {CloeComponent::DEFAULT_LATLONG_ACTUATOR, "cloe::default_latlong_actuator"},
+  {CloeComponent::DEFAULT_GEARBOX_ACTUATOR, "cloe::default_gearbox_actuator"},
+  {CloeComponent::DEFAULT_PEDAL_ACTUATOR, "cloe::default_pedal_actuator"},
+  {CloeComponent::DEFAULT_STEERING_ACTUATOR, "cloe::default_steering_actuator"},
 }))
 // clang-format on
 

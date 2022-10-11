@@ -29,10 +29,13 @@
 
 #include <cloe/component/brake_sensor.hpp>       // for NopBrakeSensor
 #include <cloe/component/ego_sensor.hpp>         // for NopEgoSensor
+#include <cloe/component/gearbox_actuator.hpp>   // for GearboxActuator
 #include <cloe/component/lane_sensor.hpp>        // for NopLaneSensor
 #include <cloe/component/latlong_actuator.hpp>   // for LatLongActuator
 #include <cloe/component/object_sensor.hpp>      // for NopObjectSensor
+#include <cloe/component/pedal_actuator.hpp>     // for PedalActuator
 #include <cloe/component/powertrain_sensor.hpp>  // for NopPowertrainSensor
+#include <cloe/component/steering_actuator.hpp>  // for SteeringActuator
 #include <cloe/component/steering_sensor.hpp>    // for NopSteeringSensor
 #include <cloe/component/wheel_sensor.hpp>       // for NopWheelSensor
 #include <cloe/handler.hpp>                      // for ToJson
@@ -68,6 +71,12 @@ struct NopVehicle : public Vehicle {
                         CloeComponent::DEFAULT_WORLD_SENSOR);
     this->new_component(new LatLongActuator(),
                         CloeComponent::DEFAULT_LATLONG_ACTUATOR);
+    this->new_component(new GearboxActuator(),
+                        CloeComponent::DEFAULT_GEARBOX_ACTUATOR);
+    this->new_component(new PedalActuator(),
+                        CloeComponent::DEFAULT_PEDAL_ACTUATOR);
+    this->new_component(new SteeringActuator(),
+                        CloeComponent::DEFAULT_STEERING_ACTUATOR);
     this->new_component(new NopLaneSensor(),
                         CloeComponent::GROUNDTRUTH_LANE_SENSOR,
                         CloeComponent::DEFAULT_LANE_SENSOR);
