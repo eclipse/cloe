@@ -30,6 +30,7 @@
 #include <fable/json/with_boost.hpp>  // for to_json
 
 #include <cloe/component.hpp>                // for Component, Json
+#include <cloe/component/actuator.hpp>       // for Actuator
 #include <cloe/utility/actuation_level.hpp>  // for ActuationLevel
 
 namespace cloe {
@@ -114,33 +115,6 @@ class LatLongActuator : public Component {
   utility::ActuationLevel level_;
   boost::optional<double> target_acceleration_;
   boost::optional<double> target_steering_angle_;
-};
-
-template <typename T = double>
-class Actuator : public Component {
- public:
-  using Component::Component;
-  virtual ~Actuator() noexcept = default;
-
-  virtual void set(T a) { target_ = a; }
-  virtual bool is_set() { return static_cast<bool>(target_); }
-  virtual T get() { return *target_; }
-
-  Json active_state() const override { return Json{"target", target_}; }
-
-  Duration process(const Sync& sync) override {
-    auto t = Component::process(sync);
-    target_.reset();
-    return t;
-  }
-
-  void reset() override {
-    Component::reset();
-    target_.reset();
-  }
-
- protected:
-  boost::optional<T> target_;
 };
 
 class LongActuator : public Actuator<double> {

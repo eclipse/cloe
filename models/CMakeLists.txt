@@ -17,6 +17,7 @@ add_library(${target}
     # find src -type f -name "*.cpp" \! -name "*_test.cpp"
     src/cloe/component/lane_boundary.cpp
     src/cloe/component/utility/ego_sensor_canon.cpp
+    src/cloe/component/utility/steering_utils.cpp
     src/cloe/utility/actuation_state.cpp
 )
 add_library(${alias} ALIAS ${target})
@@ -46,7 +47,9 @@ if(BuildTests)
 
     add_executable(test-models
         # find src -type f -name "*_test.cpp"
+        src/cloe/component/gearbox_actuator_test.cpp
         src/cloe/component/latlong_actuator_test.cpp
+        src/cloe/component/utility/steering_utils_test.cpp
         src/cloe/utility/actuation_level_test.cpp
     )
     set_target_properties(test-models PROPERTIES
