@@ -68,11 +68,10 @@ containerization, but we strive to make it as cross-platform as possible.
 In principle, if someone is willing to put in the work, Cloe should be able
 to run on Windows as well.
 
-----
-
 .. toctree::
+   :hidden:
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Contents
 
    overview
    install
@@ -82,6 +81,13 @@ to run on Windows as well.
    design
    faq
    changelog
+
+.. toctree::
+   :hidden:
+   :caption: Links
+
+   Github Repository <https://github.com/eclipse/cloe>
+   Eclipse Project <https://projects.eclipse.org/projects/automotive.cloe>
 
 .. _GitHub: https://github.com/eclipse/cloe/
 .. _Vires VTD: https://vires.mscsoftware.com/

@@ -40,9 +40,8 @@ will strive for excellence in all we do.
 When submitting a pull-request, please bear this in mind – we will almost
 certainly require some changes before accepting.
 
-----
-
 .. toctree::
+   :hidden:
    :maxdepth: 2
 
    develop/building-cloe

@@ -19,14 +19,14 @@
 
 # -- Project information -----------------------------------------------------
 
-project = u"Cloe"
-copyright = u"2021 Eclipse Cloe Contributors"
-author = u"Cloe Team"
+project = "Eclipse Cloe"
+copyright = "2022 Eclipse Cloe Contributors"
+author = "Cloe Team"
 
 # The short X.Y version
-version = u""
+version = ""
 # The full version, including alpha/beta/rc tags
-release = u""
+release = ""
 
 
 # -- General configuration ---------------------------------------------------
@@ -45,6 +45,9 @@ extensions = [
     "sphinx.ext.graphviz",
     "sphinxcontrib.runcmd",
     "sphinxcontrib.asciinema",
+    "sphinx_copybutton",
+    "sphinx_inline_tabs",
+    "myst_parser",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -59,7 +62,7 @@ todo_emit_warnings = True
 # You can specify multiple suffix as a list of string:
 #
 # source_suffix = ['.rst', '.md']
-source_suffix = ".rst"
+source_suffix = [".rst", ".md"]
 
 # The master toctree document.
 master_doc = "index"
@@ -74,7 +77,7 @@ language = "en"
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path .
-exclude_patterns = [u"_build", "Thumbs.db", ".DS_Store"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # The name of the Pygments (syntax highlighting) style to use.
 #
@@ -91,7 +94,7 @@ highlight_language = "none"
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes: sphinx_rd_theme, alabaster, guzzle_sphinx_theme
-html_theme = "sphinx_rtd_theme"
+html_theme = "furo"
 html_logo = "logo.png"
 html_favicon = "favicon.png"
 
@@ -100,8 +103,20 @@ html_favicon = "favicon.png"
 # documentation.
 #
 html_theme_options = {
-    "style_external_links": True,
-    "logo_only": True,
+    "footer_icons": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/eclipse/cloe",
+            "html": """
+                <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+                </svg>
+            """,
+            "class": "",
+        },
+    ],
+    "sidebar_hide_name": True,
+    "navigation_with_keys": True,
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -120,7 +135,7 @@ html_static_path = []
 # html_sidebars = {}
 
 html_permalinks = True
-html_permalinks_icon = u"¶"
+html_permalinks_icon = "¶"
 html_last_updated_fmt = ""
 html_scaled_image_link = True
 
@@ -154,7 +169,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, "cloe.tex", u"Cloe Documentation", u"Cloe Team", "manual"),
+    (master_doc, "cloe.tex", "Cloe Documentation", "Cloe Team", "manual"),
 ]
 
 
@@ -162,7 +177,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, "cloe", u"Cloe Documentation", [author], 1)]
+man_pages = [(master_doc, "cloe", "Cloe Documentation", [author], 1)]
 
 
 # -- Options for Texinfo output ----------------------------------------------
@@ -174,7 +189,7 @@ texinfo_documents = [
     (
         master_doc,
         "Cloe",
-        u"Cloe Documentation",
+        "Cloe Documentation",
         author,
         "Cloe",
         "Simulation middleware",
