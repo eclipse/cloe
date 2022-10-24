@@ -10,7 +10,7 @@
 # Use WITHOUT_PKGS variable on the command line to opt-out of specific
 # packages:
 #
-#     make WITHOUT_PKGS="plugins/vtd plugins/demo_printer" package
+#     make WITHOUT_PKGS="plugins/demo_printer" package
 #
 # This extends the UNSELECT_PKGS variable. Set this variable directly
 # to override default omitted packages. Use make help to see which
@@ -21,7 +21,7 @@
 # Use WITH_PKGS variable on the command line to include specific by-default
 # unselected packages:
 #
-#     make WITH_PKGS="plugins/vtd" package
+#     make PLUGIN_PKGS= WITH_PKGS="plugins/minimator" package
 #
 # This extends the SELECT_PKGS variable. Set this variable directly
 # to explicitely specify exactly which packages are considered. Use make help

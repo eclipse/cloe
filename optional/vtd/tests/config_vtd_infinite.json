@@ -1,0 +1,143 @@
+{
+  "version": "4",
+  "include": [
+    "controller_virtue.json",
+    "controller_basic.json"
+  ],
+  "defaults": {
+    "simulators": [
+      {
+        "binding": "vtd",
+        "args": {
+          "label_vehicle": "symbol"
+        }
+      }
+    ],
+    "controllers": [
+      {
+        "binding": "virtue",
+        "args": {
+          "lane_sensor_components": ["cloe::default_lane_sensor"]
+        }
+      }
+    ]
+  },
+  "simulators": [
+    {
+      "binding": "vtd",
+      "args": {
+        "rdb_params": {
+          "retry_delay_s": 1.0
+        },
+        "scenario": "acc.xml",
+        "setup": "Cloe.noGUInoIG",
+        "image_generator": false,
+        "vehicles": {
+          "Ego": {
+            "components": {
+              "cloe::default_lane_sensor": {
+                "from": "camera",
+                "type": "lane_sensor",
+                "override": true
+              },
+              "cloe::default_world_sensor": {
+                "from": "front_radar",
+                "type": "object_sensor",
+                "override": true
+              },
+              "sysut::video_objects": {
+                "from": "camera",
+                "type": "object_sensor"
+              },
+              "sysut::front_radar_objects": {
+                "from": "front_radar",
+                "type": "object_sensor"
+              },
+              "sysut::rear_radar_objects": {
+                "from": "rear_radar",
+                "type": "object_sensor"
+              }
+            },
+            "sensors": {
+              "camera": {
+                "xml": "<Sensor name='Sensor_[[ sensor_id ]]_[[ sensor_name ]]' type='video'><Load lib='libModulePerfectSensor.so' path='' persistent='true'/><Frustum near='0.0' far='80.0' left='45.0' right='45.0' bottom='45.0' top='45.0'/><Origin type='sensor'/><Cull maxObjects='50' enable='true'/><Port name='RDBout' number='[[ sensor_port ]]' type='TCP' sendEgo='false'/><Player id=\"[[ player_id ]]\"/><Position dx='2.0' dy='0.0' dz='1.5' dhDeg='0.0' dpDeg='0.0' drDeg='0.0'/><Database resolveRepeatedObjects='true' continuousObjectTesselation='2.0'/><Filter objectType='pedestrian'/><Filter objectType='vehicle'/><Filter objectType='trafficSign'/><Filter objectType='obstacle'/><Filter objectType=\"roadMarks\" roadmarkPreviewDistance=\"100.0\" tesselate=\"true\" tesselateNoPoints=\"10\" tesselateFixedStep=\"true\"/><Debug enable='false' detection='false' road='false' position='true' dimensions='false' camera='false' CSV='false' packages='false' culling='true' contactPoints='false' trafficSigns='false'/></Sensor>"
+              },
+              "front_radar": {
+                "xml": "<Sensor name='Sensor_[[ sensor_id ]]_[[ sensor_name ]]' type='video'><Load lib='libModulePerfectSensor.so' path='' persistent='true'/><Frustum near='0.0' far='180.0' left='20.0' right='20.0' bottom='20.0' top='20.0'/><Origin type='sensor'/><Cull maxObjects='50' enable='true'/><Port name='RDBout' number='[[ sensor_port ]]' type='TCP' sendEgo='false'/><Player id=\"[[ player_id ]]\"/><Position dx='0.0' dy='0.0' dz='0.0' dhDeg='0.0' dpDeg='0.0' drDeg='0.0'/><Database resolveRepeatedObjects='true' continuousObjectTesselation='2.0'/><Filter objectType='pedestrian'/><Filter objectType='vehicle'/><Filter objectType='trafficSign'/><Filter objectType='obstacle'/><Debug enable='false' detection='false' road='false' position='true' dimensions='false' camera='false' CSV='false' packages='false' culling='true' contactPoints='false' trafficSigns='false'/></Sensor>"
+              },
+              "rear_radar": {
+                "xml": "<Sensor name='Sensor_[[ sensor_id ]]_[[ sensor_name ]]' type='video'><Load lib='libModulePerfectSensor.so' path='' persistent='true'/><Frustum near='0.0' far='180.0' left='20.0' right='20.0' bottom='20.0' top='20.0'/><Origin type='sensor'/><Cull maxObjects='50' enable='true'/><Port name='RDBout' number='[[ sensor_port ]]' type='TCP' sendEgo='false'/><Player id=\"[[ player_id ]]\"/><Position dx='-1.0' dy='0.0' dz='0.5' dhDeg='180.0' dpDeg='0.0' drDeg='0.0'/><Database resolveRepeatedObjects='true' continuousObjectTesselation='2.0'/><Filter objectType='pedestrian'/><Filter objectType='vehicle'/><Filter objectType='trafficSign'/><Filter objectType='obstacle'/><Debug enable='false' detection='false' road='false' position='true' dimensions='false' camera='false' CSV='false' packages='false' culling='true' contactPoints='false' trafficSigns='false'/></Sensor>"
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "vehicles": [
+    {
+      "name": "default",
+      "from": {
+        "simulator": "vtd",
+        "index": 0
+      },
+      "components": {
+        "cloe::speedometer": {
+          "binding": "speedometer",
+          "name": "default_speed",
+          "from": "cloe::gndtruth_ego_sensor"
+        },
+        "cloe::default_world_sensor": {
+          "binding": "noisy_object_sensor",
+          "name": "noisy_object_sensor",
+          "from": "cloe::default_world_sensor",
+          "args": {
+            "enable": false,
+            "noise": [
+              {
+                "target": "translation",
+                "distribution": {
+                  "binding": "normal",
+                  "mean": 0.0,
+                  "std_deviation": 0.3
+                }
+              }
+            ]
+          }
+        },
+        "cloe::default_lane_sensor": {
+          "binding": "noisy_lane_sensor",
+          "name": "noisy_lane_sensor",
+          "from": "cloe::default_lane_sensor",
+          "args": {
+            "enable": true,
+            "noise": [
+              {
+                "target": "dy_start",
+                "distribution": {
+                  "binding": "normal",
+                  "mean": 0.0,
+                  "std_deviation": 0.1
+                }
+              },
+              {
+                "target": "dx_end",
+                "distribution": {
+                  "binding": "normal",
+                  "mean": 0.0,
+                  "std_deviation": 5.0
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "logging": [
+    {
+      "name": "cloe/vtd/signs",
+      "level": "error"
+    }
+  ]
+}

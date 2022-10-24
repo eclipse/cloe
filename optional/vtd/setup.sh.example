@@ -1,0 +1,42 @@
+#!/bin/sh
+#
+# setup.sh.example
+#
+# This script is then used in the Docker image build process as a secret.
+# It should set up the default remote and authenticate if necessary.
+#
+# Copy this file to setup.sh and modify it to allow Docker configure Conan in
+# the Docker build process. If this file is absent, the default Conan settings
+# are used.
+#
+# Authenticate with the default remote using the correct username and password.
+# This should run without any user interaction.
+
+set -e
+
+export CONAN_REMOTE="https://artifactory.example.com/artifactory/api/conan/cloe-conan-local"
+export CONAN_REMOTE_VERIFY_SSL="True"
+export CONAN_LOGIN_USERNAME=
+export CONAN_PASSWORD=
+
+export VI_LIC_SERVER="vtd-licenses.example.com"
+
+# Don't try to set up remotes if --network=none.
+if [ "$(ls /sys/class/net)" != "lo" ]; then
+    # Set the request timeout to 360 seconds to work-around slow servers.
+    conan config set general.request_timeout=360
+
+    if [ "${CONAN_REMOTE}" != "" ]; then
+        conan remote clean
+        conan remote add default "${CONAN_REMOTE}" "${CONAN_REMOTE_VERIFY_SSL}"
+    fi
+
+    if [ "${CONAN_LOGIN_USERNAME}" != "" ]; then
+        conan user --remote=default -p
+    fi
+fi
+
+unset CONAN_REMOTE
+unset CONAN_REMOTE_VERIFY_SSL
+unset CONAN_LOGIN_USERNAME
+unset CONAN_PASSWORD

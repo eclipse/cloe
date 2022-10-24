@@ -118,10 +118,10 @@ For example, given the following contents in a file ``debug.gdb``:
     end
 
     # Run the program
-    run -l debug run tests/test_vtd_smoketest.json
+    run -l debug run optional/vtd/tests/test_vtd_smoketest.json
 
 We can then run this script inside a Cloe shell
-(``cloe-launch shell -P tests/default_profile.py -o:o cloe:with_vtd=True``) with::
+(``cloe-launch shell -P optional/vtd/tests/default_profile.py``) with::
 
     # gdb --command=debug.gdb cloe-engine
 

@@ -1,0 +1,12 @@
+{
+  // Include to change the model step width to 5ms / step.
+  // You can do this on the command line:
+  //
+  //   # cloe-launch shell -P profile_default.py
+  //   # cloe-engine run config_nop_smoketest.json option_timestep_5.json
+  //
+  "version": "4",
+  "simulation": {
+    "model_step_width": 5000000
+  }
+}

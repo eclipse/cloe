@@ -1,0 +1,22 @@
+{
+  // Include to change the model step width to 60ms / step.
+  // You can do this on the command line:
+  //
+  //   # cloe-launch shell -P profile_default.py
+  //   # cloe-engine run config_nop_smoketest.json option_timestep_60.json
+  //
+  "version": "4",
+  "defaults": {
+    "controllers": [
+      {
+        "binding": "virtue",
+        "args": {
+          "init_phase": 250000000
+        }
+      }
+    ]
+  },
+  "simulation": {
+    "model_step_width": 60000000
+  }
+}
