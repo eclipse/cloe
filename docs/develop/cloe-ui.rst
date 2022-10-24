@@ -12,10 +12,9 @@ Starting the UI as a Docker container can be achieved relatively easily::
 
    docker run --rm -p 5000:5000 dtr.cucumber.tld/cloe/cloe-ui:live
 
-----
-
 .. toctree::
    :maxdepth: 2
+   :hidden:
 
    cloe-ui/getting-started
    cloe-ui/tutorials

@@ -6,9 +6,8 @@ Presently, it contains guides for the most basic tasks -- but these should be
 seen as prerequisites for doing anything else with Cloe. Completing these
 guides will give you a better feel for how Cloe works and how it is built up.
 
-----
-
 .. toctree::
+   :hidden:
 
    usage/understanding-cloe-packages
    usage/running-the-engine

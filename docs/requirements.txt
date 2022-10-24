@@ -1,8 +1,12 @@
-sphinx
+sphinx>=5.1.1
 sphinx-autobuild
 sphinx_rtd_theme
 sphinxcontrib-runcmd
 sphinxcontrib-plantuml
 sphinxcontrib.asciinema
+sphinx-inline-tabs
+sphinx-copybutton
+myst-parser
 jsx-lexer
 pygments>=2.7
+furo

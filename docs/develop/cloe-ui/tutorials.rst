@@ -5,8 +5,7 @@ These tutorials cover some of the recurrent tasks during the development of
 Cloe-UI.
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 1
 
    tutorials/new-component
    tutorials/new-dyn-contr-element
