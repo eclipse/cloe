@@ -42,7 +42,7 @@
 #include <utility>  // for move
 #include <vector>   // for vector<>
 
-#include <fable/schema/array.hpp>     // for Array<>
+#include <fable/schema/vector.hpp>    // for Vector<>
 #include <fable/schema/confable.hpp>  // for FromConfable<>
 #include <fable/schema/const.hpp>     // for Const<>
 #include <fable/schema/map.hpp>       // for Map<>
@@ -56,12 +56,13 @@ class Confable;
 namespace schema {
 
 template <typename T, typename P>
-Array<T, P>::Array(std::vector<T>* ptr, std::string&& desc)
-    : Array<T, P>(ptr, make_prototype<T>(), std::move(desc)) {}
+Vector<T, P>::Vector(std::vector<T>* ptr, std::string&& desc)
+    : Vector<T, P>(ptr, make_prototype<T>(), std::move(desc)) {}
 
 template <typename T>
-Array<T, decltype(make_prototype<T>())> make_schema(std::vector<T>* ptr, std::string&& desc) {
-  return Array<T, decltype(make_prototype<T>())>(ptr, std::move(desc));
+Vector<T, decltype(make_prototype<T>())> make_schema(std::vector<T>* ptr, std::string&& desc) {
+  return Vector<T, decltype(make_prototype<T>())>(ptr, std::move(desc));
+}
 }
 
 template <typename T, typename P>
