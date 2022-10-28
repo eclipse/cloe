@@ -21,6 +21,7 @@ add_library(${target}
     src/fable/conf.cpp
     src/fable/json.cpp
     src/fable/schema.cpp
+    src/fable/schema/number.cpp
     src/fable/schema/struct.cpp
     src/fable/schema/string.cpp
     src/fable/schema/variant.cpp
