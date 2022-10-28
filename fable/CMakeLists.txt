@@ -69,6 +69,7 @@ if(BUILD_TESTING)
     add_executable(test-fable
         # find src -type f -name "*_test.cpp"
         src/fable/environment_test.cpp
+        src/fable/schema/array_test.cpp
         src/fable/schema/const_test.cpp
         src/fable/schema/custom_test.cpp
         src/fable/schema/enum_test.cpp
