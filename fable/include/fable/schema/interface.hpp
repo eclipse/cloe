@@ -348,6 +348,12 @@ class Box : public Interface {
 
 // ------------------------------------------------------------------------- //
 
+/**
+ * The Base class implements the Interface partially and is meant to cover
+ * the most commonly used types.
+ *
+ * See most of the other schema types for how it is used.
+ */
 template <typename CRTP>
 class Base : public Interface {
  public:
@@ -397,6 +403,12 @@ class Base : public Interface {
   }
 
  protected:
+  /**
+   * Validate whether `c` is of the correct type.
+   *
+   * This method is provided for an implementation to call in its `validate()`
+   * implementation. It is not called automatically.
+   */
   void validate_type(const Conf& c) const {
     if (c->type() != type_) {
       if (c->type() == JsonType::number_unsigned && type_ == JsonType::number_integer) {
