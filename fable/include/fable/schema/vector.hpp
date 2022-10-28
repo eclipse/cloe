@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
- * \file fable/schema/array.hpp
+ * \file fable/schema/vector.hpp
  * \see  fable/schema/xmagic.hpp
  * \see  fable/schema.hpp
  * \see  fable/schema_test.cpp
@@ -37,21 +37,21 @@ namespace fable {
 namespace schema {
 
 template <typename T, typename P>
-class Array : public Base<Array<T, P>> {
+class Vector : public Base<Vector<T, P>> {
  public:  // Types and Constructors
   using Type = std::vector<T>;
   using PrototypeSchema = std::remove_cv_t<std::remove_reference_t<P>>;
 
-  Array(Type* ptr, std::string desc);
-  Array(Type* ptr, PrototypeSchema prototype)
-      : Base<Array<T, P>>(JsonType::array), prototype_(std::move(prototype)), ptr_(ptr) {}
-  Array(Type* ptr, PrototypeSchema prototype, std::string desc)
-      : Base<Array<T, P>>(JsonType::array, std::move(desc)), prototype_(std::move(prototype)), ptr_(ptr) {}
+  Vector(Type* ptr, std::string desc);
+  Vector(Type* ptr, PrototypeSchema prototype)
+      : Base<Vector<T, P>>(JsonType::array), prototype_(std::move(prototype)), ptr_(ptr) {}
+  Vector(Type* ptr, PrototypeSchema prototype, std::string desc)
+      : Base<Vector<T, P>>(JsonType::array, std::move(desc)), prototype_(std::move(prototype)), ptr_(ptr) {}
 
 #if 0
   // This is defined in: fable/schema/xmagic.hpp
-  Array(Type* ptr, std::string desc)
-      : Array(ptr, make_prototype<T>(), std::move(desc)) {}
+  Vector(Type* ptr, std::string desc)
+      : Vector(ptr, make_prototype<T>(), std::move(desc)) {}
 #endif
 
  public:  // Specials
@@ -71,21 +71,21 @@ class Array : public Base<Array<T, P>> {
   /**
    * Set whether deserialization should extend the underlying array.
    */
-  Array<T, P> extend(bool value) && {
+  Vector<T, P> extend(bool value) && {
     option_extend_ = value;
     return std::move(*this);
   }
 
   size_t min_items() const { return min_items_; }
   void set_min_items(size_t value) { min_items_ = value; }
-  Array<T, P> min_items(size_t value) && {
+  Vector<T, P> min_items(size_t value) && {
     min_items_ = value;
     return std::move(*this);
   }
 
   size_t max_items() const { return max_items_; }
   void set_max_items(size_t value) { max_items_ = value; }
-  Array<T, P> max_items(size_t value) && {
+  Vector<T, P> max_items(size_t value) && {
     max_items_ = value;
     return std::move(*this);
   }
@@ -174,8 +174,8 @@ class Array : public Base<Array<T, P>> {
 };
 
 template <typename T, typename P, typename S>
-Array<T, P> make_schema(std::vector<T>* ptr, P&& prototype, S&& desc) {
-  return Array<T, P>(ptr, std::forward<P>(prototype), std::forward<S>(desc));
+Vector<T, P> make_schema(std::vector<T>* ptr, P&& prototype, S&& desc) {
+  return Vector<T, P>(ptr, std::forward<P>(prototype), std::forward<S>(desc));
 }
 
 }  // namespace schema
