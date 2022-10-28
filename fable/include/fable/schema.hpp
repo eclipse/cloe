@@ -122,7 +122,6 @@
 #include <utility>      // for move
 #include <vector>       // for vector<>
 
-#include <fable/schema/array.hpp>      // for Array<>
 #include <fable/schema/boolean.hpp>    // for Boolean
 #include <fable/schema/confable.hpp>   // for FromConfable
 #include <fable/schema/const.hpp>      // for Const<>
@@ -139,6 +138,7 @@
 #include <fable/schema/string.hpp>     // for String
 #include <fable/schema/struct.hpp>     // for Struct
 #include <fable/schema/variant.hpp>    // for Variant
+#include <fable/schema/vector.hpp>     // for Vector<>
 
 // It is important that this include comes after all the other ones,
 // so that it has access to ALL the previous definitions.

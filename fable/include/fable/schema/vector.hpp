@@ -37,21 +37,21 @@ namespace fable {
 namespace schema {
 
 template <typename T, typename P>
-class Array : public Base<Array<T, P>> {
+class Vector : public Base<Vector<T, P>> {
  public:  // Types and Constructors
   using Type = std::vector<T>;
   using PrototypeSchema = P;
 
-  Array(Type* ptr, std::string&& desc);
-  Array(Type* ptr, const PrototypeSchema& prototype)
-      : Base<Array<T, P>>(JsonType::array), prototype_(prototype), ptr_(ptr) {}
-  Array(Type* ptr, const PrototypeSchema& prototype, std::string&& desc)
-      : Base<Array<T, P>>(JsonType::array, std::move(desc)), prototype_(prototype), ptr_(ptr) {}
+  Vector(Type* ptr, std::string&& desc);
+  Vector(Type* ptr, const PrototypeSchema& prototype)
+      : Base<Vector<T, P>>(JsonType::array), prototype_(prototype), ptr_(ptr) {}
+  Vector(Type* ptr, const PrototypeSchema& prototype, std::string&& desc)
+      : Base<Vector<T, P>>(JsonType::array, std::move(desc)), prototype_(prototype), ptr_(ptr) {}
 
 #if 0
   // This is defined in: fable/schema/xmagic.hpp
-  Array(Type* ptr, std::string&& desc)
-      : Array(ptr, make_prototype<T>(), std::move(desc)) {}
+  Vector(Type* ptr, std::string&& desc)
+      : Vector(ptr, make_prototype<T>(), std::move(desc)) {}
 #endif
 
  public:  // Specials
@@ -71,21 +71,21 @@ class Array : public Base<Array<T, P>> {
   /**
    * Set whether deserialization should extend the underlying array.
    */
-  Array<T, P> extend(bool value) && {
+  Vector<T, P> extend(bool value) && {
     option_extend_ = value;
     return std::move(*this);
   }
 
   size_t min_items() const { return min_items_; }
   void set_min_items(size_t value) { min_items_ = value; }
-  Array<T, P> min_items(size_t value) && {
+  Vector<T, P> min_items(size_t value) && {
     min_items_ = value;
     return std::move(*this);
   }
 
   size_t max_items() const { return max_items_; }
   void set_max_items(size_t value) { max_items_ = value; }
-  Array<T, P> max_items(size_t value) && {
+  Vector<T, P> max_items(size_t value) && {
     max_items_ = value;
     return std::move(*this);
   }
@@ -174,8 +174,8 @@ class Array : public Base<Array<T, P>> {
 };
 
 template <typename T, typename P>
-Array<T, P> make_schema(std::vector<T>* ptr, const P& prototype, std::string&& desc) {
-  return Array<T, P>(ptr, prototype, std::move(desc));
+Vector<T, P> make_schema(std::vector<T>* ptr, const P& prototype, std::string&& desc) {
+  return Vector<T, P>(ptr, prototype, std::move(desc));
 }
 
 }  // namespace schema
