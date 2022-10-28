@@ -40,26 +40,23 @@
 #include <utility>  // for move
 #include <vector>   // for vector<>
 
-#include <fable/schema/array.hpp>     // for Array<>
+#include <fable/fable_fwd.hpp>        // for Confable
 #include <fable/schema/confable.hpp>  // for FromConfable<>
 #include <fable/schema/const.hpp>     // for Const<>
 #include <fable/schema/map.hpp>       // for Map<>
 #include <fable/schema/optional.hpp>  // for Optional<>
+#include <fable/schema/vector.hpp>    // for Vector<>
 
 namespace fable {
-
-// Forward declarations:
-class Confable;
-
 namespace schema {
 
 template <typename T, typename P>
-Array<T, P>::Array(std::vector<T>* ptr, std::string desc)
-    : Array<T, P>(ptr, make_prototype<T>(), std::move(desc)) {}
+Vector<T, P>::Vector(std::vector<T>* ptr, std::string desc)
+    : Vector<T, P>(ptr, make_prototype<T>(), std::move(desc)) {}
 
 template <typename T, typename S>
-Array<T, decltype(make_prototype<T>())> make_schema(std::vector<T>* ptr, S&& desc) {
-  return Array<T, decltype(make_prototype<T>())>(ptr, std::forward<S>(desc));
+Vector<T, decltype(make_prototype<T>())> make_schema(std::vector<T>* ptr, S&& desc) {
+  return Vector<T, decltype(make_prototype<T>())>(ptr, std::forward<S>(desc));
 }
 
 template <typename T, typename P>

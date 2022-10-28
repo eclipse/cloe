@@ -107,7 +107,7 @@ inline auto id_path_prototype(std::string&& desc = "") {
  */
 using IncludeConf = boost::filesystem::path;
 using IncludeSchema = decltype(schema::make_schema(static_cast<IncludeConf*>(nullptr), ""));
-using IncludesSchema = schema::Array<IncludeConf, IncludeSchema>;
+using IncludesSchema = schema::Vector<IncludeConf, IncludeSchema>;
 
 // --------------------------------------------------------------------------------------------- //
 
