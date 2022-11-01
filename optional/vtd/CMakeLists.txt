@@ -62,6 +62,7 @@ if(BUILD_TESTING)
         src/rdb_transceiver_tcp_test.cpp
         src/osi_test.cpp
         src/vtd_osi_test.cpp
+        src/vtd_data_conversion_test.cpp
     )
     set_target_properties(test-vtd-binding PROPERTIES
         CXX_STANDARD 14

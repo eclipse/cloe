@@ -230,28 +230,42 @@ class VtdVehicle : public cloe::Vehicle {
     for (const auto& comp : components) {
       auto name = comp.first;
       auto cfg = comp.second;
-      if (!sensors_.count(cfg.from)) {
-        throw cloe::ModelError("reference to unknown sensor '{}'", cfg.from);
-      }
-      std::shared_ptr<VtdSensorData> sensor;
-      if (cfg.from != "task_control") {
-        sensor = this->sensors_.at(cfg.from);
-      }
-      auto new_or_override_component = [this](cloe::Component* c, std::string name, bool override) {
-        if (override) {
-          this->emplace_component(std::shared_ptr<cloe::Component>(c), name);
+      if (cfg.from.empty()) {
+        // Configure actuators.
+        if (cfg.type == "ego_state_model") {
+          auto ego_model = std::make_shared<VtdExternalEgoModel>(task_control_, id_, vtd_name_);
+          // Since no default component of this type was instantiated in the constructor, cfg.override does not apply.
+          this->add_component(ego_model, name);
+          ego_control_ = ego_model;
         } else {
-          this->add_component(std::shared_ptr<cloe::Component>(c), name);
+          throw cloe::ModelError("unknown actuator component type '{}'", cfg.type);
         }
-      };
-      if (cfg.type == "lane_sensor") {
-        new_or_override_component(new VtdLaneBoundarySensor{sensor}, name, cfg.override);
-      } else if (cfg.type == "object_sensor") {
-        new_or_override_component(new VtdWorldSensor{sensor}, name, cfg.override);
-      } else if (cfg.type == "driver_request") {
-        new_or_override_component(new VtdDriverRequest{id_, task_control_}, name, cfg.override);
       } else {
-        throw cloe::ModelError("unknown component type '{}'", cfg.type);
+        // Configure sensors.
+        std::shared_ptr<VtdSensorData> sensor;
+        if (cfg.from != "task_control") {
+          if (!sensors_.count(cfg.from)) {
+            throw cloe::ModelError("reference to unknown sensor '{}'", cfg.from);
+          }
+          sensor = this->sensors_.at(cfg.from);
+        }
+        auto new_or_override_component = [this](cloe::Component* c, std::string name,
+                                                bool override) {
+          if (override) {
+            this->emplace_component(std::shared_ptr<cloe::Component>(c), name);
+          } else {
+            this->add_component(std::shared_ptr<cloe::Component>(c), name);
+          }
+        };
+        if (cfg.type == "lane_sensor") {
+          new_or_override_component(new VtdLaneBoundarySensor{sensor}, name, cfg.override);
+        } else if (cfg.type == "object_sensor") {
+          new_or_override_component(new VtdWorldSensor{sensor}, name, cfg.override);
+        } else if (cfg.type == "driver_request") {
+          new_or_override_component(new VtdDriverRequest{id_, task_control_}, name, cfg.override);
+        } else {
+          throw cloe::ModelError("unknown sensor component type '{}'", cfg.type);
+        }
       }
     }
   }
