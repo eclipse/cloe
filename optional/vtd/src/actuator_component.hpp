@@ -33,6 +33,45 @@
 
 namespace vtd {
 
+class VtdVehicleControl {
+ public:
+  VtdVehicleControl() = default;
+  virtual ~VtdVehicleControl() = default;
+
+  /**
+   * Add the DriverControl or DynObjectState package to the TaskControl.
+   *
+   * This should only be called once per simulation step. This method will not
+   * pay attention for you.  Later, when the TaskControl sends its packages,
+   * this one will be part of it.
+   */
+  virtual void step_begin(const cloe::Sync& sync) = 0;
+
+  /**
+   * Operations after vehicle control information was added to the TaskControl
+   * message and the vehicle labels were set.
+   */
+  virtual void step_end(const cloe::Sync&){};
+
+  /**
+   * Return true, if the label text should be updated.
+   */
+  virtual bool update_vehicle_label() { return false; }
+
+  /**
+   * Return the current actuation level, if applicable.
+   */
+  virtual cloe::utility::ActuationLevel get_actuation_level() {
+    return cloe::utility::ActuationLevel::None;
+  }
+
+  virtual void reset(){};
+
+  virtual cloe::Json to_json() const = 0;
+
+  friend void to_json(cloe::Json& j, const VtdVehicleControl& vc) { j = vc.to_json(); }
+};
+
 /**
  * VtdLatLongActuator implements LatLongActuator for the VTD binding.
  *
@@ -41,13 +80,13 @@ namespace vtd {
  * Every VTD cycle, the following needs to be done:
  *
  * - `has_level_change` must be used before `clear_cache` is called
- * - `add_driver_control` registers any actuation with the TaskControl client,
+ * - `step_begin` registers any actuation with the TaskControl client,
  *   and must be called before `clear_cache`.
  * - `clear_cache` must be called before the cycle is over.
  * - `TaskControl::add_trigger_and_send` must be called to send the information
  *   to VTD.
  */
-class VtdLatLongActuator : public cloe::LatLongActuator {
+class VtdLatLongActuator : public VtdVehicleControl, public cloe::LatLongActuator {
  public:
   VtdLatLongActuator(std::shared_ptr<TaskControl> tc, uint64_t id)
       : LatLongActuator("vtd/lat_long_actuator"), task_control_(tc), vehicle_id_(id) {}
@@ -64,44 +103,60 @@ class VtdLatLongActuator : public cloe::LatLongActuator {
    * is sent to VTD. This means that after calling `send_driver_control`,
    * this method will definitely return false.
    */
-  bool has_level_change() { return old_level_ != this->level_; }
+  bool update_vehicle_label() override { return this->has_level_change(); }
 
-  /**
-   * Needs to be called after add_driver_control and before the next
-   * clear_cache invocation.
-   */
-  void save_level_state() { this->old_level_ = this->level_; }
+  cloe::utility::ActuationLevel get_actuation_level() override { return this->actuation_level(); }
 
-  /**
-   * Add the DriverControl package to the TaskControl.
-   *
-   * This should only be called once per simulation step. This method will not
-   * pay attention for you.  Later, when the TaskControl sends its packages,
-   * this one will be part of it.
-   */
-  void add_driver_control() {
-    DriverControl dc;
-    dc.player_id = vehicle_id_;
+  cloe::Duration process(const cloe::Sync& sync) override { return LatLongActuator::process(sync); }
 
-    if (target_acceleration_) {
-      dc.target_acceleration = *target_acceleration_;
-      dc.validity_flags |= RDB_DRIVER_INPUT_VALIDITY_TGT_ACCEL;
-    }
+  void reset() override {
+    old_level_.set_none();
+    LatLongActuator::reset();
+    task_control_->reset();
+  }
 
-    if (target_steering_angle_) {
-      dc.target_steering = *target_steering_angle_;
-      dc.validity_flags |= RDB_DRIVER_INPUT_VALIDITY_TGT_STEERING;
-    }
-
-    if (target_acceleration_ || target_steering_angle_) {
-      dc.validity_flags |= RDB_DRIVER_INPUT_VALIDITY_ADD_ON;
-      task_control_->add_driver_control(dc);
-    }
-
+  void step_begin(const cloe::Sync&) override {
+    add_driver_control();
     // Detect driver or controller takeover for lateral and/or longitudinal control
     if (this->has_level_change()) {
       vtd_logger()->info("VtdLatLongActuator: vehicle {} controller state: {}", id(),
                          level_.to_human_cstr());
+    }
+  }
+
+  void step_end(const cloe::Sync&) override { this->old_level_ = this->level_; }
+
+  cloe::Json to_json() const override { return dynamic_cast<const cloe::LatLongActuator&>(*this); }
+
+ private:
+  bool has_level_change() { return old_level_ != this->level_; }
+
+  void add_driver_control() {
+    DriverControl dc;
+    dc.player_id = vehicle_id_;
+
+    if (is_acceleration()) {
+      dc.target_acceleration = *acceleration();
+      dc.validity_flags |= RDB_DRIVER_INPUT_VALIDITY_TGT_ACCEL;
+    }
+
+    if (is_steering_angle()) {
+      dc.target_steering = *steering_angle();
+      dc.validity_flags |= RDB_DRIVER_INPUT_VALIDITY_TGT_STEERING;
+    }
+
+    if (is_acceleration() || is_steering_angle()) {
+      dc.validity_flags |= RDB_DRIVER_INPUT_VALIDITY_ADD_ON;
+      task_control_->add_driver_control(dc);
+    }
+  }
+
+ private:
+  std::shared_ptr<TaskControl> task_control_;
+  uint64_t vehicle_id_;
+  cloe::utility::ActuationLevel old_level_;
+};
+
     }
   }
 

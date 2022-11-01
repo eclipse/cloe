@@ -95,8 +95,8 @@ class VtdVehicle : public cloe::Vehicle {
     auto sensor = std::make_shared<VtdOmniSensor>(std::move(rdb_client), id);
     sensors_[DEFAULT_SENSOR_NAME] = sensor;
     sensor->set_name(name + "_omni_sensor");
-    actuator_ = std::make_shared<VtdLatLongActuator>(task_control, id);
-
+    auto actuator = std::make_shared<VtdLatLongActuator>(task_control, id);
+    ego_control_ = actuator;
     // Add ego sensor
     this->new_component(new VtdEgoSensor{id, sensor, task_control},
                         cloe::CloeComponent::GROUNDTRUTH_EGO_SENSOR,
@@ -130,7 +130,7 @@ class VtdVehicle : public cloe::Vehicle {
                         cloe::CloeComponent::DEFAULT_LANE_SENSOR);
 
     // Add actuator
-    this->add_component(actuator_,
+    this->add_component(actuator,
                         cloe::CloeComponent::GROUNDTRUTH_LATLONG_ACTUATOR,
                         cloe::CloeComponent::DEFAULT_LATLONG_ACTUATOR);
     // clang-format on
@@ -146,13 +146,14 @@ class VtdVehicle : public cloe::Vehicle {
    *
    * This currently does everything for the actuation.
    */
-  void vtd_step_actuator(ScpTransceiver& tx, LabelConfiguration lbl) {
+  void vtd_step_vehicle_control(const cloe::Sync& sync, ScpTransceiver& tx,
+                                LabelConfiguration lbl) {
     // Send actuations
-    this->actuator_->add_driver_control();
+    this->ego_control_->step_begin(sync);
     if (lbl != LabelConfiguration::Off) {
       this->update_label(tx, lbl);
     }
-    this->actuator_->save_level_state();
+    this->ego_control_->step_end(sync);
   }
 
   /**
@@ -176,19 +177,20 @@ class VtdVehicle : public cloe::Vehicle {
    * the cache is cleared for the next cycle.
    */
   void update_label(ScpTransceiver& tx, LabelConfiguration lbl) {
-    if (actuator_->has_level_change()) {
+    if (ego_control_->update_vehicle_label()) {
+      auto level = ego_control_->get_actuation_level();
       switch (lbl) {
         case LabelConfiguration::Text:
-          vehicle_label_.text = actuator_->actuation_level().to_loud_cstr();
+          vehicle_label_.text = level.to_loud_cstr();
           break;
         case LabelConfiguration::Human:
-          vehicle_label_.text = actuator_->actuation_level().to_human_cstr();
+          vehicle_label_.text = level.to_human_cstr();
           break;
         case LabelConfiguration::Symbol:
-          vehicle_label_.text = actuator_->actuation_level().to_symbol_cstr();
+          vehicle_label_.text = level.to_symbol_cstr();
           break;
         case LabelConfiguration::Unicode:
-          vehicle_label_.text = actuator_->actuation_level().to_unicode_cstr();
+          vehicle_label_.text = level.to_unicode_cstr();
           break;
         default:
           throw std::runtime_error("VtdVehicle: unknown label state");
@@ -210,7 +212,7 @@ class VtdVehicle : public cloe::Vehicle {
       auto sensor = kv.second;
       sensor->reset();
     }
-    this->actuator_->reset();
+    this->ego_control_->reset();
     vehicle_label_.text = "!";
   }
 
@@ -221,7 +223,7 @@ class VtdVehicle : public cloe::Vehicle {
     to_json(j, dynamic_cast<const cloe::Vehicle&>(v));
     j["vtd_name"] = v.vtd_name_;
     j["sensors"] = v.sensors_;
-    j["actuator"] = v.actuator_;
+    j["actuator"] = v.ego_control_;
   }
 
   void configure_components(const std::map<std::string, VtdComponentConfig>& components) {
@@ -261,7 +263,7 @@ class VtdVehicle : public cloe::Vehicle {
   uint16_t id_{0};
   std::shared_ptr<TaskControl> task_control_{nullptr};
   std::map<std::string, std::shared_ptr<VtdSensorData>> sensors_;
-  std::shared_ptr<VtdLatLongActuator> actuator_{nullptr};
+  std::shared_ptr<VtdVehicleControl> ego_control_{nullptr};
   scp::LabelVehicle vehicle_label_;
 };
 
@@ -342,7 +344,9 @@ class VtdVehicleFactory {
             veh->sensors_[name] = osi;
             break;
           }
-          default: { throw cloe::Error("VtdVehicle: unknown sensor protocol"); }
+          default: {
+            throw cloe::Error("VtdVehicle: unknown sensor protocol");
+          }
         }
       }
       veh->configure_components(vcfg.components);
