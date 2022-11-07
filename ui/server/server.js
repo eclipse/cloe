@@ -122,10 +122,8 @@ app.get("/remote/start-replay", async (req, res) => {
   let lastClient = clients[clients.length - 1];
   // Before sending data the client needs to setup correctly.
   io.to(lastClient).emit("set_replay_environment", {});
-  getReplayData(req.query.id, req.query.name);
-  setTimeout(() => {
-    getPlotData(req.query.id);
-  }, 1000);
+  await getReplayData(req.query.id, req.query.name);
+  getPlotData(req.query.id);
 });
 
 // Search and send replay data to client.
@@ -168,6 +166,10 @@ async function getPlotData(query) {
   let lastClient = clients[clients.length - 1];
   let filePath = path.join(FILEPATHROOT, FILEDIRECTORY, query, query + ".html");
   fs.readFile(filePath, "utf8", function(err, data) {
-    io.to(lastClient).emit("plot_data", data);
+    if (err) {
+      console.log(`File not found: ${err}`)
+    }else {
+      io.to(lastClient).emit("plot_data", data);
+    }
   });
 }
