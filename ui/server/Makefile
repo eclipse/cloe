@@ -20,7 +20,7 @@ DOCKER_CONTEXT  := .
 
 CONTAINER_NAME  := cloe-ui-webserver
 override DOCKER_RUN_ARGS += -p=4000:4000
-MOUNT_DIRECTORY := $$HOME/.local/share/replay_data
+MOUNT_DIRECTORY := $$HOME/.local/share/cloe/replay_data
 override DOCKER_RUN_ARGS += -v=${MOUNT_DIRECTORY}:/app/replay_data
 
 .PHONY: help
