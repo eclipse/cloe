@@ -14,6 +14,7 @@ import shutil
 import subprocess
 import sys
 import textwrap
+import shlex
 
 from pathlib import Path
 from collections import OrderedDict
@@ -92,7 +93,7 @@ class Environment:
 
     def __init__(
         self,
-        env: Union[str, List[Path], Dict[str, str], None],
+        env: Union[Path, List[Path], Dict[str, str], None],
         preserve: List[str] = None,
         source_file: bool = True,
     ):
@@ -103,13 +104,15 @@ class Environment:
 
         # Initialize the environment
         if isinstance(env, str):
+            env = [Path(env)]
+        if isinstance(env, Path):
             env = [env]
         if isinstance(env, list):
-            self._data = dict()
-            for file in env:
-                if source_file:
-                    self.init_from_shell(file)
-                else:
+            self._data = {}
+            if source_file:
+                self.init_from_shell(env)
+            else:
+                for file in env:
                     self.init_from_file(file)
             if len(env) > 1:
                 self.deduplicate_list("PATH")
@@ -134,14 +137,16 @@ class Environment:
         """Init variables from a dictionary."""
         self._data = env
 
-    def init_from_shell(self, filepath: Path, shell: str = None) -> None:
+    def init_from_shell(self, filepaths: List[Path], shell: str = None) -> None:
         """Init variables from a shell sourcing a file."""
+        assert len(filepaths) != 0
         if shell is None:
             shell = self._shell_path
-        cmd = [shell, "-c", f"source {filepath} &>/dev/null && env"]
+        filepaths = [shlex.quote(x.as_posix()) for x in filepaths]
+        cmd = [shell, "-c", f"source {' && source '.join(filepaths)} &>/dev/null && env"]
         result = run_cmd(cmd, env=self._shell_env)
         if result.returncode != 0:
-            logging.error(f"Error: error sourcing file from shell: {filepath}")
+            logging.error(f"Error: error sourcing files from shell: {', '.join(filepaths)}")
         self.init_from_str(result.stdout)
 
     def init_from_env(self) -> None:
