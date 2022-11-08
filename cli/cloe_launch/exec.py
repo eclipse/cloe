@@ -395,9 +395,15 @@ class Engine:
         self.clean()
         logging.debug(f"Create: {self.runtime_dir}")
         self.runtime_dir.mkdir(parents = True)
+        self._prepare_virtualenv()
         self._write_prompt_sh()
         self._write_bashrc()
         self._write_zshrc()
+        self._write_activate_all([
+            self.runtime_dir / "environment_run.sh.env",
+            self.runtime_dir / "environment.sh.env",
+            self.runtime_dir / "environment_cloe_launch.sh.env",
+        ])
 
     def _write_prompt_sh(self) -> None:
         """Write prompt.sh file."""
@@ -464,6 +470,25 @@ class Engine:
         with zshrc_file.open("w") as file:
             file.write(zshrc_data)
 
+    def _write_activate_all(self, files: List[Path]) -> None:
+        """Write activate_all.sh file."""
+        activate_file = self.runtime_dir / "activate_all.sh"
+        source_files = [shlex.quote(x.as_posix()) for x in files]
+        activate_data = textwrap.dedent(f"""\
+            for file in {" ".join(source_files)}; do
+                if [ ! -f "$file" ]; then
+                    continue
+                fi
+                while read -r line; do
+                    LINE="$(eval echo $line)"
+                    export "$LINE"
+                done < "$file"
+            done
+            """)
+        logging.debug(f"Write: {activate_file}")
+        with activate_file.open("w") as file:
+            file.write(activate_data)
+
     def _prepare_virtualenv(self) -> None:
         # Get conan to create a virtualenv AND virtualrunenv for us:
         # One gives us the LD_LIBRARY_PATH and the other gives us env_info
@@ -488,20 +513,6 @@ class Engine:
             conan_cmd.append(setting)
         conan_cmd.append(self.profile_path)
         self._run_cmd(conan_cmd, must_succeed=True)
-
-    def _read_conan_env(self) -> Environment:
-        # The order of the items in env_paths is important because variables
-        # will be overwritten.
-        # TODO: Should be replaced by merging in the future.
-        env_paths = [
-            self.runtime_dir / "activate_run.sh",
-            self.runtime_dir / "activate.sh",
-        ]
-        cloe_launch_env = self.runtime_dir / "cloe_launch_env.sh"
-        if cloe_launch_env.exists():
-            env_paths.insert(0, cloe_launch_env)
-        preserve = None if not self.preserve_env else list(os.environ.keys())
-        return Environment(env_paths, preserve=preserve)
 
     def _extract_engine_path(self, env) -> Path:
         """Return the first cloe-engine we find in the PATH."""
@@ -536,10 +547,13 @@ class Engine:
         else:
             logging.debug("Initializing runtime directory ...")
             self._prepare_runtime_dir()
-            self._prepare_virtualenv()
 
         # Get environment variables we need:
-        env = self._read_conan_env()
+        env = Environment(
+            self.runtime_dir / "activate_all.sh",
+            preserve=None if not self.preserve_env else list(os.environ.keys()),
+            source_file=True
+        )
 
         # Export Cloe variables:
         env.set("CLOE_PROFILE_HASH", self.profile)
