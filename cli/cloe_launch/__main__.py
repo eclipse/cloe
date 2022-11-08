@@ -39,6 +39,7 @@ from cloe_launch.exec import Engine
     count=True,
     help="Print more information (mostly debugging).",
 )
+@click.version_option()
 @click.pass_context
 def main(ctx, verbose: int):
     """Launch cloe-engine with profiles and manage launch profiles."""
@@ -150,7 +151,6 @@ class options:
             raise click.UsageError(
                 "--profile and --profile-path options cannot be specified simultaneously"
             )
-
 
 # _________________________________________________________________________
 # Command: exec [--cache] [--debug] [--profile=PROFILE | --profile-path=CONANFILE]
