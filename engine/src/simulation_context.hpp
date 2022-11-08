@@ -30,6 +30,7 @@
 #include <vector>      // for vector<>
 
 #include <boost/optional.hpp>  // for optional<>
+#include <sol/sol.hpp>
 
 #include <cloe/controller.hpp>          // for Controller
 #include <cloe/core.hpp>                // for Duration
@@ -329,7 +330,9 @@ DEFINE_NIL_EVENT(Loop, "loop", "begin of inner simulation loop each cycle")
 /**
  * SimulationContext represents the entire context of a running simulation.
  *
- * This clearly separates data from functionality.
+ * This clearly separates data from functionality. There is no constructor
+ * where extra initialization is performed. Instead any initialization is
+ * performed in the simulation states in the `simulation.cpp` file.
  */
 struct SimulationContext {
   // Setup
@@ -344,6 +347,7 @@ struct SimulationContext {
   bool report_progress{false};
 
   // State
+  sol::state lua;
   SimulationSync sync;
   SimulationProgress progress;
   SimulationStatistics statistics;
