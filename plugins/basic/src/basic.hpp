@@ -150,6 +150,7 @@ struct BasicConfiguration : public Confable {
   AccConfiguration acc;
   AebConfiguration aeb;
   LkaConfiguration lka;
+  std::string driver_request;
 
   void to_json(Json& j) const override {
     j = Json{
@@ -160,11 +161,14 @@ struct BasicConfiguration : public Confable {
   }
 
   CONFABLE_SCHEMA(BasicConfiguration) {
+    // clang-format off
     return Schema{
-        {"acc", Schema(&acc, "ACC configuration")},
-        {"aeb", Schema(&aeb, "AEB configuration")},
-        {"lka", Schema(&lka, "LKA configuration")},
+        {"acc",            Schema(&acc, "ACC configuration")},
+        {"aeb",            Schema(&aeb, "AEB configuration")},
+        {"lka",            Schema(&lka, "LKA configuration")},
+        {"driver_request", Schema(&driver_request, "component providing driver request")},
     };
+    // clang-format on
   }
 };
 

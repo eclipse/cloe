@@ -122,6 +122,10 @@
                     },
                     "type": "object"
                   },
+                  "driver_request": {
+                    "description": "component providing driver request",
+                    "type": "string"
+                  },
                   "lka": {
                     "additionalProperties": false,
                     "description": "LKA configuration",
