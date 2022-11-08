@@ -13,6 +13,7 @@ import re
 import shutil
 import subprocess
 import sys
+import textwrap
 
 from pathlib import Path
 from collections import OrderedDict
@@ -396,23 +397,23 @@ class Engine:
     def _write_prompt_sh(self) -> None:
         """Write prompt.sh file."""
         prompt_sh_file = self.runtime_dir / "prompt.sh"
-        prompt_sh_data = """\
-        CLOE_PROMPT="\u001b[2m[cloe-shell]\u001b[0m"
+        prompt_sh_data = textwrap.dedent("""\
+            CLOE_PROMPT="\u001b[2m[cloe-shell]\u001b[0m"
 
-        prompt_cloe() {
-            if [[ -n $CLOE_SHELL ]]; then
-                PROMPT="%{%F{242}%}[cloe-shell]%f ${PROMPT}"
+            prompt_cloe() {
+                if [[ -n $CLOE_SHELL ]]; then
+                    PROMPT="%{%F{242}%}[cloe-shell]%f ${PROMPT}"
+                fi
+            }
+
+            CURRENT_SHELL=$(basename $0)
+            if [[ $CURRENT_SHELL = "zsh" ]]; then
+                autoload -Uz add-zsh-hook
+                add-zsh-hook precmd prompt_cloe
+            else
+                export PS1="$CLOE_PROMPT $PS1"
             fi
-        }
-
-        CURRENT_SHELL=$(basename $0)
-        if [[ $CURRENT_SHELL = "zsh" ]]; then
-            autoload -Uz add-zsh-hook
-            add-zsh-hook precmd prompt_cloe
-        else
-            export PS1="$CLOE_PROMPT $PS1"
-        fi
-        """
+            """)
         logging.debug(f"Write: {prompt_sh_file}")
         with prompt_sh_file.open("w") as file:
             file.write(prompt_sh_data)
@@ -420,38 +421,40 @@ class Engine:
     def _write_bashrc(self) -> None:
         """Write .bashrc file.
 
-        When creating a new shell, it's not possible to just "source" a file
-        and continue with the normal interactive session. So we need to create
-        a bashrc file that will be used instead, which loads the normal
-        configuration, and then augments it with the extra variables we need.
+        When launching a shell, this file is used as the Bash user configuration.
+        This is necessary to properly override the prompt with [cloe-shell] prefix.
         """
         bashrc_file = self.runtime_dir / ".bashrc"
-        bashrc_data = """\
-        source /etc/bash.bashrc
-        if [ -f ~/.bashrc ]; then
-            source ~/.bashrc
-        fi
-        OLD_PS1="$PS1"
-        source "$(dirname "$BASH_SOURCE[0]")/launcher_env.sh"
-        PS1="$OLD_PS1"
-        source "$(dirname "$BASH_SOURCE[0]")/prompt.sh"
-        """
+        bashrc_data = textwrap.dedent("""\
+            source /etc/bash.bashrc
+            if [ -f ~/.bashrc ]; then
+                source ~/.bashrc
+            fi
+            OLD_PS1="$PS1"
+            source "$(dirname "$BASH_SOURCE[0]")/launcher_env.sh"
+            PS1="$OLD_PS1"
+            source "$(dirname "$BASH_SOURCE[0]")/prompt.sh"
+            """)
         logging.debug(f"Write: {bashrc_file}")
         with bashrc_file.open("w") as file:
             file.write(bashrc_data)
 
     def _write_zshrc(self) -> None:
-        """Write .zshrc file."""
-        zshrc_file = self.runtime_dir / ".zshrc"
-        zshrc_data = f"""\
-        ZDOTDIR="${{OLD_ZDOTDIR:-$HOME}}"
-        source "${{ZDOTDIR}}/.zshenv"
-        source "${{ZDOTDIR}}/.zshrc"
-        OLD_PS1="$PS1"
-        source "{self.runtime_dir}/launcher_env.sh"
-        PS1="$OLD_PS1"
-        source "{self.runtime_dir}/prompt.sh"
+        """Write .zshrc file.
+
+        When launching a shell, this file is used as the Zsh user configuration.
+        This is necessary to properly override the prompt with [cloe-shell] prefix.
         """
+        zshrc_file = self.runtime_dir / ".zshrc"
+        zshrc_data = textwrap.dedent(f"""\
+            ZDOTDIR="${{OLD_ZDOTDIR:-$HOME}}"
+            source "${{ZDOTDIR}}/.zshenv"
+            source "${{ZDOTDIR}}/.zshrc"
+            OLD_PS1="$PS1"
+            source "{self.runtime_dir}/launcher_env.sh"
+            PS1="$OLD_PS1"
+            source "{self.runtime_dir}/prompt.sh"
+            """)
         logging.debug(f"Write: {zshrc_file}")
         with zshrc_file.open("w") as file:
             file.write(zshrc_data)
@@ -545,7 +548,7 @@ class Engine:
         env.export(self.runtime_env_path())
 
     def _process_arg(self, src_path) -> str:
-        # FIXME(ben): It may be possible to replace this with the Popen
+        # FIXME: It may be possible to replace this with the Popen
         # pass_fds argument.
 
         if not re.match(self.anonymous_file_regex, src_path):
