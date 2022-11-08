@@ -280,7 +280,7 @@ class Environment:
         """Write the environment variables to a file in KEY=VALUE pairs."""
         with open(filepath, "w") as file:
             for k in self._data.keys():
-                file.write("{}={}\n".format(k, self._data[k]))
+                file.write("{}={}\n".format(k, shlex.quote(self._data[k])))
 
     def as_dict(self) -> Dict[str, str]:
         """Return a reference to the internal dictionary."""
@@ -360,6 +360,7 @@ class Engine:
         self.runtime_dir = Path(conf.profile_runtime(self.profile))
         self.engine_pre_args = conf._conf["engine"]["pre_arguments"]
         self.engine_post_args = conf._conf["engine"]["post_arguments"]
+        self.abort_recursive_shell = True
         self.preserve_env = False
         self.conan_args = list()
         self.conan_options = list()
@@ -388,7 +389,7 @@ class Engine:
         self.profile = hasher.hexdigest()
 
     def runtime_env_path(self) -> Path:
-        return self.runtime_dir / "launcher_env.sh"
+        return self.runtime_dir / "environment_all.sh.env"
 
     def _prepare_runtime_dir(self) -> None:
         """Clean and create runtime directory."""
@@ -396,14 +397,16 @@ class Engine:
         logging.debug(f"Create: {self.runtime_dir}")
         self.runtime_dir.mkdir(parents = True)
         self._prepare_virtualenv()
+        self._write_cloe_env()
+        self._write_activate_all([
+            self.runtime_dir / "environment.sh.env",
+            self.runtime_dir / "environment_run.sh.env",
+            self.runtime_dir / "environment_cloe_launch.sh.env",
+            self.runtime_dir / "environment_cloe.sh.env",
+        ])
         self._write_prompt_sh()
         self._write_bashrc()
         self._write_zshrc()
-        self._write_activate_all([
-            self.runtime_dir / "environment_run.sh.env",
-            self.runtime_dir / "environment.sh.env",
-            self.runtime_dir / "environment_cloe_launch.sh.env",
-        ])
 
     def _write_prompt_sh(self) -> None:
         """Write prompt.sh file."""
@@ -442,7 +445,7 @@ class Engine:
                 source ~/.bashrc
             fi
             OLD_PS1="$PS1"
-            source "$(dirname "$BASH_SOURCE[0]")/launcher_env.sh"
+            source "$(dirname "$BASH_SOURCE[0]")/activate_all.sh"
             PS1="$OLD_PS1"
             source "$(dirname "$BASH_SOURCE[0]")/prompt.sh"
             """)
@@ -462,7 +465,7 @@ class Engine:
             source "${{ZDOTDIR}}/.zshenv"
             source "${{ZDOTDIR}}/.zshrc"
             OLD_PS1="$PS1"
-            source "{self.runtime_dir}/launcher_env.sh"
+            source "{self.runtime_dir}/activate_all.sh"
             PS1="$OLD_PS1"
             source "{self.runtime_dir}/prompt.sh"
             """)
@@ -470,21 +473,48 @@ class Engine:
         with zshrc_file.open("w") as file:
             file.write(zshrc_data)
 
+    def _write_cloe_env(self) -> None:
+        """Derive important CLOE_ variables and write environment_cloe.sh.env file."""
+        env = Environment(self.runtime_dir / "activate_run.sh", source_file=True)
+        if env.has("CLOE_SHELL"):
+            logging.error("Error: recursive cloe shells are not supported.")
+            logging.error("Note:")
+            logging.error(
+                "  It appears you are already in a Cloe shell, since CLOE_SHELL is set."
+            )
+            logging.error(
+                "  Press [Ctrl-D] or run 'exit' to quit this session and then try again."
+            )
+            if self.abort_recursive_shell:
+                sys.exit(2)
+
+        cloe_env = Environment({})
+        cloe_env.set("CLOE_SHELL", self.runtime_env_path())
+        cloe_env.set("CLOE_PROFILE_HASH", self.profile)
+        cloe_env.set("CLOE_ENGINE", self._extract_engine_path(env))
+        cloe_env.path_set("CLOE_PLUGIN_PATH", self._extract_plugin_paths(env))
+        cloe_env.export(self.runtime_dir / "environment_cloe.sh.env")
+
     def _write_activate_all(self, files: List[Path]) -> None:
         """Write activate_all.sh file."""
         activate_file = self.runtime_dir / "activate_all.sh"
-        source_files = [shlex.quote(x.as_posix()) for x in files]
-        activate_data = textwrap.dedent(f"""\
-            for file in {" ".join(source_files)}; do
-                if [ ! -f "$file" ]; then
-                    continue
+        activate_data = textwrap.dedent("""\
+            export_vars_from_file() {
+                if [ ! -f "$1" ]; then
+                    return
                 fi
                 while read -r line; do
                     LINE="$(eval echo $line)"
                     export "$LINE"
-                done < "$file"
-            done
+                done < "$1"
+            }
+
             """)
+        for file in files:
+            file = shlex.quote(file.as_posix())
+            activate_data += f"export_vars_from_file {file}\n"
+        activate_data += "\nunset export_vars_from_file\n"
+
         logging.debug(f"Write: {activate_file}")
         with activate_file.open("w") as file:
             file.write(activate_data)
@@ -549,18 +579,11 @@ class Engine:
             self._prepare_runtime_dir()
 
         # Get environment variables we need:
-        env = Environment(
+        return Environment(
             self.runtime_dir / "activate_all.sh",
             preserve=None if not self.preserve_env else list(os.environ.keys()),
             source_file=True
         )
-
-        # Export Cloe variables:
-        env.set("CLOE_PROFILE_HASH", self.profile)
-        env.set("CLOE_ENGINE", self._extract_engine_path(env))
-        env.path_set("CLOE_PLUGIN_PATH", self._extract_plugin_paths(env))
-
-        return env
 
     def _write_runtime_env(self, env: Environment) -> None:
         logging.debug(f"Write: {self.runtime_env_path()}")
@@ -624,18 +647,6 @@ class Engine:
     ) -> None:
         """Launch a SHELL with the environment variables adjusted."""
         env = self._prepare_runtime_env(use_cache)
-        if env.has("CLOE_SHELL"):
-            logging.error("Error: recursive cloe shells are not supported.")
-            logging.error("Note:")
-            logging.error(
-                "  It appears you are already in a Cloe shell, since CLOE_SHELL is set."
-            )
-            logging.error(
-                "  Press [Ctrl-D] or run 'exit' to quit this session and then try again."
-            )
-            sys.exit(2)
-
-        env.set("CLOE_SHELL", self.runtime_env_path())
         self._write_runtime_env(env)
 
         plugin_setups = self._prepare_plugin_setups(env)
@@ -665,7 +676,7 @@ class Engine:
             elif shell == "/bin/zsh":
                 env.set("OLD_ZDOTDIR", str(env.get("ZDOTDIR", "")))
                 env.set("ZDOTDIR", self.runtime_dir)
-        logging.debug(f"Exec: {shell} {' '.join(cmd)}")
+        logging.debug(f"Exec: {' '.join(cmd)}")
         os.execvpe(shell, cmd, env.as_dict())
 
     def activate(
@@ -674,28 +685,12 @@ class Engine:
     ) -> None:
         """Print shell commands to activate a cloe-engine environment."""
         env = self._prepare_runtime_env(use_cache)
-        if env.has("CLOE_SHELL"):
-            logging.error("Error: recursive cloe shells are not supported.")
-            logging.error("Note:")
-            logging.error(
-                "  It appears you are already in a Cloe shell, since CLOE_SHELL is set."
-            )
-            logging.error(
-                "  Press [Ctrl-D] or run 'exit' to quit this session and then try again."
-            )
-            sys.exit(2)
-
-        env.set("CLOE_SHELL", self.runtime_env_path())
         self._write_runtime_env(env)
 
         print("# Please see `cloe-launch activate --help` before activating this.")
         print()
-        print(f"source {self.runtime_dir / 'activate.sh'}")
-        print(f"source {self.runtime_dir / 'activate_run.sh'}")
+        print(f"source {self.runtime_dir / 'activate_all.sh'}")
         print(f"source {self.runtime_dir / 'prompt.sh'}")
-        for var in ["CLOE_PROFILE_HASH", "CLOE_ENGINE", "CLOE_PLUGIN_PATH"]:
-            print(f'export {var}="{env[var]}"')
-        print(f'export CLOE_SHELL="{self.runtime_env_path()}"')
 
     def prepare(self, build_policy: str = "outdated") -> None:
         """Prepare (by downloading or building) dependencies for the profile."""
@@ -742,7 +737,7 @@ class Engine:
         if debug:
             cmd.insert(0, "gdb")
             cmd.insert(1, "--args")
-        logging.info("Exec: {}".format(" ".join(cmd)))
+        logging.info(f"Exec: {' '.join(cmd)}")
         logging.info("---")
         print(end="", flush=True)
         result = subprocess.run(cmd, check=False, env=env.as_dict())
