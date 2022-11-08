@@ -31,6 +31,7 @@
 
 #include <boost/optional.hpp>  // for optional<>
 
+#include <cloe/component/driver_request.hpp>            // for DriverRequest
 #include <cloe/component/latlong_actuator.hpp>          // for LatLongActuator
 #include <cloe/component/object_sensor.hpp>             // for ObjectSensor
 #include <cloe/component/utility/ego_sensor_canon.hpp>  // for EgoSensor, EgoSensorCanon
@@ -80,6 +81,20 @@ const std::vector<std::pair<std::string, Algorithm>> ALGORITHMS{
 };
 
 }  // namespace distance
+
+double get_driver_request_acceleration(std::shared_ptr<DriverRequest> driver) {
+  if (!driver->has_acceleration()) {
+    throw cloe::Error("basic controller: {} has no acceleration data.", driver->name());
+  }
+  return *driver->acceleration();
+}
+
+double get_driver_request_steering_angle(std::shared_ptr<DriverRequest> driver) {
+  if (!driver->has_steering_angle()) {
+    throw cloe::Error("basic controller: {} has no steering_angle data.", driver->name());
+  }
+  return *driver->steering_angle();
+}
 
 struct AdaptiveCruiseControl {
   AccConfiguration config;
@@ -194,12 +209,16 @@ struct AdaptiveCruiseControl {
   /**
    * FIXME(ben): The HMI should not be manipulated while we are in this part.
    */
-  void control(Vehicle& v, const Sync& sync) {
+  void control(Vehicle& v, const Sync& sync, const std::string& driver_request) {
     assert(distance_algorithm < distance::ALGORITHMS.size());
 
     if (!enabled || !active) {
       // When not enabled, the function is disabled except for the HMI,
       // which is controlled separately.
+      if (!driver_request.empty()) {
+        double acc = get_driver_request_acceleration(v.get<DriverRequest>(driver_request));
+        v.get<LatLongActuator>(config.latlong_actuator)->set_acceleration(acc);
+      }
       return;
     }
 
@@ -275,8 +294,12 @@ struct LaneKeepingAssistant {
  public:
   explicit LaneKeepingAssistant(const LkaConfiguration& c) : config(c) {}
 
-  void control(Vehicle& v, const Sync&) {
+  void control(Vehicle& v, const Sync&, const std::string& driver_request) {
     if (!config.enabled) {
+      if (!driver_request.empty()) {
+        double rad = get_driver_request_steering_angle(v.get<DriverRequest>(driver_request));
+        v.get<LatLongActuator>(config.latlong_actuator)->set_steering_angle(rad);
+      }
       return;
     }
 
@@ -305,8 +328,12 @@ struct AutoEmergencyBraking {
  public:
   explicit AutoEmergencyBraking(const AebConfiguration& c) : config(c) {}
 
-  void control(Vehicle& v, const Sync&) {
+  void control(Vehicle& v, const Sync&, const std::string& driver_request) {
     if (!config.enabled) {
+      if (!driver_request.empty()) {
+        double acc = get_driver_request_acceleration(v.get<DriverRequest>(driver_request));
+        v.get<LatLongActuator>(config.latlong_actuator)->set_acceleration(acc);
+      }
       return;
     }
     auto world_sensor = v.get<ObjectSensor>(config.world_sensor);
@@ -352,7 +379,7 @@ struct AutoEmergencyBraking {
 class BasicController : public Controller {
  public:
   BasicController(const std::string& name, const BasicConfiguration& c)
-      : Controller(name), acc_(c.acc), aeb_(c.aeb), lka_(c.lka) {
+      : Controller(name), acc_(c.acc), aeb_(c.aeb), lka_(c.lka), driver_request_(c.driver_request) {
     // Define the HMI of the basic controller:
     namespace contact = utility::contact;
     acc_.add_hmi(hmi_);
@@ -397,9 +424,9 @@ class BasicController : public Controller {
     assert(veh_ != nullptr);
 
     hmi_.update(sync.time());
-    acc_.control(*veh_, sync);
-    lka_.control(*veh_, sync);
-    aeb_.control(*veh_, sync);
+    acc_.control(*veh_, sync, driver_request_);
+    lka_.control(*veh_, sync, driver_request_);
+    aeb_.control(*veh_, sync, driver_request_);
 
     return sync.time();
   }
@@ -416,6 +443,7 @@ class BasicController : public Controller {
   AdaptiveCruiseControl acc_;
   AutoEmergencyBraking aeb_;
   LaneKeepingAssistant lka_;
+  std::string driver_request_;
   utility::ContactMap<Duration> hmi_;
 };
 
