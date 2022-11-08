@@ -1,6 +1,7 @@
+from pathlib import Path
+
 from conans import ConanFile, tools
 from conan.tools.env import Environment
-from pathlib import Path
 
 class Base(object):
     settings = "os", "compiler", "build_type", "arch"
@@ -13,7 +14,17 @@ class Base(object):
         env = Environment()
         for k, v in self.cloe_launch_env.items():
             env.define(k, str(v))
-        env.vars(self).save_script("cloe_launch_env")
+        env_vars = env.vars(self)
+
+        # Raw environment variables
+        env_file = Path(self.generators_folder) / "environment_cloe_launch.sh.env"
+        with open(env_file, "w", encoding="utf-8") as file:
+            for (key, value) in env_vars.items():
+                value = value.replace('"', '\\"')
+                print(f'{key}="{value}"', file=file)
+
+        # Alternative runtime file
+        env_vars.save_script("cloe_launch_env")
 
     def project_version(self, version_path):
         if version_path:
