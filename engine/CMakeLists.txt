@@ -77,6 +77,7 @@ add_executable(${target}
     src/simulation.cpp
     src/simulation_context.cpp
     src/utility/command.cpp
+    src/utility/lua_action.cpp
 )
 set_target_properties(${target} PROPERTIES
     CXX_STANDARD 17
@@ -88,6 +89,7 @@ target_compile_definitions(${target}
     CLOE_ENGINE_VERSION="${CLOE_ENGINE_VERSION}"
     CLOE_ENGINE_TIMESTAMP="${CLOE_ENGINE_TIMESTAMP}"
     PROJECT_SOURCE_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}\"
+    SOL_ALL_SAFETIES_ON=1
 )
 set_target_linting(${target})
 target_include_directories(${target}
@@ -98,6 +100,7 @@ target_link_libraries(${target}
   PRIVATE
     CLI11::CLI11
     cloe::models
+    sol2::sol2
     ${libstack}
 )
 

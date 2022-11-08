@@ -1,0 +1,15 @@
+{
+  "version": "4",
+  "include": [
+    "config_nop_smoketest.json"
+  ],
+  "triggers": [
+    {
+      "event": "time=5",
+      "action": {
+        "name": "lua",
+        "script": "cloe.log_info(\"Hello world! Step is \" .. tostring(cloe.step()))"
+      }
+    }
+  ]
+}

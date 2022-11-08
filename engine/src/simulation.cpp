@@ -95,6 +95,7 @@
 #include "utility/command.hpp"        // for CommandFactory
 #include "utility/state_machine.hpp"  // for State, StateMachine
 #include "utility/time_event.hpp"     // for TimeCallback, NextCallback, NextEvent, TimeEvent
+#include "utility/lua_action.hpp"     // for LuaAction,
 
 // PROJECT_SOURCE_DIR is normally exported by CMake during build, but it's not
 // available for the linters, so we define a dummy value here for that case.
@@ -325,8 +326,7 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
     ctx.server->refresh_buffer();
   };
 
-  {
-    // 2. Initialize loggers
+  { // 2. Initialize loggers
     update_progress("logging");
 
     for (const auto& c : ctx.config.logging) {
@@ -334,8 +334,15 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
     }
   }
 
-  {
-    // 3. Enroll endpoints and triggers for the server
+  { // 3. Initialize Lua
+    ctx.lua.open_libraries(sol::lib::base);
+    ctx.lua["cloe"] = ctx.lua.create_table();
+    auto mod = ctx.lua["cloe"].get_or_create<sol::table>();
+    mod["log_info"] = [&](std::string s) { this->logger()->info(s); };
+    mod.set_function("step", &SimulationSync::step, &ctx.sync);
+  }
+
+  { // 4. Enroll endpoints and triggers for the server
     update_progress("server");
 
     auto rp = ctx.simulation_registrar();
@@ -429,6 +436,7 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
     r.register_action<actions::RealtimeFactorFactory>(&ctx.sync);
     r.register_action<actions::ResetStatisticsFactory>(&ctx.statistics);
     r.register_action<actions::CommandFactory>(ctx.commander.get());
+    r.register_action<actions::LuaFactory>(&ctx.lua);
 
     // From: cloe/trigger/example_actions.hpp
     auto tr = ctx.coordinator->trigger_registrar(cloe::Source::TRIGGER);
@@ -438,8 +446,7 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
     r.register_action<cloe::actions::PushReleaseFactory>(tr);
   }
 
-  {
-    // 4. Initialize simulators
+  { // 5. Initialize simulators
     update_progress("simulators");
 
     /**
@@ -483,8 +490,7 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
                             cloe::handler::StaticJson(ctx.simulator_ids()));
   }
 
-  {
-    // 5. Initialize vehicles
+  { // 6. Initialize vehicles
     update_progress("vehicles");
 
     /**
@@ -674,8 +680,7 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
                             cloe::handler::StaticJson(ctx.vehicle_ids()));
   }
 
-  {
-    // 6. Initialize controllers
+  { // 7. Initialize controllers
     update_progress("controllers");
 
     /**
