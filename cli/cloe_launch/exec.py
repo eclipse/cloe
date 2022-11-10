@@ -278,7 +278,7 @@ class Environment:
             if value is not None:
                 self._data[key] = value
 
-    def export(self, filepath: str) -> None:
+    def export(self, filepath: Path) -> None:
         """Write the environment variables to a file in KEY=VALUE pairs."""
         with open(filepath, "w") as file:
             for k in self._data.keys():
@@ -516,8 +516,8 @@ class Engine:
 
             """)
         for file in files:
-            file = shlex.quote(file.as_posix())
-            activate_data += f"export_vars_from_file {file}\n"
+            filename = shlex.quote(file.as_posix())
+            activate_data += f"export_vars_from_file {filename}\n"
         activate_data += "\nunset export_vars_from_file\n"
 
         logging.debug(f"Write: {activate_file}")
@@ -673,14 +673,19 @@ class Engine:
         # Replace this process with the SHELL now.
         sys.stdout.flush()
         cmd = [shell]
-        if arguments is not None and len(arguments) != 0:
-            cmd.extend(arguments)
+        if shell == "/bin/bash":
+            cmd.extend(["--init-file", str(self.runtime_dir/".bashrc")])
+        elif shell == "/bin/zsh":
+            env.set("OLD_ZDOTDIR", str(env.get("ZDOTDIR", "")))
+            env.set("ZDOTDIR", self.runtime_dir)
         else:
-            if shell == "/bin/bash":
-                cmd.extend(["--init-file", str(self.runtime_dir/".bashrc")])
-            elif shell == "/bin/zsh":
-                env.set("OLD_ZDOTDIR", str(env.get("ZDOTDIR", "")))
-                env.set("ZDOTDIR", self.runtime_dir)
+            # NOTE: This will also happen if "bash" or "zsh" happen to be
+            # at a different location than expected here. This is not a
+            # logging.warn, because it's a minor problem, and we don't
+            # want to pollute the output with this statement every time.
+            logging.info(f"Warning: unsupported shell '{shell}'")
+        if arguments is not None:
+            cmd.extend(arguments)
         logging.debug(f"Exec: {' '.join(cmd)}")
         os.execvpe(shell, cmd, env.as_dict())
 
