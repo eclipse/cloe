@@ -65,6 +65,8 @@ class Environment:
         "PATH": "/bin:/usr/bin",
     }
     _preserve: List[str] = [
+        # Required for avoiding recursive invocations:
+        "CLOE_SHELL",
         # Required for XDG compliance:
         "XDG_.*",
         "HOME",
