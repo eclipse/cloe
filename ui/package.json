@@ -16,7 +16,8 @@
     "jsonpath": "^1.0.2",
     "less": "^3.9.0",
     "mathjs": "^7.5.1",
-    "node-sass": "^4.14.0",
+    "node-gyp": "9.3.0",
+    "sass": "^1.56.1",
     "plotly.js": "^2.2.1",
     "randomcolor": "^0.5.4",
     "react": "^16.8.6",
@@ -37,6 +38,7 @@
   "scripts": {
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",
+    "build_v18": "react-app-rewired --openssl-legacy-provider build",
     "test": "react-scripts test --env=jsdom"
   },
   "description": "Web-based user interface for cloe",
