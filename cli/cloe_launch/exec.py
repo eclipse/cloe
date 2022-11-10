@@ -462,8 +462,11 @@ class Engine:
         zshrc_file = self.runtime_dir / ".zshrc"
         zshrc_data = textwrap.dedent(f"""\
             ZDOTDIR="${{OLD_ZDOTDIR:-$HOME}}"
-            source "${{ZDOTDIR}}/.zshenv"
-            source "${{ZDOTDIR}}/.zshrc"
+            for file in "$ZDOTDIR/.zshenv" "$ZDOTDIR/.zprofile" "$ZDOTDIR/.zshrc"; do
+                if [[ -f "$file" ]]; then
+                    source "$file"
+                fi
+            done
             OLD_PS1="$PS1"
             source "{self.runtime_dir}/activate_all.sh"
             PS1="$OLD_PS1"
