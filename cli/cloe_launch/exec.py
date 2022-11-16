@@ -1,3 +1,5 @@
+# pylint: disable=logging-fstring-interpolation,invalid-name,too-many-instance-attributes
+
 """
 This module contains classes related to the execution of the engine.
 
@@ -26,6 +28,7 @@ from typing import Type
 from typing import Union
 
 from cloe_launch.utility import run_cmd
+from cloe_launch import Configuration
 
 
 class Environment:
@@ -124,7 +127,8 @@ class Environment:
             self.init_from_env()
 
     def _init_shell_env(self, base: Mapping[str, str]) -> None:
-        regex = re.compile("^({})$".format("|".join(self._preserve)))
+        preserve = "|".join(self._preserve)
+        regex = re.compile(f"^({preserve})$")
         for key in base:
             if regex.match(key):
                 self._shell_env[key] = base[key]
@@ -148,7 +152,9 @@ class Environment:
         cmd = [shell, "-c", f"source {' && source '.join(filepaths)} &>/dev/null && env"]
         result = run_cmd(cmd, env=self._shell_env)
         if result.returncode != 0:
-            logging.error(f"Error: error sourcing files from shell: {', '.join(filepaths)}")
+            logging.error(
+                f"Error: error sourcing files from shell: {', '.join(filepaths)}"
+            )
         self.init_from_str(result.stdout)
 
     def init_from_env(self) -> None:
@@ -174,9 +180,7 @@ class Environment:
                 self._data[kv[0]] = kv[1]
             except IndexError:
                 logging.error(
-                    "Error: cannot interpret environment key-value pair: {}".format(
-                        line
-                    )
+                    f"Error: cannot interpret environment key-value pair: {line}"
                 )
 
     def __delitem__(self, key: str):
@@ -280,9 +284,10 @@ class Environment:
 
     def export(self, filepath: Path) -> None:
         """Write the environment variables to a file in KEY=VALUE pairs."""
-        with open(filepath, "w") as file:
+        with filepath.open("w") as file:
             for k in self._data.keys():
-                file.write("{}={}\n".format(k, shlex.quote(self._data[k])))
+                qv = shlex.quote(self._data[k])
+                file.write(f"{k}={qv}\n")
 
     def as_dict(self) -> Dict[str, str]:
         """Return a reference to the internal dictionary."""
@@ -350,7 +355,7 @@ class Engine:
     anonymous_file_regex = "^(/proc/self|/dev)/fd/[0-9]+$"
     engine_path = "cloe-engine"
 
-    def __init__(self, conf, conanfile=None):
+    def __init__(self, conf: Configuration, conanfile: str = None):
         # Set options:
         self.conan_path = Path(conf._conf["conan_path"])
         self.shell_path = Path(conf._conf["shell_path"])
@@ -364,33 +369,34 @@ class Engine:
         self.engine_post_args = conf._conf["engine"]["post_arguments"]
         self.abort_recursive_shell = True
         self.preserve_env = False
-        self.conan_args = list()
-        self.conan_options = list()
-        self.conan_settings = list()
+        self.conan_args = []
+        self.conan_options = []
+        self.conan_settings = []
         self.capture_output = True
 
         logging.info(f"Profile name: {self.profile}")
         logging.info("Configuration:")
-        logging.info("   {}".format("\n    ".join(self.profile_data.split("\n"))))
+        logging.info(textwrap.indent(self.profile_data, "    "))
 
         # Prepare runtime environment
         logging.info(f"Runtime directory: {self.runtime_dir}")
 
-    def _read_conf_profile(self, conf) -> None:
+    def _read_conf_profile(self, conf: Configuration) -> None:
         self.profile = conf.current_profile
         self.profile_path = conf.profile_path(self.profile)
         self.profile_data = conf.read(self.profile)
 
-    def _read_anonymous_profile(self, conanfile) -> None:
+    def _read_anonymous_profile(self, conanfile: str) -> None:
         logging.info(f"Source profile: {conanfile}")
         self.profile_path = conanfile
-        with open(conanfile) as file:
+        with open(conanfile, "r", encoding="utf-8") as file:
             self.profile_data = file.read()
         hasher = hashlib.blake2b(digest_size=20)
         hasher.update(self.profile_data.encode())
         self.profile = hasher.hexdigest()
 
     def runtime_env_path(self) -> Path:
+        """Return the path to the list of pruned environment variables."""
         return self.runtime_dir / "environment_all.sh.env"
 
     def _prepare_runtime_dir(self) -> None:
@@ -549,7 +555,7 @@ class Engine:
         conan_cmd.append(self.profile_path)
         self._run_cmd(conan_cmd, must_succeed=True)
 
-    def _extract_engine_path(self, env) -> Path:
+    def _extract_engine_path(self, env: Environment) -> Path:
         """Return the first cloe-engine we find in the PATH."""
         for bindir in env.get_list("PATH", default=[]):
             pp = Path(bindir) / "cloe-engine"
@@ -557,7 +563,7 @@ class Engine:
                 return pp
         raise RuntimeError("cannot locate cloe-engine executable")
 
-    def _extract_plugin_paths(self, env) -> List[Path]:
+    def _extract_plugin_paths(self, env: Environment) -> List[Path]:
         """Return all Cloe plugin paths we find in LD_LIBRARY_PATH."""
         plugin_paths = []
         for libdir in env.get_list("LD_LIBRARY_PATH", default=[]):
@@ -604,8 +610,8 @@ class Engine:
         dst_file = src_path.replace("/", "_")
         dst_path = self.runtime_dir / dst_file
         logging.info(f"Relay anonymous file {src_path} into {dst_path}")
-        with open(src_path) as src:
-            with open(dst_path, "w") as dst:
+        with open(src_path, "rb") as src:
+            with open(dst_path, "wb") as dst:
                 dst.write(src.read())
         return dst_path
 
@@ -727,9 +733,7 @@ class Engine:
         # Initialize plugin setups:
         for plugin in plugin_setups:
             logging.debug(
-                "Initializing plugin setup for {} at {}".format(
-                    plugin.name, plugin.plugin
-                )
+                f"Initializing plugin setup for {plugin.name} at {plugin.plugin}"
             )
             plugin.setup()
 
