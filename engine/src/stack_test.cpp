@@ -43,6 +43,9 @@ TEST(cloe_stack, serialization_of_empty_stack) {
   Json expect = R"({
     "engine": {
       "keep_alive": false,
+      "executables": {
+        "gnuplot": "gnuplot"
+      },
       "hooks": {
         "post_disconnect": [],
         "pre_connect": []
@@ -51,6 +54,9 @@ TEST(cloe_stack, serialization_of_empty_stack) {
       "output": {
         "clobber": true,
         "path": "${CLOE_SIMULATION_UUID}",
+        "dirs": {
+          "performance": "performance"
+        },
         "files": {
           "config": "config.json",
           "result": "result.json",
@@ -58,6 +64,10 @@ TEST(cloe_stack, serialization_of_empty_stack) {
         }
       },
       "registry_path": "${XDG_DATA_HOME-${HOME}/.local/share}/cloe/registry",
+      "performance": {
+        "generate_plots": true,
+        "profile_plugins": false
+      },
       "plugin_path": [],
       "plugins": {
         "allow_clobber": true,
@@ -134,6 +144,9 @@ TEST(cloe_stack, serialization_with_logging) {
   Json expect = R"({
     "engine": {
       "keep_alive": false,
+      "executables": {
+        "gnuplot": "gnuplot"
+      },
       "hooks": {
         "post_disconnect": [],
         "pre_connect": []
@@ -142,11 +155,18 @@ TEST(cloe_stack, serialization_with_logging) {
       "output": {
         "clobber": true,
         "path": "${CLOE_SIMULATION_UUID}",
+        "dirs": {
+          "performance": "performance"
+        },
         "files": {
           "config": "config.json",
           "result": "result.json",
           "triggers": "triggers.json"
         }
+      },
+      "performance": {
+        "generate_plots": true,
+        "profile_plugins": false
       },
       "registry_path": "${XDG_DATA_HOME-${HOME}/.local/share}/cloe/registry",
       "plugin_path": [],

@@ -104,7 +104,7 @@ struct SimulationPerformance {
  public:
   void init_step(uint64_t step) {
     buffer.step = step;
-    assert(buffer.samples.is_empty());
+    assert(buffer.samples.empty());
   }
 
   void commit_step(double padding, double cycle) {
