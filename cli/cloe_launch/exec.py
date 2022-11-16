@@ -149,7 +149,11 @@ class Environment:
         if shell is None:
             shell = self._shell_path
         filepaths = [shlex.quote(x.as_posix()) for x in filepaths]
-        cmd = [shell, "-c", f"source {' && source '.join(filepaths)} &>/dev/null && env"]
+        cmd = [
+            shell,
+            "-c",
+            f"source {' && source '.join(filepaths)} &>/dev/null && env",
+        ]
         result = run_cmd(cmd, env=self._shell_env)
         if result.returncode != 0:
             logging.error(
@@ -403,15 +407,21 @@ class Engine:
         """Clean and create runtime directory."""
         self.clean()
         logging.debug(f"Create: {self.runtime_dir}")
-        self.runtime_dir.mkdir(parents = True)
+        self.runtime_dir.mkdir(parents=True)
         self._prepare_virtualenv()
         self._write_cloe_env()
-        self._write_activate_all([
-            self.runtime_dir / "environment.sh.env",
-            self.runtime_dir / "environment_run.sh.env",
-            self.runtime_dir / "environment_cloe_launch.sh.env",
-            self.runtime_dir / "environment_cloe.sh.env",
-        ])
+        self._write_activate_all(
+            [
+                # From Conan virtualenv generator:
+                self.runtime_dir / "environment.sh.env",
+                # From Conan virtualrunenv generator:
+                self.runtime_dir / "environment_run.sh.env",
+                # From Conan base package cloe-launch-profile:
+                self.runtime_dir / "environment_cloe_launch.sh.env",
+                # From self._write_cloe_env(), derived from environment_run.sh:
+                self.runtime_dir / "environment_cloe.sh.env",
+            ]
+        )
         self._write_prompt_sh()
         self._write_bashrc()
         self._write_zshrc()
@@ -419,7 +429,8 @@ class Engine:
     def _write_prompt_sh(self) -> None:
         """Write prompt.sh file."""
         prompt_sh_file = self.runtime_dir / "prompt.sh"
-        prompt_sh_data = textwrap.dedent("""\
+        prompt_sh_data = textwrap.dedent(
+            """\
             CLOE_PROMPT="\u001b[2m[cloe-shell]\u001b[0m"
 
             prompt_cloe() {
@@ -435,7 +446,8 @@ class Engine:
             else
                 export PS1="$CLOE_PROMPT $PS1"
             fi
-            """)
+            """
+        )
         logging.debug(f"Write: {prompt_sh_file}")
         with prompt_sh_file.open("w") as file:
             file.write(prompt_sh_data)
@@ -447,7 +459,8 @@ class Engine:
         This is necessary to properly override the prompt with [cloe-shell] prefix.
         """
         bashrc_file = self.runtime_dir / ".bashrc"
-        bashrc_data = textwrap.dedent("""\
+        bashrc_data = textwrap.dedent(
+            """\
             source /etc/bash.bashrc
             if [ -f ~/.bashrc ]; then
                 source ~/.bashrc
@@ -456,7 +469,8 @@ class Engine:
             source "$(dirname "$BASH_SOURCE[0]")/activate_all.sh"
             PS1="$OLD_PS1"
             source "$(dirname "$BASH_SOURCE[0]")/prompt.sh"
-            """)
+            """
+        )
         logging.debug(f"Write: {bashrc_file}")
         with bashrc_file.open("w") as file:
             file.write(bashrc_data)
@@ -468,7 +482,8 @@ class Engine:
         This is necessary to properly override the prompt with [cloe-shell] prefix.
         """
         zshrc_file = self.runtime_dir / ".zshrc"
-        zshrc_data = textwrap.dedent(f"""\
+        zshrc_data = textwrap.dedent(
+            f"""\
             ZDOTDIR="${{OLD_ZDOTDIR:-$HOME}}"
             for file in "$ZDOTDIR/.zshenv" "$ZDOTDIR/.zprofile" "$ZDOTDIR/.zshrc"; do
                 if [[ -f "$file" ]]; then
@@ -479,7 +494,8 @@ class Engine:
             source "{self.runtime_dir}/activate_all.sh"
             PS1="$OLD_PS1"
             source "{self.runtime_dir}/prompt.sh"
-            """)
+            """
+        )
         logging.debug(f"Write: {zshrc_file}")
         with zshrc_file.open("w") as file:
             file.write(zshrc_data)
@@ -509,7 +525,8 @@ class Engine:
     def _write_activate_all(self, files: List[Path]) -> None:
         """Write activate_all.sh file."""
         activate_file = self.runtime_dir / "activate_all.sh"
-        activate_data = textwrap.dedent("""\
+        activate_data = textwrap.dedent(
+            """\
             export_vars_from_file() {
                 if [ ! -f "$1" ]; then
                     return
@@ -520,7 +537,8 @@ class Engine:
                 done < "$1"
             }
 
-            """)
+            """
+        )
         for file in files:
             filename = shlex.quote(file.as_posix())
             activate_data += f"export_vars_from_file {filename}\n"
@@ -593,7 +611,7 @@ class Engine:
         return Environment(
             self.runtime_dir / "activate_all.sh",
             preserve=None if not self.preserve_env else list(os.environ.keys()),
-            source_file=True
+            source_file=True,
         )
 
     def _write_runtime_env(self, env: Environment) -> None:
@@ -680,7 +698,7 @@ class Engine:
         sys.stdout.flush()
         cmd = [shell]
         if shell == "/bin/bash":
-            cmd.extend(["--init-file", str(self.runtime_dir/".bashrc")])
+            cmd.extend(["--init-file", str(self.runtime_dir / ".bashrc")])
         elif shell == "/bin/zsh":
             env.set("OLD_ZDOTDIR", str(env.get("ZDOTDIR", "")))
             env.set("ZDOTDIR", self.runtime_dir)
@@ -760,4 +778,6 @@ class Engine:
         return result
 
     def _run_cmd(self, cmd, must_succeed=True) -> subprocess.CompletedProcess:
-        return run_cmd(cmd, must_succeed=must_succeed, capture_output=self.capture_output)
+        return run_cmd(
+            cmd, must_succeed=must_succeed, capture_output=self.capture_output
+        )
