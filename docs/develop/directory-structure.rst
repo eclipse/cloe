@@ -57,6 +57,14 @@ Directories
 
     This directory contains the web server.
 
+``optional/``
+
+    This directory contains optional Cloe plugins, especially those that are
+    not trivial to build. For example, the ``vtd`` plugin is contained there.
+
+    Each plugin in this directory depends on the rest of Cloe, but is built
+    separately, in an extra manual step.
+
 ``plugins/``
 
     This directory contains all Cloe plugins that are maintained by the Cloe

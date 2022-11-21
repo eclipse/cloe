@@ -102,12 +102,8 @@ use the ``activate`` command::
     $ cloe-launch activate -P tests/profile_default.py
     # Please see `cloe-launch activate --help` before activating this.
 
-    source /home/captain/.cache/cloe/launcher/167cfb520dd89cc6124d02369b3ae77632f7b6c8/activate.sh
-    source /home/captain/.cache/cloe/launcher/167cfb520dd89cc6124d02369b3ae77632f7b6c8/activate_run.sh
-    export CLOE_PROFILE_HASH="167cfb520dd89cc6124d02369b3ae77632f7b6c8"
-    export CLOE_ENGINE="/home/captain/.conan/data/cloe-engine/0.18.0/cloe/develop/package/e228d2ea7272de48dde779ca 1121f71dc15701ef/bin/cloe-engine"
-    export CLOE_PLUGIN_PATH="/home/captain/.conan/data/cloe-plugin-basic/0.18.0/cloe/develop/package/0d1d27c64c16f68e9e2954e64fcdecb7d58ac604/lib/cloe:/home/captain/.conan/data/cloe-plugin-gndtruth-extractor/0.18.0/cloe/develop/package/67f1df5a769c4e2d868b98f0321cd1276c790f54/lib/cloe:/home/captain/.conan/data/cloe-plugin-minimator/0.18.0/cloe/develop/package/8be15f1a1eb9591d8097d2eb65b0ccbbfd9cfca8/lib/cloe:/home/captain/.conan/data/cloe-plugin-mocks/0.18.0/cloe/develop/package/8be15f1a1eb9591d8097d2eb65b0ccbbfd9cfca8/lib/cloe:/home/captain/.conan/data/cloe-plugin-noisy-sensor/0.18.0/cloe/develop/package/0d1d27c64c16f68e9e2954e64fcdecb7d58ac604/lib/cloe:/home/captain/.conan/data/cloe-plugin-speedometer/0.18.0/cloe/develop/package/8be15f1a1eb9591d8097d2eb65b0ccbbfd9cfca8/lib/cloe:/home/captain/.conan/data/cloe-plugin-virtue/0.18.0/cloe/develop/package/8be15f1a1eb9591d8097d2eb65b0ccbbfd9cfca8/lib/cloe"
-    export CLOE_SHELL="/home/captain/.cache/cloe/launcher/167cfb520dd89cc6124d02369b3ae77632f7b6c8/launcher_env.sh"
+    source ~/.cache/cloe/launcher/7745ffb0e036192c8e29a8b8cc2b9571e7a72c8c/activate_all.sh
+    source ~/.cache/cloe/launcher/7745ffb0e036192c8e29a8b8cc2b9571e7a72c8c/prompt.sh
 
 You can then use the ``source`` feature of your shell to integrate these
 commands::

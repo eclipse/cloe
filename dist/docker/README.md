@@ -18,7 +18,7 @@ Available targets:
 
 Configuration:
   IMAGE_BASE:     cloe/cloe-engine
-  IMAGE_VERSION:  0.18.0-nightly
+  IMAGE_VERSION:  0.19.0-nightly
   CONAN_REMOTE:   https://artifactory.example.com/artifactory/api/conan/cloe
   DOCKER_CONTEXT: ../..
   DOCKER_ARGS:     --network=host

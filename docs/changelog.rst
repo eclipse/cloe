@@ -50,6 +50,90 @@ here what changes for each package.
 
       Note that the most recent release is at the *top* of the document.
 
+0.19.0 (2022-11-18)
+-------------------
+
+This is the second public minor "release" of the Cloe packages, although there
+are some significant changes to the way Cloe is built and tested.
+
+Read all about it :doc:`here <news/release-0.19.0>`.
+
+**CLI**:
+
+- cli: Fix catching recursive shells not working `[d878767] <https://github.com/eclipse/cloe/commit/d8787672d6a3afaf4ef211dd320e99f5e04b9980>`_
+- cli: Add --version flag to cloe-launch `[70f3d7d] <https://github.com/eclipse/cloe/commit/70f3d7dbe05e2d3b3b5f82c23f98f6009ca893e7>`_
+- cli: Add [cloe-shell] prefix to prompt `[9261331] <https://github.com/eclipse/cloe/commit/92613312ba604d7fc410858cc52d72d5c772a163>`_
+- cli: Source "cloe_launch_env.sh" if generated `[14be6ca] <https://github.com/eclipse/cloe/commit/14be6ca76693ef0aab711af16e41acb1ec35c91f>`_
+- cli: Add prepare command `[1f6c907] <https://github.com/eclipse/cloe/commit/1f6c90738d205da62836f07fcd1e108f896f7745>`_
+
+**Engine:**
+
+- engine: Add file exporting exit codes of cloe-engine `[01d6138] <https://github.com/eclipse/cloe/commit/01d6138f6634e011a3a1436cc0b0741558441081>`_
+- engine: Add brake, steering, wheel, and powertrain sensor to NopVehicle `[8caa31d] <https://github.com/eclipse/cloe/commit/8caa31dace95bf026b4358967f334754729a881d>`_
+- engine: Add comment on refresh_buffer() performance `[5fdff7a] <https://github.com/eclipse/cloe/commit/5fdff7a6c1a66d3c91e80fe2860a1cea6c72df62>`_
+- engine: Fix Cloe state machine `[ea791f4] <https://github.com/eclipse/cloe/commit/ea791f402b9bc03bd9eb9198331877de6383a58e>`_
+- engine: Allow $schema key to be present in a cloe stack file `[d306efa] <https://github.com/eclipse/cloe/commit/d306efa0bef6bdd255341f7c84468466c592b263>`_
+- engine: Read several options from environment variables `[8f9731c] <https://github.com/eclipse/cloe/commit/8f9731c67e0d0bf4de123586d9c936e24d5cac1b>`_
+- engine: Add --strict and --secure flags `[f44eeb5] <https://github.com/eclipse/cloe/commit/f44eeb5c4c00883f560b88d381079d09401fa4b3>`_
+- engine: Make server an optional component `[1a4ab65] <https://github.com/eclipse/cloe/commit/1a4ab6564caf86cd8eaed07490aa41c5853d2da8>`_
+- engine: Replace direct use of oak types with ServerRegistrar interface `[ac3a7fc] <https://github.com/eclipse/cloe/commit/ac3a7fcc2d027c12ac1d226b01ebd747caa69ff1>`_
+- engine: Refactor server into interface and implementation `[d8c826a] <https://github.com/eclipse/cloe/commit/d8c826a21f1a2acb1ed9039552d693f32b45037e>`_
+- engine: Fix compilation error due to missing <thread> include `[68ec539] <https://github.com/eclipse/cloe/commit/68ec539cb3292389ebd7fc666af60f3810547d99>`_
+- engine: Fix compilation error due to unused variable `[b95bdd4] <https://github.com/eclipse/cloe/commit/b95bdd48c4a27c6eb33191e1e5a36d6940dbb9fc>`_
+- engine: Remove deprecated use of std::binary_function `[806b8ea] <https://github.com/eclipse/cloe/commit/806b8eabe6b4ceee5e81b7692b8f7bf1e56d4364>`_
+
+**Core Libraries:**
+
+- fable: Fix incorrect JSON schema output in some edge cases (WIP) `[ec5b8cb] <https://github.com/eclipse/cloe/commit/ec5b8cb81dad81623e6fd9b54504ef3c463ce4bd>`_
+- fable: Accept // comments in JSON files `[b891da9] <https://github.com/eclipse/cloe/commit/b891da96d7be47d9cd34a2e2eb12157f64963a55>`_
+
+- models: Add gearbox, pedal and steering actuator. `[40d128e] <https://github.com/eclipse/cloe/commit/40d128e492b697d7658b381a5c860f1f18bfb33d>`_
+- models: Add brake, steering, wheel, and powertrain sensors `[09e14fd] <https://github.com/eclipse/cloe/commit/09e14fdaeb49a0ec23b52525a2576525f59afed1>`_
+- models: Bump eigen dependency from 3.3.7 to 3.4.0 `[1a390ac] <https://github.com/eclipse/cloe/commit/1a390ac24a88f44804d6cc5c6998e01ab905672d>`_
+
+- runtime: Use fable::parse_json instead of Json::parse `[e8fd51a] <https://github.com/eclipse/cloe/commit/e8fd51a9afe2e71c81e38f2bab4e682602a54be3>`_
+- runtime: Fix assignment of temporary reference `[64cf1f2] <https://github.com/eclipse/cloe/commit/64cf1f29a6e1a7ea61c3de92c6b77c95e1d96b8e>`_
+
+**Plugins:**
+
+- vtd: Add git describe to profile_default `[658efcc] <https://github.com/eclipse/cloe/commit/658efcc936c8fae45b9591ad5b96ac98480d9cd9>`_
+- vtd: Move vtd with dependencies into optional/vtd directory `[c69fc3c] <https://github.com/eclipse/cloe/commit/c69fc3c32ad9edcf99079399663e125ea398fa7b>`_
+
+**Web UI:**
+
+- ui: Fix wrong dir in Makefile and remove timeout in webserver `[7d2e5f4] <https://github.com/eclipse/cloe/commit/7d2e5f43227b96a2be74881f11d7e23da481bffc>`_
+- ui: Fix github run pipeline for node > 16 `[d36cddb] <https://github.com/eclipse/cloe/commit/d36cddb83bccbd676cb5ed6ba41c0a3bfcbed019>`_
+
+**Tooling & Dependencies:**
+
+- tooling: Refactor tests significantly `[9ef417d] <https://github.com/eclipse/cloe/commit/9ef417dd3a237b2fbffd8573cb34d055bafe17b3>`_
+- tooling: Modify test profiles to specify environment variables `[1fd969d] <https://github.com/eclipse/cloe/commit/1fd969de0499406a28dae0c6af02d8c4c62aee22>`_
+- tooling: Build ui with current supported Node versions `[9ed0d2e] <https://github.com/eclipse/cloe/commit/9ed0d2e0dac681d101b39dd76b2df84639699321>`_
+- tooling: Simplify Makefiles and make them more user-friendly `[cd20202] <https://github.com/eclipse/cloe/commit/cd2020299cabbde650db41d446d5b1851932ac4d>`_
+- tooling: Rename package-auto target to package `[55645a2] <https://github.com/eclipse/cloe/commit/55645a237676963b32fff5496dbe59ae4740eb2b>`_
+- tooling: Streamline in-source builds `[fe1882b] <https://github.com/eclipse/cloe/commit/fe1882bef55bb3b1feb5e4eb475378baa4136b34>`_
+- tooling: Add setup-conan target to Makefile.setup `[de41391] <https://github.com/eclipse/cloe/commit/de413913260aa129dfe8cd106c13689b140573b9>`_
+- tooling: Fix version "unknown" when using git worktree `[4227f93] <https://github.com/eclipse/cloe/commit/4227f93695ef13fd62ce7f08b7f613c7d7970c4e>`_
+- tooling: Fix mismatch of fmt version between engine and cloe `[e903bea] <https://github.com/eclipse/cloe/commit/e903bea4d74095cf761b51d9342948c8c4b5b784>`_
+- tooling: Add boost override if engine server enabled `[fe6751e] <https://github.com/eclipse/cloe/commit/fe6751e1a0b7311ffe536ea425e74a9307c57663>`_
+- tooling: Fix package_id affected by test and pedantic options `[3f0a62c] <https://github.com/eclipse/cloe/commit/3f0a62c14227430dceabcf0d5dc917b9b41bc184>`_
+- tooling: Don't build unnecessary vendor packages `[0205b3e] <https://github.com/eclipse/cloe/commit/0205b3e71f8d0433c253f2822219d7b9df1b06bc>`_
+- tooling: Fix .editorconfig rst indent setting from 3 to 4 `[a9160e4] <https://github.com/eclipse/cloe/commit/a9160e41e7ab6eef02fe4c61fce75588cadc0b25>`_
+- tooling: Fix `make status` broken `[ee9b264] <https://github.com/eclipse/cloe/commit/ee9b264773f0dc9f031324abd3aa79b86df64418>`_
+- tooling: Improve handling of editable files `[2a8c994] <https://github.com/eclipse/cloe/commit/2a8c994e4c61513414e51263febbc796a2ce2cd4>`_
+- tooling: Don't set default BUILD_TYPE in Makefile `[771a7f5] <https://github.com/eclipse/cloe/commit/771a7f55025dbfc0359b1de810085c3092d44148>`_
+- tooling: Add set_version() to conanfiles `[fb4741f] <https://github.com/eclipse/cloe/commit/fb4741ff38dfd203280d23935455c6b83ca9466a>`_
+- tooling: Add option to specify lockfile generation `[382828a] <https://github.com/eclipse/cloe/commit/382828ae652342da76bc4ce54edfaf6e39288668>`_
+- tooling: Verify options are set to 0 or 1 `[3068330] <https://github.com/eclipse/cloe/commit/3068330051057906af8a7775b1d6619b6d5c4143>`_
+- tooling: Fix KEEP_SOURCES build-arg set by WITH_VTD `[a4ade4f] <https://github.com/eclipse/cloe/commit/a4ade4f806e9bc5e5765ac6410dc4edc573718c3>`_
+
+- docker: Remove VTD configuration and drop support for Ubuntu 16.04 `[907095d] <https://github.com/eclipse/cloe/commit/907095dacdbd1dbe5fbc1800330c3ee4e260ae60>`_
+- docker: Remove DEBUG option in favor of BUILDKIT_PROGRESS `[eabb9da] <https://github.com/eclipse/cloe/commit/eabb9da0c7867eea77f8c545ab66872b424ddf95>`_
+
+- vendor: Remove bincrafters/stable dependencies `[c621be9] <https://github.com/eclipse/cloe/commit/c621be94279395f38367c0beb084f448bd639735>`_
+- vendor: Improve documentation of vtd installation `[f93a949] <https://github.com/eclipse/cloe/commit/f93a949a7d0ab1f24b66af157f48188db975a6e7>`_
+- vendor: Export cloe/vtd-conan-package Docker image with Ubuntu 18:04 `[40b9abe] <https://github.com/eclipse/cloe/commit/40b9abe108fccb1d9b1d7fd34d27a2258ef92954>`_
+
 
 0.18.0 (2022-04-26)
 -------------------
