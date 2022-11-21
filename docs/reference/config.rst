@@ -98,6 +98,28 @@ Defaults::
          DISCONNECT: 600000
 
 
+.. _config-server:
+
+server
+------
+Optional.
+
+Configuration settings for the server embedded in the Cloe engine. Disable the
+server for better performance. Listen on all addresses by setting
+`listen_address` to `0.0.0.0`. Change the prefixes only if you really really
+know what you are doing!
+
+Defaults::
+
+    server:
+      listen: true
+      listen_address: 127.0.0.1
+      listen_port: 8080
+      listen_threads: 10
+      static_prefix: ""
+      api_prefix: "/api"
+
+
 .. _config-include:
 
 include
