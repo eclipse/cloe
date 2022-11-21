@@ -1,5 +1,5 @@
 Name: nop
 Type: controller
 Path: n/a
-Usage: "object"
-Defaults: null
+Usage: null
+Defaults: {}

@@ -56,8 +56,7 @@ simulator backends:
 
 - `Vires VTD`_
 - `IPG CarMaker`_ (under development)
-- `Eclipse SUMO`_ (under development)
-- `Carla`_ (under development)
+- `esmini`_ (under development)
 
 Some of these tools are not for free however, and need to be somehow acquired.
 You should check whether your use-case is a fit to one of the supported
@@ -73,6 +72,7 @@ to run on Windows as well.
    :maxdepth: 2
    :caption: Contents
 
+   news
    overview
    install
    usage
@@ -92,5 +92,4 @@ to run on Windows as well.
 .. _GitHub: https://github.com/eclipse/cloe/
 .. _Vires VTD: https://vires.mscsoftware.com/
 .. _IPG CarMaker: https://ipg-automotive.com/products-services/simulation-software/carmaker/
-.. _Eclipse SUMO: https://sumo.dlr.de/docs/index.html
-.. _CARLA: https://carla.org/
+.. _esmini: https://github.com/esmini/esmini

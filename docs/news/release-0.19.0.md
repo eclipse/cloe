@@ -1,6 +1,10 @@
 # Version 0.19.0 Release
 
 This version contains some breaking changes in how the project is built.
+It also contains improvements across the board. This post highlights some of
+the more interesting changes.
+
+For the entire changelog, see the Git commit history.
 
 ## Makefile Refactoring
 
@@ -113,3 +117,132 @@ well, especially as more simulators are added.
 Hence, `optional/vtd` now contains its own vendor packages, tests and test
 configurations, and Docker build files. It serves as a model for how an
 independent plugin repository can be structured.
+
+The workflow to work on optional packages is as follows:
+
+1. First create or export the standard Cloe Conan packages.
+2. Work on the optional package.
+
+If you want to build the Docker image, this also bases on the Docker
+image from the standard Cloe which needs to be built first.
+
+## CLI Improvements
+
+TLDR: The `cloe-launch` tool now has a subcommand `prepare` that can be used
+for building the runtime configuration of a conanfile.py "profile" that should
+be used with `cloe-launch`.
+
+New:
+- Add `prepare` subcommand to `cloe-launch`
+- Add `cloe-launch-profile` conan package to be used as a conan base class
+- Add `[cloe-shell]` prefix to prompt after using `cloe-launch shell`
+- Add `--version` flag to `cloe-launch`
+
+The commands `activate`, `exec`, and `shell` that `cloe-launch` provides may run
+Conan commands in order to provide activation scripts, launch the Cloe engine,
+or spawn a new shell environment, respectively. The output from these Conan
+executions are collected and printed as a single logging statement, or if an
+error occurs. During this time, no output is printed. This can appear as if
+`cloe-launch` is not progressing, and should be terminated. The `prepare`
+command just prepares the virtual runtime environment and redirects Conan output
+directly to stdout and stderr, providing realtime feedback. It is highly
+recommended to use this command and follow it up with other commands that use
+the `--cache` option.
+
+When running `cloe-launch` with any of the commands, we provide a Conanfile
+to be used as configuration with the `--profile-path` flag. Previously, it was
+difficult to inject environment variables in the runtime environment that
+`cloe-launch` generates. If the Conanfile depends on the `cloe-launch-profile`
+and uses the Python base class provided from that package, it becomes easier
+to inject environment variables:
+
+```python
+class CloeTest(ConanFile):
+    python_requires = "cloe-launch-profile/[~=0.19.0]@cloe/develop"
+    python_requires_extend = "cloe-launch-profile.Base"
+
+    @property
+    def cloe_launch_env(self):
+        return {
+            "CLOE_ENGINE_WITH_SERVER": "0",
+            "CLOE_LOG_LEVEL": "debug",
+            "CLOE_STRICT_MODE": "1",
+            "CLOE_WRITE_OUTPUT": "0",
+            "CLOE_ROOT": Path(self.recipe_folder) / "../..",
+        }
+
+    ...
+```
+
+This is used in all tests in the repository to set `cloe-engine` options and
+allows us to make BATS tests fully orthogonal with those run in a cloe-launch
+shell.
+
+Finally, in the interest of making it more obvious to users when they are in
+a `cloe-launch` shell, we now prepend the string `[cloe-shell]` to the prompt.
+The `--version` flag also makes checking which `cloe-launch` version you have
+possible.
+
+## Engine Improvements
+
+TLDR: The `cloe-engine` package can be built with the most recent versions of
+Boost by disabling the `server` feature. The binary has gained several options
+and can read options from environment variables. These are aimed towards making
+testing orthogonal and easily reproducible. JSON Stackfiles can now contain
+comments.
+
+New:
+- The engine supports `//`-style comments in all JSON files
+- Server component can be compiled out with Conan package option `engine:server=False`
+- Add `--strict` flag as an alias for `--no-system-plugins`, `--no-system-confs`, and `--require-success`
+- Add `--secure` flag as an alias for `--strict`, `--no-hooks`, and `--no-interpolate`
+- Add `--no-` variants for several options
+- Read select option defaults from environment variables:
+    - `CLOE_LOG_LEVEL` for `--level`
+    - `CLOE_REQUIRE_SUCCESS` for `--require-success`
+    - `CLOE_SIMULATION_UUID` for `--uuid`
+    - `CLOE_WRITE_OUTPUT` for `--write-output`
+    - `CLOE_STRICT_MODE` for `--strict`
+    - `CLOE_SECURE_MODE` for `--secure`
+    - `CLOE_PLUGIN_PATH`
+
+The original JSON specification does not allow for any comments. Recent
+alternative standards have arose to address this, such as
+[JSONC](https://changelog.com/news/jsonc-is-a-superset-of-json-which-supports-comments-6LwR)
+and [JSON5](https://json5.org/).
+This release provides support for JSON files with comments, as specified
+in JSONC and as supported by
+[nlohmann-json](https://github.com/nlohmann/json#comments-in-json).
+It is enabled by default in `cloe-engine`, but can be disabled by setting the
+`fable:allow_comments=False` option when compiling the `cloe-engine` package.
+
+Our current embedded server implementation builds on Boost internals that have
+changed in 1.70, such that it is not possible to use a newer Boost version and
+the embedded web server at the same time. By making the server an optional
+component, we make it possible to use newer versions of Boost until we migrate
+to a different server implementation. In your Conanfile where you include the
+`engine` package, set the `server` option in the `default_options` attribute,
+like so:
+
+```python
+class CloeTest(ConanFile):
+    ...
+    default_options = {
+        "cloe-engine:server": False,
+    }
+    ...
+
+    def requirements(self):
+        self.requires(f"cloe-engine/0.19.0@cloe/develop")
+        ...
+```
+
+This option can also be specified in your Conan profile, system-wide, as well as
+on the command line when running Conan commands. See the Conan documentation for
+more details on this.
+
+Several options have been added to `cloe-engine` in order to better support
+our changes to testing, as detailed in the previous sections. Since options
+provided by the environment are set as the default, we only have a way to
+override them if we also provide negations of options. This release provides
+those negations, such as `--no-strict`.

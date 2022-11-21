@@ -1,6 +1,6 @@
 Name: basic
 Type: controller
-Path: ~/.conan/data/cloe-plugin-basic/0.18.0/cloe/develop/package/f7f832fa3477bcda2f0ec9fdf2f22aa46d8ff1e2/lib/cloe/controller_basic.so
+Path: ~/.conan/data/cloe-plugin-basic/0.19.0/cloe/develop/package/92ad7de317f3f6912937cd857aa135205c7384fe/lib/cloe/controller_basic.so
 Usage: {
   "acc": "object :: ACC configuration",
   "aeb": "object :: AEB configuration",

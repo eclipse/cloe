@@ -1,6 +1,9 @@
 {
   "$id": "",
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
   "description": "stand-in that does nothing",
-  "title": "nop"
+  "properties": {},
+  "title": "nop",
+  "type": "object"
 }
