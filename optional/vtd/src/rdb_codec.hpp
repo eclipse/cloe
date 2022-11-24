@@ -28,8 +28,11 @@
 #include <utility>  // for move
 
 // This comes from VTD:
-#include <RDBHandler.hh>
-
+#ifdef VTD_API_2_2_0
+  #include <RDBHandler.hh>  // for RDB_MSG_t
+#else
+  #include <VtdToolkit/RDBHandler.hh>
+#endif
 #include <cloe/core.hpp>  // for Json, Duration
 
 #include "rdb_transceiver.hpp"  // for RdbTransceiver

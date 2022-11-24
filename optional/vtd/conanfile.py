@@ -81,9 +81,16 @@ class CloeSimulatorVTD(ConanFile):
         self._compress_setups()
 
     def _configure_cmake(self):
+        vtd_api_version = str(self.requires.get("vtd-api"))
+        if "vtd-api/2.2.0" in vtd_api_version:
+            vtd_api_version = "2.2.0"
+        else:
+            vtd_api_version = "2022.3"
+
         if self._cmake:
             return self._cmake
         self._cmake = CMake(self)
+        self._cmake.definitions["VTD_API_VERSION"] = vtd_api_version
         self._cmake.definitions["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
         self._cmake.definitions["BuildTests"] = self.options.test
         self._cmake.definitions["TargetLintingExtended"] = self.options.pedantic
