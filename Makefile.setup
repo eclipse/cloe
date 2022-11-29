@@ -39,8 +39,8 @@ PIPX := ${PIP}
 PIPX_INSTALL_ARGS := ${PIP_INSTALL_ARGS}
 endif
 
+.DEFAULT_GOAL := help
 .PHONY: help
-.DEFAULT: help
 .SILENT: help
 help::
 	$(call print_help_section, "Available setup targets")
@@ -52,10 +52,11 @@ help::
 	$(call print_help_target, install-python-tools, "install Python development tools with ${_dim}${PIPX}${_rst}")
 	echo
 
-.PHONY: setup-git setup-conan
+.PHONY: setup-git
 setup-git:
 	git config --local core.hooksPath .git-hooks/
 
+.PHONY: setup-conan
 setup-conan:
 	# Install Conan if it is not available.
 	if ! command -v conan >/dev/null 2>&1; then ${PIP} install --user conan; fi
@@ -79,7 +80,7 @@ setup-conan:
 		install "${PROJECT_ROOT}/dist/conan/cloe-release.profile" "${CONAN_DIR}/profiles/cloe-release"; \
 	fi
 
-.PHONY: install-system-deps install-ubuntu-deps install-archlinux-deps install-python-deps install-python-tools install-sphinx-deps
+.PHONY: install-system-deps
 install-system-deps::
 
 # Ubuntu ----------------------------------------------------------------------
@@ -87,6 +88,7 @@ ifdef APT
 install-system-deps:: install-ubuntu-deps
 endif
 
+.PHONY: install-ubuntu-deps
 install-ubuntu-deps::
 	command -v ${APT} >/dev/null 2>&1
 	${APT} install ${APT_ARGS} \
@@ -109,33 +111,8 @@ install-ubuntu-deps::
 		tmux \
 		;
 
-# Archlinux -------------------------------------------------------------------
-ifdef PACMAN
-install-system-deps:: install-archlinux-deps
-endif
-
-install-archlinux-deps::
-	command -v ${PACMAN} >/dev/null 2>&1
-	${PACMAN} -S ${PACMAN_ARGS} \
-		base-devel \
-		bash \
-		bash-bats \
-		clang \
-		cmake \
-		curl \
-		doxygen \
-		git \
-		graphviz \
-		jq \
-		patchelf \
-		psmisc \
-		python-pip \
-		python-virtualenv \
-		time \
-		tmux \
-		;
-
 # Python ----------------------------------------------------------------------
+.PHONY: install-python-deps
 install-python-deps::
 	command -v ${PIP} >/dev/null 2>&1
 	${PIP} install ${PIP_INSTALL_ARGS} \
@@ -146,10 +123,12 @@ install-python-deps::
 		pipx \
 		;
 
+.PHONY: install-sphinx-deps
 install-sphinx-deps:
 	command -v ${PIP} >/dev/null 2>&1
 	${PIP} install ${PIP_INSTALL_ARGS} -r docs/requirements.txt
 
+.PHONY: install-python-tools
 install-python-tools::
 	command -v ${PIPX} >/dev/null 2>&1
 	for pkg in \

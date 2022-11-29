@@ -23,28 +23,31 @@ override DOCKER_RUN_ARGS += -p=4000:4000
 MOUNT_DIRECTORY := $$HOME/.local/share/cloe/replay_data
 override DOCKER_RUN_ARGS += -v=${MOUNT_DIRECTORY}:/app/replay_data
 
+.DEFAULT_GOAL := help
 .PHONY: help
-.DEFAULT: help
+.SILENT: help
 help:
-	@echo "Usage: make <target>"
-	@echo
-	@echo "Available targets:"
-	@echo "  all        to build the cloe-ui-webserver docker image"
-	@echo "  image      to build the cloe-ui-webserver docker image"
-	@echo "  run        to run the cloe-ui-webserver docker image"
-	@echo
-	@echo "Configuration:"
-	@echo "  IMAGE_BASE:      ${IMAGE_BASE}"
-	@echo "  IMAGE_VERSION:   ${IMAGE_VERSION}"
-	@echo "  DOCKER_IMAGE:    ${DOCKER_IMAGE}"
-	@echo "  DOCKER_CONTEXT:  ${DOCKER_CONTEXT}"
-	@echo "  MOUNT_DIRECTORY: ${MOUNT_DIRECTORY}"
+	echo "Usage: make <target>"
+	echo
+	echo "Available targets:"
+	echo "  all        to build the cloe-ui-webserver docker image"
+	echo "  image      to build the cloe-ui-webserver docker image"
+	echo "  run        to run the cloe-ui-webserver docker image"
+	echo
+	echo "Configuration:"
+	echo "  IMAGE_BASE:      ${IMAGE_BASE}"
+	echo "  IMAGE_VERSION:   ${IMAGE_VERSION}"
+	echo "  DOCKER_IMAGE:    ${DOCKER_IMAGE}"
+	echo "  DOCKER_CONTEXT:  ${DOCKER_CONTEXT}"
+	echo "  MOUNT_DIRECTORY: ${MOUNT_DIRECTORY}"
 
-.PHONY: all image run
+.PHONY: all
 all: image
 
+.PHONY: image
 image:
 	docker build ${DOCKER_NETWORK} -t ${DOCKER_IMAGE} ${DOCKER_CONTEXT}
 
+.PHONY: run
 run:
 	docker run --rm --name=${CONTAINER_NAME} ${DOCKER_RUN_ARGS} ${DOCKER_IMAGE}

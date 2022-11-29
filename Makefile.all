@@ -137,8 +137,8 @@ endef
 
 # --------------------------------------------------------------------------- #
 
+.DEFAULT_GOAL := help
 .PHONY: help
-.DEFAULT: help
 .SILENT: help
 help::
 	$(call print_help_section, "Available build targets")

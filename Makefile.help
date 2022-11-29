@@ -90,14 +90,57 @@ define print_help_define_align
 	@printf "    ${_grn}%-16s${_rst}=${_dim} %s${_rst}\n" ${1} ${2}
 endef
 
-# Usage: $(call print_help_define_lines, VAR-NAME, ${VAR-NAME}}
+# Usage: $(call print_help_define_lines, VAR-NAME, ${VAR-NAME})
+#
+# For example, given a call with the following:
+#
+#     $(call print_help_define_lines, FROM_VERSIONS, 18.04 20.04 22.04)
+#
+# we will get the following output:
+#
+#     FROM_VERSIONS=\
+#       18.04
+#       20.04
+#       22.04
+#
+# If the contents of ${VAR-NAME} is empty or only contains whitespace,
+# then no extra newline is printed, and it behaves as print_help_define.
 define print_help_define_lines
-	@printf "    ${_grn}%s${_rst}=${_dim}\\ \n" ${1}
+	@printf "    ${_grn}%s${_rst}=${_dim}" ${1}
+	@if [ -n "$(strip ${2})" ]; then printf "\\ \n"; fi
 	@printf "%s" "$$(echo "     ${2}" | fmt -5)"
 	@printf "${_rst}\n"
 endef
 
+# Usage: $(call print_help_args_lines, VAR-NAME, ${VAR-NAME})
+#
+# This function behaves as print_help_define_lines, except that
+# it doesn't split on words, but on arguments. Each argument (leading with -)
+# is prepended with a newline.
+#
+# For example, given a call with the following:
+#
+#     $(call print_help_define_lines, DOCKER_ARGS, -it --rm --network host)
+#
+# we will get the following output:
+#
+#     DOCKER_ARGS=\
+#         -it
+#         --rm
+#         --network host
+#
+# If the contents of ${VAR-NAME} is empty, same behavior as print_help_define.
+define print_help_args_lines
+	@printf "    ${_grn}%s${_rst}=${_dim}" ${1}
+	@if [ -n "$(strip ${2})" ]; then printf "\\ \n"; fi
+	@printf "%s" "$$(echo "     ${2}" | sed -r -e 's/\W--?[^-]/\n     \0/g' -e 's/^\s*\n//')"
+	@printf "${_rst}\n"
+endef
+
 # Usage: $(call print_help_usage)
+#
+# This should be called only once, before all other print_help_* calls,
+# so that the help message starts with a usage statement.
 define print_help_usage
 	@printf "Usage: make ${_blu}target${_rst}\n"
 endef

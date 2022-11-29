@@ -31,28 +31,31 @@ DOCKER_CONTEXT  := .
 
 CONTAINER_NAME := cloe-ui
 
+.DEFAULT_GOAL : help
 .PHONY: help
-.DEFAULT: help
+.SILENT: help
 help:
-	@echo "Usage: make <target>"
-	@echo
-	@echo "Available targets:"
-	@echo "  all        to build the cloe-ui docker image"
-	@echo "  image      to build the cloe-ui docker image"
-	@echo "  run        to run the cloe-ui docker image"
-	@echo
-	@echo "Configuration:"
-	@echo "  IMAGE_BASE:      ${IMAGE_BASE}"
-	@echo "  IMAGE_VERSION:   ${IMAGE_VERSION}"
-	@echo "  DOCKER_IMAGE:    ${DOCKER_IMAGE}"
-	@echo "  DOCKER_CONTEXT:  ${DOCKER_CONTEXT}"
+	echo "Usage: make <target>"
+	echo
+	echo "Available targets:"
+	echo "  all        to build the cloe-ui docker image"
+	echo "  image      to build the cloe-ui docker image"
+	echo "  run        to run the cloe-ui docker image"
+	echo
+	echo "Configuration:"
+	echo "  IMAGE_BASE:      ${IMAGE_BASE}"
+	echo "  IMAGE_VERSION:   ${IMAGE_VERSION}"
+	echo "  DOCKER_IMAGE:    ${DOCKER_IMAGE}"
+	echo "  DOCKER_CONTEXT:  ${DOCKER_CONTEXT}"
 
-.PHONY: all image run
+.PHONY: all
 all: image
 
+.PHONY: image
 image:
 	docker build ${DOCKER_NETWORK} -t ${DOCKER_IMAGE} ${DOCKER_CONTEXT}
 	docker tag ${DOCKER_IMAGE} ${DOCKER_IMAGE}
 
+.PHONY: run
 run:
 	docker run --rm --name=${CONTAINER_NAME} ${DOCKER_RUN_ARGS} ${DOCKER_IMAGE}
