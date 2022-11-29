@@ -11,7 +11,7 @@ available on the system that is building them. Since this is unlikely to be the
 case, it is recommended to build the Docker image and copy the "vtd" package
 from the container once complete.
 
-Additionally, the Docker images in `dist/docker` require the
+Additionally, the Dockerfile in `optional/vtd/` requires the
 `cloe/vtd-conan-package` image generated here to work. This image can then be
 used to mount at build- or run-time the VTD distribution, which speeds up build
 times and keeps image sizes down.
@@ -63,9 +63,10 @@ Make sure you have the `cloe/vtd-conan-package:2.2.0` Docker image available;
 see the previous section if you need to build it. Then mount *your* conan data
 home (by default, `~/.conan/data`) into the docker container.
 
+    mkdir -p ~/.conan/data/vtd
     touch ~/.conan/data/.user_id.tmp
     docker run --rm -v ~/.conan/data:/mnt cloe/vtd-conan-package:2.2.0 bash -c \
-        "cp -a /vtd/ /mnt/vtd && chown -R --reference=/mnt/.user_id.tmp /mnt/vtd"
+        "cp -a /vtd/* /mnt/vtd/ && chown -R --reference=/mnt/.user_id.tmp /mnt/vtd"
     rm ~/.conan/data/.user_id.tmp
 
 For your convenience, this is also available as a make target:

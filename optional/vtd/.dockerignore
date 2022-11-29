@@ -1,4 +1,13 @@
-Dockerfile.ubuntu
+# Docker recipe not required in image:
+Dockerfile
 Makefile.docker
-vendor/vtd/dl
+
+# Secrets should be mounted with --secret:
 setup.sh
+
+# Build artifacts:
+build/
+**/build/
+
+# VTD Docker image should be built separately:
+vendor/vtd/dl

@@ -55,9 +55,10 @@ docker:
 
 .PHONY: extract-to-host
 extract-to-host:
+	mkdir -p ~/.conan/data/vtd
 	touch ~/.conan/data/.user_id.tmp
 	docker run --rm -v ~/.conan/data:/mnt ${DOCKER_IMAGE}:${DOCKER_TAG} bash -c \
-		"cp -a /vtd/ /mnt/vtd && chown -R --reference=/mnt/.user_id.tmp /mnt/vtd"
+		"cp -a /vtd/* /mnt/vtd/ && chown -R --reference=/mnt/.user_id.tmp /mnt/vtd"
 	rm ~/.conan/data/.user_id.tmp
 
 .PHONY: extract-to-volume
