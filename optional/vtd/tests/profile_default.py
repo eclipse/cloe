@@ -40,5 +40,8 @@ class CloeTest(ConanFile):
         self.requires("osi-sensor/1.0.0-vtd2.2@cloe/stable")
         self.requires("vtd/2.2.0@cloe-restricted/stable")
 
+        # Overrides:
+        self.requires("zlib/1.2.13", override=True)
         if self.options["cloe-engine"].server:
             self.requires("boost/[<1.70]", override=True)
+
