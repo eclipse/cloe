@@ -7,18 +7,17 @@ server for testing, refer to the provided dockerized Conan server example
 (s. ``tools/conan-server/README.md``) and the `Conan package upload`_
 documentation.
 
-The Cloe package release process has been automated for multiple Linux
-distributions. Please make sure you understand the instructions in
-``dist/docker/README.md``, particularly with respect to the provided
-``dist/docker/setup.sh.example`` file.
+The Cloe package release process has been automated for multiple Ubuntu
+versions. Please make sure you understand the instructions in
+``README.md``, particularly with respect to the provided ``setup.sh.example``
+file.
 
 You may start the release process from the top-level directory like so::
 
-  make docker-release
+  make -f Makefile.docker all release-all
 
 This will build and test all Cloe packages in multiple Linux environments and
 upload the binaries to the Conan remote repository specified in
-``dist/docker/setup.sh``.
-
+``setup.sh``.
 
 .. _Conan package upload: https://docs.conan.io/en/latest/uploading_packages.html

@@ -6,24 +6,30 @@
 #
 # If you are behind a proxy, make sure to pass in the respective HTTP_PROXY,
 # HTTPS_PROXY, and NO_PROXY variables.
+#
+# Note to maintainer:
+#   Make sure you repeat any ARG required after every FROM statement.
+ARG UBUNTU_NAME=ubuntu
 ARG UBUNTU_VERSION=20.04
-FROM ubuntu:${UBUNTU_VERSION}
+ARG UBUNTU_IMAGE=${UBUNTU_NAME}:${UBUNTU_VERSION}
+FROM ${UBUNTU_IMAGE} AS stage-setup-system
+ARG UBUNTU_VERSION
 
 # Install System Packages
 #
 # These packages are required for building and testing Cloe.
 COPY Makefile.help  /cloe/Makefile.help
 COPY Makefile.setup /cloe/Makefile.setup
-RUN --mount=type=cache,id=ubuntu-${UBUNTU_VERSION}-cache,target=/var/cache/apt \
-    --mount=type=cache,id=ubuntu-${UBUNTU_VERSION}-lib,target=/var/lib/apt \
+RUN rm -f /etc/apt/apt.conf.d/docker-clean; echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
+RUN --mount=type=cache,id=ubuntu-${UBUNTU_VERSION}-cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,id=ubuntu-${UBUNTU_VERSION}-lib,target=/var/lib/apt,sharing=locked \
     apt-get update && \
     apt-get install -y make ccache locales libbsd0 && \
     make -f /cloe/Makefile.setup \
         DEBIAN_FRONTEND=noninteractive \
         APT_ARGS="--no-install-recommends -y" \
         install-system-deps && \
-    locale-gen && \
-    rm -rf /var/lib/apt/lists/*
+    locale-gen
 
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
@@ -37,16 +43,18 @@ RUN pip3 install --upgrade pip && \
 
 # Install and Setup Conan
 #
-# You may not want to use the default Conan remote (conan-center), so we use
+# You may not want to use the default Conan remote (conancenter), so we use
 # whatever is stored in the build arguments CONAN_REMOTE.
 #
 # If you need to login to a Conan remote, make use of the setup.sh file, which
 # will be sourced for every run argument that uses the conan command.
 #
 # The following profiles are available: default, cloe-release, cloe-debug
-COPY dist/conan /cloe/dist/conan
+FROM stage-setup-system AS stage-setup-conan
 ARG CONAN_PROFILE=cloe-release
 ENV CONAN_NON_INTERACTIVE=yes
+
+COPY dist/conan /cloe/dist/conan
 RUN make -f /cloe/Makefile.setup setup-conan && \
     conan config set general.default_profile=${CONAN_PROFILE} && \
     conan profile update options.cloe-engine:server=False ${CONAN_PROFILE}
@@ -56,14 +64,16 @@ RUN make -f /cloe/Makefile.setup setup-conan && \
 # All common processes are made easy to apply by writing target recipes in the
 # Makefile at the root of the repository. This also acts as a form of
 # documentation.
-WORKDIR /cloe
+FROM stage-setup-conan AS stage-vendor
+ARG VENDOR_TARGET="export-vendor download-vendor"
 ARG KEEP_SOURCES=0
+
+WORKDIR /cloe
 
 # Download or build dependencies:
 COPY vendor /cloe/vendor
 COPY Makefile.package /cloe
 COPY Makefile.all /cloe
-ARG VENDOR_TARGET="export-vendor download-vendor"
 RUN --mount=type=cache,target=/ccache \
     --mount=type=secret,target=/root/setup.sh,id=setup,mode=0400 \
     if [ -r /root/setup.sh ]; then . /root/setup.sh; fi && \
@@ -77,10 +87,13 @@ RUN --mount=type=cache,target=/ccache \
         conan remove \* -b -f; \
     fi
 
-# Build Cloe.
-COPY . /cloe
+# Build Cloe:
+FROM stage-vendor AS stage-build
 ARG PROJECT_VERSION=unknown
-ARG PACKAGE_TARGET="package smoketest-deps"
+ARG PACKAGE_TARGET="export smoketest-deps"
+ARG KEEP_SOURCES=0
+
+COPY . /cloe
 RUN --mount=type=cache,target=/ccache \
     --mount=type=secret,target=/root/setup.sh,id=setup,mode=0400 \
     if [ -r /root/setup.sh ]; then . /root/setup.sh; fi && \
@@ -94,9 +107,3 @@ RUN --mount=type=cache,target=/ccache \
     else \
         conan remove \* -b -f; \
     fi
-
-# Run smoketests.
-RUN --mount=type=secret,target=/root/setup.sh,id=setup,mode=0400 \
-    if [ -r /root/setup.sh ]; then . /root/setup.sh; fi && \
-    make smoketest && \
-    conan user --clean
