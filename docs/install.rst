@@ -89,7 +89,7 @@ the Conan cache directory under ``~/.conan/data/cloe``.
 
 Run ``make help`` to get an overview of the available targets we expect you to
 use. For more details on how this is done, have a look at the Makefiles in the
-repository root or the Dockerfiles in ``dist/docker`` directory.
+repository root.
 
 Run System Tests
 ----------------

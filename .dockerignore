@@ -1,5 +1,16 @@
+# Git data not needed:
 .git/
+
+# Docker recipe not required in image:
+Dockerfile
+Makefile.docker
+
+# Secrets should be mounted with --secret:
+setup.sh
+
+# Build artifacts:
 build/
 **/build/
-dist/docker/
+
+# Optional packages are built separately:
 optional/

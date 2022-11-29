@@ -101,7 +101,7 @@ all packages instead of re-using packages it finds:
 ```
 Run `make help` to get an overview of the available targets we expect you to
 use. For more details on how this is done, have a look at the Makefiles in the
-repository root or the Dockerfiles in `dist/docker` directory.
+repository root.
 
 If you experience timeout issues waiting for Conan Center, the reason is likely
 the boost dependency's hundreds of binary packages. You can then slightly
@@ -182,6 +182,71 @@ Unit tests are compiled and run during the build step of each package, so
 this shouldn't need to be performed manually.
 
 See the documentation on testing Cloe for more details.
+
+### Building Docker Images
+
+The `Dockerfile` provided in the repository root can be used to create one
+or more Docker images. These can be used as devcontainers or simply to
+create Conan packages in a reproducible environment.
+
+The `Makefile.docker` contains multiple targets to build, test, and
+release Docker images for the current Cloe version in the repository.
+Run `make -f Makefile.docker help` to get an impression of what is possible:
+
+    $ make -f Makefile.docker help
+    Usage: make target
+
+    Available Docker targets:
+      all                   build and test all Ubuntu versions
+      ubuntu-VERSION        build and test the Ubuntu VERSION image
+      build-all             build all Ubuntu versions
+      build-ubuntu-VERSION  build the Ubuntu VERSION image
+      test-all              build all Ubuntu versions
+      test-ubuntu-VERSION   test the Ubuntu VERSION image
+      run-ubuntu-VERSION    run the Ubuntu VERSION image
+      release-all           release all Ubuntu versions
+      release-ubuntu-VERSION release the Ubuntu VERSION image
+      remove-current-images remove and prune all cloe/cloe-engine:0.19.0 Docker images
+      remove-all-images     remove and prune all cloe/cloe-engine Docker images
+
+    User configuration:
+        CONAN_PROFILE=
+        VENDOR_TARGET=
+        PACKAGE_TARGET=
+        KEEP_SOURCES=
+        DOCKER_USER_ARGS=
+
+    Docker configuration:
+        UBUNTU_NAME=ubuntu
+        UBUNTU_VERSIONS=\
+          18.04
+          20.04
+          22.04
+        DOCKER=DOCKER_BUILDKIT=1 docker
+        DOCKER_CONTEXT=/home/captain/cloe
+        DOCKER_NETWORK=host
+        DOCKER_IMAGE=cloe/cloe-engine:0.19.0
+        DOCKER_BUILD_ARGS=\
+          --build-arg PROJECT_VERSION=0.19.0
+        DOCKER_RUN_ARGS=\
+          -it
+          --rm
+
+Because Docker images may be built in environments that have a proxy running,
+the Makefile will automatically add the proxy variables if they are are
+detected in the host environment.
+
+The section `User configuration` shows variables that can be set to modify
+the resulting Docker image; if they are empty here, then the defaults in
+the `Dockerfile` are used, which should suffice for most use-cases.
+
+If you want to use a different Conan remote from the default, you need to
+copy `setup.sh.example` to `setup.sh` and modify the values to match your
+environment.
+
+Note that this build requires the use of docker buildx, which has been
+available for some time. This allows us to mount secrets in at build time
+and also speeds up the build by the strategic use of caches.
 
 [1]: https://conan.io
 [2]: https://docs.microsoft.com/en-us/windows/wsl/about

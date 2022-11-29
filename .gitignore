@@ -36,3 +36,6 @@ callgrind.out.*
 # Miscellaneous
 *.log
 /.gtm/
+
+# Docker configuration
+setup.sh

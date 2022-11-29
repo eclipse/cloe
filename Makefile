@@ -37,7 +37,7 @@ help::
 include Makefile.setup
 
 # Workspace targets -----------------------------------------------------------
-.PHONY: lockfile status deploy sphinx doxygen docker-all docker-test docker-release purge-all export-cli smoketest smoketest-deps
+.PHONY: lockfile status deploy sphinx doxygen purge-all export-cli smoketest smoketest-deps
 help::
 	$(call print_help_section, "Available workspace targets")
 	$(call print_help_target, status, "show status of each of the Conan packages")
@@ -48,10 +48,6 @@ help::
 	$(call print_help_target, deploy, "deploy Cloe to INSTALL_DIR [=${INSTALL_DIR}]")
 	$(call print_help_target, deploy-cli, "install ${_yel}cloe-launch${_rst} with ${_dim}${PIPX}${_rst}")
 	$(call print_help_target, export-cli, "export ${_yel}cloe-launch-profile${_rst} Conan recipe")
-	echo
-	$(call print_help_target, docker-test, "build only a single Docker image")
-	$(call print_help_target, docker-all, "build all Docker images")
-	$(call print_help_target, docker-release, "upload all Conan packages from Docker images")
 	echo
 
 ${BUILD_LOCKFILE}:
@@ -77,18 +73,6 @@ deploy-cli:
 
 export-cli:
 	${MAKE} -C cli conan-profile
-
-docker-test:
-	$(call print_header, "Building ubuntu-18.04 Docker image...")
-	${MAKE} -C dist/docker ubuntu-18.04
-
-docker-all:
-	$(call print_header, "Building all Docker images...")
-	${MAKE} -C dist/docker all
-
-docker-release:
-	$(call print_header, "Uploading all Conan packages from Docker images...")
-	${MAKE} -C dist/docker release
 
 sphinx:
 	$(call print_header, "Generating Sphinx documentation...")
