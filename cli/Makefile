@@ -12,8 +12,8 @@ else
 PIP_INSTALL_ARGS := --force ${PIPX_INSTALL_ARGS}
 endif
 
+.DEFAULT_GOAL := help
 .PHONY: help
-.DEFAULT: help
 .SILENT: help
 help:
 	echo "Usage: make <target>"
@@ -22,9 +22,10 @@ help:
 	echo "  install       to install cloe-launch locally"
 	echo "  editable      to install cloe-launch locally in editable mode"
 
-.PHONY: install editable conan-profile
+.PHONY: install
 install: conan-profile
 	command -v ${PIP} >/dev/null 2>&1
+	# Work-around pip confused by pyproject.toml
 	-mv pyproject.toml pyproject.toml.bak
 	${PIP} install ${PIP_INSTALL_ARGS} . || ( \
 		mv pyproject.toml.bak pyproject.toml; \
@@ -32,8 +33,10 @@ install: conan-profile
 	)
 	mv pyproject.toml.bak pyproject.toml
 
+.PHONY: editable
 editable: conan-profile
 	command -v ${PIP} >/dev/null 2>&1
+	# Work-around pip confused by pyproject.toml
 	-mv pyproject.toml pyproject.toml.bak
 	${PIP} install -e ${PIP_INSTALL_ARGS} . || ( \
 		mv pyproject.toml.bak pyproject.toml; \
@@ -41,5 +44,6 @@ editable: conan-profile
 	)
 	mv pyproject.toml.bak pyproject.toml
 
+.PHONY: conan-profile
 conan-profile:
 	conan export .

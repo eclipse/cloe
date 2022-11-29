@@ -132,8 +132,8 @@ endif
 
 # INFORMATIONAL TARGETS -------------------------------------------------------
 .DEFAULT_GOAL := help
-.SILENT: help status parse-info parse-editable info-name info-version info-channel info-fqn info smoketest smoketest-deps
-.PHONY: help status parse-info parse-editable info-name info-version info-channel info-fqn info smoketest smoketest-deps
+.SILENT: help
+.PHONY: help
 help:: parse-info parse-editable
 	$(call print_help_usage)
 	echo
@@ -193,6 +193,8 @@ endif
 	$(call print_help_define_align, GIT_COMMIT_HASH, ${GIT_COMMIT_HASH})
 	echo
 
+.PHONY: parse-info
+.SILENT: parse-info
 parse-info: ${BUILD_LOCKFILE}
 	# Fetch package information from Conan.
 	#
@@ -205,9 +207,13 @@ parse-info: ${BUILD_LOCKFILE}
 	$(eval PACKAGE_DIR := $(shell echo -e "${PACKAGE_INFO}" | sed -rn 's/^ *package_folder: *(.*)$$/\1/p'))
 	$(eval PACKAGE_DATE := $(shell echo -e "${PACKAGE_INFO}" | sed -rn 's/^ *Creation date: *(.*)$$/\1/p'))
 
+.PHONY: parse-editable
+.SILENT: parse-editable
 parse-editable:
 	$(eval PACKAGE_EDITABLE := $(shell [ -e ~/.conan/editable_packages.json ] && jq -r "${JQ_PACKAGE_EDITABLE}" ~/.conan/editable_packages.json || echo "not-editable"))
 
+.PHONY: status
+.SILENT: status
 status: parse-info parse-editable
 	# Show the *approximate* status of each package in the cloe workspace.
 	#
@@ -226,18 +232,28 @@ status: parse-info parse-editable
 		fi \
 	fi
 
+.PHONY: info-name
+.SILENT: info-name
 info-name:
 	echo ${PACKAGE_NAME}
 
+.PHONY: info-version
+.SILENT: info-version
 info-version:
 	echo ${PACKAGE_VERSION}
 
+.PHONY: info-channel
+.SILENT: info-channel
 info-channel:
 	echo ${PACKAGE_CHANNEL}
 
+.PHONY: info-fqn
+.SILENT: info-fqn
 info-fqn:
 	echo ${PACKAGE_FQN}
 
+.PHONY: info
+.SILENT: info
 info: parse-info
 	if [ -z "${PACKAGE_INFO}" ]; then \
 		echo "Errors occurred, no output available."; \
@@ -245,7 +261,9 @@ info: parse-info
 		echo ${PACKAGE_INFO}; \
 	fi
 
+.PHONY: smoketest
 smoketest:
+	# Ensure that you have built all smoketest dependencies!
 	@for profile in tests/profile_*.py; do \
 		test -f "$${profile}" || continue; \
 		printf "Running BATS tests with profile: $${profile}\n\n"; \
@@ -253,6 +271,7 @@ smoketest:
 	done
 
 smoketest-deps:
+	# Ensure that you have exported all relevant packages!
 	@for profile in tests/profile_*.py; do \
 		test -f "$${profile}" || continue; \
 		echo "Building dependencies for profile: $${profile}"; \
@@ -260,8 +279,7 @@ smoketest-deps:
 	done
 
 # CONFIGURATION TARGETS -------------------------------------------------------
-.PHONY: editable uneditable
-
+.PHONY: editable
 editable:
 	# Conan will now resolve references to the in-source build.
 	#
@@ -274,6 +292,7 @@ editable:
 	#
 	conan editable add . --layout "${BUILD_LAYOUT}" ${PACKAGE_FQN}
 
+.PHONY: uneditable
 uneditable:
 	# Conan will now resolve references to the package in the cache.
 	#
@@ -283,8 +302,7 @@ uneditable:
 	conan editable remove ${PACKAGE_FQN}
 
 # CONAN TARGETS ---------------------------------------------------------------
-.PHONY: export package package-all package-missing package-outdated purge list
-
+.PHONY: export
 export: parse-editable
 	# Export sources to Conan cache.
 	#
@@ -293,6 +311,7 @@ export: parse-editable
 	#
 	if [ "${PACKAGE_EDITABLE}" = "not-editable" ] || [ "${PACKAGE_EDITABLE}" = "editable-other-name" ]; then conan export . ${PACKAGE_FQN}; fi
 
+.PHONY: download
 download:
 	# Try to download the package to Conan cache.
 	#
@@ -307,6 +326,7 @@ download:
 	conan create . ${PACKAGE_FQN} --build=never ${ALL_OPTIONS} || \
 	conan create . ${PACKAGE_FQN} --build=${BUILD_POLICY} --build=${PACKAGE_NAME} ${ALL_OPTIONS}
 
+.PHONY: package
 package: ${BUILD_LOCKFILE}
 	# Build the package in Conan cache unconditionally.
 	#
@@ -318,6 +338,7 @@ package: ${BUILD_LOCKFILE}
 	conan create . ${PACKAGE_FQN} \
 		--build=${BUILD_POLICY} --build=${PACKAGE_NAME} ${ALL_OPTIONS}
 
+.PHONY: package-all
 package-all: ${BUILD_LOCKFILE}
 	# Build the package in Conan cache unconditionally.
 	#
@@ -326,6 +347,7 @@ package-all: ${BUILD_LOCKFILE}
 	#
 	conan create . ${PACKAGE_FQN} --build ${ALL_OPTIONS}
 
+.PHONY: package-outdated
 package-outdated: ${BUILD_LOCKFILE}
 	# Build the package in Conan cache if it is outdated.
 	#
@@ -335,6 +357,7 @@ package-outdated: ${BUILD_LOCKFILE}
 	#
 	conan create . ${PACKAGE_FQN} --build=outdated ${ALL_OPTIONS}
 
+.PHONY: purge
 purge:
 	# Remove all instances of this package in the Conan cache.
 	#
@@ -344,14 +367,14 @@ purge:
 	#
 	-conan remove -f ${PACKAGE_FQN}
 
+.PHONY: list
 list: parse-info
 	# List all files in the Conan cache package directory.
 	#
 	@tree ${PACKAGE_DIR}
 
 # IN-SOURCE TARGETS -----------------------------------------------------------
-.PHONY: all clean conan configure test export-pkg
-
+.PHONY: clean
 clean:
 	# Clean the build directory and Python cache files.
 	#
@@ -362,20 +385,25 @@ ifeq (${CLEAN_SOURCE_DIR}, true)
 endif
 
 ifeq (${BUILD_IN_SOURCE}, false)
+.PHONY: all conan configure test export-pkg
 all conan configure test export-pkg ${SOURCE_DIR} ${SOURCE_CMAKELISTS} ${BUILD_CONANINFO} ${BUILD_CMAKECACHE}:
 	@echo "Error: [in-source] targets are not supported for this package."
 	@echo "Note: please use [conan-cache] targets, such as 'package'."
 	exit 1
 else
+.PHONY: all
 all: ${BUILD_CONANINFO} | ${SOURCE_DIR}
 	# Build the package in-source.
 	#
 	conan build . --source-folder="${SOURCE_DIR}" --build-folder="${BUILD_DIR}"
 
+.PHONY: conan
 conan: ${BUILD_CONANINFO}
 
+.PHONY: configure
 configure: ${BUILD_CMAKECACHE}
 
+.PHONY: test
 test:
 	# Run tests available to CMake ctest.
 	#
@@ -387,6 +415,7 @@ test:
 		true; \
 	fi
 
+.PHONY: export-pkg
 export-pkg:
 	# Export in-source build artifacts to Conan cache.
 	#

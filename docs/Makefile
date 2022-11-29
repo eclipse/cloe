@@ -13,11 +13,9 @@ SPHINXPROJ := Cloe
 SOURCEDIR := .
 BUILDDIR := ../build/sphinx
 
+.DEFAULT_GOAL := help
 .PHONY: help
-.DEFAULT: help
 .SILENT: help
-
-# Put it first so that "make" without argument is like "make help".
 help:
 	$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 	echo
@@ -25,10 +23,11 @@ help:
 	echo "  serve          to serve the documentation on 0.0.0.0:8000"
 	echo "  livehtml       to autobuild and serve the documentation on localhost:8000"
 
-.PHONY: serve livehtml
+.PHONY: serve
 serve:
 	cd ${BUILDDIR}/html && python3 -m http.server
 
+.PHONY: livehtml
 livehtml:
 	sphinx-autobuild --host 0.0.0.0 -b html . ${BUILDDIR}/html
 
