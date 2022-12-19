@@ -79,7 +79,7 @@ When directly starting a simulation with ``cloe-launch exec``, you can provide
 the ``--debug`` argument to start GDB with the arguments automatically
 set to the ones passed through cloe-launch::
 
-    # cloe-launch exec -d -P tests/profile_default.py -- run tests/config_nop_smoketest.json
+    # cloe-launch exec -d -P tests/conanfile_default.py -- run tests/config_nop_smoketest.json
 
 You will be dropped in a GDB shell, where you can set your breakpoints as
 usual, and then to start debugging the program, just type ``run``.

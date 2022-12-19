@@ -92,14 +92,14 @@ If you pass any further arguments to the shell command (after specifying
 launching a new shell. This can be useful for accessing environment variables
 that would be defined in the runtime shell::
 
-    $ cloe-launch shell -P tests/profile_default.py -o:o cloe:with_vtd=True -- -c '${VTD_LAUNCH} --help'
+    $ cloe-launch shell -P tests/conanfile_default.py -o:o cloe:with_vtd=True -- -c '${VTD_LAUNCH} --help'
 
 Activate Command
 ^^^^^^^^^^^^^^^^
 If you want to modify your current shell instead of creating a new one, you can
 use the ``activate`` command::
 
-    $ cloe-launch activate -P tests/profile_default.py
+    $ cloe-launch activate -P tests/conanfile_default.py
     # Please see `cloe-launch activate --help` before activating this.
 
     source ~/.cache/cloe/launcher/7745ffb0e036192c8e29a8b8cc2b9571e7a72c8c/activate_all.sh
@@ -108,11 +108,11 @@ use the ``activate`` command::
 You can then use the ``source`` feature of your shell to integrate these
 commands::
 
-    $ source <(cloe-launch activate -P tests/profile_default.py)
+    $ source <(cloe-launch activate -P tests/conanfile_default.py)
 
 Or use the ``eval`` command::
 
-    $ eval $(cloe-launch activate -P tests/profile_default.py)
+    $ eval $(cloe-launch activate -P tests/conanfile_default.py)
 
 Prepare Command
 ^^^^^^^^^^^^^^^
@@ -125,7 +125,7 @@ The ``prepare`` command is for the use-case where all you want to do is prepare
 the virtual runtime environment, and you want to see the Conan output without
 interference or delay::
 
-    $ cloe-launch prepare -P tests/profile_default.py
+    $ cloe-launch prepare -P tests/conanfile_default.py
 
 This is used by the make target ``smoketest-deps``, which just prepares all
 the virtual environments, which might take some time in case any packages need
@@ -158,7 +158,7 @@ command.
  .. note::
     You cannot use Python-based conanfiles as profiles that depend on files
     that are relative to the original conanfile. This is the case with
-    ``conanfile.py`` and ``tests/profile_default.py`` that are in the Cloe repository,
+    ``conanfile.py`` and ``tests/conanfile_default.py`` that are in the Cloe repository,
     for example.
 
     If you do add such an invalid conanfile as a profile, cloe-launch will not
@@ -190,7 +190,7 @@ The four main cloe-launch commands ``exec``, ``shell``, ``activate``, and
 
 For example, to instruct Conan to build any missing dependencies::
 
-    $ cloe-launch exec -P tests/profile_default.py -o:o cloe:with_vtd=True -o --build=missing -- usage
+    $ cloe-launch exec -P tests/conanfile_default.py -o:o cloe:with_vtd=True -o --build=missing -- usage
 
 (This is somewhat contrived example, since it's preferable to use the
 ``prepare`` command for this use-case. But it goes to show you don't *need* to.)
@@ -213,7 +213,7 @@ There are three options cloe-launch provides:
 
 A plausible usage example is::
 
-    cloe-launch prepare -P tests/profile_default.py -o:o cloe-engine:server=False
+    cloe-launch prepare -P tests/conanfile_default.py -o:o cloe-engine:server=False
 
 The option, ``-o:o cloe-engine:server=False`` evaluates to ``-o
 cloe-engine:server=False`` on the Conan command line and tells Conan to change
@@ -265,8 +265,8 @@ Conan, which is used under-the-hood.
 
 In this case, you might see in the first few lines::
 
-    $ cloe-launch exec -P tests/profile_default.py -- check tests/test_minimator_smoketest.json
-    Error running: conan install --install-folder /home/captain/.cache/cloe/launcher/167cfb520dd89cc6124d02369b3ae77632f7b6c8 -g virtualenv tests/profile_default.py
+    $ cloe-launch exec -P tests/conanfile_default.py -- check tests/test_minimator_smoketest.json
+    Error running: conan install --install-folder /home/captain/.cache/cloe/launcher/167cfb520dd89cc6124d02369b3ae77632f7b6c8 -g virtualenv tests/conanfile_default.py
     Configuration:
     [settings]
     arch=x86_64
@@ -279,12 +279,12 @@ the output looking for any error statements, we might find something::
     cloe/0.18.0@cloe/develop: Not found in local cache, looking in remotes...
     cloe/0.18.0@cloe/develop: Trying with 'artifactory'...
     cloe/0.18.0@cloe/develop: Trying with 'conan-center'...
-    ERROR: Failed requirement 'cloe/0.18.0@cloe/develop' from 'tests/profile_default.py (cloe-test/0.18.0)'
+    ERROR: Failed requirement 'cloe/0.18.0@cloe/develop' from 'tests/conanfile_default.py (cloe-test/0.18.0)'
     ERROR: Unable to find 'cloe/0.18.0@cloe/develop' in remotes
     [... snip ...]
 
 Here we find the actual source of the problem: The ``cloe`` package, which is
-referred to in the profile we used (``tests/profile_default.py``), cannot be found. This
+referred to in the conanfile we used (``tests/conanfile_default.py``), cannot be found. This
 usually means you haven't built it yet, and can be dealt with the process
 described in :doc:`../install`.
 
