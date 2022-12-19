@@ -16,7 +16,7 @@ DOCKER_CONTEXT := ${PROJECT_ROOT}
 
 DOCKER_USER_ARGS +=
 DOCKER_BUILD_ARGS += --build-arg PROJECT_VERSION=${PROJECT_VERSION}
-DOCKER_RUN_ARGS += -it --rm
+DOCKER_RUN_ARGS += --rm
 
 ifndef (${https_proxy},)
 	DOCKER_NETWORK := host
@@ -126,7 +126,7 @@ test-ubuntu-%: FORCE
 		bash -ec "[ -f /root/setup.sh ] && source /root/setup.sh; make smoketest"
 
 run-ubuntu-%: FORCE
-	docker run ${DOCKER_RUN_ARGS} ${DOCKER_USER_ARGS} ${DOCKER_IMAGE}-ubuntu-$*
+	docker run -it ${DOCKER_RUN_ARGS} ${DOCKER_USER_ARGS} ${DOCKER_IMAGE}-ubuntu-$*
 
 release-ubuntu-%: FORCE
 	@test -f setup.sh || echo 'Error: require setup.sh for user authentication'
