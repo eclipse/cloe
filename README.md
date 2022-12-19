@@ -133,13 +133,13 @@ Once the `cloe-launch` tool is available, you can do one of the following:
 
  1. Launch a shell with the environment adjusted:
     ```console
-    $ cloe-launch -v shell -P tests/profile_default.py
-    Source profile: tests/profile_default.py
+    $ cloe-launch -v shell -P tests/conanfile_default.py
+    Source profile: tests/conanfile_default.py
     Profile name: 7745ffb0e036192c8e29a8b8cc2b9571e7a72c8c
     Configuration:
         ...
     Runtime directory: /home/captain/.cache/cloe/launcher/7745ffb0e036192c8e29a8b8cc2b9571e7a72c8c
-    Exec: conan install --install-folder /home/captain/.cache/cloe/launcher/7745ffb0e036192c8e29a8b8cc2b9571e7a72c8c -g virtualenv -g virtualrunenv tests/profile_default.py
+    Exec: conan install --install-folder /home/captain/.cache/cloe/launcher/7745ffb0e036192c8e29a8b8cc2b9571e7a72c8c -g virtualenv -g virtualrunenv tests/conanfile_default.py
     Exec: /bin/bash -c source /home/captain/.cache/cloe/launcher/7745ffb0e036192c8e29a8b8cc2b9571e7a72c8c/activate_run.sh &>/dev/null && env
     Exec: /bin/bash -c source /home/captain/.cache/cloe/launcher/7745ffb0e036192c8e29a8b8cc2b9571e7a72c8c/activate_all.sh &>/dev/null && env
 
@@ -150,12 +150,12 @@ Once the `cloe-launch` tool is available, you can do one of the following:
  2. Launch `cloe-engine` directly:
     ```console
     $ cloe-launch -v exec -P conanfile.py -- usage
-    Source profile: tests/profile_default.py
+    Source profile: tests/conanfile_default.py
     Profile name: 7745ffb0e036192c8e29a8b8cc2b9571e7a72c8c
     Configuration:
         ...
     Runtime directory: /home/captain/.cache/cloe/launcher/7745ffb0e036192c8e29a8b8cc2b9571e7a72c8c
-    Exec: conan install --install-folder /home/captain/.cache/cloe/launcher/7745ffb0e036192c8e29a8b8cc2b9571e7a72c8c -g virtualenv -g virtualrunenv tests/profile_default.py
+    Exec: conan install --install-folder /home/captain/.cache/cloe/launcher/7745ffb0e036192c8e29a8b8cc2b9571e7a72c8c -g virtualenv -g virtualrunenv tests/conanfile_default.py
     Exec: /bin/bash -c source /home/captain/.cache/cloe/launcher/7745ffb0e036192c8e29a8b8cc2b9571e7a72c8c/activate_run.sh &>/dev/null && env
     Exec: /bin/bash -c source /home/captain/.cache/cloe/launcher/7745ffb0e036192c8e29a8b8cc2b9571e7a72c8c/activate_all.sh &>/dev/null && env
     Exec: /home/captain/.conan/data/cloe-engine/0.19.0/cloe/develop/package/218a01b0a23497c52f95fbb0967b2d6b1d9ac1e4/bin/cloe-engine usage

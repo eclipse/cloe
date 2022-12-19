@@ -264,18 +264,18 @@ info: parse-info
 .PHONY: smoketest
 smoketest:
 	# Ensure that you have built all smoketest dependencies!
-	@for profile in tests/profile_*.py; do \
-		test -f "$${profile}" || continue; \
-		printf "Running BATS tests with profile: $${profile}\n\n"; \
-		SHELL=/bin/bash ${CLOE_LAUNCH} shell -P "$${profile}" -- -c "source ${PROJECT_ROOT}/tests/setup_testname.bash; bats tests"; \
+	@for conanfile in tests/conanfile_*.py; do \
+		test -f "$${conanfile}" || continue; \
+		printf "Running BATS tests with conanfile: $${conanfile}\n\n"; \
+		SHELL=/bin/bash ${CLOE_LAUNCH} shell -P "$${conanfile}" -- -c "source ${PROJECT_ROOT}/tests/setup_testname.bash; bats tests"; \
 	done
 
 smoketest-deps:
 	# Ensure that you have exported all relevant packages!
-	@for profile in tests/profile_*.py; do \
-		test -f "$${profile}" || continue; \
-		echo "Building dependencies for profile: $${profile}"; \
-		${CLOE_LAUNCH} prepare -P "$${profile}"; \
+	@for conanfile in tests/conanfile_*.py; do \
+		test -f "$${conanfile}" || continue; \
+		echo "Building dependencies for conanfile: $${conanfile}"; \
+		${CLOE_LAUNCH} prepare -P "$${conanfile}"; \
 	done
 
 # CONFIGURATION TARGETS -------------------------------------------------------
