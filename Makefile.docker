@@ -16,7 +16,15 @@ DOCKER_CONTEXT := ${PROJECT_ROOT}
 
 DOCKER_USER_ARGS +=
 DOCKER_BUILD_ARGS += --build-arg PROJECT_VERSION=${PROJECT_VERSION}
-DOCKER_RUN_ARGS += -it --rm
+# Detect if this executed in an interactive shell or by some service like a cron job or Jenkins where
+# commands are executed as non-TTY :
+DOCKER_RUN_ARGS += \
+  $(shell \
+		if [ -t 0 ]; then \
+			echo "-t"; \
+		fi \
+)
+DOCKER_RUN_ARGS += -i --rm
 
 ifndef (${https_proxy},)
 	DOCKER_NETWORK := host
