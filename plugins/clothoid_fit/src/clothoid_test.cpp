@@ -1,0 +1,189 @@
+/*
+ * Copyright 2023 Robert Bosch GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+/**
+ * \file clothoid_test.cpp
+ *
+ */
+
+#include <gtest/gtest.h>
+#include <Eigen/Geometry>  // for Vector3d
+#include <cmath>           // for M_PI, M_PI_2
+
+#include <cloe/core.hpp>            // for Json
+#include <fable/utility/gtest.hpp>  // for assert_validate
+#include "clothoid_fit.hpp"
+#include "g1_fitting.hpp"  // for calc_clothoid
+
+using namespace cloe;  // NOLINT(build/namespaces)
+
+TEST(clothoid_fit, deserialization) {
+  ClothoidFitConf c;
+
+  fable::assert_validate(c, R"({
+      "enable": true,
+      "estimation_distance": 20.0
+  })");
+}
+
+std::vector<Eigen::Vector3d> get_line_lb_points(const Eigen::Vector3d& pt0,
+                                                const Eigen::Vector3d& pt1, int n_pts) {
+  auto dpt = (pt1 - pt0) / (n_pts - 1);
+  std::vector<Eigen::Vector3d> pts(n_pts);
+  pts[0] = pt0;
+  for (int i = 1; i < n_pts; i++) {
+    pts[i] = pts[i - 1] + dpt;
+  }
+  assert(fabs(pts[n_pts - 1].x() - pt1.x()) < 1E-6);
+  return pts;
+}
+
+std::vector<Eigen::Vector3d> get_half_circle_lb_points(const Eigen::Vector3d& pt0,
+                                                       const Eigen::Vector3d& pt1, int n_pts) {
+  double radius = 0.5 * (pt1 - pt0).norm();
+  Eigen::Vector3d xc = 0.5 * (pt0 + pt1);
+  double phi0 = cloe::component::calc_heading_angle(pt0, pt1);
+  // For simplicity, distribute the points equidistantly along x.
+  double dphi = M_PI / (n_pts - 1);
+  std::vector<Eigen::Vector3d> pts(n_pts);
+  for (int i = 0; i < n_pts; i++) {
+    // The direction of the circle is clockwise.
+    double phi = phi0 + M_PI - i * dphi;
+    pts[i] = xc + radius * Eigen::Vector3d(cos(phi), sin(phi), 0);
+  }
+  const double tol = 1E-6;
+  assert(fabs(pts[0].x() - pt0.x()) < tol);
+  assert(fabs(pts[0].y() - pt0.y()) < tol);
+  assert(fabs(pts[n_pts - 1].x() - pt1.x()) < tol);
+  assert(fabs(pts[n_pts - 1].y() - pt1.y()) < tol);
+  return pts;
+}
+
+TEST(clothoid_fit, find_x0_hdg0) {
+  const double tol = 1E-6;
+  std::cout << "clothoid_fit cout" << std::endl;
+  // Polyline in x-direction.
+  auto lb_points =
+      get_line_lb_points(Eigen::Vector3d(-5.0, 0.0, 0.0), Eigen::Vector3d(25.0, 0.0, 0.0), 7);
+  Eigen::Vector3d x0;
+  double hdg0 = 0.0;
+  // Require at least 1 m distance between points for heading estimation.
+  double min_dist_hdg_est = 1.0;
+  cloe::component::get_clothoid_point_heading_start(lb_points, min_dist_hdg_est, 0.0, x0, hdg0);
+  ASSERT_DOUBLE_EQ(x0.x(), 0.0);
+  ASSERT_DOUBLE_EQ(hdg0, 0.0);
+  Eigen::Vector3d x1;
+  double hdg1 = 0.0;
+  double estimation_dist = 20.0;
+  cloe::component::get_clothoid_point_heading_end(lb_points, x0, min_dist_hdg_est, estimation_dist,
+                                                  x1, hdg1);
+  ASSERT_DOUBLE_EQ(x1.x(), estimation_dist);
+  ASSERT_DOUBLE_EQ(hdg1, hdg0);
+
+  std::cout << "dx_start: " << x0.x() << " dy_start: " << x0.y() << " heading_start: " << hdg0
+            << std::endl;
+  std::cout << "dx_end: " << x1.x() << " dy_end: " << x1.y() << " heading_end: " << hdg1
+            << std::endl;
+  //curv_hor_start, curv_hor_change and dx_end.Note that these should be
+  // exactly the parameters (k, dk, L)
+  double i0 = 0.0, i1 = 1.0, theta0 = 0.0, i2 = 1.0, i3 = 1.0, theta1 = 2.0, k = 0.0, dk = 0.0,
+         L = 0.0;
+  g1_fit::calc_clothoid(x0.x(), x0.y(), hdg0, x1.x(), x1.y(), hdg1, k, dk, L);
+  std::cout << "curv_hor_start: " << k << " curv_hor_change: " << dk << " dx_end: " << L
+            << std::endl;
+  EXPECT_NEAR(k, 0.0, tol);
+  EXPECT_NEAR(dk, 0.0, tol);
+  EXPECT_NEAR(L, (x1 - x0).norm(), tol);
+
+  // Polyline in y-direction.
+  lb_points =
+      get_line_lb_points(Eigen::Vector3d(0.0, -5.0, 0.0), Eigen::Vector3d(0.0, 25.0, 0.0), 7);
+  cloe::component::get_clothoid_point_heading_start(lb_points, min_dist_hdg_est, 0.0, x0, hdg0);
+  EXPECT_NEAR(hdg0, M_PI_2, tol);
+  cloe::component::get_clothoid_point_heading_end(lb_points, x0, min_dist_hdg_est, estimation_dist,
+                                                  x1, hdg1);
+  ASSERT_DOUBLE_EQ(x1.y(), x0.y() + estimation_dist);
+  ASSERT_DOUBLE_EQ(hdg1, hdg0);
+
+  std::cout << "Polyline in y-direction." << std::endl;
+  std::cout << "dx_start: " << x0.x() << " dy_start: " << x0.y() << " heading_start: " << hdg0
+            << std::endl;
+  std::cout << "dx_end: " << x1.x() << " dy_end: " << x1.y() << " heading_end: " << hdg1
+            << std::endl;
+
+  g1_fit::calc_clothoid(x0.x(), x0.y(), hdg0, x1.x(), x1.y(), hdg1, k, dk, L);
+  std::cout << "curv_hor_start: " << k << " curv_hor_change: " << dk << " dx_end: " << L
+            << std::endl;
+  EXPECT_NEAR(k, 0.0, tol);
+  EXPECT_NEAR(dk, 0.0, tol);
+  EXPECT_NEAR(L, (x1 - x0).norm(), tol);
+
+  // Polyline in pos. x-, neg. y-direction.
+  lb_points =
+      get_line_lb_points(Eigen::Vector3d(-5.0, 5.0, 0.0), Eigen::Vector3d(25.0, -25.0, 0.0), 8);
+  cloe::component::get_clothoid_point_heading_start(lb_points, min_dist_hdg_est, 0.0, x0, hdg0);
+  EXPECT_NEAR(hdg0, -M_PI_4, tol);
+  cloe::component::get_clothoid_point_heading_end(lb_points, x0, min_dist_hdg_est, estimation_dist,
+                                                  x1, hdg1);
+  ASSERT_DOUBLE_EQ(hdg1, hdg0);
+
+  std::cout << "Polyline in pos. x-, neg. y-direction." << std::endl;
+  std::cout << "dx_start: " << x0.x() << " dy_start: " << x0.y() << " heading_start: " << hdg0
+            << std::endl;
+  std::cout << "dx_end: " << x1.x() << " dy_end: " << x1.y() << " heading_end: " << hdg1
+            << std::endl;
+
+  g1_fit::calc_clothoid(x0.x(), x0.y(), hdg0, x1.x(), x1.y(), hdg1, k, dk, L);
+  std::cout << "curv_hor_start: " << k << " curv_hor_change: " << dk << " dx_end: " << L
+            << std::endl;
+  EXPECT_NEAR(k, 0.0, tol);
+  EXPECT_NEAR(dk, 0.0, tol);
+  EXPECT_NEAR(L, (x1 - x0).norm(), tol);
+}
+
+TEST(clothoid_fit, circle_calc_curv) {
+  const double tol = 1E-6;
+  double radius = 10.0;
+  Eigen::Vector3d x0 = Eigen::Vector3d(-1.0, 0.0, 0.0);
+  Eigen::Vector3d x1 = x0 + 2.0 * Eigen::Vector3d(radius, 0.0, 0.0);
+  auto lb_points = get_half_circle_lb_points(x0, x1, 11);
+  double k, dk, L;
+  g1_fit::calc_clothoid(x0.x(), x0.y(), M_PI_2, x1.x(), x1.y(), -M_PI_2, k, dk, L);
+  EXPECT_NEAR(k, -1.0 / radius, tol);
+  EXPECT_NEAR(dk, 0.0, tol);
+  EXPECT_NEAR(L, radius * M_PI, tol);
+}
+
+TEST(clothoid_fit, spiral_calc_curv_change) {
+  // Use data from J. Surv. Eng. Vol. 142(3) 04016005, 2016 (doi: 10.1061/(ASCE)SU.1943-5428.0000177)
+  const double tol = 1E-4;
+  // Refer to Tab. 1 in the paper. Points from the "classical method" are used below.
+  double length = 15.0;
+  // Note: dk = 1/(aa^2).
+  double aa = 17.32;
+  double phi0 = 0.0;
+  // Refer to Eq. (3) in the paper.
+  double phi1 = phi0 + length * length / 2.0 / (aa * aa);
+  // First row in Tab. 1.
+  Eigen::Vector3d x0 = Eigen::Vector3d(0.0, 0.0, 0.0);
+  Eigen::Vector3d x1 = Eigen::Vector3d(14.7904, 1.8563, 0.0);
+  double k, dk, L;
+  g1_fit::calc_clothoid(x0.x(), x0.y(), phi0, x1.x(), x1.y(), phi1, k, dk, L);
+  EXPECT_NEAR(k, 0.0, tol);
+  EXPECT_NEAR(dk, 1 / (aa * aa), tol);
+  EXPECT_NEAR(L, length, tol);
+}
