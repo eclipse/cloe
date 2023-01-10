@@ -29,6 +29,7 @@ class CloeTest(ConanFile):
     def requirements(self):
         self.requires(f"cloe-engine/{self.version}@cloe/develop")
         self.requires(f"cloe-plugin-basic/{self.version}@cloe/develop")
+        self.requires(f"cloe-plugin-clothoid-fit/{self.version}@cloe/develop")
         self.requires(f"cloe-plugin-minimator/{self.version}@cloe/develop")
         self.requires(f"cloe-plugin-noisy-sensor/{self.version}@cloe/develop")
         self.requires(f"cloe-plugin-speedometer/{self.version}@cloe/develop")
