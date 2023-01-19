@@ -1,0 +1,21 @@
+<ViSimulation>
+<Component name="TaskControl">
+
+<TaskControl xmlns="http://www.vires.com/2015/VtdParamSchema/TaskControl">
+
+  <ImageGenerator>
+    <ignore value="true"/>
+    <imgPortConnect value="false"/>
+    <ctrlPortConnect value="false"/>
+    <autoRestart value="false"/>
+  </ImageGenerator>
+
+  <Sync>
+    <source value="intern"/>
+    <realTime value="true"/>
+  </Sync>
+
+</TaskControl>
+</Component>
+
+</ViSimulation>

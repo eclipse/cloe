@@ -1,0 +1,11 @@
+#
+# PURPOSE:
+#   this script is to be invoked by TC automatically upon start;
+#   it will be run in a background process, i.e. TC will continue working
+#   after having kicked-off the script and will not wait for its termination
+#
+   0 "<SimCtrl> <Stop/> <LoadScenario filename="TrafficDemo.xml" /> <Init mode="operation"/> </SimCtrl>"
+
+wait "<SimCtrl> <InitDone place="checkInitConfirmation"/> </SimCtrl>"
+
+  +1 "<SimCtrl> <Start/> </SimCtrl>"

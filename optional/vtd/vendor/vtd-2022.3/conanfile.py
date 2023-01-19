@@ -131,6 +131,57 @@ class VtdConan(ConanFile):
         )
 
         patch_rpath(
+            vtddir / "Runtime/Core/ModuleManager/lib/libprotobuf.so.9",
+            ["$ORIGIN/../../Lib"]
+        )
+
+        patch_rpath(
+            vtddir / "Runtime/Core/ModuleManager/lib/libopen_simulation_interface.so",
+            ["$ORIGIN/../../Lib", "$ORIGIN"],
+        )
+
+        patch_rpath(
+            vtddir / "Runtime/Core/ModuleManager.cxx98/moduleManager.2022.3.40_flexlm",
+            ["$ORIGIN/../Lib", "$ORIGIN/lib"],
+        )
+
+        patch_rpath(
+            vtddir / "Runtime/Core/ModuleManager.cxx98/lib/libopen_simulation_interface.so",
+            ["$ORIGIN/../../Lib", "$ORIGIN"],
+        )
+
+        patch_rpath(
+            vtddir / "Runtime/Core/ModuleManager.cxx98/lib/libprotobuf.so.9",
+            ["$ORIGIN/../../Lib"],
+        )
+
+        patch_rpath(
+            vtddir / "Runtime/Core/ModuleManager.cxx98/lib/libVTDModulePlugin.so",
+            ["$ORIGIN/../../Lib"],
+        )
+
+        patch_rpath(
+            vtddir / "Runtime/Core/ModuleManager.cxx11/moduleManager.2022.3.40_flexlm",
+            ["$ORIGIN/../Lib", "$ORIGIN/lib"],
+        )
+
+
+        patch_rpath(
+            vtddir / "Runtime/Core/ModuleManager.cxx11/lib/libVTDModulePlugin.so.2022",
+            ["$ORIGIN/../../Lib"],
+        )
+
+        patch_rpath(
+            vtddir / "Runtime/Core/ModuleManager.cxx11/lib/libopen_simulation_interface.so",
+            ["$ORIGIN/../../Lib", "$ORIGIN"],
+        )
+
+        patch_rpath(
+            vtddir / "Runtime/Core/ModuleManager.cxx11/lib/libprotobuf.so.9",
+            ["$ORIGIN/../../Lib"],
+        )
+
+        patch_rpath(
             vtddir / "Runtime/Core/ParamServer/paramServer.2022.3.40", ["$ORIGIN/../Lib"]
         )
         
