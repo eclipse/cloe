@@ -28,6 +28,8 @@ RUN --mount=type=cache,id=bionic-cache,target=/var/cache/apt \
         file \
         freeglut3 \
         libaa1 \
+        libbsd0 \
+        libexpat1 \
         libasn1-8-heimdal \
         libasound2 \
         libasyncns0 \
@@ -154,7 +156,8 @@ WORKDIR /vtd
 COPY dl ./dl
 COPY conanfile.py ./
 COPY libdeps_pruned.txt ./
-
+COPY entrypoint.sh ./
+COPY setups ./setups
 ARG PACKAGE_FQN=vtd/2022.3@cloe-restricted/stable
 RUN conan create conanfile.py ${PACKAGE_FQN} && \
     conan remove -b -s -f vtd && \
@@ -162,3 +165,7 @@ RUN conan create conanfile.py ${PACKAGE_FQN} && \
 
 FROM ubuntu:18.04
 COPY --from=build /root/.conan/data/vtd /vtd
+RUN ln -s /vtd/*/*/*/package/* /VTD
+COPY --from=build /vtd/entrypoint.sh ./
+COPY --from=build /vtd/setups /vtd_setups
+RUN chmod +x entrypoint.sh 
