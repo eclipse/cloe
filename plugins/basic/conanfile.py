@@ -1,3 +1,6 @@
+# mypy: ignore-errors
+# pylint: skip-file
+
 from pathlib import Path
 from shutil import which
 

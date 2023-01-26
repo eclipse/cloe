@@ -1,3 +1,6 @@
+# mypy: ignore-errors
+# pylint: skip-file
+
 from conans import CMake, ConanFile, tools
 
 
