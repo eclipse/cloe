@@ -63,8 +63,6 @@ oak: runtime
 engine: models oak
 ${PLUGIN_PKGS}: runtime models
 
-vendor/cpp-netlib: vendor/libbacktrace
-
 ## BUILD_POLICY
 ##   Usage: make BUILD_POLICY="missing"
 ##   Default: "outdated"
