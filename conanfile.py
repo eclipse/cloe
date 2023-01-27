@@ -17,14 +17,12 @@ class Cloe(ConanFile):
         "with_engine": [True, False],
 
         # Doesn't affect package ID:
-        "test": [True, False],
         "pedantic": [True, False],
     }
     default_options = {
         "with_vtd": False,
         "with_engine": True,
 
-        "test": True,
         "pedantic": True,
 
         "cloe-engine:server": True,
@@ -76,7 +74,6 @@ class Cloe(ConanFile):
             return self._cmake
         self._cmake = CMake(self)
         self._cmake.definitions["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
-        self._cmake.definitions["BuildTests"] = self.options.test
         self._cmake.definitions["TargetLintingExtended"] = self.options.pedantic
         self._cmake.configure()
         return self._cmake
@@ -86,9 +83,8 @@ class Cloe(ConanFile):
         if not self.in_local_cache:
             cmake = self._configure_cmake()
             cmake.build()
-            if self.options.test:
-                with tools.environment_append(RunEnvironment(self).vars):
-                    cmake.test()
+            with tools.environment_append(RunEnvironment(self).vars):
+                cmake.test()
 
     def package(self):
         # This build is for a workspace build. See: conanws.yml
@@ -97,5 +93,4 @@ class Cloe(ConanFile):
             cmake.install()
 
     def package_id(self):
-        del self.info.options.test
         del self.info.options.pedantic

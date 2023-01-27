@@ -47,10 +47,8 @@ else()
 endif()
 
 # Testing ------------------------------------------------------------
-option(BuildTests "Build tests?" ON)
-if(BuildTests)
-    message(STATUS "-> Enable testing")
-    enable_testing()
+include(CTest)
+if(BUILD_TESTING)
     include(GoogleTest)
 
     add_executable(test-fable
@@ -79,7 +77,7 @@ if(BuildTests)
     gtest_add_tests(TARGET test-fable)
 endif()
 
-option(BuildExamples "Build examples?" ${BuildTests})
+option(BuildExamples "Build examples?" ${BUILD_TESTING})
 if(BuildExamples)
     message(STATUS "-> Build examples")
     add_executable(example-contacts
