@@ -31,11 +31,6 @@ class CloeRuntime(ConanFile):
         "src/*",
         "CMakeLists.txt",
     ]
-    requires = [
-        "boost/[>=1.65.1]",
-        "inja/[~=3.3.0]",
-        "spdlog/[~=1.9.0]",
-    ]
 
     _cmake = None
 
@@ -49,6 +44,9 @@ class CloeRuntime(ConanFile):
 
     def requirements(self):
         self.requires(f"fable/{self.version}@cloe/develop")
+        self.requires("boost/[>=1.65.1]")
+        self.requires("inja/[~=3.3.0]")
+        self.requires("spdlog/[~=1.9.0]")
         self.requires("incbin/cci.20211107")
 
     def build_requirements(self):

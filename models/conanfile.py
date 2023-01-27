@@ -28,10 +28,6 @@ class CloeModels(ConanFile):
         "src/*",
         "CMakeLists.txt",
     ]
-    requires = [
-        "boost/[>=1.65.1]",
-        "eigen/[~=3.4.0]",
-    ]
 
     _cmake = None
 
@@ -45,6 +41,8 @@ class CloeModels(ConanFile):
 
     def requirements(self):
         self.requires(f"cloe-runtime/{self.version}@cloe/develop")
+        self.requires("boost/[>=1.65.1]")
+        self.requires("eigen/[~=3.4.0]")
 
     def build_requirements(self):
         self.test_requires("gtest/[~1.10]")
