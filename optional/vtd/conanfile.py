@@ -1,11 +1,15 @@
 # mypy: ignore-errors
 # pylint: skip-file
 
-from pathlib import Path
 import os
-from shutil import rmtree
 import tarfile
-from conans import CMake, ConanFile, RunEnvironment, tools
+from pathlib import Path
+from shutil import rmtree
+
+from conan import ConanFile
+from conan.tools import cmake, files, scm, env
+
+required_conan_version = ">=1.52.0"
 
 
 class CloeSimulatorVTD(ConanFile):
@@ -20,7 +24,8 @@ class CloeSimulatorVTD(ConanFile):
     default_options = {
         "pedantic": True,
     }
-    generators = "cmake"
+    generators = "CMakeDeps", "VirtualRunEnv"
+    no_copy_source = True
     exports_sources = [
         "bin/*",
         "cmake/*",
@@ -28,27 +33,23 @@ class CloeSimulatorVTD(ConanFile):
         "CMakeLists.txt",
         "module.py",
     ]
-    no_copy_source = True
-    requires = [
-        "open-simulation-interface/3.2.0@cloe/stable",
-        "vtd-api/2.2.0@cloe/stable",
-    ]
 
     _setup_folder = "contrib/setups"
-    _cmake = None
 
     def set_version(self):
         for version_path in ["VERSION", "../../VERSION"]:
             version_file = Path(self.recipe_folder) / version_path
             if version_file.exists():
-                self.version = tools.load(version_file).strip()
+                self.version = files.load(self, version_file).strip()
                 return
-        git = tools.Git(folder=self.recipe_folder)
+        git = scm.Git(self, self.recipe_folder)
         self.version = git.run("describe --dirty=-dirty")[1:]
 
     def requirements(self):
         self.requires(f"cloe-runtime/{self.version}@cloe/develop")
         self.requires(f"cloe-models/{self.version}@cloe/develop")
+        self.requires("open-simulation-interface/3.2.0@cloe/stable")
+        self.requries("vtd-api/2.2.0@cloe/stable")
 
         # Overrides, same as in the cloe conanfile.py:
         self.requires("protobuf/[>=3.9.1]", override=True)
@@ -80,28 +81,26 @@ class CloeSimulatorVTD(ConanFile):
         self.copy("*", dst=self._setup_folder, src=self._setup_folder, symlinks=True)
         self._compress_setups()
 
-    def _configure_cmake(self):
-        if self._cmake:
-            return self._cmake
-        self._cmake = CMake(self)
-        self._cmake.definitions["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
-        self._cmake.definitions["TargetLintingExtended"] = self.options.pedantic
-        self._cmake.configure()
-        return self._cmake
-
     def configure(self):
         self.options["open-simulation-interface"].shared = False
         self.options["open-simulation-interface"].fPIC = True
 
+    def generate(self):
+        tc = cmake.CMakeToolchain(self)
+        tc.cache_variables["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
+        tc.cache_variables["CLOE_PROJECT_VERSION"] = self.version
+        tc.cache_variables["TargetLintingExtended"] = self.options.pedantic
+        tc.generate()
+
     def build(self):
-        cmake = self._configure_cmake()
-        cmake.build()
-        with tools.environment_append(RunEnvironment(self).vars):
-            cmake.test()
+        cm = cmake.CMake(self)
+        cm.configure()
+        cm.build()
+        cm.test()
 
     def package(self):
-        cmake = self._configure_cmake()
-        cmake.install()
+        cm = cmake.CMake(self)
+        cm.install()
         self.copy("vtd-launch", dst="bin", src=f"{self.source_folder}/bin")
         self.copy(
             "*.tgz",
@@ -116,8 +115,12 @@ class CloeSimulatorVTD(ConanFile):
         self.info.requires["cloe-runtime"].full_package_mode()
         self.info.requires["open-simulation-interface"].full_package_mode()
         self.info.requires["vtd-api"].full_package_mode()
+        self.info.requires["boost"].full_package_mode()
 
     def package_info(self):
+        self.cpp_info.set_property("cmake_find_mode", "both")
+        self.cpp_info.set_property("cmake_file_name", "cloe-plugin-vtd")
+        self.cpp_info.set_property("pkg_config_name", "cloe-plugin-vtd")
         self.env_info.VTD_LAUNCH = f"{self.package_folder}/bin/vtd-launch"
         self.env_info.VTD_SETUP_DIR = f"{self.package_folder}/{self._setup_folder}"
 

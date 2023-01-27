@@ -1,7 +1,14 @@
+# This is a minimal conanfile.txt to show how this example project
+# can be built with Conan and CMake.
+
 [requires]
 cli11/[~=2.1.2]
-fable/[>0.17.0, include_prerelease=True]@cloe/develop
+fable/[>=0.19.0, include_prerelease=True]@cloe/develop
 fmt/[~=8.1.1]
 
 [generators]
-cmake
+CMakeDeps
+CMakeToolchain
+
+[layout]
+cmake_layout

@@ -2,7 +2,11 @@
 # pylint: skip-file
 
 from pathlib import Path
-from conans import CMake, ConanFile, RunEnvironment, tools
+
+from conan import ConanFile
+from conan.tools import cmake, files, scm
+
+required_conan_version = ">=1.52.0"
 
 
 class Cloe(ConanFile):
@@ -27,17 +31,14 @@ class Cloe(ConanFile):
 
         "cloe-engine:server": True,
     }
-    generators = "cmake"
     no_copy_source = True
-
-    _cmake = None
 
     def set_version(self):
         version_file = Path(self.recipe_folder) / "VERSION"
         if version_file.exists():
-            self.version = tools.load(version_file).strip()
+            self.version = files.load(self, version_file).strip()
         else:
-            git = tools.Git(folder=self.recipe_folder)
+            git = scm.Git(self, self.recipe_folder)
             self.version = git.run("describe --dirty=-dirty")[1:]
 
     def requirements(self):
@@ -68,29 +69,6 @@ class Cloe(ConanFile):
         self.requires("nlohmann_json/[~=3.10.5]", override=True)
         self.requires("incbin/cci.20211107", override=True),
         self.requires(f"boost/{boost_version}", override=True)
-
-    def _configure_cmake(self):
-        if self._cmake:
-            return self._cmake
-        self._cmake = CMake(self)
-        self._cmake.definitions["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
-        self._cmake.definitions["TargetLintingExtended"] = self.options.pedantic
-        self._cmake.configure()
-        return self._cmake
-
-    def build(self):
-        # This build is for a workspace build. See: conanws.yml
-        if not self.in_local_cache:
-            cmake = self._configure_cmake()
-            cmake.build()
-            with tools.environment_append(RunEnvironment(self).vars):
-                cmake.test()
-
-    def package(self):
-        # This build is for a workspace build. See: conanws.yml
-        if not self.in_local_cache:
-            cmake = self._configure_cmake()
-            cmake.install()
 
     def package_id(self):
         del self.info.options.pedantic

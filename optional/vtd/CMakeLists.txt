@@ -2,11 +2,12 @@ cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 
 project(cloe_plugin_vtd LANGUAGES CXX)
 
-include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS)
-
 # Cloe Plugin --------------------------------------------------------
-include(CloePluginSetup)
+find_package(vtd-api REQUIRED)
+find_package(cloe-runtime REQUIRED)
+find_package(cloe-models REQUIRED)
+find_package(Boost REQUIRED)
+find_package(open-simulation-interface REQUIRED)
 
 add_library(vtd-object-lib STATIC
     src/omni_sensor_component.cpp
@@ -23,11 +24,11 @@ add_library(vtd-object-lib STATIC
 )
 target_link_libraries(vtd-object-lib
   PUBLIC
-    CONAN_PKG::vtd-api
-    CONAN_PKG::cloe-runtime
-    CONAN_PKG::cloe-models
-    CONAN_PKG::boost
-    CONAN_PKG::open-simulation-interface
+    vtd-api::vtd-api
+    cloe::runtime
+    cloe::models
+    Boost::boost
+    open-simulation-interface::open-simulation-interface
 )
 set_target_properties(vtd-object-lib PROPERTIES
     CXX_STANDARD 14
@@ -35,6 +36,7 @@ set_target_properties(vtd-object-lib PROPERTIES
     POSITION_INDEPENDENT_CODE ON
 )
 
+include(CloePluginSetup)
 cloe_add_plugin(
     TARGET ${PROJECT_NAME}
     OUTPUT_NAME simulator_vtd
@@ -47,6 +49,7 @@ cloe_add_plugin(
 
 include(CTest)
 if(BUILD_TESTING)
+    find_package(GTest REQUIRED)
     include(GoogleTest)
 
     add_executable(test-vtd-binding
@@ -60,7 +63,8 @@ if(BUILD_TESTING)
     )
     target_link_libraries(test-vtd-binding
       PRIVATE
-        CONAN_PKG::gtest
+        GTest::gtest
+        GTest::gtest_main
         vtd-object-lib
     )
     gtest_add_tests(TARGET test-vtd-binding)

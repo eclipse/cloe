@@ -2,16 +2,17 @@ cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 
 project(cloe-models LANGUAGES CXX)
 
-set(target cloe-models)
-set(alias cloe::models)
-
-# Conan / Editor -----------------------------------------------------
-include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS)
-
+include(GNUInstallDirs)
 include(TargetLinting)
 
 # Module -------------------------------------------------------------
+set(target cloe-models)
+set(alias cloe::models)
+
+find_package(cloe-runtime REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(Boost COMPONENTS headers REQUIRED)
+
 message(STATUS "-> Building ${output} library.")
 add_library(${target}
     # find src -type f -name "*.cpp" \! -name "*_test.cpp"
@@ -29,18 +30,20 @@ set_target_properties(${target} PROPERTIES
 set_target_linting(${target})
 target_include_directories(${target}
   PUBLIC
-    include
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 target_link_libraries(${target}
   PUBLIC
-    CONAN_PKG::cloe-runtime
-    CONAN_PKG::boost
-    CONAN_PKG::eigen
+    cloe::runtime
+    Boost::headers
+    Eigen3::Eigen
 )
 
 # Testing -------------------------------------------------------------
 include(CTest)
 if(BUILD_TESTING)
+    find_package(GTest REQUIRED)
     include(GoogleTest)
 
     add_executable(test-models
@@ -56,16 +59,16 @@ if(BUILD_TESTING)
     )
     target_link_libraries(test-models
       PRIVATE
-        CONAN_PKG::gtest
-        CONAN_PKG::boost
-        CONAN_PKG::cloe-runtime
+        GTest::gtest
+        GTest::gtest_main
+        Boost::boost
+        cloe::runtime
         ${target}
     )
     gtest_add_tests(TARGET test-models)
 endif()
 
 # Installation -------------------------------------------------------
-include(GNUInstallDirs)
 install(TARGETS ${target}
     LIBRARY
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cloe

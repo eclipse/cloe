@@ -2,16 +2,17 @@ cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 
 project(cloe-oak LANGUAGES CXX)
 
-set(target cloe-oak)
-set(alias cloe::oak)
-
-# Conan / Editor -----------------------------------------------------
-include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS)
-
+include(GNUInstallDirs)
 include(TargetLinting)
 
 # Library ------------------------------------------------------------
+set(target cloe-oak)
+set(alias cloe::oak)
+
+find_package(cloe-runtime REQUIRED)
+find_package(cppnetlib REQUIRED)
+find_package(Boost COMPONENTS headers REQUIRED)
+
 add_library(${target}
     # find src -type f -name "*.cpp" \! -name "*_test.cpp"
     src/oak/registrar.cpp
@@ -25,17 +26,20 @@ set_target_properties(${target} PROPERTIES
 )
 target_include_directories(${target}
   PUBLIC
-    include
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 target_link_libraries(${target}
   PUBLIC
-    CONAN_PKG::cloe-runtime
-    CONAN_PKG::cpp-netlib
+    cloe::runtime
+    cppnetlib::cppnetlib
+    Boost::headers
 )
 
 # Testing ------------------------------------------------------------
 include(CTest)
 if(BUILD_TESTING)
+    find_package(GTest REQUIRED)
     include(GoogleTest)
 
     add_executable(test-oak
@@ -47,15 +51,15 @@ if(BUILD_TESTING)
         CXX_STANDARD_REQUIRED ON
     )
     target_link_libraries(test-oak
-        CONAN_PKG::gtest
-        CONAN_PKG::boost
+        GTest::gtest
+        GTest::gtest_main
+        Boost::boost
         ${target}
     )
     gtest_add_tests(TARGET test-oak)
 endif()
 
 # Installation -------------------------------------------------------
-include(GNUInstallDirs)
 install(TARGETS ${target}
     LIBRARY
         DESTINATION ${CMAKE_INSTALL_LIBDIR}
