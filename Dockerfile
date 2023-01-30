@@ -57,7 +57,12 @@ ENV CONAN_NON_INTERACTIVE=yes
 COPY dist/conan /cloe/dist/conan
 RUN make -f /cloe/Makefile.setup setup-conan && \
     conan config set general.default_profile=${CONAN_PROFILE} && \
-    conan profile update options.cloe-engine:server=False ${CONAN_PROFILE}
+    # NOTE: Boost 1.69 has a bug (fixed in 74fb0a26099bc51d717f5f154b37231ce7df3e98) that
+    # prevents GCC >= 11 from interoperation, so disable the server for this case.
+    # (The server feature depends on cloe-oak, which *currently* depends on Boost <= 1.69.)
+    if [ $(gcc -dumpversion) -ge 11 ]; then \
+        conan profile update options.cloe-engine:server=False ${CONAN_PROFILE}; \
+    fi
 
 # Build and Install Cloe
 #
