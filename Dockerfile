@@ -79,7 +79,6 @@ RUN --mount=type=cache,target=/ccache \
     if [ -r /root/setup.sh ]; then . /root/setup.sh; fi && \
     make -f Makefile.all ${VENDOR_TARGET} && \
     # Clean up:
-    conan user --clean && \
     if [ ${KEEP_SOURCES} -eq 0 ]; then \
         find /root/.conan/data -name dl -type d -maxdepth 5 -exec rm -r {} + && \
         conan remove \* -s -b -f; \
@@ -100,7 +99,6 @@ RUN --mount=type=cache,target=/ccache \
     echo "${PROJECT_VERSION}" > /cloe/VERSION && \
     make ${PACKAGE_TARGET} && \
     # Clean up:
-    conan user --clean && \
     if [ ${KEEP_SOURCES} -eq 0 ]; then \
         find /root/.conan/data -name dl -type d -maxdepth 5 -exec rm -r {} + && \
         conan remove \* -s -b -f; \
