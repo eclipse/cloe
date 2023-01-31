@@ -131,7 +131,7 @@ run-ubuntu-%: FORCE
 release-ubuntu-%: FORCE
 	@test -f setup.sh || echo 'Error: require setup.sh for user authentication'
 	${DOCKER} run ${DOCKER_RUN_ARGS} ${DOCKER_USER_ARGS} ${DOCKER_IMAGE}-ubuntu-$* \
-		bash -ec 'source /root/setup.sh && conan upload --force --all -c "*"'
+		bash -ec 'source /root/setup.sh && upload_conan_packages'
 
 .PHONY: require-setup-sh
 require-setup-sh:

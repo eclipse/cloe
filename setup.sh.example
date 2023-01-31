@@ -1,42 +1,136 @@
-#!/bin/sh
+#!/bin/bash
 #
-# setup.sh.example
+# This script can be used to safely inject secrets into the Docker
+# build process.
 #
-# This script is then used in the Docker image build process as a secret.
-# It should set up the default remote and authenticate if necessary.
+# Configure each `setup_` function defined as required and uncomment
+# them at the bottom. Then save the file as `setup.sh`, which `Makefile.docker`
+# will automatically add as a secret to the Docker image build process.
 #
-# Copy this file to setup.sh and modify it to allow Docker configure Conan in
-# the Docker build process. If this file is absent, the default Conan settings
-# are used.
-#
-# Authenticate with the default remote using the correct username and password.
-# This should run without any user interaction.
 
+# If any part of this script fails, the build process will too.
 set -e
 
-export CONAN_REMOTE="https://artifactory.example.com/artifactory/api/conan/cloe-conan-local"
-export CONAN_REMOTE_VERIFY_SSL="True"
-export CONAN_LOGIN_USERNAME=
-export CONAN_PASSWORD=
+setup_hosts() {
+    # If you need to update /etc/hosts, you can use `--add-host` on the command line
+    # or you can add them here.
 
-export VI_LIC_SERVER="vtd-licenses.example.com"
+    local HOSTS=(
+        "93.184.216.34 example.com"
+    )
 
-# Don't try to set up remotes if --network=none.
-if [ "$(ls /sys/class/net)" != "lo" ]; then
-    # Set the request timeout to 360 seconds to work-around slow servers.
-    conan config set general.request_timeout=360
+    cat /etc/hosts >> /tmp/hosts
+    for line in $HOSTS; do
+        echo $line >> /tmp/hosts
+    done
+    mount -o bind /tmp/hosts /etc/hosts
 
-    if [ "${CONAN_REMOTE}" != "" ]; then
-        conan remote clean
-        conan remote add default "${CONAN_REMOTE}" "${CONAN_REMOTE_VERIFY_SSL}"
+    CLEANUP_FUNCTIONS+=(cleanup_hosts)
+}
+
+cleanup_hosts() {
+    umount /etc/hosts
+}
+
+setup_ssh() {
+    # If you need SSH for any reason, you can make your SSH agent available to Docker
+    # by passing the arguments `--ssh default=$SSH_AUTH_SOCK`.
+    # You can then use ssh-scankey to add known hosts or hosts you want to fetch
+    # things from.
+    #
+    # Using known-hosts is a security feature, and this function effectively
+    # circumvents these protections. Consider using a bind mount instead if
+    # protection against man-in-the-middle attacks are important!
+
+    local HOSTS=(
+        "-p 80 github.com"
+    )
+
+    for host in $HOSTS; do
+        if grep -vqF "$host" ~/.ssh/known_hosts; then
+            ssh-keyscan $host >> ~/.ssh/known_hosts
+        fi
+    done
+
+    CLEANUP_FUNCTIONS+=(cleanup_ssh)
+}
+
+cleanup_ssh() {
+    rm -rf ~/.ssh
+}
+
+network_available() {
+    # If you need to check whether network is available, i.e. Docker network is
+    # not "none", then you can use something like this, which checks that there is
+    # a network interface that is not "lo".
+    ip link | sed -nr 's/^[0-9]+: ([^:]+):.*/\1/p' | grep -vq lo
+}
+
+setup_conan() {
+    # Authenticate with the default remote using the correct username and password.
+    # This should run without any user interaction.
+
+    local CONAN_REMOTE="https://artifactory.example.com/artifactory/api/conan/cloe-conan-local"
+    local CONAN_REMOTE_VERIFY_SSL="True"
+    local CONAN_LOGIN_USERNAME=
+    local CONAN_PASSWORD=
+
+    if network_available; then
+        # Set the request timeout to 360 seconds to work-around slow servers.
+        conan config set general.request_timeout=360
+
+        if [ "${CONAN_REMOTE}" != "" ]; then
+            conan remote add default "${CONAN_REMOTE}" "${CONAN_REMOTE_VERIFY_SSL}"
+        fi
+
+        if [ "${CONAN_LOGIN_USERNAME}" != "" ]; then
+            conan user --remote=default -p
+        fi
     fi
 
-    if [ "${CONAN_LOGIN_USERNAME}" != "" ]; then
-        conan user --remote=default -p
-    fi
+    CLEANUP_FUNCTIONS+=(cleanup_conan)
+}
+
+cleanup_conan() {
+    # Deauthenticate so that we don't leak credentials.
+    conan user --clean
+}
+
+setup_vtd() {
+    #  Export environment variable telling VTD where it can find the license server:
+    export VI_LIC_SERVER="vtd-licenses.example.com"
+}
+
+upload_conan_packages() {
+    # Prequisites:
+    # 1. You need to add a 'default' remote and authenticate with it.
+    # 2. You need to keep the original 'conancenter' remote, so
+    #    that Conan can fetch missing export_sources files.
+    conan upload -r default --all --force -c "*"
+}
+
+# This array with cleanup functions will be extended by each `setup_` function
+# that is called that needs cleanup after the Docker RUN step is finished.
+# This cleanup is ensured by the call to `trap` below.
+CLEANUP_FUNCTIONS=()
+
+cleanup_all() {
+    for func in $CLEANUP_FUNCTIONS; do
+        $func
+    done
+}
+
+trap cleanup_all EXIT
+
+# Now uncomment the setups you want to happen in a Docker environment:
+#
+# In a Docker RUN step, it's possible to have `--network=none`, in which case
+# we probably don't need to do anything in this script.
+if [ -f /.dockerenv ] && [ "$(ls /sys/class/net)" != "lo" ]; then
+    #setup_hosts
+    #setup_ssh
+    #setup_conan
+    #setup_vtd
 fi
 
-unset CONAN_REMOTE
-unset CONAN_REMOTE_VERIFY_SSL
-unset CONAN_LOGIN_USERNAME
-unset CONAN_PASSWORD
+set +e
