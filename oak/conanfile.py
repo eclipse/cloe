@@ -76,5 +76,6 @@ class CloeOak(ConanFile):
             self.cpp_info.libs = ["cloe-oak"]
 
     def package_id(self):
+        self.info.requires["boost"].full_package_mode()
         del self.info.options.test
         del self.info.options.pedantic
