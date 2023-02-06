@@ -52,7 +52,7 @@ LOCKFILE_OPTION  :=
 CLEAN_SOURCE_DIR := false
 BUILD_IN_SOURCE  := true
 BUILD_DIR        := build
-BUILD_CONANINFO  := ${BUILD_DIR}/conanbuildinfo.cmake
+BUILD_CONANINFO  := ${BUILD_DIR}/conanbuildinfo.txt
 BUILD_CMAKECACHE := ${BUILD_DIR}/CMakeCache.txt
 BUILD_LOCKFILE   := ${BUILD_DIR}/conan.lock
 BUILD_LAYOUT     := ${PROJECT_ROOT}/.conan-layout.ini
@@ -395,7 +395,7 @@ else
 all: ${BUILD_CONANINFO} | ${SOURCE_DIR}
 	# Build the package in-source.
 	#
-	conan build . --source-folder="${SOURCE_DIR}" --build-folder="${BUILD_DIR}"
+	conan build . --source-folder="${SOURCE_DIR}" --install-folder="${BUILD_DIR}"
 
 .PHONY: conan
 conan: ${BUILD_CONANINFO}
@@ -448,5 +448,5 @@ ${BUILD_CONANINFO}: ${SOURCE_CONANFILE} ${BUILD_LOCKFILE}
 ${BUILD_CMAKECACHE}: ${SOURCE_CMAKELISTS} ${BUILD_CONANINFO}
 	# Configure in-source build with CMake.
 	#
-	conan build --configure . --source-folder="${SOURCE_DIR}" --build-folder="${BUILD_DIR}"
+	conan build --configure . --source-folder="${SOURCE_DIR}" --install-folder="${BUILD_DIR}"
 endif

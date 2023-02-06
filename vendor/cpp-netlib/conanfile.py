@@ -1,7 +1,10 @@
 # mypy: ignore-errors
 # pylint: skip-file
 
-from conans import CMake, ConanFile, tools
+from conan import ConanFile
+from conan.tools import cmake, files, scm
+
+required_conan_version = ">=1.52.0"
 
 
 class CppNetlib(ConanFile):
@@ -17,51 +20,54 @@ class CppNetlib(ConanFile):
     options = {
         "shared": [True, False],
     }
+    no_copy_source = True
     default_options = {
         "shared": False,
     }
-    exports_sources = [
-        "CMakeLists.txt",
-    ]
-    generators = "cmake"
     requires = [
         # CppNetlib does not work with a boost that is newer than 1.69
         "boost/[>=1.65.0 <1.70]",
         "openssl/1.1.1g",
     ]
 
-    _cmake = None
-    _source_folder = "cpp-netlib"
-
     def source(self):
-        git = tools.Git(folder=self._source_folder)
-        git.clone(self.git_url, self.git_branch, args="--recursive", shallow=True)
+        git = scm.Git(self, self.recipe_folder)
+        git.clone(self.git_url, self.source_folder, args=["-b", self.git_branch, "--recursive", "--depth=1"])
 
-    def _configure_cmake(self):
-        if self._cmake:
-            return self._cmake
-        self._cmake = CMake(self)
-        self._cmake.definitions["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
-        self._cmake.definitions["CPP-NETLIB_BUILD_EXAMPLES"] = False
-        self._cmake.definitions["CPP-NETLIB_BUILD_SHARED_LIBS"] = self.options.shared
-        self._cmake.definitions["CPP-NETLIB_BUILD_TESTS"] = False
-        self._cmake.definitions["CPP-NETLIB_ENABLE_HTTPS"] = True
-        self._cmake.definitions["CPP-NETLIB_STATIC_BOOST"] = True
-        self._cmake.definitions["CPP-NETLIB_STATIC_OPENSSL"] = True
-        self._cmake.definitions["Boost_NO_BOOST_CMAKE"] = True
-        self._cmake.configure()
-        return self._cmake
+    def layout(self):
+        cmake.cmake_layout(self)
+
+    def generate(self):
+        tc = cmake.CMakeToolchain(self)
+        tc.cache_variables["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
+        tc.cache_variables["CPP-NETLIB_BUILD_EXAMPLES"] = False
+        tc.cache_variables["CPP-NETLIB_BUILD_SHARED_LIBS"] = self.options.shared
+        tc.cache_variables["CPP-NETLIB_BUILD_TESTS"] = False
+        tc.cache_variables["CPP-NETLIB_ENABLE_HTTPS"] = True
+        tc.cache_variables["CPP-NETLIB_STATIC_BOOST"] = True
+        tc.cache_variables["CPP-NETLIB_STATIC_OPENSSL"] = True
+        tc.cache_variables["Boost_NO_BOOST_CMAKE"] = True
+        tc.generate()
+
+        deps = cmake.CMakeDeps(self)
+        deps.generate()
 
     def build(self):
-        cmake = self._configure_cmake()
-        cmake.build()
+        cm = cmake.CMake(self)
+        #cm.configure(build_script_folder=self.recipe_folder + "/src")
+        cm.configure()
+        cm.build()
 
     def package(self):
-        cmake = self._configure_cmake()
-        cmake.install()
+        cm = cmake.CMake(self)
+        cm.install()
 
     def package_id(self):
         self.info.requires["boost"].full_package_mode()
 
     def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
+        self.cpp_info.set_property("cmake_find_mode", "both")
+        self.cpp_info.set_property("cmake_file_name", "cppnetlib")
+        self.cpp_info.set_property("cmake_target_name", "cppnetlib::cppnetlib")
+        self.cpp_info.set_property("pkg_config_name", "cppnetlib")
+        self.cpp_info.libs = files.collect_libs(self)

@@ -9,10 +9,9 @@ any requirement to Cloe.
 Building and Installing with Conan
 ----------------------------------
 If you cloned the Cloe repository, building Fable is simple. Navigate to the
-`fable/` directory and run `make package`. This will use Conan and CMake to
-build a Conan package with a version derived from the checked out commit.
-If you want to have a different version, you can use the Conan `copy` command
-to copy the package to a different reference.
+`fable/` directory and run `make package` or `conan create .`. This will use
+Conan and CMake to build a Conan package with a version derived from the checked
+out commit.
 
 Once you've built the package, it is available in your Conan cache and you can
 refer to it from elsewhere in your system. You can also upload it to your own
@@ -20,37 +19,9 @@ private Conan repository (such as with Artifactory).
 
 Building and Installing without Conan
 -------------------------------------
-While we recommend to use Conan, if your project is already established and you
-don't want to add an extra build dependency, you can modify the
-`CMakeLists.txt` file to replace the Conan specific parts with a `find_package`
-implementation.
-
-1. Replace the Conan initialization (lines 9-10) with `find_package` statements
-   for all the required libraries:
-
-        find_package(Boost COMPONENTS filesystem iostreams REQUIRED)
-        find_package(fmt CONFIG REQUIRED)
-        find_package(nlohmann_json CONFIG REQUIRED)
-        find_package(CLI11 CONFIG REQUIRED)
-        find_package(GTest CONFIG REQUIRED)
-
-   The GTest dependency is for the tests and the CLI11 dependency is for the
-   example binaries. If you don't need these, you can omit them and disable
-   the options in the `CMakeLists.txt` file.
-
-2. Replace all instances of `CONAN_PKG::*` with the appropriate variables that
-   `find_package` sets. For example, at lines 34-40:
-
-        target_link_libraries(${target}
-          PUBLIC
-            ${Boost_LIBRARIES}
-            fmt::fmt
-            nlohmann_json
-        )
-        target_include_directories(${target}
-          PUBLIC
-            ${Boost_INCLUDE_DIR}
-        )
+The `CMakeLists.txt` configuration file for CMake is written so you can configure
+it without using Conan. This will probably require you to let CMake know where
+it should look for the dependencies.
 
 Example Applications
 --------------------

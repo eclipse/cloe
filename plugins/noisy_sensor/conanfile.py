@@ -2,7 +2,12 @@
 # pylint: skip-file
 
 from pathlib import Path
-from conans import CMake, ConanFile, RunEnvironment, tools
+
+from conan import ConanFile
+from conan.errors import ConanInvalidConfiguration
+from conan.tools import cmake, files, scm, env
+
+required_conan_version = ">=1.52.0"
 
 
 class CloeComponentNoisySensor(ConanFile):
@@ -17,21 +22,19 @@ class CloeComponentNoisySensor(ConanFile):
     default_options = {
         "pedantic": True,
     }
-    generators = "cmake"
+    generators = "CMakeDeps", "VirtualRunEnv"
+    no_copy_source = True
     exports_sources = [
         "src/*",
         "CMakeLists.txt",
     ]
-    no_copy_source = True
-
-    _cmake = None
 
     def set_version(self):
         version_file = Path(self.recipe_folder) / "../../VERSION"
         if version_file.exists():
-            self.version = tools.load(version_file).strip()
+            self.version = files.load(self, version_file).strip()
         else:
-            git = tools.Git(folder=self.recipe_folder)
+            git = scm.Git(self, self.recipe_folder)
             self.version = git.run("describe --dirty=-dirty")[1:]
 
     def requirements(self):
@@ -41,24 +44,31 @@ class CloeComponentNoisySensor(ConanFile):
     def build_requirements(self):
         self.test_requires("gtest/[~1.10]")
 
-    def _configure_cmake(self):
-        if self._cmake:
-            return self._cmake
-        self._cmake = CMake(self)
-        self._cmake.definitions["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
-        self._cmake.definitions["TargetLintingExtended"] = self.options.pedantic
-        self._cmake.configure()
-        return self._cmake
+    def layout(self):
+        cmake.cmake_layout(self)
+
+    def generate(self):
+        tc = cmake.CMakeToolchain(self)
+        tc.cache_variables["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
+        tc.cache_variables["CLOE_PROJECT_VERSION"] = self.version
+        tc.cache_variables["TargetLintingExtended"] = self.options.pedantic
+        tc.generate()
 
     def build(self):
-        cmake = self._configure_cmake()
-        cmake.build()
-        with tools.environment_append(RunEnvironment(self).vars):
-            cmake.test()
+        cm = cmake.CMake(self)
+        cm.configure()
+        cm.build()
+        cm.test()
 
     def package(self):
-        cmake = self._configure_cmake()
-        cmake.install()
+        cm = cmake.CMake(self)
+        cm.install()
 
     def package_id(self):
+        self.info.requires["boost"].full_package_mode()
         del self.info.options.pedantic
+
+    def package_info(self):
+        self.cpp_info.set_property("cmake_find_mode", "both")
+        self.cpp_info.set_property("cmake_file_name", self.name)
+        self.cpp_info.set_property("pkg_config_name", self.name)

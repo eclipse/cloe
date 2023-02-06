@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 
 project(cloe_plugin_gndtruth_extractor LANGUAGES CXX)
 
-include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS)
+find_package(cloe-runtime REQUIRED)
+find_package(cloe-models REQUIRED)
 
 include(CloePluginSetup)
 cloe_add_plugin(
@@ -12,12 +12,13 @@ cloe_add_plugin(
     SOURCES
         src/gndtruth_extractor.cpp
     LINK_LIBRARIES
-        CONAN_PKG::cloe-runtime
-        CONAN_PKG::cloe-models
+        cloe::runtime
+        cloe::models
 )
 
 include(CTest)
 if(BUILD_TESTING)
+    find_package(GTest REQUIRED)
     include(GoogleTest)
 
     add_executable(test-gndtruth-extractor
@@ -29,9 +30,10 @@ if(BUILD_TESTING)
     )
     target_link_libraries(test-gndtruth-extractor
       PRIVATE
-        CONAN_PKG::gtest
-        CONAN_PKG::cloe-runtime
-        CONAN_PKG::cloe-models
+        GTest::gtest
+        GTest::gtest_main
+        cloe::runtime
+        cloe::models
     )
     gtest_add_tests(TARGET test-gndtruth-extractor)
 endif()
