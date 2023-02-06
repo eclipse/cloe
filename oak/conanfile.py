@@ -28,9 +28,6 @@ class CloeOak(ConanFile):
         "src/*",
         "CMakeLists.txt",
     ]
-    requires = [
-        "cpp-netlib/0.13.0@cloe/stable",
-    ]
 
     _cmake = None
 
@@ -44,6 +41,7 @@ class CloeOak(ConanFile):
 
     def requirements(self):
         self.requires(f"cloe-runtime/{self.version}@cloe/develop")
+        self.requires("cpp-netlib/0.13.0@cloe/stable")
 
     def build_requirements(self):
         self.test_requires("gtest/[~1.10]")

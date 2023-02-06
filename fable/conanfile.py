@@ -29,11 +29,6 @@ class Fable(ConanFile):
         "src/*",
         "CMakeLists.txt",
     ]
-    requires = [
-        "boost/[>=1.65.1]",
-        "fmt/[>=6.2.0]",
-        "nlohmann_json/[~=3.10.5]",
-    ]
 
     _cmake = None
 
@@ -44,6 +39,11 @@ class Fable(ConanFile):
         else:
             git = tools.Git(folder=self.recipe_folder)
             self.version = git.run("describe --dirty=-dirty")[1:]
+
+    def requirements(self):
+        self.requires("boost/[>=1.65.1]")
+        self.requires("fmt/[>=6.2.0]")
+        self.requires("nlohmann_json/[~=3.10.5]")
 
     def build_requirements(self):
         self.test_requires("gtest/[~=1.10]")
