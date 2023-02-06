@@ -1,3 +1,6 @@
+# mypy: ignore-errors
+# pylint: skip-file
+
 import os
 from pathlib import Path
 

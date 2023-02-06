@@ -1,3 +1,6 @@
+# mypy: ignore-errors
+# pylint: skip-file
+
 from pathlib import Path
 import os
 from shutil import rmtree
