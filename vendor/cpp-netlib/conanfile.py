@@ -20,14 +20,15 @@ class CppNetlib(ConanFile):
     options = {
         "shared": [True, False],
     }
-    no_copy_source = True
     default_options = {
         "shared": False,
     }
+    generators = "CMakeDeps"
+    no_copy_source = True
     requires = [
         # CppNetlib does not work with a boost that is newer than 1.69
         "boost/[>=1.65.0 <1.70]",
-        "openssl/1.1.1g",
+        "openssl/1.1.1s",
     ]
 
     def source(self):
@@ -46,11 +47,7 @@ class CppNetlib(ConanFile):
         tc.cache_variables["CPP-NETLIB_ENABLE_HTTPS"] = True
         tc.cache_variables["CPP-NETLIB_STATIC_BOOST"] = True
         tc.cache_variables["CPP-NETLIB_STATIC_OPENSSL"] = True
-        tc.cache_variables["Boost_NO_BOOST_CMAKE"] = True
         tc.generate()
-
-        deps = cmake.CMakeDeps(self)
-        deps.generate()
 
     def build(self):
         cm = cmake.CMake(self)
