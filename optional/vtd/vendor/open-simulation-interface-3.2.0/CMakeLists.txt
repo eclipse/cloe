@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 
 project(open_simulation_interface
     LANGUAGES CXX
