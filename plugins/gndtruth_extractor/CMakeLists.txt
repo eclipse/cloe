@@ -16,10 +16,8 @@ cloe_add_plugin(
         CONAN_PKG::cloe-models
 )
 
-option(BuildTests "Build tests?" ON)
-if(BuildTests)
-    message(STATUS "-> Enable testing")
-    enable_testing()
+include(CTest)
+if(BUILD_TESTING)
     include(GoogleTest)
 
     add_executable(test-gndtruth-extractor

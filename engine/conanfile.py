@@ -18,9 +18,6 @@ class CloeEngine(ConanFile):
         # server dependencies are incompatible with your target system.
         "server": [True, False],
 
-        # Build and run unit tests.
-        "test": [True, False],
-
         # Make the compiler be strict and pedantic.
         # Disable if you upgrade compilers and run into new warnings preventing
         # the build from completing. May be removed in the future.
@@ -28,7 +25,6 @@ class CloeEngine(ConanFile):
     }
     default_options = {
         "server": True,
-        "test": True,
         "pedantic": True,
 
         "fable:allow_comments": True,
@@ -64,15 +60,13 @@ class CloeEngine(ConanFile):
         self.requires("nlohmann_json/[~=3.10.5]", override=True)
 
     def build_requirements(self):
-        if self.options.test:
-            self.build_requires("gtest/[~1.10]")
+        self.test_requires("gtest/[~1.10]")
 
     def _configure_cmake(self):
         if self._cmake:
             return self._cmake
         self._cmake = CMake(self)
         self._cmake.definitions["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
-        self._cmake.definitions["BuildTests"] = self.options.test
         self._cmake.definitions["WithServer"] = self.options.server
         self._cmake.definitions["TargetLintingExtended"] = self.options.pedantic
         self._cmake.definitions["CLOE_PROJECT_VERSION"] = self.version
@@ -82,9 +76,8 @@ class CloeEngine(ConanFile):
     def build(self):
         cmake = self._configure_cmake()
         cmake.build()
-        if self.options.test:
-            with tools.environment_append(RunEnvironment(self).vars):
-                cmake.test()
+        with tools.environment_append(RunEnvironment(self).vars):
+            cmake.test()
 
     def package(self):
         cmake = self._configure_cmake()
@@ -92,7 +85,6 @@ class CloeEngine(ConanFile):
 
     def package_id(self):
         self.info.requires["boost"].full_package_mode()
-        del self.info.options.test
         del self.info.options.pedantic
 
     def package_info(self):

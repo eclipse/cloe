@@ -56,5 +56,4 @@ class CloeComponentKmph(ConanFile):
         cmake.install()
 
     def package_id(self):
-        del self.info.options.test
         del self.info.options.pedantic
