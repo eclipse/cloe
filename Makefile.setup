@@ -8,8 +8,12 @@
 # cache invalidation and also to improve readability.
 #
 
+SHELL := /bin/bash
+
 PROJECT_ROOT := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 CONAN_DIR := $(shell conan config home 2>/dev/null || echo "$HOME/.conan")
+CONAN_PROFILE := default
+CONAN_PROFILE_PATH := ${CONAN_DIR}/profiles/${CONAN_PROFILE}
 
 include ${PROJECT_ROOT}/Makefile.help
 
@@ -66,18 +70,25 @@ setup-conan:
 	# and the default configuration, we rely on the existence of the default
 	# profile as an indication that we have a "fresh" setup where we can
 	# make our override.
-	if [ ! -f ${CONAN_DIR}/profiles/default ]; then \
+	if [ ! -f ${CONAN_PROFILE_PATH} ]; then \
 		conan config init; \
-		conan profile update settings.compiler.libcxx=libstdc++11 default; \
-		conan profile update settings.build_type=RelWithDebInfo default; \
+		conan profile update settings.compiler.libcxx=libstdc++11 ${CONAN_PROFILE}; \
+		conan profile update settings.build_type=RelWithDebInfo ${CONAN_PROFILE}; \
 	fi
 	if ! conan config get general.revisions_enabled >/dev/null 2>&1; then \
 		conan config set general.revisions_enabled=True; \
 	fi
 	# Install cloe-debug and cloe-release profiles.
-	if [ -d "${PROJECT_ROOT}/dist/conan" ]; then \
-		install "${PROJECT_ROOT}/dist/conan/cloe-debug.profile" "${CONAN_DIR}/profiles/cloe-debug"; \
-		install "${PROJECT_ROOT}/dist/conan/cloe-release.profile" "${CONAN_DIR}/profiles/cloe-release"; \
+	for profile in "${PROJECT_ROOT}"/dist/conan/*; do \
+		export profile_name=$$(basename -s .profile $${profile}); \
+		install "$${profile}" "${CONAN_DIR}/profiles/$${profile_name}"; \
+		sed -ir "s/default/${CONAN_PROFILE}/" "${CONAN_DIR}/profiles/$${profile_name}"; \
+	done
+	# Ensure we have an up-to-date CMake configured.
+	if [ $$(( cmake --version | head -1 | cut -f3 -d' '; echo "3.14.99" ) | sort -V | tail -1) = "3.14.99" ]; then \
+		if ! grep "cmake/" ${CONAN_PROFILE_PATH} >/dev/null; then \
+			echo -e "[tool_requires]\ncmake/[>=3.15.0]" >> ${CONAN_PROFILE_PATH}; \
+		fi; \
 	fi
 
 .PHONY: install-system-deps
