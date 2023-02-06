@@ -65,7 +65,7 @@ class Cloe(ConanFile):
         self.requires("fmt/[~=8.1.1]", override=True)
         self.requires("inja/[~=3.3.0]", override=True)
         self.requires("nlohmann_json/[~=3.10.5]", override=True)
-        self.requires("incbin/[~=0.88.0]@cloe/stable", override=True),
+        self.requires("incbin/cci.20211107", override=True),
         self.requires(f"boost/{boost_version}", override=True)
 
     def _configure_cmake(self):
