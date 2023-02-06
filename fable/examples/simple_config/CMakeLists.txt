@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 
 project(fable_example_simple_config LANGUAGES CXX)
 
-include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS)
+find_package(CLI11 REQUIRED)
+find_package(fable REQUIRED)
 
 # Executable ---------------------------------------------------------
 set(target simple-config)
@@ -16,6 +16,6 @@ set_target_properties(${target} PROPERTIES
 )
 target_link_libraries(${target}
   PRIVATE
-    CONAN_PKG::fable
-    CONAN_PKG::cli11
+    fable::fable
+    CLI11::CLI11
 )

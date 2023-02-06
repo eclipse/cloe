@@ -1,0 +1,5 @@
+include(CMakeFindDependencyMacro)
+find_dependency(Boost REQUIRED COMPONENTS headers filesystem)
+find_dependency(fmt REQUIRED)
+find_dependency(nlohmann_json REQUIRED)
+include("${CMAKE_CURRENT_LIST_DIR}/fableTargets.cmake")

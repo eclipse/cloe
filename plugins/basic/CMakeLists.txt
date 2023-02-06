@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 
 project(cloe_plugin_basic LANGUAGES CXX)
 
-include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS)
+find_package(cloe-runtime REQUIRED)
+find_package(cloe-models REQUIRED)
 
 include(CloePluginSetup)
 cloe_add_plugin(
@@ -12,14 +12,15 @@ cloe_add_plugin(
     SOURCES
         src/basic.cpp
     LINK_LIBRARIES
-        CONAN_PKG::cloe-runtime
-        CONAN_PKG::cloe-models
+        cloe::runtime
+        cloe::models
     COMPILE_DEFINITIONS
         PROJECT_SOURCE_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}\"
 )
 
 include(CTest)
 if(BUILD_TESTING)
+    find_package(GTest REQUIRED)
     include(GoogleTest)
 
     add_executable(test-basic-controller
@@ -31,8 +32,9 @@ if(BUILD_TESTING)
     )
     target_link_libraries(test-basic-controller
       PRIVATE
-        CONAN_PKG::gtest
-        CONAN_PKG::cloe-runtime
+        GTest::gtest
+        GTest::gtest_main
+        cloe::runtime
     )
     gtest_add_tests(TARGET test-basic-controller)
 endif()

@@ -3,8 +3,10 @@
 
 from pathlib import Path
 
-from conans import ConanFile, tools
-from conan.tools.env import Environment
+from conan import ConanFile
+from conan.tools import files, scm, env
+
+required_conan_version = ">=1.52.0"
 
 class Base(object):
     settings = "os", "compiler", "build_type", "arch"
@@ -14,10 +16,10 @@ class Base(object):
         if "cloe_launch_env" not in dir(self):
             return
 
-        env = Environment()
+        export = env.Environment()
         for k, v in self.cloe_launch_env.items():
-            env.define(k, str(v))
-        env_vars = env.vars(self)
+            export.define(k, str(v))
+        env_vars = export.vars(self)
 
         # Raw environment variables
         env_file = Path(self.generators_folder) / "environment_cloe_launch.sh.env"
@@ -33,8 +35,8 @@ class Base(object):
         if version_path:
             version_file = Path(self.recipe_folder) / version_path
             if version_file.exists():
-                return tools.load(version_file).strip()
-        git = tools.Git(folder=self.recipe_folder)
+                return files.load(self, version_file).strip()
+        git = scm.Git(self, self.recipe_folder)
         return git.run("describe --dirty=-dirty")[1:]
 
 
@@ -47,7 +49,7 @@ class CloeLaunchProfile(ConanFile):
     channel = "develop"
 
     def set_version(self):
-        for line in tools.load("setup.py").split("\n"):
+        for line in files.load(self, "setup.py").split("\n"):
             if not line.strip().startswith("version="):
                 continue
             self.version = line.strip().split("=")[1].strip('",')

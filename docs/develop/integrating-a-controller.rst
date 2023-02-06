@@ -11,25 +11,37 @@ in your plugin's root directory containing the following:
 .. code-block:: txt
 
    [requires]
-   cloe/0.17.0
+   cloe/0.20.0@cloe/develop
+
+   [generators]
+   CMakeDeps
+   CMakeToolchain
+
+   [layout]
+   cmake_layout
 
 It states the version of the Cloe package to use. All dependencies of Cloe will
 be inherited and should not be re-stated unless you explicitly want to use a
 particular version of a dependency here.
 
-Now run ``conan install . --install-folder build``. This ensures that Cloe and
-its dependencies are cached and will create a file called
-``conanbuildinfo.cmake`` in the ``build`` folder. Include this file in your
-CMakeLists.txt (we assume you use CMake for your plugin project) like:
+Now run ``conan install . --build=missing --install-folder=build``.
+This ensures that Cloe and its dependencies are cached and will create a
+toolchain file called ``conan_toolchain.cmake`` in the ``build/generators``
+folder. Include this file from the command line when calling CMake
+and then ``find_package`` your requirements like:
 
 .. code-block::
 
-   include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-   conan_basic_setup(TARGETS NO_OUTPUT_DIRS)
+   find_package(cloe-runtime REQUIRED)
+   find_package(cloe-models REQUIRED)
+
+See the example projects in ``fable/examples`` for some examples of how Conan
+is used. If any of this is new to you and you find yourself working with Conan,
+then it is also highly recommended to take a Conan course from JFrog (free
+of charge) to get familiar with Conan.
 
 Now you can refer to cloe as a dependency library in your
-``target_link_libararies`` statement like ``CONAN_PKG::cloe``.
-
+``target_link_libararies`` statement like ``cloe::runtime``.
 
 .. todo:: Write a section on how to specify a specific version of Cloe.
    There are multiple use-cases here:

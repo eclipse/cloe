@@ -6,14 +6,14 @@ set(target cloe-engine)
 set(output cloe-engine)
 set(libstack cloe-stack)
 
-option(WithServer "Enable integrated server component?" ON)
-
-# Conan / Editor -----------------------------------------------------
-include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS)
+find_package(cloe-runtime REQUIRED)
+find_package(cloe-models REQUIRED)
+find_package(fable REQUIRED)
+find_package(Boost REQUIRED)
+find_package(CLI11 REQUIRED)
 
 include(TargetLinting)
-include(CTest)
+include(GNUInstallDirs)
 
 # Compiler definitions
 string(TIMESTAMP CLOE_ENGINE_TIMESTAMP "%Y-%m-%d")
@@ -35,13 +35,15 @@ target_include_directories(${libstack}
 )
 target_link_libraries(${libstack}
   PUBLIC
-    CONAN_PKG::cloe-runtime
-    CONAN_PKG::fable
+    cloe::runtime
+    fable::fable
     pthread
     dl
 )
 
+include(CTest)
 if(BUILD_TESTING)
+    find_package(GTest REQUIRED)
     include(GoogleTest)
 
     set(test-libstack test-${libstack})
@@ -53,9 +55,10 @@ if(BUILD_TESTING)
         CXX_STANDARD_REQUIRED ON
     )
     target_link_libraries(${test-libstack}
-        CONAN_PKG::gtest
-        CONAN_PKG::boost
-        CONAN_PKG::cloe-models
+        GTest::gtest
+        GTest::gtest_main
+        Boost::boost
+        cloe::models
         ${libstack}
     )
     gtest_add_tests(TARGET ${test-libstack})
@@ -90,20 +93,22 @@ target_include_directories(${target}
 )
 target_link_libraries(${target}
   PRIVATE
-    CONAN_PKG::cli11
-    CONAN_PKG::cloe-models
+    CLI11::CLI11
+    cloe::models
     ${libstack}
 )
 
-if(${WithServer})
+option(CLOE_ENGINE_WITH_SERVER "Enable integrated server component?" ON)
+if(CLOE_ENGINE_WITH_SERVER)
   message(STATUS "-> Enable server component")
+  find_package(cloe-oak REQUIRED)
   target_sources(${target}
     PRIVATE
       src/server.cpp
   )
   target_link_libraries(${target}
     PRIVATE
-      CONAN_PKG::cloe-oak
+      cloe::oak
   )
   target_compile_definitions(${target}
     PRIVATE
@@ -122,7 +127,6 @@ else()
 endif()
 
 # Installation -------------------------------------------------------
-include(GNUInstallDirs)
 install(TARGETS ${target}
     RUNTIME
         DESTINATION ${CMAKE_INSTALL_BINDIR}

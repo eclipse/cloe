@@ -2,16 +2,22 @@ cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 
 project(cloe-runtime LANGUAGES CXX)
 
-set(target cloe-runtime)
-set(alias cloe::runtime)
-
-# Conan / Editor -----------------------------------------------------
-include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS)
-
+include(GNUInstallDirs)
 include(cmake/TargetLinting.cmake)
 
 # Library -------------------------------------------------------------
+set(target cloe-runtime)
+set(alias cloe::runtime)
+
+find_package(fable REQUIRED)
+find_package(Boost COMPONENTS headers filesystem iostreams system REQUIRED)
+find_package(spdlog REQUIRED)
+find_package(inja REQUIRED)
+if(NOT TARGET pantor::inja)
+    add_library(pantor::inja ALIAS inja::inja)
+endif()
+find_package(incbin REQUIRED)
+
 add_library(${target} SHARED
     # find src -type f -name "*.cpp" \! -name "*_test.cpp"
     src/cloe/core/error.cpp
@@ -43,13 +49,20 @@ set_target_properties(${target} PROPERTIES
 set_target_linting(${target})
 target_include_directories(${target}
   PUBLIC
-    include
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 target_link_libraries(${target}
   PUBLIC
-    CONAN_PKG::fable
-    CONAN_PKG::boost
-    CONAN_PKG::spdlog
+    Boost::headers
+    Boost::filesystem
+    Boost::iostreams
+    Boost::system
+    fable::fable
+    spdlog::spdlog
+  INTERFACE
+    pantor::inja
+    incbin::incbin
 )
 target_compile_definitions(${target}
   PRIVATE
@@ -61,6 +74,7 @@ target_compile_definitions(${target}
 # Testing -------------------------------------------------------------
 include(CTest)
 if(BUILD_TESTING)
+    find_package(GTest REQUIRED)
     include(GoogleTest)
 
     add_executable(test-cloe
@@ -74,15 +88,15 @@ if(BUILD_TESTING)
     )
     target_link_libraries(test-cloe
       PRIVATE
-        CONAN_PKG::gtest
-        CONAN_PKG::boost
+        GTest::gtest
+        GTest::gtest_main
+        Boost::boost
         ${target}
     )
     gtest_add_tests(TARGET test-cloe)
 endif()
 
 # Installation --------------------------------------------------------
-include(GNUInstallDirs)
 install(TARGETS ${target}
     LIBRARY
         DESTINATION ${CMAKE_INSTALL_LIBDIR}
