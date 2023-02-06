@@ -48,7 +48,13 @@ jobs:
         run: |
           conan profile new --detect default &&
           conan profile update settings.build_type=${{ matrix.build_type }} default &&
-          conan profile update settings.compiler.libcxx=libstdc++11 default
+          conan profile update settings.compiler.libcxx=libstdc++11 default &&
+          # NOTE: Boost 1.69 has a bug (fixed in 74fb0a26099bc51d717f5f154b37231ce7df3e98) that
+          # prevents GCC >= 11 from interoperation, so disable the server for this case.
+          # (The server feature depends on cloe-oak, which *currently* depends on Boost <= 1.69.)
+          if [ $(gcc -dumpversion) -ge 11 ]; then
+            conan profile update options.cloe-engine:server=False default;
+          fi
       - name: Build cloe w/ package
         run: |
           make -f Makefile.all export-vendor &&
