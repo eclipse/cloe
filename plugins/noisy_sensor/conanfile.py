@@ -12,11 +12,9 @@ class CloeComponentNoisySensor(ConanFile):
     license = "Apache-2.0"
     settings = "os", "compiler", "build_type", "arch"
     options = {
-        "test": [True, False],
         "pedantic": [True, False],
     }
     default_options = {
-        "test": True,
         "pedantic": True,
     }
     generators = "cmake"
@@ -41,15 +39,13 @@ class CloeComponentNoisySensor(ConanFile):
         self.requires(f"cloe-models/{self.version}@cloe/develop")
 
     def build_requirements(self):
-        if self.options.test:
-            self.build_requires("gtest/[~1.10]")
+        self.test_requires("gtest/[~1.10]")
 
     def _configure_cmake(self):
         if self._cmake:
             return self._cmake
         self._cmake = CMake(self)
         self._cmake.definitions["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
-        self._cmake.definitions["BuildTests"] = self.options.test
         self._cmake.definitions["TargetLintingExtended"] = self.options.pedantic
         self._cmake.configure()
         return self._cmake
@@ -57,14 +53,12 @@ class CloeComponentNoisySensor(ConanFile):
     def build(self):
         cmake = self._configure_cmake()
         cmake.build()
-        if self.options.test:
-            with tools.environment_append(RunEnvironment(self).vars):
-                cmake.test()
+        with tools.environment_append(RunEnvironment(self).vars):
+            cmake.test()
 
     def package(self):
         cmake = self._configure_cmake()
         cmake.install()
 
     def package_id(self):
-        del self.info.options.test
         del self.info.options.pedantic

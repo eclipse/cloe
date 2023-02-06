@@ -34,10 +34,8 @@ target_link_libraries(${target}
 )
 
 # Testing ------------------------------------------------------------
-option(BuildTests "Build tests?" ON)
-if(BuildTests)
-    message(STATUS "-> Enable testing")
-    enable_testing()
+include(CTest)
+if(BUILD_TESTING)
     include(GoogleTest)
 
     add_executable(test-oak

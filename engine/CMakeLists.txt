@@ -6,7 +6,6 @@ set(target cloe-engine)
 set(output cloe-engine)
 set(libstack cloe-stack)
 
-option(BuildTests "Build tests?" ON)
 option(WithServer "Enable integrated server component?" ON)
 
 # Conan / Editor -----------------------------------------------------
@@ -14,6 +13,7 @@ include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup(TARGETS)
 
 include(TargetLinting)
+include(CTest)
 
 # Compiler definitions
 string(TIMESTAMP CLOE_ENGINE_TIMESTAMP "%Y-%m-%d")
@@ -41,9 +41,7 @@ target_link_libraries(${libstack}
     dl
 )
 
-if(BuildTests)
-    message(STATUS "-> Enable testing")
-    enable_testing()
+if(BUILD_TESTING)
     include(GoogleTest)
 
     set(test-libstack test-${libstack})

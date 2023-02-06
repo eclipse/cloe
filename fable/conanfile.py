@@ -15,13 +15,11 @@ class Fable(ConanFile):
         "allow_comments": [True, False],
         "shared": [True, False],
         "fPIC": [True, False],
-        "test": [True, False],
     }
     default_options = {
         "allow_comments": True,
         "shared": False,
         "fPIC": True,
-        "test": True,
     }
     generators = "cmake"
     no_copy_source = True
@@ -48,9 +46,8 @@ class Fable(ConanFile):
             self.version = git.run("describe --dirty=-dirty")[1:]
 
     def build_requirements(self):
-        if self.options.test:
-            self.build_requires("gtest/[~=1.10]")
-            self.build_requires("cli11/[~=2.1.2]")
+        self.test_requires("gtest/[~=1.10]")
+        self.test_requires("cli11/[~2.1.2]")
 
     def _configure_cmake(self):
         if self._cmake:
@@ -59,16 +56,14 @@ class Fable(ConanFile):
         self._cmake.definitions["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
         self._cmake.definitions["FABLE_VERSION"] = self.version
         self._cmake.definitions["AllowComments"] = self.options.allow_comments
-        self._cmake.definitions["BuildTests"] = self.options.test
         self._cmake.configure()
         return self._cmake
 
     def build(self):
         cmake = self._configure_cmake()
         cmake.build()
-        if self.options.test:
-            with tools.environment_append(RunEnvironment(self).vars):
-                cmake.test()
+        with tools.environment_append(RunEnvironment(self).vars):
+            cmake.test()
 
     def package(self):
         cmake = self._configure_cmake()
@@ -76,7 +71,6 @@ class Fable(ConanFile):
 
     def package_id(self):
         self.info.requires["boost"].full_package_mode()
-        del self.info.options.test
         del self.info.options.pedantic
 
     def package_info(self):

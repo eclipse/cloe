@@ -45,10 +45,8 @@ cloe_add_plugin(
     PYTHON_DRIVER module.py
 )
 
-option(BuildTests "Build tests?" ON)
-if(BuildTests)
-    message(STATUS "-> Enable testing")
-    enable_testing()
+include(CTest)
+if(BUILD_TESTING)
     include(GoogleTest)
 
     add_executable(test-vtd-binding
