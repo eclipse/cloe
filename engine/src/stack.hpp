@@ -892,6 +892,10 @@ class StackIncompleteError : public Error {
 
 using ConfReader = std::function<Conf(const std::string&)>;
 
+/**
+ * Stack represents the entire configuration of the engine and the simulation
+ * to be run.
+ */
 class Stack : public Confable {
  private:  // Constants (1)
   std::vector<std::string> reserved_ids_;
@@ -912,6 +916,9 @@ class Stack : public Confable {
   std::vector<VehicleConf> vehicles;
   std::vector<TriggerConf> triggers;
   SimulationConf simulation;
+
+  std::vector<std::string> lua_path;
+  sol::state lua;
 
  private:  // Schemas (3) & Prototypes (3)
   EngineSchema engine_schema;
@@ -1097,6 +1104,7 @@ class Stack : public Confable {
   void to_json(Json& j) const override;
   void from_conf(const Conf& c) override { from_conf(c, 0); }
   void reset_schema() override;
+  void setup_lua();
 
   CONFABLE_SCHEMA(Stack) {
     // clang-format off

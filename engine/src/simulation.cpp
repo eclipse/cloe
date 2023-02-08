@@ -335,9 +335,9 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
   }
 
   { // 3. Initialize Lua
-    ctx.lua.open_libraries(sol::lib::base);
-    ctx.lua["cloe"] = ctx.lua.create_table();
-    auto mod = ctx.lua["cloe"].get_or_create<sol::table>();
+
+    // FIXME: Needs to be integrated
+    auto mod = ctx.config.lua["cloe"].get_or_create<sol::table>();
     mod["log_info"] = [&](std::string s) { this->logger()->info(s); };
     mod.set_function("step", &SimulationSync::step, &ctx.sync);
   }
@@ -436,7 +436,7 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
     r.register_action<actions::RealtimeFactorFactory>(&ctx.sync);
     r.register_action<actions::ResetStatisticsFactory>(&ctx.statistics);
     r.register_action<actions::CommandFactory>(ctx.commander.get());
-    r.register_action<actions::LuaFactory>(&ctx.lua);
+    r.register_action<actions::LuaFactory>(&ctx.config.lua);
 
     // From: cloe/trigger/example_actions.hpp
     auto tr = ctx.coordinator->trigger_registrar(cloe::Source::TRIGGER);

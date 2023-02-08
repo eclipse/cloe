@@ -28,6 +28,7 @@
 
 #include <boost/filesystem.hpp>  // for path
 #include <boost/optional.hpp>    // for optional<>
+#include <boost/algorithm/string/predicate.hpp> // for ends_with
 
 #include <cloe/utility/std_extensions.hpp>  // for split_string
 #include <cloe/utility/xdg.hpp>             // for merge_config
@@ -57,8 +58,22 @@ Conf read_conf(const StackOptions& opt, const std::string& filepath) {
   return fable::read_conf_with_interpolation(filepath, &env);
 }
 
+void merge_lua(const StackOptions& /*opt*/, Stack& s, const std::string& filepath) {
+  s.logger()->debug("Load script {}", filepath);
+  s.lua["cloe"]["api"]["SCRIPT_FILEPATH"] = filepath;
+  s.lua["cloe"]["api"]["SCRIPT_DIR"] = boost::filesystem::path(filepath).parent_path().string();
+  s.lua.safe_script_file(filepath);
+  s.lua["cloe"]["api"]["SCRIPT_FILEPATH"] = nullptr;
+  s.lua["cloe"]["api"]["SCRIPT_DIR"] = nullptr;
+}
+
 void merge_stack(const StackOptions& opt, Stack& s, const std::string& filepath) {
   auto merge = [&]() {
+    if (boost::algorithm::ends_with(filepath, ".lua")) {
+      merge_lua(opt, s, filepath);
+      return;
+    }
+
     Conf c = read_conf(opt, filepath);
 
     if (opt.no_hooks) {
@@ -148,6 +163,9 @@ Stack new_stack(const StackOptions& opt) {
 
   // Initialize configuration (scan and load plugins):
   s.initialize();
+
+  s.lua_path = opt.lua_paths;
+  s.setup_lua();
 
   return s;
 }

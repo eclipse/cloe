@@ -13,7 +13,7 @@ class CloeTest(ConanFile):
     @property
     def cloe_launch_env(self):
         return {
-            "CLOE_ENGINE_WITH_SERVER": "0",
+            "CLOE_ENGINE_WITH_SERVER": "1",
             "CLOE_LOG_LEVEL": "debug",
             "CLOE_STRICT_MODE": "1",
             "CLOE_WRITE_OUTPUT": "0",

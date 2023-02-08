@@ -30,7 +30,6 @@
 #include <vector>      // for vector<>
 
 #include <boost/optional.hpp>  // for optional<>
-#include <sol/sol.hpp>
 
 #include <cloe/controller.hpp>          // for Controller
 #include <cloe/core.hpp>                // for Duration
@@ -347,7 +346,6 @@ struct SimulationContext {
   bool report_progress{false};
 
   // State
-  sol::state lua;
   SimulationSync sync;
   SimulationProgress progress;
   SimulationStatistics statistics;

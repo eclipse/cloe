@@ -27,6 +27,7 @@
 #include <iostream>  // for cerr
 #include <string>    // for string
 
+#include <boost/dll.hpp>
 #include <CLI/CLI.hpp>
 
 #include "main_check.hpp"
@@ -150,6 +151,8 @@ int main(int argc, char** argv) {
 
   // Setup stack, applying strict/secure mode if necessary, and provide launch command.
   {
+    stack_options.lua_paths.push_back((boost::dll::program_location().parent_path().parent_path()/"lua").string());
+    stack_options.lua_paths.push_back((boost::dll::program_location().parent_path().parent_path()/"lib/cloe/lua").string());
     if (stack_options.secure_mode) {
       stack_options.strict_mode = true;
       stack_options.no_hooks = true;

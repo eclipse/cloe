@@ -13,6 +13,7 @@ find_package(Boost REQUIRED)
 find_package(CLI11 REQUIRED)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
+find_package(sol2 REQUIRED)
 
 include(TargetLinting)
 include(GNUInstallDirs)
@@ -24,19 +25,27 @@ set(PROJECT_GIT_REF "unknown")
 
 # Library ------------------------------------------------------------
 add_library(${libstack}
+    src/stack.hpp
     src/stack.cpp
+    src/plugin.hpp
     src/plugin.cpp
 )
 set_target_properties(${libstack} PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
+    LIBRARY_OUTPUT_DIRECTORY "lib"
 )
 target_include_directories(${libstack}
   PRIVATE
     src
 )
+target_compile_definitions(${libstack}
+  PUBLIC
+    SOL_ALL_SAFETIES_ON=1
+)
 target_link_libraries(${libstack}
   PUBLIC
+    sol2::sol2
     cloe::runtime
     fable::fable
     Boost::headers
@@ -69,27 +78,49 @@ endif()
 
 # Executable ---------------------------------------------------------
 add_executable(${target}
-    src/main.cpp
-    src/main_stack.cpp
     src/coordinator.cpp
+    src/coordinator.hpp
+    src/main.cpp
+    src/main_check.hpp
+    src/main_dump.hpp
+    src/main_run.hpp
+    src/main_stack.cpp
+    src/main_stack.hpp
+    src/main_usage.hpp
+    src/main_version.hpp
     src/plugins/nop_controller.cpp
+    src/plugins/nop_controller.hpp
     src/plugins/nop_simulator.cpp
+    src/plugins/nop_simulator.hpp
+    src/registrar.hpp
+    src/server.hpp
+    # These are added below and depend on CLOE_ENGINE_WITH_SERVER:
+    # src/server.cpp
+    # src/server_mock.cpp
     src/simulation.cpp
+    src/simulation.hpp
     src/simulation_context.cpp
+    src/simulation_context.hpp
     src/utility/command.cpp
+    src/utility/command.hpp
+    src/utility/defer.hpp
     src/utility/lua_action.cpp
+    src/utility/lua_action.hpp
+    src/utility/progress.hpp
+    src/utility/state_machine.hpp
+    src/utility/time_event.hpp
 )
 set_target_properties(${target} PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
     OUTPUT_NAME ${output}
+    RUNTIME_OUTPUT_DIRECTORY bin
 )
 target_compile_definitions(${target}
   PRIVATE
     CLOE_ENGINE_VERSION="${CLOE_ENGINE_VERSION}"
     CLOE_ENGINE_TIMESTAMP="${CLOE_ENGINE_TIMESTAMP}"
     PROJECT_SOURCE_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}\"
-    SOL_ALL_SAFETIES_ON=1
 )
 set_target_linting(${target})
 target_include_directories(${target}
