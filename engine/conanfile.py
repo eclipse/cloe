@@ -36,6 +36,7 @@ class CloeEngine(ConanFile):
     no_copy_source = True
     exports_sources = [
         "src/*",
+        "lua/*",
         "webui/*",
         "CMakeLists.txt",
     ]
@@ -115,6 +116,6 @@ class CloeEngine(ConanFile):
         if self.in_local_cache:
             bindir = os.path.join(self.package_folder, "bin")
         else:
-            bindir = os.path.join(self.build_folder, str(self.settings.build_type), "bin")
+            bindir = os.path.join(self.build_folder, "bin")
         self.output.info(f"Appending PATH environment variable: {bindir}")
-        self.env_info.PATH.append(bindir)
+        self.runenv_info.prepend_path("PATH", bindir)
