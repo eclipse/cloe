@@ -1,0 +1,165 @@
+{
+  "version": "4",
+  "defaults": {
+    "controllers": [
+      {
+        "binding": "virtue",
+        "args": {
+          "lane_sensor_components": [
+            "cloe::default_lane_sensor"
+          ]
+        }
+      }
+    ]
+  },
+  "controllers": [
+    {
+      "binding": "gndtruth_extractor",
+      "vehicle": "default",
+      "args": {
+        "output_type": "json.gz",
+        "output_file": "${CLOE_GNDTRUTH_OUTPUT-/tmp/cloe_data_gt.json.gz}",
+        "components": [
+          "cloe::default_lane_sensor",
+          "cloe::default_world_sensor",
+          "test::objects_fov_front_10m",
+          "test::objects_fov_front_2deg",
+          "test::objects_fov_front_offset_3m",
+          "test::objects_fov_rear"
+        ]
+      }
+    }
+  ],
+  "simulators": [
+    {
+      "binding": "vtd",
+      "args": {
+        "rdb_params": {
+          "retry_delay_s": 1.0
+        },
+        "scenario": "acc-test.xosc",
+        "setup": "Cloe.noGUInoIG",
+        "image_generator": false,
+        "vehicles": {
+          "Ego": {
+            "components": {
+              "cloe::default_lane_sensor": {
+                "from": "fov_front",
+                "type": "lane_sensor",
+                "override": true
+              },
+              "cloe::default_world_sensor": {
+                "from": "fov_front",
+                "type": "object_sensor",
+                "override": true
+              },
+              "test::objects_fov_front_10m": {
+                "from": "fov_front_10m",
+                "type": "object_sensor",
+                "override": true
+              },
+              "test::objects_fov_front_2deg": {
+                "from": "fov_front_2deg",
+                "type": "object_sensor",
+                "override": true
+              },
+              "test::objects_fov_front_offset_3m": {
+                "from": "fov_front_offset_3m",
+                "type": "object_sensor",
+                "override": true
+              },
+              "test::objects_fov_rear": {
+                "from": "fov_rear",
+                "type": "object_sensor",
+                "override": true
+              }
+            },
+            "sensors": {
+              "fov_front": {
+                "xml": "<Sensor name='Sensor_[[ sensor_id ]]_[[ sensor_name ]]' type='video'><Load lib='libModulePerfectSensor.so' path='' persistent='true'/><Frustum near='0.0' far='100.0' left='45.0' right='45.0' bottom='45.0' top='45.0'/><Origin type='sensor'/><Cull maxObjects='50' enable='true'/><Port name='RDBout' number='[[ sensor_port ]]' type='TCP' sendEgo='false'/><Player id=\"[[ player_id ]]\"/><Position dx='0.0' dy='0.0' dz='0.0' dhDeg='0.0' dpDeg='0.0' drDeg='0.0'/><Database resolveRepeatedObjects='true' continuousObjectTesselation='2.0'/><Filter objectType='pedestrian'/><Filter objectType='vehicle'/><Filter objectType='trafficSign'/><Filter objectType='obstacle'/><Filter objectType=\"roadMarks\" roadmarkPreviewDistance=\"100.0\" tesselate=\"true\" tesselateNoPoints=\"10\" tesselateFixedStep=\"true\"/><Debug enable='false' detection='false' road='false' position='true' dimensions='false' camera='false' CSV='false' packages='false' culling='true' contactPoints='false' trafficSigns='false'/></Sensor>"
+              },
+              "fov_front_10m": {
+                "xml": "<Sensor name='Sensor_[[ sensor_id ]]_[[ sensor_name ]]' type='video'><Load lib='libModulePerfectSensor.so' path='' persistent='true'/><Frustum near='0.0' far='10.0' left='45.0' right='45.0' bottom='45.0' top='45.0'/><Origin type='sensor'/><Cull maxObjects='50' enable='true'/><Port name='RDBout' number='[[ sensor_port ]]' type='TCP' sendEgo='false'/><Player id=\"[[ player_id ]]\"/><Position dx='0.0' dy='0.0' dz='0.0' dhDeg='0.0' dpDeg='0.0' drDeg='0.0'/><Database resolveRepeatedObjects='true' continuousObjectTesselation='2.0'/><Filter objectType='pedestrian'/><Filter objectType='vehicle'/><Filter objectType='trafficSign'/><Filter objectType='obstacle'/><Filter objectType=\"roadMarks\" roadmarkPreviewDistance=\"100.0\" tesselate=\"true\" tesselateNoPoints=\"10\" tesselateFixedStep=\"true\"/><Debug enable='false' detection='false' road='false' position='true' dimensions='false' camera='false' CSV='false' packages='false' culling='true' contactPoints='false' trafficSigns='false'/></Sensor>"
+              },
+              "fov_front_2deg": {
+                "xml": "<Sensor name='Sensor_[[ sensor_id ]]_[[ sensor_name ]]' type='video'><Load lib='libModulePerfectSensor.so' path='' persistent='true'/><Frustum near='0.0' far='100.0' left='1.0' right='1.0' bottom='1.0' top='1.0'/><Origin type='sensor'/><Cull maxObjects='50' enable='true'/><Port name='RDBout' number='[[ sensor_port ]]' type='TCP' sendEgo='false'/><Player id=\"[[ player_id ]]\"/><Position dx='0.0' dy='0.0' dz='0.0' dhDeg='0.0' dpDeg='0.0' drDeg='0.0'/><Database resolveRepeatedObjects='true' continuousObjectTesselation='2.0'/><Filter objectType='pedestrian'/><Filter objectType='vehicle'/><Filter objectType='trafficSign'/><Filter objectType='obstacle'/><Filter objectType=\"roadMarks\" roadmarkPreviewDistance=\"100.0\" tesselate=\"true\" tesselateNoPoints=\"10\" tesselateFixedStep=\"true\"/><Debug enable='false' detection='false' road='false' position='true' dimensions='false' camera='false' CSV='false' packages='false' culling='true' contactPoints='false' trafficSigns='false'/></Sensor>"
+              },
+              "fov_front_offset_3m": {
+                "xml": "<Sensor name='Sensor_[[ sensor_id ]]_[[ sensor_name ]]' type='video'><Load lib='libModulePerfectSensor.so' path='' persistent='true'/><Frustum near='0.0' far='100.0' left='45.0' right='45.0' bottom='45.0' top='45.0'/><Origin type='sensor'/><Cull maxObjects='50' enable='true'/><Port name='RDBout' number='[[ sensor_port ]]' type='TCP' sendEgo='false'/><Player id=\"[[ player_id ]]\"/><Position dx='3.0' dy='0.0' dz='0.0' dhDeg='0.0' dpDeg='0.0' drDeg='0.0'/><Database resolveRepeatedObjects='true' continuousObjectTesselation='2.0'/><Filter objectType='pedestrian'/><Filter objectType='vehicle'/><Filter objectType='trafficSign'/><Filter objectType='obstacle'/><Filter objectType=\"roadMarks\" roadmarkPreviewDistance=\"100.0\" tesselate=\"true\" tesselateNoPoints=\"10\" tesselateFixedStep=\"true\"/><Debug enable='false' detection='false' road='false' position='true' dimensions='false' camera='false' CSV='false' packages='false' culling='true' contactPoints='false' trafficSigns='false'/></Sensor>"
+              },
+              "fov_rear": {
+                "xml": "<Sensor name='Sensor_[[ sensor_id ]]_[[ sensor_name ]]' type='video'><Load lib='libModulePerfectSensor.so' path='' persistent='true'/><Frustum near='0.0' far='100.0' left='45.0' right='45.0' bottom='45.0' top='45.0'/><Origin type='sensor'/><Cull maxObjects='50' enable='true'/><Port name='RDBout' number='[[ sensor_port ]]' type='TCP' sendEgo='false'/><Player id=\"[[ player_id ]]\"/><Position dx='0.0' dy='0.0' dz='0.0' dhDeg='180.0' dpDeg='0.0' drDeg='0.0'/><Database resolveRepeatedObjects='true' continuousObjectTesselation='2.0'/><Filter objectType='pedestrian'/><Filter objectType='vehicle'/><Filter objectType='trafficSign'/><Filter objectType='obstacle'/><Filter objectType=\"roadMarks\" roadmarkPreviewDistance=\"100.0\" tesselate=\"true\" tesselateNoPoints=\"10\" tesselateFixedStep=\"true\"/><Debug enable='false' detection='false' road='false' position='true' dimensions='false' camera='false' CSV='false' packages='false' culling='true' contactPoints='false' trafficSigns='false'/></Sensor>"
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "vehicles": [
+    {
+      "name": "default",
+      "from": {
+        "simulator": "vtd",
+        "index": 0
+      },
+      "components": {
+        "cloe::speedometer": {
+          "binding": "speedometer",
+          "name": "default_speed",
+          "from": "cloe::gndtruth_ego_sensor"
+        },
+        "cloe::default_world_sensor": {
+          "binding": "noisy_object_sensor",
+          "name": "noisy_object_sensor",
+          "from": "cloe::default_world_sensor",
+          "args": {
+            "enable": false,
+            "noise": [
+              {
+                "target": "translation",
+                "distribution": {
+                  "binding": "normal",
+                  "mean": 0.0,
+                  "std_deviation": 0.3
+                }
+              }
+            ]
+          }
+        },
+        "cloe::default_lane_sensor": {
+          "binding": "noisy_lane_sensor",
+          "name": "noisy_lane_sensor",
+          "from": "cloe::default_lane_sensor",
+          "args": {
+            "enable": true,
+            "noise": [
+              {
+                "target": "dy_start",
+                "distribution": {
+                  "binding": "normal",
+                  "mean": 0.0,
+                  "std_deviation": 0.1
+                }
+              },
+              {
+                "target": "dx_end",
+                "distribution": {
+                  "binding": "normal",
+                  "mean": 0.0,
+                  "std_deviation": 5.0
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "logging": [
+    {
+      "name": "cloe/vtd/signs",
+      "level": "error"
+    }
+  ]
+}

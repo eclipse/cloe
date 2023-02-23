@@ -145,6 +145,10 @@ const std::map<int, cloe::LaneBoundary::Type> vtd_roadmark_type_map = {
     {RDB_ROADMARK_TYPE_GRASS, cloe::LaneBoundary::Type::Grass},
     {RDB_ROADMARK_TYPE_BOTDOT, cloe::LaneBoundary::Type::Unknown},
     {RDB_ROADMARK_TYPE_OTHER, cloe::LaneBoundary::Type::Unknown},
+    {RDB_ROADMARK_TYPE_SOLID_SOLID, cloe::LaneBoundary::Type::Unknown},
+    {RDB_ROADMARK_TYPE_BROKEN_SOLID, cloe::LaneBoundary::Type::Unknown},
+    {RDB_ROADMARK_TYPE_SOLID_BROKEN, cloe::LaneBoundary::Type::Unknown},
+    {RDB_ROADMARK_TYPE_LANE_CENTER, cloe::LaneBoundary::Type::Unknown},
 };
 
 /**

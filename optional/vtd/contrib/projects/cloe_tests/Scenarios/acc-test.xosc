@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Demonstrate and test ACC controller -->
+<!-- A white car is driving with constant speed, set by init event -->
+<!-- The white car approaches a red leading car -->
+<!-- The red leading car will perform some maneuvers to exercise the ACC function -->
+
+<OpenSCENARIO>
+   <FileHeader revMajor="1" revMinor="0" date="2020-02-21T10:00:00" description="straight 500m" author="Patrick Schuster, Bosch"/>
+   <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="Distros/Current/Config/Players/Vehicles" />
+        </VehicleCatalog>
+    </CatalogLocations>
+   <RoadNetwork>
+        <LogicFile filepath="Projects/Current/Databases/Germany.2018/Germany_2018.xodr"/>
+        <SceneGraphFile filepath="Projects/Current/Databases/Germany.2018/Germany_2018.opt.osgb"/>
+    </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+        <Vehicle name="Audi_A3_2009_black" vehicleCategory="car">
+                <ParameterDeclarations/>
+                <Performance maxSpeed="69.444" maxAcceleration="200" maxDeceleration="10.0"/>
+                <BoundingBox>
+                    <Center x="1.5" y="0.0" z="0.9"/>
+                    <Dimensions width="2.1" length="4.5" height="1.8"/>
+                </BoundingBox>
+                <Axles>
+                    <FrontAxle maxSteering="0.5" wheelDiameter="0.6" trackWidth="1.8" positionX="3.1" positionZ="0.3"/>
+                    <RearAxle maxSteering="0.0" wheelDiameter="0.6" trackWidth="1.8" positionX="0.0" positionZ="0.3"/>
+                </Axles>
+                <Properties>
+                    <Property name="control" value="external"/>
+                </Properties>
+            </Vehicle>
+      </ScenarioObject>
+      <ScenarioObject name="Opponent">
+            <Vehicle name="Audi_A3_2009_white" vehicleCategory="car">
+                <ParameterDeclarations/>
+                <Performance maxSpeed="69.444" maxAcceleration="200" maxDeceleration="10.0"/>
+                <BoundingBox>
+                    <Center x="1.5" y="0.0" z="0.9"/>
+                    <Dimensions width="2.1" length="4.5" height="1.8"/>
+                </BoundingBox>
+                <Axles>
+                    <FrontAxle maxSteering="0.5" wheelDiameter="0.6" trackWidth="1.8" positionX="3.1" positionZ="0.3"/>
+                    <RearAxle maxSteering="0.0" wheelDiameter="0.6" trackWidth="1.8" positionX="0.0" positionZ="0.3"/>
+                </Axles>
+                <Properties>
+                    <Property name="control" value="internal"/>
+                </Properties>
+            </Vehicle>
+        </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <!--<LanePosition roadId="1" laneId="-1" offset="0" s="10"/>-->
+                        <WorldPosition x="3641.578" y="-7263.547" z="0" h="0" p="0" r="0" />
+                    </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                   <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="30" />
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Opponent">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <!--<LanePosition roadId="1" laneId="-1" offset="0" s="10"/>-->
+                        <WorldPosition x="3661.578" y="-7263.547" z="0" h="0" p="0" r="0" />
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>             
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="Story1">
+            <Act name="Act1">
+                <ManeuverGroup name="Sequence2" maximumExecutionCount="1">
+                    <Actors selectTriggeringEntities="true">
+                        <EntityRef entityRef="Opponent" />
+                    </Actors>
+                    <Maneuver name="Maneuver1">
+                        <Event name="Event1" priority="overwrite">
+                            <Action name="Action1">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsShape="step" value="0" dynamicsDimension="time" />
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="30" />
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="StartCondition1" delay="0" conditionEdge="rising">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0" rule="greaterThan" />
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                    <Maneuver name="Maneuver2">
+                        <Event name="Event2" priority="overwrite">
+                            <Action name="Action2">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsShape="step" value="0" dynamicsDimension="time" />
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="40" />
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="StartCondition2" delay="0" conditionEdge="rising">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="5" rule="greaterThan" />
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                 <ManeuverGroup name="Sequence3" maximumExecutionCount="1">
+                    <Actors selectTriggeringEntities="true">
+                        <EntityRef entityRef="Opponent" />
+                    </Actors>
+                    <Maneuver name="Maneuver3">
+                        <Event name="Event3" priority="overwrite">
+                            <Action name="Action3">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsShape="step" value="0" dynamicsDimension="time" />
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="25" />
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="StartCondition3" delay="0" conditionEdge="rising">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="10" rule="greaterThan" />
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger>
+                </StartTrigger>
+                <StopTrigger>
+                </StopTrigger>
+            </Act>
+        </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="StopCondition1" delay="0" conditionEdge="rising">
+                    <ByValueCondition>
+                        <SimulationTimeCondition value="15" rule="greaterThan" />
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>
