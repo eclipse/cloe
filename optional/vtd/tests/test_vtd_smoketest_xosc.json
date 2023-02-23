@@ -1,0 +1,59 @@
+{
+  "version": "4",
+  "include": [
+    "bootstrap_vtd.json",
+    "controller_virtue.json",
+    "config_vtd_smoketest_xosc.json"
+  ],
+  "server": {
+    "listen": false,
+    "listen_port": 23456
+  },
+  "defaults": {
+    "simulators": [
+      {
+        "binding": "vtd",
+        "args": {
+          "image_generator": false,
+          "label_vehicle": "symbol"
+        }
+      }
+    ]
+  },
+  "triggers": [
+    {
+      "event": "virtue/failure",
+      "action": "fail"
+    },
+    {
+      "event": "start",
+      "action": "realtime_factor=-1"
+    },
+    {
+      "event": "start",
+      "action": "log=info: Running vtd/xosc_test smoketest."
+    },
+    {
+      "event": "time=1",
+      "action": {
+        "name": "insert",
+        "triggers": [
+          {
+            "label": "Vehicle default should not drop below 30 km/h in this test.",
+            "event": "default_speed/kmph=<106.2",
+            "action": "fail"
+          }
+        ]
+      }
+    },
+    {
+      "label": "Vehicle default should not exceed 30 km/h in this test.",
+      "event": "default_speed/kmph=>110.16",
+      "action": "fail"
+    },
+    {
+      "event": "time=15",
+      "action": "succeed"
+    }
+  ]
+}

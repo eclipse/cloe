@@ -627,19 +627,44 @@ class VtdBinding : public cloe::Simulator {
   }
 
   void apply_scp_scenario_response(boost::property_tree::ptree& xml) {
-    auto trafficcontrol = xml.get_child("Scenario").get_child("TrafficControl");
-    for (auto& it : trafficcontrol) {
-      if (it.first != "Player") continue;
-      auto p = it.second;
-      std::string control = p.get("Description.<xmlattr>.Control", "default");
-      if (control == "external") {
-        auto name = p.get("Description.<xmlattr>.Name", "unspecified");
-        agents_expected_.insert(name);
+    boost::optional<boost::property_tree::ptree&> scenario = xml.get_child_optional("Scenario");
+    if (scenario) {
+      auto trafficcontrol = xml.get_child("Scenario").get_child("TrafficControl");
+      for (auto& it : trafficcontrol) {
+        if (it.first != "Player") continue;
+        auto p = it.second;
+        std::string control = p.get("Description.<xmlattr>.Control", "default");
+        if (control == "external") {
+          auto name = p.get("Description.<xmlattr>.Name", "unspecified");
+          agents_expected_.insert(name);
 
-        // Ask VTD to create a vehicle dynamics instance for this vehicle
-        scp::DynamicsPluginConfig cfg;
-        cfg.name = name;
-        scp_client_->send(cfg);
+          // Ask VTD to create a vehicle dynamics instance for this vehicle
+          scp::DynamicsPluginConfig cfg;
+          cfg.name = name;
+          scp_client_->send(cfg);
+        }
+      }
+    } else {
+      auto& entities = xml.get_child("OpenSCENARIO").get_child("Entities");
+      for (auto& it : entities) {
+        if (it.first != "ScenarioObject") continue;
+        auto& scenarioobject = it.second;
+        boost::optional<boost::property_tree::ptree&> properties_avail = scenarioobject.get_child("Vehicle").get_child_optional("Properties");
+        if (!properties_avail) continue;
+        auto& properties = scenarioobject.get_child("Vehicle").get_child("Properties");
+        for (auto& property : properties) {
+          auto prop = property.second;
+          std::string control = prop.get("<xmlattr>.value", "default");
+          if (control == "external") {
+            auto name = scenarioobject.get("<xmlattr>.name", "unspecified");
+            agents_expected_.insert(name);
+
+            // Ask VTD to create a vehicle dynamics instance for this vehicle
+            scp::DynamicsPluginConfig cfg;
+            cfg.name = name;
+            scp_client_->send(cfg);
+          }
+        }
       }
     }
   }
