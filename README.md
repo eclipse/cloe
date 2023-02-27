@@ -55,7 +55,7 @@ point. In a pinch, the following steps should suffice:
 
  1. Install Conan with Python.
     ```
-    pip3 install --user --upgrade conan
+    pip3 install --user --upgrade "conan<2.0.0"
     ```
  2. Define a Conan profile, which defines the machine configuration.
     ```

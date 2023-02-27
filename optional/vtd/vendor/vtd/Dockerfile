@@ -138,7 +138,7 @@ RUN --mount=type=cache,id=bionic-cache,target=/var/cache/apt \
     rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install --upgrade pip && \
-    pip3 install conan
+    pip3 install "conan<2.0.0"
 
 RUN conan profile new --detect default && \
     conan profile update settings.compiler.libcxx=libstdc++11 default
