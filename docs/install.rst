@@ -30,7 +30,7 @@ point. In a pinch, the following steps should suffice:
 1. `Install Conan <https://docs.conan.io/en/latest/installation.html>`__,
    if you haven't done so already; for example with `pip`_ or `pipx`_::
 
-      pipx install conan
+      pipx install "conan<2.0.0"
 
    .. note::
       We expect you to keep your Conan installation up-to-date. Since Conan is

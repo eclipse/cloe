@@ -128,7 +128,7 @@ install-python-deps::
 	command -v ${PIP} >/dev/null 2>&1
 	${PIP} install ${PIP_INSTALL_ARGS} \
 		click \
-		conan \
+		"conan<2.0.0" \
 		libtmux \
 		toml \
 		pipx \
