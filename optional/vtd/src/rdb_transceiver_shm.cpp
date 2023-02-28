@@ -30,7 +30,11 @@
 
 #include <boost/interprocess/xsi_shared_memory.hpp>  // for xsi_shared_memory, ...
 
-#include <RDBHandler.hh>  // for RDB_SHM_BUFFER_INFO_t, RDB_MSG_t, ...
+#ifdef VTD_API_2_2_0
+  #include <RDBHandler.hh>  // for RDB_SHM_BUFFER_INFO_t, RDB_MSG_t, ...
+#else
+  #include <VtdToolkit/RDBHandler.hh>
+#endif  
 
 #include "vtd_logger.hpp"  // for rdb_logger
 

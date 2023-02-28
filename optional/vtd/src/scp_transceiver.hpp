@@ -36,9 +36,11 @@
 #pragma once
 
 #include <string>  // for string
-
-#include <scpIcd.h>
-
+#ifdef VTD_API_2_2_0
+  #include <scpIcd.h>
+#else
+  #include <VtdToolkit/scpIcd.h>
+#endif
 #include <cloe/core.hpp>                     // for Json, Error
 #include <cloe/utility/tcp_transceiver.hpp>  // for TcpTransceiver
 

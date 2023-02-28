@@ -27,7 +27,11 @@
 
 #include <Eigen/Geometry>  // for Vector3d, Quaterniond
 
-#include <viRDBIcd.h>  // for RDB_OBJECT_TYPE_*
+#ifdef VTD_API_2_2_0
+  #include <viRDBIcd.h>  // for RDB_OBJECT_TYPE_*
+#else
+  #include <VtdToolkit/viRDBIcd.h>
+#endif 
 
 #include <cloe/component/lane_boundary.hpp>  // for LaneBoundary
 #include <cloe/component/object.hpp>         // for Object

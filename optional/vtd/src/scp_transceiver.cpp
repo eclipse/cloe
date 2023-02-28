@@ -24,7 +24,11 @@
 #include <iostream>  // for snprintf
 #include <string>    // for string
 
-#include <scpIcd.h>  // for SCP_MAGIC_NO, SCP_VERSION, SCP_MSG_HDR_t, ...
+#ifdef VTD_API_2_2_0
+  #include <scpIcd.h> // for SCP_MAGIC_NO, SCP_VERSION, SCP_MSG_HDR_t, ...
+#else
+  #include <VtdToolkit/scpIcd.h>
+#endif  
 
 #include <cloe/utility/tcp_transceiver.hpp>  // for TcpReadError
 

@@ -30,6 +30,11 @@ target_link_libraries(vtd-object-lib
     Boost::boost
     open-simulation-interface::open-simulation-interface
 )
+message(STATUS "VTD_API_VERSION: ${VTD_API_VERSION}")
+if (${VTD_API_VERSION} MATCHES "2.2.0")
+    add_compile_definitions("VTD_API_2_2_0")
+endif()
+
 set_target_properties(vtd-object-lib PROPERTIES
     CXX_STANDARD 14
     CXX_STANDARD_REQUIRED ON
