@@ -1,0 +1,62 @@
+<IGconfig>
+
+  <Includes>
+    <Include file="IGLinks/Setup/../Common/Config/ImageGenerator/CommonIGConfig.xml" isOptional="0"/>
+  </Includes>
+
+  <SystemConfig>
+  </SystemConfig>
+
+  <Plugins>
+  </Plugins>
+
+  <Components>
+    <RDBInterface name="MyRDBInterface" printDebugInfo="0" ignoreShmFlags="0" />
+
+    <!--Mirror name="MyMirror" screenPosX="100" screenPosY="50" sizeX="200" sizeY="150" left="35" right="-20" bottom="7" top="7"  near="2" far="150" positionOffset="-0.4 0.5 1.0"  orientationOffset="200 0 0" /-->
+    <Sunblend name="MySunblend" sky="MySky" camera="MyCamera" textureFile="TxSunBlend.inta" color="1.0 1.0 0.85 1.0" apertureAngle="45"/>
+
+    <!-- <Windshield quadCount="1500" name="MyWindShield" maxAge="10.0" dropsPerSecond="10" dropSize="0.012 0.012" screenAspectRatio="0.75" > -->
+    <!--   <Wiper enabled="1" height="0.75" width="0.0375" wiperPivot="0.6 -0.05" speed="150" /> -->
+    <!-- </Windshield>  -->
+
+    <TAKATA name="TAKATA"
+	    timeScale="1.0"
+	    constantDeltaTime="0.016666"
+	    useConstantDeltaTime="1"
+	    ownshipSteeringDebug="0"
+	    movingModelSteeringDebug="0"
+	    movingModelManagementDebug="0"
+	    environmentDebug="0"
+	    carsInitDebug="0"
+	    ignoreEnvMsg="0"
+	    commandDebug="1"
+	    contactPointQueryDebug="0"
+	    headlightsAlwaysOn="0"
+	    lightDebug="0"
+	    pkgVecDebug="0"
+	    printSimTime="0"
+	    printFrameNo="0"
+	    rainEffectScale="800"
+	    enableRealTimeShadows="1"
+	    ignoreSetProjectionMessages="0"
+	    hudTextPos= "0.70 0.08" hudCharHeight= "30.0" hudTextShadowOffset= "0.002 -0.002" enableCross="0"
+	    taskControlServerAddress="127.0.0.1"
+	    taskControlServerPort="13112"
+	    connectTaskServerTCP="1"
+	    imageTransferServerAddress="127.0.0.1"
+	    imageTransferServerPort="13110"
+	    connectImageTransferTCP="1"
+	    enableShmReader="0"
+	    materialDB="HighContrastSky"
+	    convertLightmapThreadCPUAffinity="-1"
+	    trigger="TCP">
+
+      <MovingModelDefinitions>
+	<MovingModel type="12345" template="DummyPersonMo"  ShadowDBEntityID="" component="Car" userData="0.4" />
+      </MovingModelDefinitions>
+
+    </TAKATA>
+
+  </Components>
+</IGconfig>

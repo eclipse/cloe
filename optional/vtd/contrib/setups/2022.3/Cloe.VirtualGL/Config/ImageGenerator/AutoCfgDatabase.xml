@@ -1,0 +1,5 @@
+<IGconfig>
+   <Database>
+     <Entity attachToScene="1" ID="Terrain" filename="Data/Projects/Current/Databases/highway_4lanes_6km_straight.opt.osgb" />
+  </Database>
+ </IGconfig>
