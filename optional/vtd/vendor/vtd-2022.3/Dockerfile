@@ -6,22 +6,22 @@
 #
 # Build the image like this:
 #
-#   docker build -t cloe/vtd-conan-package:2.2.0 Dockerfile vires
+#   docker build -t cloe/vtd-conan-package:2022.3 Dockerfile vires
 #
 # And use it in another Dockerfile (with buildkit) like this:
 #
-#   RUN --mount=type=bind,target=/root/.conan/vtd/2.2.0/cloe-restricted/stable,from=cloe/vtd-conan-package:2.2.0
+#   RUN --mount=type=bind,target=/root/.conan/vtd/2022.3/cloe-restricted/stable,from=cloe/vtd-conan-package:2022.3
 #
 # Note, you can create this image even if you don't have anything in the vires
 # directory. It will result in an empty image, but it will allow the other
 # Docker builds to continue.
 #
-FROM ubuntu:18.04 AS build
+FROM ubuntu:20.04 AS build
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN --mount=type=cache,id=bionic-cache,target=/var/cache/apt \
-    --mount=type=cache,id=bionic-lib,target=/var/lib/apt \
+RUN --mount=type=cache,id=ubuntu-20.04-cache,target=/var/cache/apt \
+    --mount=type=cache,id=ubuntu-20.04-lib,target=/var/lib/apt \
     apt-get update && \
     apt-get install --no-install-recommends -y \
         build-essential \
@@ -145,7 +145,7 @@ RUN --mount=type=cache,id=bionic-cache,target=/var/cache/apt \
     rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install --upgrade pip && \
-    pip3 install conan
+    pip3 install "conan<2.0.0"
 
 RUN conan profile new --detect default && \
     conan profile update settings.compiler.libcxx=libstdc++11 default
@@ -163,7 +163,7 @@ RUN conan create conanfile.py ${PACKAGE_FQN} && \
     conan remove -b -s -f vtd && \
     find /root/.conan/data -type d -name "dl" -exec rm -rf {} +
 
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 COPY --from=build /root/.conan/data/vtd /vtd
 RUN ln -s /vtd/*/*/*/package/* /VTD
 COPY --from=build /vtd/entrypoint.sh ./

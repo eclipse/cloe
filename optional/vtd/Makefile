@@ -11,7 +11,7 @@ smoketest-req:
 
 SELECT_VENDOR := $(wildcard vendor/*)
 .PHONY: ${SELECT_VENDOR}
-vendor/osi-sensor-1.0.0-vtd2.2: vendor/vtd vendor/open-simulation-interface-3.0.1
+vendor/osi-sensor-1.0.0-vtd2.2: vendor/vtd-2.2.0 vendor/open-simulation-interface-3.0.1
 vendor/open-simulation-interface-3.0.1: vendor/protobuf-2.6.1
 vendor/open-simulation-interface-3.2.0: vendor/protobuf-2.6.1
 

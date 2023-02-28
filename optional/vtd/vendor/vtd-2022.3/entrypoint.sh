@@ -1,22 +1,25 @@
 #!/bin/bash
 set -e
-
-# This entrypoint script wraps VTD like it would be running in the foreground
-# VTD's startscript actually terminates itself and the main simulator proceeses
-# are regularly a bunch of orphans.
-# In order to compensate for this misbehavior, this script monitor's the state
+# This entrypoint script wraps VTD so it is as if it were running in the foreground.
+#
+# VTD's start script terminates itself, so that the main simulator processes
+# are regularly a bunch of orphans (zombies).
+# In order to compensate for this misbehavior, this script monitors the state
 # of the most important process, the simServer. Its termination leads to the
 # container's termination.
+#
 # All arguments are passed unchanged to the vtdStart.sh script.
-cd /vtd_setups && cp -r Cloe* /VTD/Data/Setups
-cd /VTD/Data/Setups && \
-    rm -f Current && \
-    ln -s Cloe.noGUInoIG Current
+# Make Cloe setups available to VTD, since it expects everything
+# in its own directory.
+cd /vtd_setups
+cp -r Cloe* /VTD/Data/Setups
+# Within a container, use the noGUInoIG setup, since
+# we are not running in a desktop environment.
+cd /VTD/Data/Setups
+ln -sf Cloe.noGUInoIG Current
+# Start VTD
+cd /VTD
+bin/vtdStart.sh $@
 
-cd /VTD && bin/vtdStart.sh $@
-
-# workaround for vtd start script starting vtd in the background
-while pidof simServer > /dev/null
-do
-  sleep 1
-done
+pid=$(pidof simServer)
+wait $pid

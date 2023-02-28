@@ -35,7 +35,7 @@ class CloeTest(ConanFile):
         self.requires(f"cloe-plugin-speedometer/{self.version}@cloe/develop")
         self.requires(f"cloe-plugin-virtue/{self.version}@cloe/develop")
         self.requires(f"cloe-plugin-vtd/{self.version}@cloe/develop")
-
+        self.requires("incbin/cci.20211107", override=True)
         # Runtime requirements for VTD.
         self.requires("osi-sensor/1.0.0-vtd2.2@cloe/stable")
         self.requires("vtd/2.2.0@cloe-restricted/stable")

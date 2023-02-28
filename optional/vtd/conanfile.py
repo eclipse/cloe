@@ -63,48 +63,53 @@ class CloeSimulatorVTD(ConanFile):
         self.test_requires("gtest/[~1.10]")
 
     def _compress_and_remove(self, dir):
+        # reset() will remove the packages metadata
+        def reset(tarinfo):
+            tarinfo.uid = tarinfo.gid = 0
+            tarinfo.uname = ""
+            tarinfo.gname = ""
+            tarinfo.mtime = 1
+            return tarinfo
+
         if not dir.is_dir():
             return
-        with tarfile.open(f"{dir.name}.tgz", "w:gz") as tar:
-            tar.add(dir.path, arcname=os.path.basename(dir.path))
+        # Compressing will add a timestamp to the package and therefore 
+        # leads to different package_hashes everytime we export with conan.
+        # To avoid that, changing from .tgz to .tar was necessary
+        with tarfile.open(f"{dir.name}.tar", "w:") as tar:
+            tar.add(dir.path, arcname=os.path.basename(dir.path), filter=reset)
             rmtree(dir.path)
 
     def _compress_setups(self):
         cwd = os.getcwd()
-        os.chdir(f"{self.export_sources_folder}/{self._setup_folder}")
-        with os.scandir() as scan:
-            for dir in scan:
-                self._compress_and_remove(dir)
+        setup_dir = f"{self.export_sources_folder}/{self._setup_folder}"
+        os.chdir(setup_dir)
+        versions = [name for name in os.listdir(setup_dir) if os.path.isdir(os.path.join(setup_dir, name))]
+        for version in versions:
+            os.chdir(os.path.join(setup_dir, version))
+            with os.scandir() as scan:
+                for dir in scan:
+                    self._compress_and_remove(dir)
         os.chdir(cwd)
 
     def export_sources(self):
         self.copy("*", dst=self._setup_folder, src=self._setup_folder, symlinks=True)
         self._compress_setups()
 
-    def _configure_cmake(self):
-        vtd_api_version = str(self.requires.get("vtd-api"))
-        if "vtd-api/2.2.0" in vtd_api_version:
-            self.vtd_api_version = "2.2.0"
-        else:
-            self.vtd_api_version = "2022.3"
-
-        if self._cmake:
-            return self._cmake
-        self._cmake = CMake(self)
-        self._cmake.definitions["VTD_API_VERSION"] = self.vtd_api_version
-        self._cmake.definitions["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
-        self._cmake.definitions["BuildTests"] = self.options.test
-        self._cmake.definitions["TargetLintingExtended"] = self.options.pedantic
-        self._cmake.configure()
-        return self._cmake
-
     def configure(self):
         self.options["open-simulation-interface"].shared = False
         self.options["open-simulation-interface"].fPIC = True
 
     def generate(self):
+        vtd_api_version = str(self.requires.get("vtd-api"))
+        if "vtd-api/2.2.0" in vtd_api_version:
+            self.vtd_api_version = "2.2.0"
+        else:
+            self.vtd_api_version = "2022.3"
         tc = cmake.CMakeToolchain(self)
         tc.cache_variables["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
+        tc.preprocessor_definitions["VTD_API_VERSION"] = self.vtd_api_version
+        tc.cache_variables["VTD_API_VERSION"] = self.vtd_api_version
         tc.cache_variables["CLOE_PROJECT_VERSION"] = self.version
         tc.cache_variables["TargetLintingExtended"] = self.options.pedantic
         tc.generate()
@@ -120,9 +125,9 @@ class CloeSimulatorVTD(ConanFile):
         cm.install()
         self.copy("vtd-launch", dst="bin", src=f"{self.source_folder}/bin")
         self.copy(
-            "*.tgz",
+            "*.tar",
             dst=self._setup_folder,
-            src=f"{self.source_folder}/{self._setup_folder}",
+            src=f"{self.source_folder}/{self._setup_folder}/{self.vtd_api_version}"
         )
 
     def package_id(self):

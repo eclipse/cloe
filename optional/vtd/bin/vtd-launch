@@ -254,9 +254,12 @@ def start(
         shutil.copytree(vtd_setup, dst, symlinks=True)
 
     elif vtd_setup_cloe is not None:
-        vtd_setup_cloe = Path(os.getenv("VTD_SETUP_DIR")) / f"{vtd_setup_cloe}.tgz"
+        # Compressing will add a timestamp to the package and therefore 
+        # leads to different package_hashes everytime we export with conan.
+        # To avoid that, changing from .tgz to .tar was necessary
+        vtd_setup_cloe = Path(os.getenv("VTD_SETUP_DIR")) / f"{vtd_setup_cloe}.tar"
         logging.info(f"Use setup: {vtd_setup_cloe}")
-        with tarfile.open(vtd_setup_cloe, "r:gz") as tar:
+        with tarfile.open(vtd_setup_cloe, "r:tar") as tar:
             dst = opt.runtime_dir / "Data" / "Setups" / "Current"
             if dst.exists():
                 os.remove(dst)
