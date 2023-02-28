@@ -1,0 +1,12 @@
+<IGconfig>
+   <SystemConfig>
+     <Graphics smallFeatureCullPixelSize="3.9"  lodscale="0.9" gamma="1 1 1"  enableCursor="0" enableDatabasePagerThread="0"  lodAwareDrawablesOptimizationEnabled="0"   drawThreadCPUAffinity="1" appCullThreadCPUAffinity="0" enableTransparencyAntialiasing="1" enableMultisampling="1" schedulerStabilization="0" configurationProfile="HIGH_CONTRAST" isLocalLightingSupportEnabled="1">
+       <RenderSurface name="mainRS" x="0" y="600" width="960" height="540" depthBits="24" stencilBits="1" sampleBuffers="0" samples="0" borderVisible="1" overrideRedirect="0" screenNum="-1"/>
+       <Camera name="cam1" renderSurface="mainRS" viewPortX="0" viewPortY="0" viewPortWidth="960" viewPortHeight="540">
+         <SymmetricPerspectiveAngles  fovX="60.00" fovY="35.983" near="1" far="1500" offsetHPR="0 0 0" offsetXYZ="0 0.0 0"/>
+       </Camera>
+     </Graphics>
+   </SystemConfig>
+ </IGconfig>
+ 
+

@@ -1,0 +1,6 @@
+<IGconfig>
+   <Database>
+     <Entity attachToScene="1" ID="Terrain" filename="Data/Projects/Current/Databases/Germany.2018/Germany_2018.opt.osgb" />
+    <OcclusionFile file="Data/Projects/Current/Databases/Germany.2018/Germany_2018.occl" />
+  </Database>
+ </IGconfig>

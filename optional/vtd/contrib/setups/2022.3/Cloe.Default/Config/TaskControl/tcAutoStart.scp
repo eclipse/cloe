@@ -1,0 +1,16 @@
+#
+# PURPOSE:
+#   this script is to be invoked by TC automatically upon start;
+#   it will be run in a background process, i.e. TC will continue working
+#   after having kicked-off the script and will not wait for its termination
+#
+   0 "<SimCtrl> <Stop/> <LoadScenario filename="TrafficDemo.xml" /> <Init mode="operation"/> </SimCtrl>"
+
+wait "<SimCtrl> <InitDone place="checkInitConfirmation"/> </SimCtrl>"
+
+  +1 "<SimCtrl> <Start/> </SimCtrl>"
+ +2s "<Symbol name="expl01" > <Text data="Auto-start script has been running for 2s now" colorRGB="0xffff00" size="50.0" /> <PosScreen x="0.01" y="0.05" /></Symbol>"
+ +2s "<Symbol name="expl01" > <Text data="Auto-start script has been running for 4s now" colorRGB="0xffff00" size="50.0" /> <PosScreen x="0.01" y="0.05" /></Symbol>"
+ +2s "<Symbol name="expl01" > <Text data="Auto-start script has been running for 6s now" colorRGB="0xffff00" size="50.0" /> <PosScreen x="0.01" y="0.05" /></Symbol>"
+ +2s "<Symbol name="expl01" > <Text data="Auto-start script has been running for 8s now" colorRGB="0xffff00" size="50.0" /> <PosScreen x="0.01" y="0.05" /></Symbol>"
+ +2s "<Symbol name="expl01" duration="1.0" > <Text data="Auto-start script is terminating" colorRGB="0xff0000" size="50.0" /> <PosScreen x="0.01" y="0.05" /></Symbol>"
