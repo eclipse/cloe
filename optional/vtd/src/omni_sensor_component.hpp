@@ -27,7 +27,11 @@
 #include <memory>  // for shared_ptr<>, unique_ptr<>
 #include <string>  // for string, to_string
 
-#include <viRDBIcd.h>  // for RDB_OBJECT_STATE_t, ...
+#ifdef VTD_API_2_2_0
+  #include <viRDBIcd.h>  // for RDB_OBJECT_STATE_t, ...
+#else
+  #include <VtdToolkit/viRDBIcd.h>
+#endif  
 
 #include "rdb_codec.hpp"        // for RdbCodec, RdbTransceiver
 #include "vtd_logger.hpp"       // for vtd_logger
