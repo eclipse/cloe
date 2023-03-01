@@ -744,6 +744,9 @@ StateId SimulationMachine::Start::impl(SimulationContext& ctx) {
       fable::pretty_print(e, s);
       logger()->error("> Message:\n    {}", s.str());
       return ABORT;
+    } catch (cloe::TriggerError& e) {
+      logger()->error("Error inserting trigger ({}): {}", e.what(), c.to_json().dump());
+      return ABORT;
     }
   }
 
