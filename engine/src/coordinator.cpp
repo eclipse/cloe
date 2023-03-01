@@ -261,8 +261,20 @@ ActionPtr Coordinator::make_action(const Conf& c) const { return make_some<Actio
 EventPtr Coordinator::make_event(const Conf& c) const { return make_some<Event>(c, events_); }
 
 TriggerPtr Coordinator::make_trigger(Source s, const Conf& c) const {
-  auto ep = make_event(c.at("event"));
-  auto ap = make_action(c.at("action"));
+  EventPtr ep;
+  ActionPtr ap;
+  bool opt = c.get_or("optional", false);
+  try {
+    ep = make_event(c.at("event"));
+    ap = make_action(c.at("action"));
+  } catch (TriggerError& e) {
+    if (opt) {
+      logger()->warn("Ignoring optional trigger ({}): {}", e.what(), c->dump());
+      return nullptr;
+    } else {
+      throw;
+    }
+  }
   auto label = c.get_or<std::string>("label", "");
   auto t = std::make_unique<Trigger>(label, s, std::move(ep), std::move(ap));
   t->set_sticky(c.get_or("sticky", false));
@@ -271,6 +283,10 @@ TriggerPtr Coordinator::make_trigger(Source s, const Conf& c) const {
 }
 
 void Coordinator::queue_trigger(TriggerPtr&& t) {
+  if (t == nullptr) {
+    // This only really happens if a trigger is an optional trigger.
+    return;
+  }
   std::unique_lock<std::mutex> guard(input_mutex_);
   input_queue_.emplace_back(std::move(t));
 }

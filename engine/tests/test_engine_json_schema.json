@@ -1155,6 +1155,10 @@
               }
             ]
           },
+          "optional": {
+            "description": "whether errors creating event or action should be ignored",
+            "type": "boolean"
+          },
           "since": {
             "description": "time since which trigger was in queue"
           },
