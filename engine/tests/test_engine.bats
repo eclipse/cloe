@@ -51,6 +51,21 @@ check_engine_with_server() {
     test $status -eq $CLOE_EXIT_UNKNOWN
 }
 
+@test "$(testname "Expect run failure" "test_engine_invalid_trigger.json" "0cf8c9e0-5538-4969-a00e-4891d7d8e647")" {
+    # Currently, cloe-engine cannot tell before starting a simulation
+    # whether the triggers exist or not.
+    cloe-engine check test_engine_invalid_trigger.json
+
+    run cloe-engine run test_engine_invalid_trigger.json
+    assert_check_failure $status $output
+    test $status -eq $CLOE_EXIT_ABORTED
+}
+
+@test "$(testname 'Expect run success' 'test_engine_optional_trigger.json' 'c630a68c-8b1e-436a-8acf-b282b1e1830c')" {
+    cloe-engine check test_engine_optional_trigger.json
+    cloe-engine run test_engine_optional_trigger.json
+}
+
 @test "$(testname "Expect check success" "test_engine_curl_succeed.json" "5eff0c85-77f1-4792-9987-e46a36617d99")" {
     cloe-engine check test_engine_curl_succeed.json
 }

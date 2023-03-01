@@ -786,6 +786,7 @@ struct TriggerConf : public PersistentConfable {
   Conf action{};
   Conf event{};
   bool sticky{false};
+  bool optional{false};
 
  public:  // Confable Overrides
   CONFABLE_SCHEMA(TriggerConf) {
@@ -803,6 +804,7 @@ struct TriggerConf : public PersistentConfable {
         {"event", make_schema(&event, EANDA_SCHEMA, "event").require()},
         {"action", make_schema(&action, EANDA_SCHEMA, "action").require()},
         {"sticky", make_schema(&sticky, "whether trigger should be sticky")},
+        {"optional", make_schema(&optional, "whether errors creating event or action should be ignored")},
         {"at", Ignore("time at which trigger was executed", JsonType::string)},
         {"since", Ignore("time since which trigger was in queue", JsonType::string)},
     };

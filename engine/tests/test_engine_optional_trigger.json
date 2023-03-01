@@ -1,0 +1,10 @@
+{
+  "version": "4",
+  "include": [
+    "config_nop_smoketest.json"
+  ],
+  "triggers": [
+    { "event": "nonexistent", "action": "log=info: Hello nonexistent event.", "optional": true },
+    { "event": "start", "action": "nonexistent", "optional": true }
+  ]
+}
