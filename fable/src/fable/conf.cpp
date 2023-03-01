@@ -48,8 +48,7 @@ Conf::Conf(const std::string& file) : file_(file) {
 
 bool Conf::has(const JsonPointer& key) const {
   try {
-    data_.at(key);
-    return true;
+    return data_.contains(key);
   } catch (nlohmann::detail::exception&) {
     // Exception is probably one of json::out_of_range or json::parse_error.
     return false;
