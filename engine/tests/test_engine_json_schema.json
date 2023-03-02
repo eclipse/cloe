@@ -1121,6 +1121,10 @@
           "at": {
             "description": "time at which trigger was executed"
           },
+          "conceal": {
+            "description": "whether trigger should be concealed in history",
+            "type": "boolean"
+          },
           "event": {
             "anyOf": [
               {

@@ -92,6 +92,7 @@
         ],
         "name": "bundle"
       },
+      "conceal": false,
       "event": "start",
       "optional": false,
       "source": "filesystem",
@@ -99,6 +100,7 @@
     },
     {
       "action": "basic/hmi=enable",
+      "conceal": false,
       "event": "next=1",
       "optional": false,
       "source": "filesystem",
@@ -106,6 +108,7 @@
     },
     {
       "action": "basic/hmi=resume",
+      "conceal": false,
       "event": "time=5",
       "optional": false,
       "source": "filesystem",
@@ -113,6 +116,7 @@
     },
     {
       "action": "basic/hmi=!resume",
+      "conceal": false,
       "event": "time=5.5",
       "optional": false,
       "source": "filesystem",
@@ -132,6 +136,7 @@
           }
         ]
       },
+      "conceal": false,
       "event": "time=6",
       "label": "Push and release basic/hmi=plus",
       "optional": false,
@@ -140,6 +145,7 @@
     },
     {
       "action": "fail",
+      "conceal": false,
       "event": "virtue/failure",
       "optional": false,
       "source": "filesystem",
@@ -147,6 +153,7 @@
     },
     {
       "action": "fail",
+      "conceal": false,
       "event": "default_speed/kmph=>0.0",
       "label": "Vehicle default should never move with the nop binding.",
       "optional": false,
@@ -155,6 +162,7 @@
     },
     {
       "action": "log=info: Running nop/basic smoketest.",
+      "conceal": false,
       "event": "start",
       "optional": false,
       "source": "filesystem",
@@ -162,6 +170,7 @@
     },
     {
       "action": "realtime_factor=-1",
+      "conceal": false,
       "event": "start",
       "optional": false,
       "source": "filesystem",
@@ -169,6 +178,7 @@
     },
     {
       "action": "succeed",
+      "conceal": false,
       "event": "time=60",
       "optional": false,
       "source": "filesystem",
