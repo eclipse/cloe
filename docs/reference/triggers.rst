@@ -19,6 +19,7 @@ a trigger action (and optionally, a label)::
      "event": { "name": "start" },
      "action": { "name": "stop" },
      "source": "filesystem",
+     "optional": false,
      "conceal": false,
      "sticky": false,
    }
@@ -40,6 +41,73 @@ field::
 .. note::
    All these names and fields are case-sensitive. In general, all names and
    fields should be in ``lower_snake_case``.
+
+The following fields are available:
+
+``label`` (optional)
+    A freeform description about what this trigger is about.
+    This is basically a comment. It's not required.
+
+``event`` (required)
+    Event configuration, as described in this document and
+    :doc:`available events <events>`.
+
+``action`` (required)
+    Action configuration, as described in this document and
+    :doc:`available actions <actions>`.
+
+``optional`` (optional)
+    Do not abort the simulation if the event or action does not exist.
+    This can be helpful if you want to reusue a trigger list with
+    different configurations.
+
+``sticky`` (optional)
+    Do not remove the trigger from the event queue after it has run.
+
+``conceal`` (optional)
+    Hide trigger in history, if the trigger can not affect the outcome
+    of the simulation. This is determined through the action.
+    For example, in a software simulation, the realtime factor has no
+    effect on the simulation, and can be modified from the web UI with
+    a slider. These inserted triggers have ``conceal`` set so they are
+    not exported in the trigger history.
+
+``source`` (descriptive)
+    This field is set by Cloe and can be seen in the trigger history file.
+    It specifies where the trigger originated from. The following values
+    are possible:
+
+    ``filesystem``
+        Triggers that originate from the filesystem, such as stack files.
+
+    ``network``
+        Triggers that originate from the network API, such as JSON data.
+
+    ``model``
+        Triggers that originate from models, such as a simulator binding.
+
+    ``trigger``
+        Triggers that originate from triggers themselves, such as the
+        ``insert`` action.
+
+    ``instance``
+        Triggers that are "reinserted" because they are sticky.
+
+    It is useful when re-using a trigger history to filter out certain
+    triggers. For example, triggers that will anyway be inserted by
+    other parts of the simulation should not be re-inserted from the
+    file.
+
+``at`` (descriptive)
+    This field is set by Cloe and can be seen in the trigger history file.
+    It specifies the time at which the trigger was executed.
+
+``since`` (descriptive)
+    This field is set by Cloe and can be seen in the trigger history file.
+    It specifies the time from which the trigger was inserted into the queue.
+    If 0, then it was inserted at simulation start. This is especially relevant
+    for triggers that used the ``next`` event.
+
 
 Inline Format
 -------------
