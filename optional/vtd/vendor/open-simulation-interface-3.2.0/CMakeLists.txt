@@ -58,7 +58,8 @@ target_include_directories(${PROJECT_NAME}
 )
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
-        protobuf::protobuf
+        # todo:  migrate to conan 2.0
+        CONAN_PKG::protobuf
 )
 
 include(GNUInstallDirs)
