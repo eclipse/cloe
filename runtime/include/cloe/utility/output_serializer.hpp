@@ -87,7 +87,10 @@ class BasicFileOutputStream : public OutputStream {
   using OutputStream::OutputStream;
   virtual ~BasicFileOutputStream() = default;
   bool open_stream() final { return false; }
+
+  [[nodiscard]]
   virtual bool open_file(const std::string& filename, const std::string& default_filename);
+
   void write(const char* s, std::streamsize count) override { ofs_.write(s, count); }
   void close_stream() override;
 
@@ -109,7 +112,10 @@ class FilteringOutputStream : public BasicFileOutputStream {
   explicit FilteringOutputStream(Logger logger)
       : BasicFileOutputStream(logger), filter_(), out_(&filter_) {}
   virtual ~FilteringOutputStream() = default;
+
+  [[nodiscard]]
   bool open_file(const std::string& filename, const std::string& default_filename) override;
+
   void write(const char* s, std::streamsize count) override { out_.write(s, count); }
   void close_stream() override;
 
@@ -175,9 +181,12 @@ class FileSerializer {
       , serializer_((void (OutputStream::*)(const char*, std::streamsize)) & TOutputStream::write,
                     &outputstream_) {}
   virtual ~FileSerializer() = default;
-  virtual void open_file(const std::string& filename, const std::string& default_filename) {
-    outputstream_.open_file(filename, default_filename);
+
+  [[nodiscard]]
+  virtual bool open_file(const std::string& filename, const std::string& default_filename) {
+    return outputstream_.open_file(filename, default_filename);
   }
+
   virtual void serialize(TSerializerArgs... args) { serializer_.serialize(args...); }
   virtual void close_file() { outputstream_.close_stream(); }
 
@@ -194,10 +203,16 @@ class SequentialFileSerializer
 
  public:
   using base::base;
-  void open_file(const std::string& filename, const std::string& default_filename) override {
-    base::open_file(filename, default_filename);
-    on_file_opened();
+
+  [[nodiscard]]
+  bool open_file(const std::string& filename, const std::string& default_filename) override {
+    bool ok = base::open_file(filename, default_filename);
+    if (ok) {
+      on_file_opened();
+    }
+    return ok;
   }
+
   void close_file() override {
     on_file_closing();
     base::close_file();

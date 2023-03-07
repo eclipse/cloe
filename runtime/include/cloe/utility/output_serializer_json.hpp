@@ -84,7 +84,10 @@ class SimpleJsonSerializer : public AbstractJsonSerializer<const Json&, bool> {
 class JsonFileSerializer {
  public:
   virtual ~JsonFileSerializer() = default;
-  virtual void open_file(const std::string& filename) = 0;
+
+  [[nodiscard]]
+  virtual bool open_file(const std::string& filename) = 0;
+
   virtual void serialize(const Json& j) = 0;
   virtual void close_file() = 0;
 
@@ -105,11 +108,14 @@ class JsonFileSerializerImpl
   JsonFileSerializerImpl(Logger logger) : file_base(logger), JsonFileSerializer() {}
   virtual ~JsonFileSerializerImpl() = default;
   using file_base::open_file;
-  void open_file(const std::string& filename) override {
+
+  [[nodiscard]]
+  bool open_file(const std::string& filename) override {
     std::string default_name = this->outputstream_.make_default_filename(
         this->serializer_.make_default_filename(default_filename));
-    file_base::open_file(filename, default_name);
+    return file_base::open_file(filename, default_name);
   }
+
   using file_base::serialize;
   void serialize(const Json& j) override {
     file_base::serialize(j, prepend_delimiter);
