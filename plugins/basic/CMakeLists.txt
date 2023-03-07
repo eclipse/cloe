@@ -27,7 +27,7 @@ if(BUILD_TESTING)
         src/hmi_contact_test.cpp
     )
     set_target_properties(test-basic-controller PROPERTIES
-        CXX_STANDARD 14
+        CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
     )
     target_link_libraries(test-basic-controller
