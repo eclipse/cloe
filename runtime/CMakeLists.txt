@@ -18,6 +18,7 @@ if(NOT TARGET pantor::inja)
 endif()
 find_package(incbin REQUIRED)
 
+file(GLOB ${target}_PUBLIC_HEADERS "include/**/*.hpp")
 add_library(${target} SHARED
     # find src -type f -name "*.cpp" \! -name "*_test.cpp"
     src/cloe/core/error.cpp
@@ -39,6 +40,9 @@ add_library(${target} SHARED
     src/cloe/utility/std_extensions.cpp
     src/cloe/utility/uid_tracker.cpp
     src/cloe/utility/xdg.cpp
+
+    # For IDE integration
+    ${${target}_PUBLIC_HEADERS}
 )
 add_library(${alias} ALIAS ${target})
 set_target_properties(${target} PROPERTIES
