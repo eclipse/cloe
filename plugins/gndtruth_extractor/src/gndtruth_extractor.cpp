@@ -80,7 +80,7 @@ class GndTruthMsgPackSerializer
 class GndTruthSerializer {
  public:
   virtual ~GndTruthSerializer() = 0;
-  virtual void open_file(const std::string& filename) = 0;
+  virtual bool open_file(const std::string& filename) = 0;
   virtual void serialize(const Sync& sync, const GndTruth& gt) = 0;
   virtual void close_file() = 0;
 
@@ -103,10 +103,12 @@ class GndTruthSerializerImpl
   GndTruthSerializerImpl(Logger logger) : base1(logger), GndTruthSerializer() {}
   virtual ~GndTruthSerializerImpl() override;
   using base1::open_file;
-  virtual void open_file(const std::string& filename) override {
+
+  [[nodiscard]]
+  virtual bool open_file(const std::string& filename) override {
     std::string default_name = this->outputstream_.make_default_filename(
         this->serializer_.make_default_filename(default_filename));
-    base1::open_file(filename, default_name);
+    return base1::open_file(filename, default_name);
   }
   virtual void serialize(const Sync& sync, const GndTruth& gt) override {
     base1::serialize(sync, gt);
@@ -219,7 +221,10 @@ class GndTruthExtractor : public Controller {
  private:
   void open_file() {
     if (serializer_) {
-      serializer_->open_file(config_.output_file);
+      bool ok = serializer_->open_file(config_.output_file);
+      if (!ok) {
+        throw cloe::ModelAbort("cannot open file: {}", config_.output_file);
+      }
     }
   }
   void close_file() {
