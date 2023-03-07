@@ -36,7 +36,7 @@ add_library(${target}
 )
 add_library(${namespace}::${target} ALIAS ${target})
 set_target_properties(${target} PROPERTIES
-    CXX_STANDARD 14
+    CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
     VERSION ${FABLE_VERSION}
 )
@@ -82,7 +82,7 @@ if(BUILD_TESTING)
         src/fable/schema_test.cpp
     )
     set_target_properties(test-fable PROPERTIES
-        CXX_STANDARD 14
+        CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
     )
     target_link_libraries(test-fable

@@ -46,7 +46,7 @@ add_library(${target} SHARED
 )
 add_library(${alias} ALIAS ${target})
 set_target_properties(${target} PROPERTIES
-    CXX_STANDARD 14
+    CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
     VERSION ${CLOE_PROJECT_VERSION}
 )
@@ -87,7 +87,7 @@ if(BUILD_TESTING)
         src/cloe/utility/uid_tracker_test.cpp
     )
     set_target_properties(test-cloe PROPERTIES
-        CXX_STANDARD 14
+        CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
     )
     target_link_libraries(test-cloe

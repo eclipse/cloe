@@ -27,7 +27,7 @@ add_library(${target}
 )
 add_library(${alias} ALIAS ${target})
 set_target_properties(${target} PROPERTIES
-    CXX_STANDARD 14
+    CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
     VERSION ${CLOE_PROJECT_VERSION}
 )
@@ -58,7 +58,7 @@ if(BUILD_TESTING)
         src/cloe/utility/actuation_level_test.cpp
     )
     set_target_properties(test-models PROPERTIES
-        CXX_STANDARD 14
+        CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
     )
     target_link_libraries(test-models

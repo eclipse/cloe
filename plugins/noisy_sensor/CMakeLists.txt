@@ -32,7 +32,7 @@ if(BUILD_TESTING)
         src/noisy_sensor_test.cpp
     )
     set_target_properties(test-noisy-sensor PROPERTIES
-        CXX_STANDARD 14
+        CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
     )
     target_link_libraries(test-noisy-sensor

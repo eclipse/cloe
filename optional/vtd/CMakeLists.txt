@@ -36,7 +36,7 @@ if (${VTD_API_VERSION} MATCHES "2.2.0")
 endif()
 
 set_target_properties(vtd-object-lib PROPERTIES
-    CXX_STANDARD 14
+    CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
     POSITION_INDEPENDENT_CODE ON
 )
@@ -65,7 +65,7 @@ if(BUILD_TESTING)
         src/vtd_data_conversion_test.cpp
     )
     set_target_properties(test-vtd-binding PROPERTIES
-        CXX_STANDARD 14
+        CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
     )
     target_link_libraries(test-vtd-binding
