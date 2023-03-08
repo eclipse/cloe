@@ -62,9 +62,9 @@ class Cloe(ConanFile):
             cloe_requires("cloe-engine")
 
         # Overrides:
-        self.requires("fmt/[~=8.1.1]", override=True)
-        self.requires("inja/[~=3.3.0]", override=True)
-        self.requires("nlohmann_json/[~=3.10.5]", override=True)
+        self.requires("fmt/9.1.0", override=True)
+        self.requires("inja/3.4.0", override=True)
+        self.requires("nlohmann_json/3.11.2", override=True)
         self.requires("incbin/cci.20211107", override=True),
         self.requires(f"boost/{boost_version}", override=True)
 

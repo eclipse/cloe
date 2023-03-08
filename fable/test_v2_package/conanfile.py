@@ -34,8 +34,8 @@ class FableTestConan(ConanFile):
             self.requires(self.tested_reference_str)
         else:
             self.requires(f"fable/{self.version}@cloe/develop")
-        self.requires("cli11/[~=2.1.2]")
-        self.requires("fmt/[~=8.1.1]")
+        self.requires("cli11/2.3.2")
+        self.requires("fmt/9.1.0")
 
     def generate(self):
         tc = cmake.CMakeToolchain(self)

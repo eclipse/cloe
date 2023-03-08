@@ -51,15 +51,15 @@ class CloeEngine(ConanFile):
     def requirements(self):
         self.requires(f"cloe-runtime/{self.version}@cloe/develop")
         self.requires(f"cloe-models/{self.version}@cloe/develop")
-        self.requires("cli11/[~=2.1.2]", private=True)
+        self.requires("cli11/2.3.2", private=True)
         if self.options.server:
             self.requires(f"cloe-oak/{self.version}@cloe/develop", private=True)
         self.requires("boost/[>=1.65.1]")
-        self.requires("fmt/[~=8.1.1]", override=True)
-        self.requires("nlohmann_json/[~=3.10.5]", override=True)
+        self.requires("fmt/9.1.0", override=True)
+        self.requires("nlohmann_json/3.11.2", override=True)
 
     def build_requirements(self):
-        self.test_requires("gtest/[~1.10]")
+        self.test_requires("gtest/1.13.0")
 
     def layout(self):
         cmake.cmake_layout(self)

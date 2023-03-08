@@ -43,10 +43,10 @@ class CloeModels(ConanFile):
     def requirements(self):
         self.requires(f"cloe-runtime/{self.version}@cloe/develop")
         self.requires("boost/[>=1.65.1]")
-        self.requires("eigen/[~=3.4.0]")
+        self.requires("eigen/3.4.0")
 
     def build_requirements(self):
-        self.test_requires("gtest/[~1.10]")
+        self.test_requires("gtest/1.13.0")
 
     def layout(self):
         cmake.cmake_layout(self)
