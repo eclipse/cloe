@@ -25,6 +25,7 @@
 
 #include <gtest/gtest.h>       // for TEST, ASSERT_EQ, ...
 #include <boost/optional.hpp>  // for optional<>
+#include <boost/optional/optional_io.hpp>
 
 #include <fable/environment.hpp>  // for Environment
 

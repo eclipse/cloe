@@ -190,9 +190,9 @@ class Conf {
     try {
       return data_.at(key).get<T>();
     } catch (nlohmann::detail::out_of_range&) {
-      throw_missing(key);
+      throw_missing(key.to_string());
     } catch (nlohmann::detail::type_error&) {
-      throw_wrong_type(key);
+      throw_wrong_type(key.to_string());
     }
   }
 
@@ -224,7 +224,7 @@ class Conf {
     } catch (nlohmann::detail::out_of_range&) {
       return def;
     } catch (nlohmann::detail::type_error&) {
-      throw_wrong_type(key);
+      throw_wrong_type(key.to_string());
     }
   }
 
@@ -279,7 +279,7 @@ class Conf {
     } catch (nlohmann::detail::out_of_range& e) {
       return;
     } catch (nlohmann::detail::type_error& e) {
-      throw_wrong_type(key);
+      throw_wrong_type(key.to_string());
     }
   }
 
