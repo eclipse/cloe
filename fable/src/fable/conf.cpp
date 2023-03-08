@@ -114,7 +114,7 @@ void Conf::assert_has(const std::string& key) const {
 
 void Conf::assert_has(const JsonPointer& key) const {
   if (!has(key)) {
-    throw_missing(key);
+    throw_missing(key.to_string());
   }
 }
 
@@ -130,7 +130,7 @@ void Conf::assert_has_not(const std::string& key, const std::string& msg) const 
 
 void Conf::assert_has_not(const JsonPointer& key, const std::string& msg) const {
   if (has(key)) {
-    throw_unexpected(key, msg);
+    throw_unexpected(key.to_string(), msg);
   }
 }
 
@@ -144,7 +144,7 @@ void Conf::assert_has_type(const std::string& key, JsonType t) const {
 void Conf::assert_has_type(const JsonPointer& key, JsonType t) const {
   assert_has(key);
   if (data_.at(key).type() != t) {
-    throw_wrong_type(key, t);
+    throw_wrong_type(key.to_string(), t);
   }
 }
 
