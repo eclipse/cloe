@@ -42,7 +42,7 @@ class CloeControllerGndtruthExtractor(ConanFile):
         self.requires(f"cloe-models/{self.version}@cloe/develop")
 
     def build_requirements(self):
-        self.test_requires("gtest/[~1.10]")
+        self.test_requires("gtest/1.13.0")
 
     def layout(self):
         cmake.cmake_layout(self)

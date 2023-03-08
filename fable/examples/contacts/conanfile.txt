@@ -2,9 +2,9 @@
 # can be built with Conan and CMake.
 
 [requires]
-cli11/[~=2.1.2]
+cli11/2.3.2
 fable/[>=0.20.0, include_prerelease=True]@cloe/develop
-fmt/[~=8.1.1]
+fmt/9.1.0
 
 [generators]
 CMakeDeps
