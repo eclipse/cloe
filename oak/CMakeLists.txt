@@ -25,6 +25,8 @@ set_target_properties(${target} PROPERTIES
     CXX_STANDARD_REQUIRED ON
 )
 target_include_directories(${target}
+  PRIVATE
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
   PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
