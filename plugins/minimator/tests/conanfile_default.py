@@ -11,7 +11,7 @@ class CloeTest(ConanFile):
     python_requires_extend = "cloe-launch-profile.Base"
 
     default_options = {
-        "cloe-engine:server": False,
+        "cloe-engine:server": True,
     }
 
     @property
@@ -33,6 +33,3 @@ class CloeTest(ConanFile):
         self.requires(f"cloe-plugin-noisy-sensor/{self.version}@cloe/develop")
         self.requires(f"cloe-plugin-speedometer/{self.version}@cloe/develop")
         self.requires(f"cloe-plugin-virtue/{self.version}@cloe/develop")
-
-        if self.options["cloe-engine"].server:
-            self.requires("boost/[<1.70]", override=True)

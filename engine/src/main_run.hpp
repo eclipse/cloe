@@ -29,9 +29,8 @@
 #include <iostream>  // for cerr
 
 // NOTE: Unfortunately, <boost/uuid/uuid_generators.hpp> includes Boost headers
-// that make use of deprecated headers. This is fixed in Boost 1.70.0, which we
-// cannot use until we migrate oak::Server away from cppnetlib.
-// See: https://github.com/boostorg/random/issues/49
+// that make use of deprecated headers. This is fixed in Boost 1.70.0, but
+// we still need to support earlier versions of Boost.
 #define BOOST_ALLOW_DEPRECATED_HEADERS
 
 #include <boost/lexical_cast.hpp>          // for lexical_cast
