@@ -48,5 +48,3 @@ class CloeTest(ConanFile):
 
         # Overrides:
         self.requires("zlib/1.2.13", override=True)
-        if self.options["cloe-engine"].server:
-            self.requires("boost/[<1.70]", override=True)

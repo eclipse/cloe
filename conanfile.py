@@ -60,8 +60,6 @@ class Cloe(ConanFile):
         boost_version = "[>=1.65.0]"
         if self.options.with_engine:
             cloe_requires("cloe-engine")
-            if self.options["cloe-engine"].server:
-                boost_version = "[>=1.65.0,<1.70]"
 
         # Overrides:
         self.requires("fmt/[~=8.1.1]", override=True)

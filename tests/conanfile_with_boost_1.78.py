@@ -12,7 +12,7 @@ class CloeTest(ConanFile):
 
     default_options = {
         "cloe:with_vtd": False,
-        "cloe-engine:server": False,
+        "cloe-engine:server": True,
     }
 
     @property

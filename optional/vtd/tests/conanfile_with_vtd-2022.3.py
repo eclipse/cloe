@@ -48,6 +48,3 @@ class CloeTest(ConanFile):
         self.requires("zlib/1.2.13", override=True)
         self.requires("incbin/cci.20211107", override=True)
         self.requires("vtd-api/2022.3@cloe/stable", override=True)
-
-        if self.options["cloe-engine"].server:
-            self.requires("boost/[<1.70]", override=True)
