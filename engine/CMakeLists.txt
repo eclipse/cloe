@@ -11,6 +11,8 @@ find_package(cloe-models REQUIRED)
 find_package(fable REQUIRED)
 find_package(Boost REQUIRED)
 find_package(CLI11 REQUIRED)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
 
 include(TargetLinting)
 include(GNUInstallDirs)
@@ -37,8 +39,8 @@ target_link_libraries(${libstack}
   PUBLIC
     cloe::runtime
     fable::fable
-    pthread
-    dl
+    Threads::Threads
+    ${CMAKE_DL_LIBS}
 )
 
 include(CTest)
