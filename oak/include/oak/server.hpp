@@ -39,19 +39,6 @@ namespace oak {
 class ServerImplHandler;
 using ServerImpl = boost::network::http::server<ServerImplHandler>;
 
-class RequestStub : public cloe::Request {
- public:
-  cloe::RequestMethod method() const override { throw ERROR; }
-  cloe::ContentType type() const override { throw ERROR; }
-  const std::string& body() const override { throw ERROR; }
-  const std::string& uri() const override { throw ERROR; }
-  const std::string& endpoint() const override { throw ERROR; }
-  const std::map<std::string, std::string>& query_map() const override { throw ERROR; }
-
- private:
-  const std::logic_error ERROR = std::logic_error("using the request in any way is erroneous");
-};
-
 /**
  * ServerImplHandler is the main request handler for the server.
  *

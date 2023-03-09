@@ -40,6 +40,8 @@
 #include <cloe/handler.hpp>  // for Request
 using namespace cloe;        // NOLINT(build/namespaces)
 
+#include "oak/request_stub.hpp"  // for RequestStub
+
 namespace oak {
 
 namespace {

@@ -28,6 +28,7 @@
 
 #include <cloe/core.hpp>   // for Json, logger::get
 #include "oak/server.hpp"  // for Server
+#include "oak/request_stub.hpp"  // for RequestStub
 
 namespace oak {
 
