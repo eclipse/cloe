@@ -13,10 +13,15 @@ find_package(cloe-runtime REQUIRED)
 find_package(cppnetlib REQUIRED)
 find_package(Boost COMPONENTS headers REQUIRED)
 
+file(GLOB ${target}_PUBLIC_HEADERS "include/**/*.hpp")
 add_library(${target}
     # find src -type f -name "*.cpp" \! -name "*_test.cpp"
     src/oak/registrar.cpp
     src/oak/server.cpp
+
+    # For IDE integration
+    ${${target}_PUBLIC_HEADERS}
+    src/oak/request_stub.hpp
 )
 add_library(${alias} ALIAS ${target})
 set_target_linting(${target})
