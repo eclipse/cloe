@@ -101,6 +101,9 @@ class Server {
   /**
    * Set the number of threads used for listening to connections.
    * This is the number of requests that can be handled simultaneously.
+   *
+   * NOTE: This doesn't do anything at the moment; a new thread is created
+   * for each connection.
    */
   void set_threads(int n) { listen_threads_ = n; }
 
@@ -114,10 +117,14 @@ class Server {
    */
   void set_address(const std::string& addr) { listen_addr_ = addr; }
 
+  const std::string& address() const { return listen_addr_; }
+
   /**
    * Set the port on which to listen.
    */
   void set_port(int port) { listen_port_ = port; }
+
+  int port() const { return listen_port_; }
 
   /**
    * Returns whether the server has started and is currently listening.
