@@ -289,4 +289,28 @@ void Server::stop() {
   listening_ = false;
 }
 
+void Server::add_handler(const std::string& key, Handler h) {
+  handler_->add(key, std::move(h));
+}
+
+std::vector<std::string> Server::endpoints() const {
+  return handler_->endpoints();
+}
+
+cloe::Json Server::endpoints_to_json(const std::vector<std::string>& endpoints) const {
+  return handler_->endpoints_to_json(endpoints);
+}
+
+Server::Server(const std::string& addr, int port)
+  : listen_addr_(addr), listen_port_(port), listen_threads_(3), listening_(false) {}
+
+Server::Server()
+  : listen_addr_("127.0.0.1"), listen_port_(8080), listen_threads_(3), listening_(false) {}
+
+Server::~Server() {
+  if (this->is_listening()) {
+    this->stop();
+  }
+}
+
 }  // namespace oak

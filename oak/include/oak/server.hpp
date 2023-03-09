@@ -89,20 +89,14 @@ class ServerImplHandler {
  */
 class Server {
  public:
-  Server(const std::string& addr, int port)
-      : listen_addr_(addr), listen_port_(port), listen_threads_(3), listening_(false) {}
-
-  Server() : listen_addr_("127.0.0.1"), listen_port_(8080), listen_threads_(3), listening_(false) {}
+  Server(const std::string& addr, int port);
+  Server();
 
   /**
    * When a Server goes out of scope, it will stop listening for you if you
    * haven't done so already.
    */
-  ~Server() {
-    if (this->is_listening()) {
-      this->stop();
-    }
-  }
+  ~Server();
 
   /**
    * Set the number of threads used for listening to connections.
@@ -138,9 +132,7 @@ class Server {
   /**
    * Return endpoint data in json format.
    */
-  cloe::Json endpoints_to_json(const std::vector<std::string>& endpoints) const {
-    return handler_.endpoints_to_json(endpoints);
-  };
+  cloe::Json endpoints_to_json(const std::vector<std::string>& endpoints) const;
 
   /**
    * Stop the server.
@@ -150,7 +142,7 @@ class Server {
   /**
    * Return a list of all registered endpoints.
    */
-  std::vector<std::string> endpoints() const { return handler_.endpoints(); }
+  std::vector<std::string> endpoints() const;
 
  protected:
   friend StaticRegistrar;
@@ -160,7 +152,7 @@ class Server {
   /**
    * Add a handler with the route muxer in the internal handler routine.
    */
-  void add_handler(const std::string& key, Handler h) { handler_.add(key, h); }
+  void add_handler(const std::string& key, Handler h);
 
  private:
   // Configuration
