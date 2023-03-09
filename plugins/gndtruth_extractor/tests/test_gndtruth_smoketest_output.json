@@ -1,0 +1,655 @@
+
+[
+{
+   "components": {
+      "cloe::default_world_sensor": {
+         "frustum": {
+            "clip_far": 480.0,
+            "clip_near": 0.0,
+            "fov_h": 6.283185307179586,
+            "fov_v": 6.283185307179586,
+            "offset_h": 0.0,
+            "offset_v": 0.0
+         },
+         "id": 2,
+         "mount_pose": {
+            "rotation": {
+               "w": 1.0,
+               "x": 0.0,
+               "y": 0.0,
+               "z": 0.0
+            },
+            "translation": {
+               "x": 0.0,
+               "y": 0.0,
+               "z": 0.0
+            }
+         },
+         "name": "nop_object_sensor",
+         "sensed_objects": []
+      },
+      "cloe::gndtruth_lane_sensor": {
+         "frustum": {
+            "clip_far": 480.0,
+            "clip_near": 0.0,
+            "fov_h": 6.283185307179586,
+            "fov_v": 6.283185307179586,
+            "offset_h": 0.0,
+            "offset_v": 0.0
+         },
+         "id": 3,
+         "mount_pose": {
+            "rotation": {
+               "w": 1.0,
+               "x": 0.0,
+               "y": 0.0,
+               "z": 0.0
+            },
+            "translation": {
+               "x": 0.0,
+               "y": 0.0,
+               "z": 0.0
+            }
+         },
+         "name": "minimator_lane_sensor",
+         "sensed_lane_boundaries": {
+            "0": {
+               "color": "white",
+               "curv_hor_change": 0.0,
+               "curv_hor_start": 0.0,
+               "dx_end": 100.0,
+               "dx_start": 0.0,
+               "dy_start": 6.0,
+               "exist_prob": 0.0,
+               "heading_start": 0.0,
+               "id": 0,
+               "next_id": -1,
+               "points": [
+                  {
+                     "x": 0.0,
+                     "y": 6.0,
+                     "z": 0.0
+                  },
+                  {
+                     "x": 100.0,
+                     "y": 6.0,
+                     "z": 0.0
+                  }
+               ],
+               "prev_id": -1,
+               "type": "solid"
+            },
+            "1": {
+               "color": "white",
+               "curv_hor_change": 0.0,
+               "curv_hor_start": 0.0,
+               "dx_end": 100.0,
+               "dx_start": 0.0,
+               "dy_start": 2.0,
+               "exist_prob": 0.0,
+               "heading_start": 0.0,
+               "id": 1,
+               "next_id": -1,
+               "points": [
+                  {
+                     "x": 0.0,
+                     "y": 2.0,
+                     "z": 0.0
+                  },
+                  {
+                     "x": 100.0,
+                     "y": 2.0,
+                     "z": 0.0
+                  }
+               ],
+               "prev_id": -1,
+               "type": "dashed"
+            },
+            "2": {
+               "color": "white",
+               "curv_hor_change": 0.0,
+               "curv_hor_start": 0.0,
+               "dx_end": 100.0,
+               "dx_start": 0.0,
+               "dy_start": -2.0,
+               "exist_prob": 0.0,
+               "heading_start": 0.0,
+               "id": 2,
+               "next_id": -1,
+               "points": [
+                  {
+                     "x": 0.0,
+                     "y": -2.0,
+                     "z": 0.0
+                  },
+                  {
+                     "x": 100.0,
+                     "y": -2.0,
+                     "z": 0.0
+                  }
+               ],
+               "prev_id": -1,
+               "type": "dashed"
+            },
+            "3": {
+               "color": "white",
+               "curv_hor_change": 0.0,
+               "curv_hor_start": 0.0,
+               "dx_end": 100.0,
+               "dx_start": 0.0,
+               "dy_start": -6.0,
+               "exist_prob": 0.0,
+               "heading_start": 0.0,
+               "id": 3,
+               "next_id": -1,
+               "points": [
+                  {
+                     "x": 0.0,
+                     "y": -6.0,
+                     "z": 0.0
+                  },
+                  {
+                     "x": 100.0,
+                     "y": -6.0,
+                     "z": 0.0
+                  }
+               ],
+               "prev_id": -1,
+               "type": "solid"
+            }
+         }
+      }
+   },
+   "sim_step": 1,
+   "sim_time": 0.02
+},
+{
+   "components": {
+      "cloe::default_world_sensor": {
+         "frustum": {
+            "clip_far": 480.0,
+            "clip_near": 0.0,
+            "fov_h": 6.283185307179586,
+            "fov_v": 6.283185307179586,
+            "offset_h": 0.0,
+            "offset_v": 0.0
+         },
+         "id": 2,
+         "mount_pose": {
+            "rotation": {
+               "w": 1.0,
+               "x": 0.0,
+               "y": 0.0,
+               "z": 0.0
+            },
+            "translation": {
+               "x": 0.0,
+               "y": 0.0,
+               "z": 0.0
+            }
+         },
+         "name": "nop_object_sensor",
+         "sensed_objects": []
+      },
+      "cloe::gndtruth_lane_sensor": {
+         "frustum": {
+            "clip_far": 480.0,
+            "clip_near": 0.0,
+            "fov_h": 6.283185307179586,
+            "fov_v": 6.283185307179586,
+            "offset_h": 0.0,
+            "offset_v": 0.0
+         },
+         "id": 3,
+         "mount_pose": {
+            "rotation": {
+               "w": 1.0,
+               "x": 0.0,
+               "y": 0.0,
+               "z": 0.0
+            },
+            "translation": {
+               "x": 0.0,
+               "y": 0.0,
+               "z": 0.0
+            }
+         },
+         "name": "minimator_lane_sensor",
+         "sensed_lane_boundaries": {
+            "0": {
+               "color": "white",
+               "curv_hor_change": 0.0,
+               "curv_hor_start": 0.0,
+               "dx_end": 100.0,
+               "dx_start": 0.0,
+               "dy_start": 6.0,
+               "exist_prob": 0.0,
+               "heading_start": 0.0,
+               "id": 0,
+               "next_id": -1,
+               "points": [
+                  {
+                     "x": 0.0,
+                     "y": 6.0,
+                     "z": 0.0
+                  },
+                  {
+                     "x": 100.0,
+                     "y": 6.0,
+                     "z": 0.0
+                  }
+               ],
+               "prev_id": -1,
+               "type": "solid"
+            },
+            "1": {
+               "color": "white",
+               "curv_hor_change": 0.0,
+               "curv_hor_start": 0.0,
+               "dx_end": 100.0,
+               "dx_start": 0.0,
+               "dy_start": 2.0,
+               "exist_prob": 0.0,
+               "heading_start": 0.0,
+               "id": 1,
+               "next_id": -1,
+               "points": [
+                  {
+                     "x": 0.0,
+                     "y": 2.0,
+                     "z": 0.0
+                  },
+                  {
+                     "x": 100.0,
+                     "y": 2.0,
+                     "z": 0.0
+                  }
+               ],
+               "prev_id": -1,
+               "type": "dashed"
+            },
+            "2": {
+               "color": "white",
+               "curv_hor_change": 0.0,
+               "curv_hor_start": 0.0,
+               "dx_end": 100.0,
+               "dx_start": 0.0,
+               "dy_start": -2.0,
+               "exist_prob": 0.0,
+               "heading_start": 0.0,
+               "id": 2,
+               "next_id": -1,
+               "points": [
+                  {
+                     "x": 0.0,
+                     "y": -2.0,
+                     "z": 0.0
+                  },
+                  {
+                     "x": 100.0,
+                     "y": -2.0,
+                     "z": 0.0
+                  }
+               ],
+               "prev_id": -1,
+               "type": "dashed"
+            },
+            "3": {
+               "color": "white",
+               "curv_hor_change": 0.0,
+               "curv_hor_start": 0.0,
+               "dx_end": 100.0,
+               "dx_start": 0.0,
+               "dy_start": -6.0,
+               "exist_prob": 0.0,
+               "heading_start": 0.0,
+               "id": 3,
+               "next_id": -1,
+               "points": [
+                  {
+                     "x": 0.0,
+                     "y": -6.0,
+                     "z": 0.0
+                  },
+                  {
+                     "x": 100.0,
+                     "y": -6.0,
+                     "z": 0.0
+                  }
+               ],
+               "prev_id": -1,
+               "type": "solid"
+            }
+         }
+      }
+   },
+   "sim_step": 2,
+   "sim_time": 0.04
+},
+{
+   "components": {
+      "cloe::default_world_sensor": {
+         "frustum": {
+            "clip_far": 480.0,
+            "clip_near": 0.0,
+            "fov_h": 6.283185307179586,
+            "fov_v": 6.283185307179586,
+            "offset_h": 0.0,
+            "offset_v": 0.0
+         },
+         "id": 2,
+         "mount_pose": {
+            "rotation": {
+               "w": 1.0,
+               "x": 0.0,
+               "y": 0.0,
+               "z": 0.0
+            },
+            "translation": {
+               "x": 0.0,
+               "y": 0.0,
+               "z": 0.0
+            }
+         },
+         "name": "nop_object_sensor",
+         "sensed_objects": []
+      },
+      "cloe::gndtruth_lane_sensor": {
+         "frustum": {
+            "clip_far": 480.0,
+            "clip_near": 0.0,
+            "fov_h": 6.283185307179586,
+            "fov_v": 6.283185307179586,
+            "offset_h": 0.0,
+            "offset_v": 0.0
+         },
+         "id": 3,
+         "mount_pose": {
+            "rotation": {
+               "w": 1.0,
+               "x": 0.0,
+               "y": 0.0,
+               "z": 0.0
+            },
+            "translation": {
+               "x": 0.0,
+               "y": 0.0,
+               "z": 0.0
+            }
+         },
+         "name": "minimator_lane_sensor",
+         "sensed_lane_boundaries": {
+            "0": {
+               "color": "white",
+               "curv_hor_change": 0.0,
+               "curv_hor_start": 0.0,
+               "dx_end": 100.0,
+               "dx_start": 0.0,
+               "dy_start": 6.0,
+               "exist_prob": 0.0,
+               "heading_start": 0.0,
+               "id": 0,
+               "next_id": -1,
+               "points": [
+                  {
+                     "x": 0.0,
+                     "y": 6.0,
+                     "z": 0.0
+                  },
+                  {
+                     "x": 100.0,
+                     "y": 6.0,
+                     "z": 0.0
+                  }
+               ],
+               "prev_id": -1,
+               "type": "solid"
+            },
+            "1": {
+               "color": "white",
+               "curv_hor_change": 0.0,
+               "curv_hor_start": 0.0,
+               "dx_end": 100.0,
+               "dx_start": 0.0,
+               "dy_start": 2.0,
+               "exist_prob": 0.0,
+               "heading_start": 0.0,
+               "id": 1,
+               "next_id": -1,
+               "points": [
+                  {
+                     "x": 0.0,
+                     "y": 2.0,
+                     "z": 0.0
+                  },
+                  {
+                     "x": 100.0,
+                     "y": 2.0,
+                     "z": 0.0
+                  }
+               ],
+               "prev_id": -1,
+               "type": "dashed"
+            },
+            "2": {
+               "color": "white",
+               "curv_hor_change": 0.0,
+               "curv_hor_start": 0.0,
+               "dx_end": 100.0,
+               "dx_start": 0.0,
+               "dy_start": -2.0,
+               "exist_prob": 0.0,
+               "heading_start": 0.0,
+               "id": 2,
+               "next_id": -1,
+               "points": [
+                  {
+                     "x": 0.0,
+                     "y": -2.0,
+                     "z": 0.0
+                  },
+                  {
+                     "x": 100.0,
+                     "y": -2.0,
+                     "z": 0.0
+                  }
+               ],
+               "prev_id": -1,
+               "type": "dashed"
+            },
+            "3": {
+               "color": "white",
+               "curv_hor_change": 0.0,
+               "curv_hor_start": 0.0,
+               "dx_end": 100.0,
+               "dx_start": 0.0,
+               "dy_start": -6.0,
+               "exist_prob": 0.0,
+               "heading_start": 0.0,
+               "id": 3,
+               "next_id": -1,
+               "points": [
+                  {
+                     "x": 0.0,
+                     "y": -6.0,
+                     "z": 0.0
+                  },
+                  {
+                     "x": 100.0,
+                     "y": -6.0,
+                     "z": 0.0
+                  }
+               ],
+               "prev_id": -1,
+               "type": "solid"
+            }
+         }
+      }
+   },
+   "sim_step": 3,
+   "sim_time": 0.06
+},
+{
+   "components": {
+      "cloe::default_world_sensor": {
+         "frustum": {
+            "clip_far": 480.0,
+            "clip_near": 0.0,
+            "fov_h": 6.283185307179586,
+            "fov_v": 6.283185307179586,
+            "offset_h": 0.0,
+            "offset_v": 0.0
+         },
+         "id": 2,
+         "mount_pose": {
+            "rotation": {
+               "w": 1.0,
+               "x": 0.0,
+               "y": 0.0,
+               "z": 0.0
+            },
+            "translation": {
+               "x": 0.0,
+               "y": 0.0,
+               "z": 0.0
+            }
+         },
+         "name": "nop_object_sensor",
+         "sensed_objects": []
+      },
+      "cloe::gndtruth_lane_sensor": {
+         "frustum": {
+            "clip_far": 480.0,
+            "clip_near": 0.0,
+            "fov_h": 6.283185307179586,
+            "fov_v": 6.283185307179586,
+            "offset_h": 0.0,
+            "offset_v": 0.0
+         },
+         "id": 3,
+         "mount_pose": {
+            "rotation": {
+               "w": 1.0,
+               "x": 0.0,
+               "y": 0.0,
+               "z": 0.0
+            },
+            "translation": {
+               "x": 0.0,
+               "y": 0.0,
+               "z": 0.0
+            }
+         },
+         "name": "minimator_lane_sensor",
+         "sensed_lane_boundaries": {
+            "0": {
+               "color": "white",
+               "curv_hor_change": 0.0,
+               "curv_hor_start": 0.0,
+               "dx_end": 100.0,
+               "dx_start": 0.0,
+               "dy_start": 6.0,
+               "exist_prob": 0.0,
+               "heading_start": 0.0,
+               "id": 0,
+               "next_id": -1,
+               "points": [
+                  {
+                     "x": 0.0,
+                     "y": 6.0,
+                     "z": 0.0
+                  },
+                  {
+                     "x": 100.0,
+                     "y": 6.0,
+                     "z": 0.0
+                  }
+               ],
+               "prev_id": -1,
+               "type": "solid"
+            },
+            "1": {
+               "color": "white",
+               "curv_hor_change": 0.0,
+               "curv_hor_start": 0.0,
+               "dx_end": 100.0,
+               "dx_start": 0.0,
+               "dy_start": 2.0,
+               "exist_prob": 0.0,
+               "heading_start": 0.0,
+               "id": 1,
+               "next_id": -1,
+               "points": [
+                  {
+                     "x": 0.0,
+                     "y": 2.0,
+                     "z": 0.0
+                  },
+                  {
+                     "x": 100.0,
+                     "y": 2.0,
+                     "z": 0.0
+                  }
+               ],
+               "prev_id": -1,
+               "type": "dashed"
+            },
+            "2": {
+               "color": "white",
+               "curv_hor_change": 0.0,
+               "curv_hor_start": 0.0,
+               "dx_end": 100.0,
+               "dx_start": 0.0,
+               "dy_start": -2.0,
+               "exist_prob": 0.0,
+               "heading_start": 0.0,
+               "id": 2,
+               "next_id": -1,
+               "points": [
+                  {
+                     "x": 0.0,
+                     "y": -2.0,
+                     "z": 0.0
+                  },
+                  {
+                     "x": 100.0,
+                     "y": -2.0,
+                     "z": 0.0
+                  }
+               ],
+               "prev_id": -1,
+               "type": "dashed"
+            },
+            "3": {
+               "color": "white",
+               "curv_hor_change": 0.0,
+               "curv_hor_start": 0.0,
+               "dx_end": 100.0,
+               "dx_start": 0.0,
+               "dy_start": -6.0,
+               "exist_prob": 0.0,
+               "heading_start": 0.0,
+               "id": 3,
+               "next_id": -1,
+               "points": [
+                  {
+                     "x": 0.0,
+                     "y": -6.0,
+                     "z": 0.0
+                  },
+                  {
+                     "x": 100.0,
+                     "y": -6.0,
+                     "z": 0.0
+                  }
+               ],
+               "prev_id": -1,
+               "type": "solid"
+            }
+         }
+      }
+   },
+   "sim_step": 4,
+   "sim_time": 0.08
+}
+]
