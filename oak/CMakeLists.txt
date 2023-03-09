@@ -22,6 +22,7 @@ add_library(${target}
     # For IDE integration
     ${${target}_PUBLIC_HEADERS}
     src/oak/request_stub.hpp
+    src/oak/curl.hpp
 )
 add_library(${alias} ALIAS ${target})
 set_target_linting(${target})
@@ -52,10 +53,15 @@ if(BUILD_TESTING)
     add_executable(test-oak
         # find src -type f -name "*_test.cpp"
         src/oak/route_muxer_test.cpp
+        src/oak/server_test.cpp
     )
     set_target_properties(test-oak PROPERTIES
         CXX_STANDARD 14
         CXX_STANDARD_REQUIRED ON
+    )
+    target_include_directories(test-oak
+      PRIVATE
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
     )
     target_link_libraries(test-oak
         GTest::gtest
