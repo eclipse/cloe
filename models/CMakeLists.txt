@@ -14,12 +14,16 @@ find_package(Eigen3 REQUIRED)
 find_package(Boost COMPONENTS headers REQUIRED)
 
 message(STATUS "-> Building ${output} library.")
+file(GLOB ${target}_PUBLIC_HEADERS "include/**/*.hpp")
 add_library(${target}
     # find src -type f -name "*.cpp" \! -name "*_test.cpp"
     src/cloe/component/lane_boundary.cpp
     src/cloe/component/utility/ego_sensor_canon.cpp
     src/cloe/component/utility/steering_utils.cpp
     src/cloe/utility/actuation_state.cpp
+
+    # For IDE integration
+    ${${target}_PUBLIC_HEADERS}
 )
 add_library(${alias} ALIAS ${target})
 set_target_properties(${target} PROPERTIES
@@ -71,7 +75,7 @@ endif()
 # Installation -------------------------------------------------------
 install(TARGETS ${target}
     LIBRARY
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cloe
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE
         DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )

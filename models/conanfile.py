@@ -4,7 +4,7 @@
 from pathlib import Path
 
 from conan import ConanFile
-from conan.tools import cmake, files, scm, env
+from conan.tools import cmake, files, scm
 
 required_conan_version = ">=1.52.0"
 
