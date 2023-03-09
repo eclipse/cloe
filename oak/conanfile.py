@@ -47,6 +47,9 @@ class CloeOak(ConanFile):
     def build_requirements(self):
         self.test_requires("gtest/[~1.10]")
 
+    def layout(self):
+        cmake.cmake_layout(self)
+
     def generate(self):
         tc = cmake.CMakeToolchain(self)
         tc.cache_variables["CMAKE_EXPORT_COMPILE_COMMANDS"] = True

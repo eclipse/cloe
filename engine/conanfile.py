@@ -99,6 +99,6 @@ class CloeEngine(ConanFile):
         if self.in_local_cache:
             bindir = os.path.join(self.package_folder, "bin")
         else:
-            bindir = os.path.join(self.package_folder, "build", "bin")
+            bindir = os.path.join(self.build_folder, str(self.settings.build_type), "bin")
         self.output.info(f"Appending PATH environment variable: {bindir}")
         self.env_info.PATH.append(bindir)
