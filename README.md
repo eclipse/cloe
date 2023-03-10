@@ -40,7 +40,7 @@ Currently, we only support Linux or [WSL][2].
 
 ### Installing Dependencies
 
-We provide automatic dependency installation for [Ubuntu][3] und [Archlinux][4]
+We provide automatic dependency installation for [Ubuntu][3] from 18.04 to 22.04
 via the `Makefile.setup` Makefile. You should inspect it before
 running the targets, as these will modify your system.
 Other distributions may work, if the packages are available.
@@ -78,11 +78,6 @@ point. In a pinch, the following steps should suffice:
       build_type       = RelWithDebInfo
     ```
 
- 3. Increase the request timeout to work around performance [issues][5] with the
-    Conan Center.
-    ```
-    conan config set general.request_timeout=360
-    ```
 See the Conan [documentation][6] for more information on how to do this.
 
 ### Building the Cloe Packages
@@ -97,17 +92,16 @@ package. Conan will download and build all necessary dependencies. Should
 any errors occur during the build, you may have to force Conan to build
 all packages instead of re-using packages it finds:
 ```
-    make package-all
+    make package CONAN_OPTIONS="--build"
 ```
 Run `make help` to get an overview of the available targets we expect you to
 use. For more details on how this is done, have a look at the Makefiles in the
 repository root.
 
-If you experience timeout issues waiting for Conan Center, the reason is likely
-the boost dependency's hundreds of binary packages. You can then slightly
+If you experience timeout issues waiting for Conan Center, you can slightly
 increase Conan's timeout configuration like so:
 
-    export CONAN_REQUEST_TIMEOUT=320
+    export CONAN_REQUEST_TIMEOUT=360
 
 ### Running Cloe
 
@@ -251,6 +245,5 @@ and also speeds up the build by the strategic use of caches.
 [1]: https://conan.io
 [2]: https://docs.microsoft.com/en-us/windows/wsl/about
 [3]: https://ubuntu.com
-[4]: https://archlinux.org
 [5]: https://github.com/conan-io/conan-center-index/issues/950
 [6]: https://docs.conan.io/en/latest/
