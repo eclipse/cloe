@@ -69,31 +69,11 @@ RUN make -f /cloe/Makefile.setup setup-conan && \
 # All common processes are made easy to apply by writing target recipes in the
 # Makefile at the root of the repository. This also acts as a form of
 # documentation.
-FROM stage-setup-conan AS stage-vendor
-ARG VENDOR_TARGET="export-vendor download-vendor"
-ARG KEEP_SOURCES=0
+FROM stage-setup-conan AS stage-build
 
 WORKDIR /cloe
 SHELL ["/bin/bash", "-c"]
 
-# Download or build dependencies:
-COPY vendor /cloe/vendor
-COPY Makefile.package /cloe
-COPY Makefile.all /cloe
-RUN --mount=type=cache,target=/ccache \
-    --mount=type=secret,target=/root/setup.sh,id=setup,mode=0400 \
-    if [ -r /root/setup.sh ]; then . /root/setup.sh; fi && \
-    make -f Makefile.all ${VENDOR_TARGET} && \
-    # Clean up:
-    if [ ${KEEP_SOURCES} -eq 0 ]; then \
-        find /root/.conan/data -name dl -type d -maxdepth 5 -exec rm -r {} + && \
-        conan remove \* -s -b -f; \
-    else \
-        conan remove \* -b -f; \
-    fi
-
-# Build Cloe:
-FROM stage-vendor AS stage-build
 ARG PROJECT_VERSION=unknown
 ARG PACKAGE_TARGET="export smoketest-deps"
 ARG KEEP_SOURCES=0

@@ -84,7 +84,6 @@ See the Conan [documentation][6] for more information on how to do this.
 
 To build all packages, you should run the following:
 
-    make export-vendor
     make package
 
 This will export all Conan recipes from this repository and create the cloe
@@ -205,7 +204,6 @@ Run `make -f Makefile.docker help` to get an impression of what is possible:
 
     User configuration:
         CONAN_PROFILE=
-        VENDOR_TARGET=
         PACKAGE_TARGET=
         KEEP_SOURCES=
         DOCKER_USER_ARGS=

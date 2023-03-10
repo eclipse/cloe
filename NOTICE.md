@@ -104,12 +104,6 @@ installed with the help of Conan):
   - Website: https://eigen.tuxfamily.org
   - Conan-Package: eigen
 
-- Cpp-Netlib
-  - License: Boost
-  - License-Source: https://www.boost.org/LICENSE_1_0.txt
-  - Website: https://cpp-netlib.org
-  - Conan-Package: cpp-netlib
-
 - Oat++
   - License: Apache-2.0
   - License-Source: https://github.com/oatpp/oatpp/blob/master/LICENSE
