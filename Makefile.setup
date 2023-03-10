@@ -75,6 +75,9 @@ setup-conan:
 		conan profile update settings.compiler.libcxx=libstdc++11 ${CONAN_PROFILE}; \
 		conan profile update settings.build_type=RelWithDebInfo ${CONAN_PROFILE}; \
 	fi
+	if ! conan config get general.default_build_profile >/dev/null 2>&1; then \
+		conan config set general.default_build_profile=default; \
+	fi
 	if ! conan config get general.revisions_enabled >/dev/null 2>&1; then \
 		conan config set general.revisions_enabled=True; \
 	fi
