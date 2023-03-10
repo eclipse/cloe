@@ -69,7 +69,6 @@ int main(int argc, char** argv) {
   engine::CheckOptions check_options;
   std::vector<std::string> check_files;
   auto check = app.add_subcommand("check", "Validate stack file configurations.");
-  check->add_flag("-d,--distinct", check_options.distinct, "Validate each file distinctly");
   check->add_flag("-s,--summarize", check_options.summarize, "Summarize results");
   check->add_flag("-j,--json", check_options.output_json, "Output results as JSON data");
   check->add_option("-J,--json-indent", check_options.json_indent, "JSON indentation level");
