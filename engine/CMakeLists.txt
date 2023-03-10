@@ -28,7 +28,7 @@ add_library(${libstack}
     src/plugin.cpp
 )
 set_target_properties(${libstack} PROPERTIES
-    CXX_STANDARD 14
+    CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
 )
 target_include_directories(${libstack}
@@ -53,7 +53,7 @@ if(BUILD_TESTING)
         src/stack_test.cpp
     )
     set_target_properties(${test-libstack} PROPERTIES
-        CXX_STANDARD 14
+        CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
     )
     target_link_libraries(${test-libstack}
@@ -78,7 +78,7 @@ add_executable(${target}
     src/utility/command.cpp
 )
 set_target_properties(${target} PROPERTIES
-    CXX_STANDARD 14
+    CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
     OUTPUT_NAME ${output}
 )
