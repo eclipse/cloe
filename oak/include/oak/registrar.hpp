@@ -25,11 +25,9 @@
 #include <functional>
 #include <initializer_list>
 #include <map>
+#include <mutex>
 #include <string>
 #include <utility>
-
-#include <boost/thread/locks.hpp>         // for unique_lock
-#include <boost/thread/shared_mutex.hpp>  // for shared_mutex
 
 #include <cloe/handler.hpp>  // for Handler
 
@@ -194,12 +192,12 @@ class LockedRegistrar : public StaticRegistrar {
    *
    * On destruction, the lock is released.
    */
-  boost::unique_lock<boost::shared_mutex> lock() {
-    return boost::unique_lock<boost::shared_mutex>(access_);
+  std::unique_lock<std::shared_mutex> lock() {
+    return std::unique_lock(access_);
   }
 
  private:
-  mutable boost::shared_mutex access_;
+  mutable std::shared_mutex access_;
 };
 
 /**
@@ -248,7 +246,7 @@ class BufferRegistrar : public StaticRegistrar {
   void refresh_route(const std::string& key);
 
  protected:
-  mutable boost::shared_mutex access_;
+  mutable std::shared_mutex access_;
   Muxer<Response> buffer_;
   Muxer<Handler> handlers_;
 };

@@ -23,6 +23,8 @@
 #include "oak/registrar.hpp"
 
 #include <map>
+#include <mutex>
+#include <shared_mutex>
 #include <memory>
 #include <string>
 
@@ -93,7 +95,7 @@ void LockedRegistrar::register_handler(const std::string& route, Handler h) {
   assert(route.size() != 0 && route[0] == '/');
   assert(proxy_ == nullptr);
   h = [this, h](const cloe::Request& q, Response& r) {
-    boost::shared_lock<boost::shared_mutex> read_lock(this->access_);
+    std::shared_lock read_lock(this->access_);
     h(q, r);
   };
 
@@ -117,13 +119,13 @@ void BufferRegistrar::register_handler(const std::string& route, Handler h) {
   server_->add_handler(key, [this, key](const cloe::Request&, Response& r) {
     // Technically it's not necessary to lock, but when we are updating the
     // buffers, we do not want any requests to get through.
-    boost::shared_lock<boost::shared_mutex> read_lock(this->access_);
+    std::shared_lock read_lock(this->access_);
     r = this->buffer_.get(key).first;
   });
 }
 
 void BufferRegistrar::refresh_buffer() {
-  boost::unique_lock<boost::shared_mutex> write_lock(access_);
+  std::unique_lock write_lock(access_);
   // We don't delete handlers, so there will never be routes
   // that are in handlers_ but not in buffer_.
   for (auto key : handlers_.routes()) {

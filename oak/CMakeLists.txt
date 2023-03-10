@@ -11,7 +11,6 @@ set(alias cloe::oak)
 
 find_package(cloe-runtime REQUIRED)
 find_package(oatpp REQUIRED)
-find_package(Boost COMPONENTS headers REQUIRED)
 
 file(GLOB ${target}_PUBLIC_HEADERS "include/**/*.hpp")
 add_library(${target}
@@ -41,7 +40,7 @@ target_link_libraries(${target}
   PUBLIC
     cloe::runtime
     oatpp::oatpp
-    Boost::headers
+    stdc++fs
 )
 
 # Testing ------------------------------------------------------------
@@ -66,7 +65,6 @@ if(BUILD_TESTING)
     target_link_libraries(test-oak
         GTest::gtest
         GTest::gtest_main
-        Boost::boost
         ${target}
     )
     gtest_add_tests(TARGET test-oak)

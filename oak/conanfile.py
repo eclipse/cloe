@@ -68,7 +68,6 @@ class CloeOak(ConanFile):
         cm.install()
 
     def package_id(self):
-        self.info.requires["boost"].full_package_mode()
         del self.info.options.pedantic
 
     def package_info(self):
@@ -76,6 +75,13 @@ class CloeOak(ConanFile):
         self.cpp_info.set_property("cmake_file_name", "cloe-oak")
         self.cpp_info.set_property("cmake_target_name", "cloe::oak")
         self.cpp_info.set_property("pkg_config_name", "cloe-oak")
+
+        # Linking to libstdc++fs is required on GCC < 9.
+        # (GCC compilers with version < 7 have no std::filesystem support.)
+        # No consideration has been made yet for other compilers,
+        # please add them here as necessary.
+        if self.settings.get_safe("compiler") == "gcc" and self.settings.get_safe("compiler.version") in ["7", "8"]:
+            self.cpp_info.system_libs = ["stdc++fs"]
 
         # Make sure we can find the library, both in editable mode and in the
         # normal package mode:
