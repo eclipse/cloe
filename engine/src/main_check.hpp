@@ -38,7 +38,6 @@ struct CheckOptions {
   std::string delimiter = ",";
 
   // Flags:
-  bool distinct = false;
   bool summarize = false;
   bool output_json = false;
   int json_indent = 2;
@@ -129,49 +128,8 @@ inline int check_merged(const CheckOptions& opt, const std::vector<std::string>&
   return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-inline int check_distinct(const CheckOptions& opt, const std::vector<std::string>& filepaths) {
-  int exit_code = EXIT_SUCCESS;
-  auto check_each = [&](std::function<void(const std::string&, bool*)> func) {
-    for (const auto& x : filepaths) {
-      bool ok = true;
-      func(x, &ok);
-      if (!ok) {
-        exit_code = EXIT_FAILURE;
-      }
-    }
-  };
-
-  if (opt.output_json) {
-    // Output for each file a summary
-    cloe::Json output;
-    check_each([&](const auto& f, bool* ok) {
-      output[f] = check_json(opt, std::vector<std::string>{f}, ok);
-    });
-    opt.output << output.dump(opt.json_indent) << std::endl;
-  } else if (opt.summarize) {
-    check_each([&](const auto& f, bool* ok) {
-      opt.output << f << ": " << check_summary(opt, std::vector<std::string>{f}, ok) << std::endl;
-    });
-  } else {
-    check_each([&](const auto& f, bool* ok) {
-      try {
-        check_stack(opt.stack_options, std::vector<std::string>{f}, ok);
-      } catch (cloe::ConcludedError&) {
-      } catch (std::exception& e) {
-        opt.output << f << ": " << e.what() << std::endl;
-      }
-    });
-  }
-
-  return exit_code;
-}
-
 inline int check(const CheckOptions& opt, const std::vector<std::string>& filepaths) {
-  if (opt.distinct) {
-    return check_distinct(opt, filepaths);
-  } else {
-    return check_merged(opt, filepaths);
-  }
+  return check_merged(opt, filepaths);
 }
 
 }  // namespace engine
