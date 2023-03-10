@@ -409,6 +409,8 @@ class MinimatorSimulator : public cloe::Simulator {
    */
   void abort() final {
     // We don't have any I/O here, so we override the default implementation.
+    // We can safely call stop() even if we are aborting simulation.
+    operational_ = false;
   }
 
   /**
