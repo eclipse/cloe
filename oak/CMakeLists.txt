@@ -10,7 +10,7 @@ set(target cloe-oak)
 set(alias cloe::oak)
 
 find_package(cloe-runtime REQUIRED)
-find_package(cppnetlib REQUIRED)
+find_package(oatpp REQUIRED)
 find_package(Boost COMPONENTS headers REQUIRED)
 
 file(GLOB ${target}_PUBLIC_HEADERS "include/**/*.hpp")
@@ -27,7 +27,7 @@ add_library(${target}
 add_library(${alias} ALIAS ${target})
 set_target_linting(${target})
 set_target_properties(${target} PROPERTIES
-    CXX_STANDARD 14
+    CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
 )
 target_include_directories(${target}
@@ -40,7 +40,7 @@ target_include_directories(${target}
 target_link_libraries(${target}
   PUBLIC
     cloe::runtime
-    cppnetlib::cppnetlib
+    oatpp::oatpp
     Boost::headers
 )
 
@@ -56,7 +56,7 @@ if(BUILD_TESTING)
         src/oak/server_test.cpp
     )
     set_target_properties(test-oak PROPERTIES
-        CXX_STANDARD 14
+        CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
     )
     target_include_directories(test-oak

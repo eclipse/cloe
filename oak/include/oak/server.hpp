@@ -26,61 +26,13 @@
 #include <string>  // for string
 #include <vector>  // for vector<>
 
-// Requires: cppnetlib
-#include <boost/network/include/http/server.hpp>
-#include <boost/network/utils/thread_pool.hpp>
+#include <oatpp/network/Server.hpp>
 
 #include "oak/registrar.hpp"    // for StaticRegistrar, BufferRegistrar
-#include "oak/route_muxer.hpp"  // for Muxer<>
 
 namespace oak {
 
-// These forward-declarations are a necessary evil:
-class ServerImplHandler;
-using ServerImpl = boost::network::http::server<ServerImplHandler>;
-
-/**
- * ServerImplHandler is the main request handler for the server.
- *
- * It implements an interface defined by boost::network::http::server.
- */
-class ServerImplHandler {
- public:
-  ServerImplHandler();
-
-  /**
-   * Handle every request from the server.
-   *
-   * Every single request that passes through the server has to go through this
-   * handler. If the muxer has an endpoint that matches the request, then it
-   * gets passed through. The muxer has a default endpoint, so the nominal case
-   * is that every request is passed to some handler from the muxer.
-   */
-  void operator()(ServerImpl::request const&, ServerImpl::connection_ptr);
-
-  /**
-   * Log an error from the server.
-   */
-  void log(const ServerImpl::string_type& msg);
-
-  /**
-   * Add a handler for a specific endpoint.
-   */
-  void add(const std::string& key, Handler h);
-
-  /**
-   * Return a list of all registered endpoints.
-   */
-  std::vector<std::string> endpoints() const { return muxer.routes(); }
-
-  /**
-   * Return endpoint data in json format.
-   */
-  cloe::Json endpoints_to_json(const std::vector<std::string>& endpoints) const;
-
- private:
-  Muxer<Handler> muxer;
-};
+class GreedyHandler;
 
 /**
  * A Server accepts and serves endpoints for Handlers.
@@ -169,10 +121,8 @@ class Server {
 
   // State
   bool listening_;
-  ServerImplHandler handler_;
-  std::unique_ptr<ServerImpl::options> options_;
-  std::unique_ptr<ServerImpl> server_;
-  std::unique_ptr<boost::thread> thread_;
+  std::shared_ptr<oatpp::network::Server> server_;
+  std::shared_ptr<GreedyHandler> handler_;
 };
 
 }  // namespace oak

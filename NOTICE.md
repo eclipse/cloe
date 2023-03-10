@@ -110,5 +110,12 @@ installed with the help of Conan):
   - Website: https://cpp-netlib.org
   - Conan-Package: cpp-netlib
 
+- Oat++
+  - License: Apache-2.0
+  - License-Source: https://github.com/oatpp/oatpp/blob/master/LICENSE
+  - Website: https://oatpp.io/
+  - Source: https://github.com/oatpp/oatpp
+  - Conan-Package: oatpp
+
 Additional third-party content that is used for the web user-interface
 is listed in the `ui/LICENSE-3RD-PARTY.txt` file.

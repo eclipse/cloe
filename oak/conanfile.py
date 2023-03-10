@@ -42,7 +42,7 @@ class CloeOak(ConanFile):
 
     def requirements(self):
         self.requires(f"cloe-runtime/{self.version}@cloe/develop")
-        self.requires("cpp-netlib/0.13.0@cloe/stable")
+        self.requires("oatpp/1.3.0")
 
     def build_requirements(self):
         self.test_requires("gtest/[~1.10]")
