@@ -275,7 +275,7 @@ smoketest-deps:
 	@for conanfile in tests/conanfile_*.py; do \
 		test -f "$${conanfile}" || continue; \
 		echo "Building dependencies for conanfile: $${conanfile}"; \
-		${CLOE_LAUNCH} prepare -P "$${conanfile}"; \
+		${CLOE_LAUNCH} prepare -P "$${conanfile}" || break; \
 	done
 
 # CONFIGURATION TARGETS -------------------------------------------------------
