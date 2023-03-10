@@ -23,9 +23,6 @@ APT := $(or \
 )
 APT_ARGS := --no-install-recommends -y
 
-PACMAN := $(shell command -v pacman 2>/dev/null)
-PACMAN_ARGS := --noconfirm --needed
-
 PIP := $(or \
 	$(shell command -v pip3 2>/dev/null), \
 	$(shell command -v pip 2>/dev/null) \
