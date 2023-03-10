@@ -23,16 +23,14 @@
 #pragma once
 
 #include <algorithm>
+#include <filesystem>
 #include <map>
+#include <mutex>
+#include <shared_mutex>
 #include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
-
-#include <boost/algorithm/string/predicate.hpp>
-#include <boost/filesystem/path.hpp>
-#include <boost/thread/locks.hpp>
-#include <boost/thread/shared_mutex.hpp>
 
 namespace oak {
 
@@ -76,11 +74,11 @@ class Muxer {
    */
   static std::string normalize(const std::string& route) {
     std::string s = route.substr(0, route.find("?"));
-    boost::filesystem::path p(s);
+    std::filesystem::path p(s);
     if (!p.is_absolute()) {
       return "";
     }
-    s = p.normalize().string();
+    s = p.lexically_normal().string();
     s = s.substr(0, s.find_last_not_of("/. \n\t\r") + 1);
     if (s.empty()) {
       return "/";
@@ -109,15 +107,18 @@ class Muxer {
    */
   std::string resolve(const std::string& route) const {
     auto key = normalize(route);
-    boost::shared_lock<boost::shared_mutex> read_lock(access_);
+    std::shared_lock read_lock(access_);
     if (!backtrack_) {
       if (routes_.count(key)) {
         return key;
       }
       return "";
     } else {
-      boost::filesystem::path p(key);
+      std::filesystem::path p(key);
       while (!routes_.count(p.string())) {
+        if (p.string() == "/") {
+          return "";
+        }
         p = p.parent_path();
       }
       return p.string();
@@ -128,7 +129,7 @@ class Muxer {
    * Set the backtracking behavior.
    */
   void set_backtrack(bool enabled) {
-    boost::unique_lock<boost::shared_mutex> write_lock(access_);
+    std::unique_lock write_lock(access_);
     backtrack_ = enabled;
   }
 
@@ -139,7 +140,7 @@ class Muxer {
 
   std::vector<std::string> routes() const {
     std::vector<std::string> vs;
-    boost::shared_lock<boost::shared_mutex> read_lock(access_);
+    std::shared_lock read_lock(access_);
     for (const auto& kv : routes_) {
       if (kv.first.empty()) {
         continue;
@@ -151,13 +152,13 @@ class Muxer {
 
   bool has(const std::string& route) const {
     auto key = normalize(route);
-    boost::shared_lock<boost::shared_mutex> read_lock(access_);
+    std::shared_lock read_lock(access_);
     return routes_.count(key) != 0;
   }
 
   void add(const std::string& route, T val) {
     auto key = normalize(route);
-    boost::unique_lock<boost::shared_mutex> write_lock(access_);
+    std::unique_lock write_lock(access_);
     if (routes_.count(key)) {
       throw std::runtime_error("route already exists");
     }
@@ -166,7 +167,7 @@ class Muxer {
 
   void set(const std::string& route, T val) {
     auto key = normalize(route);
-    boost::unique_lock<boost::shared_mutex> write_lock(access_);
+    std::unique_lock write_lock(access_);
     routes_[key] = val;
   }
 
@@ -179,18 +180,18 @@ class Muxer {
   std::pair<T, Parameters> get(const std::string& route) const {
     auto key = resolve(route);
     Parameters p{};
-    boost::shared_lock<boost::shared_mutex> read_lock(access_);
+    std::shared_lock read_lock(access_);
     return std::make_pair(routes_.at(key), p);
   }
 
   void set_unsafe(const std::string& key, T val) {
-    boost::unique_lock<boost::shared_mutex> write_lock(access_);
+    std::unique_lock write_lock(access_);
     routes_[key] = val;
   }
 
   std::pair<T, Parameters> get_unsafe(const std::string& key) const {
     Parameters p{};
-    boost::shared_lock<boost::shared_mutex> read_lock(access_);
+    std::shared_lock read_lock(access_);
     return std::make_pair(routes_.at(key), p);
   }
 
@@ -200,7 +201,7 @@ class Muxer {
 
   // State:
   std::map<std::string, T> routes_;
-  mutable boost::shared_mutex access_;
+  mutable std::shared_mutex access_;
 };
 
 }  // namespace oak

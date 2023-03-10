@@ -43,7 +43,7 @@ TEST(oak_muxer, normalize) {
       {"/abc?", "/abc"},
       {"/abc/?opt=/next", "/abc"},
       {"C:", ""},
-      {"//", ""},
+      {"//", "/"},
       {"/..", "/"},
       {"/abc//.", "/abc"},
       {"/index.html", "/index.html"},
