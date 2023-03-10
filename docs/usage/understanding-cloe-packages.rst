@@ -27,7 +27,7 @@ Each of the boxes in the image above represents a single Conan package. The
 set of packages is not exhaustive, as implied by the boxes with ellipsis.
 The arrows define dependencies between packages. For example, ``cloe-engine``
 depends on ``cloe-runtime``. Most plugins depend on ``cloe-models``, which
-in turn depends on ``cloe-runtime``. Some packages, like ``libcppnetlib`` are
+in turn depends on ``cloe-runtime``. Some packages, like ``oatpp`` are
 not developed by us, but packaged into Conan packages by us. Other dependencies
 (not shown) such as Boost, are retrieved from the Conan Center, which contains
 a large collection of Open Source libraries and tools.
