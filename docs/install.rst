@@ -8,6 +8,9 @@ straightforward.
 
 Currently, we only officially support Linux or `WSL`_.
 
+The minimum required C++ standard is 17, which is provided by a minimum
+GCC version of 8. This is available from Ubuntu 18.04.
+
 Install Dependencies
 --------------------
 We provide automatic dependency installation for `Ubuntu`_ from 18.04 to 22.04
