@@ -22,6 +22,7 @@ APT := $(or \
 	$(shell command -v apt-get 2>/dev/null) \
 )
 APT_ARGS := --no-install-recommends -y
+UBUNTU_VERSION := $(shell source /etc/os-release && echo $$VERSION_ID)
 
 PIP := $(or \
 	$(shell command -v pip3 2>/dev/null), \
@@ -121,6 +122,15 @@ install-ubuntu-deps::
 		time \
 		tmux \
 		;
+
+	# Require GCC and G++ version >= 8
+	if [ "${UBUNTU_VERSION}" == "18.04" ]; then \
+		${APT} install ${APT_ARGS} gcc-8 g++-8; \
+		if [ $$(readlink /usr/bin/g++) == "g++-7" ]; then \
+			ln -sf /usr/bin/g++-8 /usr/bin/g++ && \
+			ln -sf /usr/bin/gcc-8 /usr/bin/gcc; \
+		fi; \
+	fi
 
 # Python ----------------------------------------------------------------------
 .PHONY: install-python-deps
