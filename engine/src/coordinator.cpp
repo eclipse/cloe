@@ -117,7 +117,7 @@ void Coordinator::enroll(Registrar& r) {
       switch (q.method()) {
       case RequestMethod::GET:
         {
-          std::unique_lock<std::mutex> guard(input_mutex_);
+          std::unique_lock guard(input_mutex_);
           r.write(input_queue_);
           break;
         }
@@ -181,7 +181,7 @@ Duration Coordinator::process(const Sync& sync) {
   // input queue into their respective storage locations. We are responsible
   // for thread safety here!
   auto now = sync.time();
-  std::unique_lock<std::mutex> guard(input_mutex_);
+  std::unique_lock guard(input_mutex_);
   while (!input_queue_.empty()) {
     auto tp = std::move(input_queue_.front());
     input_queue_.pop_front();
@@ -287,7 +287,7 @@ void Coordinator::queue_trigger(TriggerPtr&& t) {
     // This only really happens if a trigger is an optional trigger.
     return;
   }
-  std::unique_lock<std::mutex> guard(input_mutex_);
+  std::unique_lock guard(input_mutex_);
   input_queue_.emplace_back(std::move(t));
 }
 
