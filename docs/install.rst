@@ -10,7 +10,7 @@ Currently, we only officially support Linux or `WSL`_.
 
 Install Dependencies
 --------------------
-We provide automatic dependency installation for `Ubuntu`_ und `Archlinux`_
+We provide automatic dependency installation for `Ubuntu`_ from 18.04 to 22.04
 via the ``Makefile.setup`` Makefile. You should inspect it before running the
 targets, as these will modify your system. Other distributions may work, if the
 packages are available.
@@ -25,7 +25,11 @@ packages are available.
 Configure Conan
 ---------------
 You may need to setup your Conan profile before continuing on to the next
-point. In a pinch, the following steps should suffice:
+point. The recommended procedure is to use the make target::
+
+    make setup-conan
+
+In a pinch though, the following steps should suffice:
 
 1. `Install Conan <https://docs.conan.io/en/latest/installation.html>`__,
    if you haven't done so already; for example with `pip`_ or `pipx`_::
@@ -56,11 +60,6 @@ point. In a pinch, the following steps should suffice:
          compiler.libcxx  = libstdc++11
          build_type       = Release
 
-3. Increase the request timeout to work around `performance issues`_ with the
-   Conan Center::
-
-       conan config set general.request_timeout=360
-
 See the `Conan documentation`_ for more information on how to do this.
 
 Build Cloe Packages
@@ -75,7 +74,7 @@ package. Conan will download and build all necessary dependencies. Should
 any errors occur during the build, you may have to force Conan to build
 all packages instead of re-using packages it finds::
 
-    make package-all
+    make package CONAN_OPTIONS="--build"
 
 .. note::
    Depending on your Conan profile, building the Cloe packages can involve
@@ -96,13 +95,12 @@ Run System Tests
 To check that everything is working as it should, we recommend you run the
 included test suite once before commencing with anything else::
 
-    make export-select smoketest-deps smoketest
+    make export smoketest-deps smoketest
 
 .. _Conan: https://conan.io
 .. _Conan documentation: https://docs.conan.io/en/latest/
 .. _performance issues: https://github.com/conan-io/conan-center-index/issues/950
 .. _WSL: https://docs.microsoft.com/en-us/windows/wsl/about
-.. _Archlinux: https://archlinux.org
 .. _Ubuntu: https://ubuntu.com
 .. _pipx: https://pypa.github.io/pipx/
 .. _pip: https://pypi.org/project/pip/
