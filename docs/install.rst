@@ -69,7 +69,6 @@ Build Cloe Packages
 -------------------
 To build all packages, you should run the following::
 
-    make export-vendor
     make package
 
 This will export all Conan recipes from this repository and create the cloe

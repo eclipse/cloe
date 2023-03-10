@@ -48,7 +48,7 @@ SELECT_PKGS := $(call uniq, $(filter-out ${UNSELECT_PKGS}, ${ALL_PKGS}) ${WITH_P
 ##
 ## Functions analogously to normal package selection.
 ##
-ALL_VENDOR := $(wildcard vendor/*)
+ALL_VENDOR :=
 WITHOUT_VENDOR :=
 UNSELECT_VENDOR := ${WITHOUT_VENDOR}
 WITH_VENDOR :=
@@ -119,9 +119,9 @@ ${META_PKG}:
 	done
 
 # Usage: $(call make_vendor_target, TARGET-NAME, HELP-DESCRIPTION, HELP-CATEGORY)
-define make_vendor_target
-$(eval $(call _make_target_rules,${1},${2},${3},${SELECT_VENDOR}))
-endef
+# define make_vendor_target
+# $(eval $(call _make_target_rules,${1},${2},${3},${SELECT_VENDOR}))
+# endef
 
 # Usage: $(call make_every_target, TARGET-NAME, HELP-DESCRIPTION, HELP-CATEGORY)
 define make_every_target
@@ -141,9 +141,9 @@ endef
 help::
 	$(call print_help_section, "Available build targets")
 
-$(call make_vendor_target, export-vendor, "export all vendor packages", "[conan-cache]")
-$(call make_vendor_target, package-vendor, "create all vendor packages", "[conan-cache]")
-$(call make_vendor_target, download-vendor, "download or build vendor packages", "[conan-cache]")
+# $(call make_vendor_target, export-vendor, "export all vendor packages", "[conan-cache]")
+# $(call make_vendor_target, package-vendor, "create all vendor packages", "[conan-cache]")
+# $(call make_vendor_target, download-vendor, "download or build vendor packages", "[conan-cache]")
 
 help::
 	echo
@@ -180,15 +180,15 @@ $(call make_select_target, clean-select, "remove build artifacts", "[in-source]"
 help::
 	echo
 	$(call print_help_subsection, "Options")
-	$(call print_help_option, WITH_VENDOR, "", "include optional vendor packages from ${_grn}UNSELECT_VENDOR${_rst}")
+#	$(call print_help_option, WITH_VENDOR, "", "include optional vendor packages from ${_grn}UNSELECT_VENDOR${_rst}")
 	$(call print_help_option, WITH_PKGS, "", "include optional packages from ${_grn}UNSELECT_PKGS${_rst}")
 	$(call print_help_option, LOCKFILE_SOURCE, "", "use specified conanfile as lockfile source for build")
 	echo
 	$(call print_help_subsection, "Defines")
 	$(call print_help_option, BUILD_POLICY, ${BUILD_POLICY})
 	$(call print_help_define, CONAN_OPTIONS, ${CONAN_OPTIONS})
-	$(call print_help_define_lines, UNSELECT_VENDOR, ${UNSELECT_VENDOR})
-	$(call print_help_define_lines, SELECT_VENDOR, ${SELECT_VENDOR})
+#	$(call print_help_define_lines, UNSELECT_VENDOR, ${UNSELECT_VENDOR})
+#	$(call print_help_define_lines, SELECT_VENDOR, ${SELECT_VENDOR})
 	$(call print_help_define_lines, UNSELECT_PKGS, ${UNSELECT_PKGS})
 	$(call print_help_define_lines, SELECT_PKGS, ${SELECT_PKGS})
 	echo

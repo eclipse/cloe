@@ -55,7 +55,6 @@ jobs:
           fi
       - name: Build cloe w/ package
         run: |
-          make -f Makefile.all export-vendor &&
           make ${{ matrix.package_target }}
       - name: Build smoketest dependencies
         run: |
