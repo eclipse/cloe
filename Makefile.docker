@@ -34,19 +34,19 @@ endif
 
 ifeq ($(shell [ -f ${PROJECT_ROOT}/setup.sh ] && echo "true"),true)
 DOCKER_BUILD_ARGS += --secret id=setup,src=${PROJECT_ROOT}/setup.sh
-DOCKER_RUN_ARGS += -v ${PROJECT_ROOT}/setup.sh:/root/setup.sh
+DOCKER_RUN_ARGS += -v "${PROJECT_ROOT}/setup.sh:/root/setup.sh"
 endif
 
 ifneq (${CONAN_PROFILE},)
-DOCKER_BUILD_ARGS += --build-arg CONAN_PROFILE=${CONAN_PROFILE}
+DOCKER_BUILD_ARGS += --build-arg CONAN_PROFILE="${CONAN_PROFILE}"
 endif
 
 ifneq (${VENDOR_TARGET},)
-DOCKER_BUILD_ARGS += --build-arg VENDOR_TARGET=${VENDOR_TARGET}
+DOCKER_BUILD_ARGS += --build-arg VENDOR_TARGET="${VENDOR_TARGET}"
 endif
 
 ifneq (${PACKAGE_TARGET},)
-DOCKER_BUILD_ARGS += --build-arg PACKAGE_TARGET=${PACKAGE_TARGET}
+DOCKER_BUILD_ARGS += --build-arg PACKAGE_TARGET="${PACKAGE_TARGET}"
 endif
 
 ifeq (${KEEP_SOURCES},1)
