@@ -105,6 +105,11 @@ PACKAGE_VERSION  := $(or \
 PACKAGE_CHANNEL  := cloe/develop
 PACKAGE_FQN      := ${PACKAGE_NAME}/${PACKAGE_VERSION}@${PACKAGE_CHANNEL}
 
+# Which files to consider as smoketest profiles when running targets
+# `smoketest-deps` and `smoketest`. This can be useful to override from the
+# command line if you just want to test one configuration.
+TEST_CONANFILES  := tests/conanfile_*.py
+
 # It is an order of magnitude faster to parse ~/.conan/editable_packages.json
 # ourselves than to get conan to do it for us. This should only take us 20ms,
 # while conan needs 250ms. Also, this will tell us if the package is editable,
@@ -302,15 +307,16 @@ info: parse-info
 .PHONY: smoketest
 smoketest:
 	# Ensure that you have built all smoketest dependencies!
-	@for conanfile in tests/conanfile_*.py; do \
+	@for conanfile in ${TEST_CONANFILES}; do \
 		test -f "$${conanfile}" || continue; \
 		printf "Running BATS tests with conanfile: $${conanfile}\n\n"; \
 		SHELL=/bin/bash ${CLOE_LAUNCH} shell -P "$${conanfile}" -- -c "source ${PROJECT_ROOT}/tests/setup_testname.bash; bats tests"; \
 	done
 
+.PHONY: smoketest-deps
 smoketest-deps:
 	# Ensure that you have exported all relevant packages!
-	@for conanfile in tests/conanfile_*.py; do \
+	@for conanfile in ${TEST_CONANFILES}; do \
 		test -f "$${conanfile}" || continue; \
 		echo "Building dependencies for conanfile: $${conanfile}"; \
 		${CLOE_LAUNCH} prepare -P "$${conanfile}" || break; \
