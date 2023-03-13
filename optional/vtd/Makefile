@@ -9,8 +9,14 @@ smoketest-req:
 
 # -------------------------------------------------
 
-SELECT_VENDOR := $(wildcard vendor/*)
-.PHONY: ${SELECT_VENDOR}
+ALL_VENDOR := $(wildcard vendor/*)
+.PHONY: ${ALL_VENDOR}
+
+WITHOUT_VENDOR :=
+UNSELECT_VENDOR := ${WITHOUT_VENDOR}
+WITH_VENDOR :=
+SELECT_VENDOR := $(call uniq, $(filter-out ${UNSELECT_VENDOR}, ${ALL_VENDOR}) ${WITH_VENDOR})
+
 vendor/osi-sensor-1.0.0-vtd2.2: vendor/vtd-2.2.0 vendor/open-simulation-interface-3.0.1
 vendor/open-simulation-interface-3.0.1: vendor/protobuf-2.6.1
 vendor/open-simulation-interface-3.2.0: vendor/protobuf-2.6.1
