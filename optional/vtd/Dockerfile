@@ -28,6 +28,7 @@ ARG KEEP_SOURCES=0
 ARG VENDOR_TARGET="export-vendor download-vendor"
 
 WORKDIR /cloe/optional/vtd
+SHELL ["/bin/bash", "-c"]
 
 # Download vendor packages:
 COPY vendor /cloe/optional/vtd/vendor

@@ -74,6 +74,7 @@ ARG VENDOR_TARGET="export-vendor download-vendor"
 ARG KEEP_SOURCES=0
 
 WORKDIR /cloe
+SHELL ["/bin/bash", "-c"]
 
 # Download or build dependencies:
 COPY vendor /cloe/vendor
