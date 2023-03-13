@@ -11,9 +11,8 @@
 #     override PACKAGE_CHANNEL := cloe/develop
 #     include ../../Makefile.package
 #
-# This Makefile is used for every Conan package in this project.
-# It expects a conanfile.py to reside in the directory and reads
-# package information from this.
+# As the Makefile is written for Conan packages, it expects a conanfile.py
+# to reside in the directory and reads package information from it.
 #
 # You may also use it for your own Cloe plugins or other Conan packages.
 # In this case though, you should remove variables that make explicit
@@ -26,12 +25,20 @@ PROJECT_VERSION := $(shell [ -r ${PROJECT_ROOT}/VERSION ] && cat ${PROJECT_ROOT}
 
 include ${PROJECT_ROOT}/Makefile.help
 
+# Command for cloe-launch.
+#
+# This definition could be `cloe-launch`, but then you wouldn't get the
+# version of cloe-launch that is from this repository, but one that is
+# available globally.
 CLOE_LAUNCH := PYTHONPATH="${PROJECT_ROOT}/cli" python3 -m cloe_launch
 
 SHELL := /bin/bash
 DATE := $(shell date +"%Y%m%d")
 TIMESTAMP := $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 
+# Check if we are in a Git repository and try to describe the current
+# state if we are. This is used for setting the ${PACKAGE_VERSION} if
+# it is not set in conanfile or by ${PROJECT_VERSION}.
 HAS_GIT := $(shell [ -e ${PROJECT_ROOT}/.git ] && echo "true")
 ifeq (${PROJECT_VERSION},unknown)
 ifeq (${HAS_GIT},true)
@@ -44,20 +51,51 @@ endif
 PROJECT_VERSION := ${GIT_DESCRIBE}
 endif
 
+# Default in-source directory.
+#
+# Change this to something like `src` if the source is not stored in the
+# same repository as the conanfile and this Makefile, and put that directory
+# in the .gitignore file.
 SOURCE_DIR       := .
+
+# Don't change these unless you absolutely have to.
 SOURCE_CONANFILE := conanfile.py
 SOURCE_CMAKELISTS:= ${SOURCE_DIR}/CMakeLists.txt
+
 LOCKFILE_SOURCE  :=
 LOCKFILE_OPTION  :=
+
+# When running `make clean`, delete the configured ${SOURCE_DIR}?
+# Anything other than `true` is taken to be false.
 CLEAN_SOURCE_DIR := false
+
+# Whether this package can be built in-source, i.e. not in the Conan
+# cache, but in a local build folder. The various targets for in-source
+# builds will be defined if this is `true`.
 BUILD_IN_SOURCE  := true
+
+# Default in-source build directory.
 BUILD_DIR        := build
+
+# Don't change these unless you know what you are doing.
 BUILD_CONANINFO  := ${BUILD_DIR}/conanbuildinfo.txt
 BUILD_CMAKECACHE := ${BUILD_DIR}/CMakeCache.txt
 BUILD_LOCKFILE   := ${BUILD_DIR}/conan.lock
 BUILD_LAYOUT     := ${PROJECT_ROOT}/.conan-layout.ini
+
+# Default Conan build policy to use when installing Conan dependencies
+# as well as creating packages. See Conan documentation for possible values.
 BUILD_POLICY     := missing
 
+# Package name and version are normally derived from the Conanfile and files
+# in the repository.
+#
+# WARN: If you define package version in the Conanfile via function,
+# then that value will probably conflict with what is set in this Makefile
+# and Conan will probably complain.
+#
+# You probably want to override PACKAGE_CHANNEL, which is actually a USER/CHANNEL
+# combination. See your project for guidance on naming.
 PACKAGE_NAME     := $(shell sed -rn 's/.*name\s*=\s*"([^"]+)"$$/\1/p' ${SOURCE_CONANFILE})
 PACKAGE_VERSION  := $(or \
 	$(shell sed -rn 's/\s+version\s*=\s*"([^"]+)"$$/\1/p' ${SOURCE_CONANFILE}), \
