@@ -19,17 +19,18 @@ setup_hosts() {
         "93.184.216.34 example.com"
     )
 
-    cat /etc/hosts >> /tmp/hosts
+    echo "Extending /etc/hosts file."
+    cp /etc/hosts /tmp/hosts.bak
     for line in $HOSTS; do
-        echo $line >> /tmp/hosts
+        echo $line >> /etc/hosts
     done
-    mount -o bind /tmp/hosts /etc/hosts
 
     CLEANUP_FUNCTIONS+=(cleanup_hosts)
 }
 
 cleanup_hosts() {
-    umount /etc/hosts
+    echo "Restoring /etc/hosts file."
+    mv /tmp/hosts.bak /etc/hosts
 }
 
 setup_ssh() {
@@ -46,6 +47,7 @@ setup_ssh() {
         "-p 80 github.com"
     )
 
+    echo "Performing keyscan for expected hosts."
     for host in $HOSTS; do
         if grep -vqF "$host" ~/.ssh/known_hosts; then
             ssh-keyscan $host >> ~/.ssh/known_hosts
@@ -75,17 +77,20 @@ setup_conan() {
     local CONAN_LOGIN_USERNAME=
     local CONAN_PASSWORD=
 
-    if network_available; then
-        # Set the request timeout to 360 seconds to work-around slow servers.
-        conan config set general.request_timeout=360
 
-        if [ "${CONAN_REMOTE}" != "" ]; then
-            conan remote add default "${CONAN_REMOTE}" "${CONAN_REMOTE_VERIFY_SSL}"
-        fi
+    # Set the request timeout to 360 seconds to work-around slow servers.
+    conan config set general.request_timeout=360
 
-        if [ "${CONAN_LOGIN_USERNAME}" != "" ]; then
-            conan user --remote=default -p
-        fi
+    if [ "${CONAN_REMOTE}" != "" ]; then
+        echo "Adding Conan 'default' remote."
+        conan remote add default "${CONAN_REMOTE}" "${CONAN_REMOTE_VERIFY_SSL}"
+    fi
+
+    if [ "${CONAN_LOGIN_USERNAME}" != "" ]; then
+        echo "Authenticating with 'default' remote."
+        export CONAN_LOGIN_USERNAME CONAN_PASSWORD
+        conan user --remote=default -p
+        unset CONAN_LOGIN_USERNAME CONAN_PASSWORD
     fi
 
     CLEANUP_FUNCTIONS+=(cleanup_conan)
@@ -99,6 +104,50 @@ cleanup_conan() {
 setup_vtd() {
     #  Export environment variable telling VTD where it can find the license server:
     export VI_LIC_SERVER="vtd-licenses.example.com"
+}
+
+indent_lines() {
+    sed -r -e 's/[[:cntrl:]]//g' -e 's/^/\t/g'
+}
+
+upload_package() {
+    pkgref="$1"
+    pkgname="$(echo "$pkgref" | sed -r 's/#.*$//')"
+    faillog="$2"
+
+    conan upload -r default --all --force -c "$pkgname"
+    if [ $? -ne 0 ]; then
+        echo "INFO: attempting recipe-download work-around"
+        conan download -r conancenter -re "$pkgref"
+        if [ $? -ne 0 ]; then
+            echo "CRITICAL: recipe download failed, skipping"
+            echo "$pkgref" >> "$faillog"
+            return
+        fi
+
+        echo "INFO: attempting upload for second time"
+        conan upload -r default --all --force -c "$pkgname"
+        if [ $? -ne 0 ]; then
+            echo "CRITICAL: package upload failed, skipping"
+            echo "$pkgref" >> "$faillog"
+            return
+        fi
+    fi
+    echo "INFO: upload successful"
+}
+
+release_packages() {
+    echo "Uploading packages..."
+    faillog=/tmp/conan-upload-failures.log
+    conan search --raw --rev | sed -r '/^[^@]+$/ { s!#!@_/_#! }' | while read line; do
+        echo "Upload: $line"
+        upload_package "$line" $faillog 2>&1 | indent_lines
+    done
+
+    if [ $(cat $faillog 2>/dev/null | wc -l) -gt 0 ]; then
+        echo "Failure uploading:"
+        cat $faillog | indent_lines
+    fi
 }
 
 upload_conan_packages() {
