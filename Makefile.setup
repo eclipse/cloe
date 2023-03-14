@@ -81,8 +81,8 @@ setup-conan:
 	# Install cloe-debug and cloe-release profiles.
 	for profile in "${PROJECT_ROOT}"/dist/conan/*; do \
 		export profile_name=$$(basename -s .profile $${profile}); \
-		install "$${profile}" "${CONAN_DIR}/profiles/$${profile_name}"; \
-		sed -ir "s/default/${CONAN_PROFILE}/" "${CONAN_DIR}/profiles/$${profile_name}"; \
+		install -m 644 "$${profile}" "${CONAN_DIR}/profiles/$${profile_name}"; \
+		sed -r -i "s/default/${CONAN_PROFILE}/" "${CONAN_DIR}/profiles/$${profile_name}"; \
 	done
 	# Ensure we have an up-to-date CMake configured.
 	if [ $$(( cmake --version | head -1 | cut -f3 -d' '; echo "3.14.99" ) | sort -V | tail -1) = "3.14.99" ]; then \
