@@ -88,7 +88,7 @@ std::shared_ptr<osi3::SensorData> OsiTransceiverTcp::receive_sensor_data_wait() 
   free(data_buf);
 
   // 5. Consistency checks.
-  if (sensor_data_rcv->ByteSize() != static_cast<int>(data_size)) {
+  if (sensor_data_rcv->ByteSizeLong() != static_cast<int>(data_size)) {
     this->num_errors_++;
     throw OsiError("OsiTransceiverTcp: inconsistent data size in osi protobuf message");
   }

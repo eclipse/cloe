@@ -125,6 +125,6 @@ TEST(vtd_osi, osi_sensor) {
   // Initialize detected objects.
   init_osi_detected_objects(data, vehicles);
 
-  ASSERT_GT(data->ByteSize(), 0);
+  ASSERT_GT(data->ByteSizeLong(), 0);
   ASSERT_NO_THROW(sensor.process(data, sim_time));
 }
