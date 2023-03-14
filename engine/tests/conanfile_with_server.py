@@ -1,5 +1,9 @@
-from conans import ConanFile
+# mypy: ignore-errors
+# pylint: skip-file
+
 from pathlib import Path
+
+from conan import ConanFile
 
 
 class CloeTest(ConanFile):
