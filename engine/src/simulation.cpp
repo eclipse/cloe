@@ -202,6 +202,9 @@ class SimulationMachine
       } catch (cloe::ModelReset& e) {
         logger()->error("Unhandled reset request in {} state: {}", id, e.what());
         this->push_interrupt(RESET);
+      } catch (cloe::ModelStop& e) {
+        logger()->error("Unhandled stop request in {} state: {}", id, e.what());
+        this->push_interrupt(STOP);
       } catch (cloe::ModelAbort& e) {
         logger()->error("Unhandled abort request in {} state: {}", id, e.what());
         this->push_interrupt(ABORT);
@@ -832,11 +835,15 @@ StateId SimulationMachine::StepSimulators::impl(SimulationContext& ctx) {
   ctx.foreach_simulator([&ctx](cloe::Simulator& simulator) {
     try {
       cloe::Duration sim_time = simulator.process(ctx.sync);
+      if (!simulator.is_operational()) {
+        throw cloe::ModelStop("simulator {} no longer operational", simulator.name());
+      }
       if (sim_time != ctx.sync.time()) {
-
         throw cloe::ModelError("simulator {} did not progress to required time: got {}ms, expected {}ms", simulator.name(), sim_time.count()/1'000'000, ctx.sync.time().count()/1'000'000);
       }
     } catch (cloe::ModelReset& e) {
+      throw;
+    } catch (cloe::ModelStop& e) {
       throw;
     } catch (cloe::ModelAbort& e) {
       throw;
@@ -914,6 +921,10 @@ StateId SimulationMachine::StepControllers::impl(SimulationContext& ctx) {
     } catch (cloe::ModelReset& e) {
       this->logger()->error("Controller {} reset: {}", ctrl.name(), e.what());
       this->state_machine()->reset();
+      return false;
+    } catch (cloe::ModelStop& e) {
+      this->logger()->error("Controller {} stop: {}", ctrl.name(), e.what());
+      this->state_machine()->stop();
       return false;
     } catch (cloe::ModelAbort& e) {
       this->logger()->error("Controller {} abort: {}", ctrl.name(), e.what());
