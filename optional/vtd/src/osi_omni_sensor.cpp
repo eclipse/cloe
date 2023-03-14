@@ -392,7 +392,7 @@ void OsiOmniSensor::process(osi3::SensorData* osi_sd, cloe::Duration& sim_time) 
     return;
   }
 
-  if (osi_sd->ByteSize() == 0) {
+  if (osi_sd->ByteSizeLong() == 0) {
     return;
   }
 
@@ -486,7 +486,7 @@ void OsiOmniSensor::process(osi3::SensorData* osi_sd, cloe::Duration& sim_time) 
 }
 
 void OsiOmniSensor::process(const osi3::SensorView& osi_sv) {
-  if (osi_sv.ByteSize() == 0) {
+  if (osi_sv.ByteSizeLong() == 0) {
     return;
   }
 
