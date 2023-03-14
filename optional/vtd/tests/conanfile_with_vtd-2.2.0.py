@@ -33,6 +33,7 @@ class CloeTest(ConanFile):
         self.requires(f"cloe-plugin-basic/{self.version}@cloe/develop")
         self.requires(f"cloe-plugin-noisy-sensor/{self.version}@cloe/develop")
         self.requires(f"cloe-plugin-speedometer/{self.version}@cloe/develop")
+        self.requires(f"cloe-plugin-gndtruth-extractor/{self.version}@cloe/develop")
         self.requires(f"cloe-plugin-virtue/{self.version}@cloe/develop")
         self.requires(f"cloe-plugin-vtd/{self.version}@cloe/develop")
         self.requires("incbin/cci.20211107", override=True)
@@ -45,4 +46,3 @@ class CloeTest(ConanFile):
         self.requires("zlib/1.2.13", override=True)
         if self.options["cloe-engine"].server:
             self.requires("boost/[<1.70]", override=True)
-
