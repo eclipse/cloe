@@ -100,6 +100,9 @@ class CloeSimulatorVTD(ConanFile):
         self.options["open-simulation-interface"].shared = False
         self.options["open-simulation-interface"].fPIC = True
 
+    def layout(self):
+        cmake.cmake_layout(self)
+
     def generate(self):
         vtd_api_version = str(self.requires.get("vtd-api"))
         if "vtd-api/2.2.0" in vtd_api_version:
