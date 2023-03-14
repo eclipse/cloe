@@ -1,6 +1,10 @@
+# mypy: ignore-errors
+# pylint: skip-file
+
 import os
 from pathlib import Path
-from conans import ConanFile, tools
+
+from conan import ConanFile, tools
 
 
 class CloeTest(ConanFile):
@@ -25,7 +29,7 @@ class CloeTest(ConanFile):
             if version_file.exists():
                 self.version = self.project_version(version_path)
                 return
-        git = tools.Git(folder=self.recipe_folder)
+        git = tools.scm.Git(self, self.recipe_folder)
         self.version = git.run("describe --dirty=-dirty")[1:]
 
     def requirements(self):
