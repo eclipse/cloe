@@ -385,6 +385,12 @@ class VtdBinding : public cloe::Simulator {
     // b) to catch any restart requests.
     this->readall_scp();
 
+    // We were operational when starting and are no longer.
+    // VTD must have signalled that it was stopped.
+    if (!operational_) {
+      return sync.time() - sync.step_width();
+    }
+
     // Send items to TaskControl:
     for (auto v : vehicles_) {
       v->vtd_step_actuator(*scp_client_, config_.label_vehicle);
@@ -612,7 +618,14 @@ class VtdBinding : public cloe::Simulator {
     }
   }
 
-  void apply_scp_stop(boost::property_tree::ptree&) { operational_ = false; }
+  void apply_scp_stop(boost::property_tree::ptree&) {
+    // If SimCtrl.Stop is received and we are operational, then this has been
+    // sent externally. Update the state and exit.
+    if (operational_) {
+      logger()->info("Received stop signal from VTD.");
+      operational_ = false;
+    }
+  }
 
   void apply_scenario_filename(boost::property_tree::ptree& xml) {
     auto scenario = xml.get<std::string>("<xmlattr>.filename", "none");
