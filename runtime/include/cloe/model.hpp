@@ -40,6 +40,10 @@
  * ModelReset
  *   Error used when a model needs to *signal* that it desires a simulation
  *   reset.
+ *
+ * ModelStop
+ *   Error used when a model needs to *signal* that it desires a simulation
+ *   stop.
  */
 
 #pragma once
@@ -110,6 +114,29 @@ class ModelReset : public ModelError {
  public:
   using ModelError::ModelError;
   virtual ~ModelReset() noexcept = default;
+
+  const std::string& explanation() const { return Error::explanation(); }
+
+  ModelError explanation(const std::string& explanation) && {
+    this->set_explanation(explanation);
+    return std::move(*this);
+  }
+
+  template <typename... Args>
+  ModelError explanation(const char* format, const Args&... args) && {
+    this->set_explanation(fmt::format(format, args...));
+    return std::move(*this);
+  }
+};
+
+/**
+ * ModelStop indicates that the model has encountered a request that causes
+ * it to believe that the simulation should be stopped.
+ */
+class ModelStop : public ModelError {
+ public:
+  using ModelError::ModelError;
+  virtual ~ModelStop() noexcept = default;
 
   const std::string& explanation() const { return Error::explanation(); }
 
