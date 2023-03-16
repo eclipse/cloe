@@ -1,7 +1,6 @@
 # mypy: ignore-errors
 # pylint: skip-file
 
-import os
 import os.path
 import shutil
 import subprocess
@@ -9,8 +8,11 @@ import sys
 from pathlib import Path
 from typing import List
 
-from conans import CMake, ConanFile, tools
-from conans.errors import ConanInvalidConfiguration
+from conan import ConanFile
+from conan.tools import files
+from conan.errors import ConanInvalidConfiguration
+
+required_conan_version = ">=1.52.0"
 
 
 def patch_rpath(file: Path, rpath: List[str]):
@@ -98,8 +100,7 @@ class VtdConan(ConanFile):
 
     def configure(self):
         if self.settings.os == "Windows":
-            raise ConanInvalidConfiguration(
-                "VTD binaries do not exist for Windows")
+            raise ConanInvalidConfiguration("VTD binaries do not exist for Windows")
 
     def build(self):
         src = Path(self.source_folder)
@@ -109,7 +110,7 @@ class VtdConan(ConanFile):
 
         def extract_archive(archive):
             print(f"Extracting: {archive}")
-            tools.untargz(src / archive, dst)
+            files.unzip(self, src / archive, dst)
 
         extract_archive(self._archive_base)
         libdir.mkdir()
@@ -186,8 +187,7 @@ class VtdConan(ConanFile):
         for file in find_binary_files():
             try:
                 patch_rpath(
-                    file, [
-                        f"$ORIGIN/{os.path.relpath(libdir, (dst / file).parent)}"]
+                    file, [f"$ORIGIN/{os.path.relpath(libdir, (dst / file).parent)}"]
                 )
             except:
                 # Not all files can be set, but even if this happens it doesn't appear
@@ -210,6 +210,11 @@ class VtdConan(ConanFile):
         self.copy("*", src=self._root_dir, symlinks=True)
 
     def package_info(self):
+        self.cpp_info.set_property("cmake_find_mode", "both")
+        self.cpp_info.set_property("cmake_file_name", "vtd")
+        self.cpp_info.set_property("cmake_target_name", "vtd::vtd")
+        self.cpp_info.set_property("pkg_config_name", "vtd")
+
         bindir = Path(self.package_folder) / "bin"
         self.output.info(f"Appending PATH environment variable: {bindir}")
         self.env_info.PATH.append(str(bindir))

@@ -2,15 +2,11 @@ cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 
 project(vtd_api LANGUAGES CXX VERSION 2.2.0)
 
-include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS)
-
-set(target vtd_api)
-
-add_library(${target}
+add_library(vtd-api
     src/Develop/Framework/RDBHandler/RDBHandler.cc
 )
-target_include_directories(${target}
+add_library(vtd::api ALIAS vtd-api)
+target_include_directories(vtd-api
   PUBLIC
     src/Develop/Framework/inc
     src/Develop/Framework/RDBHandler
@@ -18,7 +14,7 @@ target_include_directories(${target}
 
 # Installation -------------------------------------------------------
 include(GNUInstallDirs)
-install(TARGETS ${target}
+install(TARGETS vtd-api
     LIBRARY
         DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE

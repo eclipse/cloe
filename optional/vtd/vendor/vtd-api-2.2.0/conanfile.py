@@ -3,8 +3,11 @@
 
 from pathlib import Path
 
-from conans import CMake, ConanFile, tools
-from conans.errors import ConanInvalidConfiguration
+from conan import ConanFile
+from conan.tools import cmake, files
+from conan.errors import ConanInvalidConfiguration
+
+required_conan_version = ">=1.52.0"
 
 
 class VtdApiConan(ConanFile):
@@ -28,12 +31,10 @@ class VtdApiConan(ConanFile):
         "shared": False,
         "fPIC": True,
     }
-    build_requires = [
-        "vtd/2.2.0@cloe-restricted/stable",
+    generators = "CMakeDeps"
+    requires = [
+        ("vtd/2.2.0@cloe-restricted/stable", "private"),
     ]
-    generators = "cmake"
-
-    _cmake = None
 
     def configure(self):
         if self.settings.os == "Windows":
@@ -42,25 +43,29 @@ class VtdApiConan(ConanFile):
     def imports(self):
         self.copy("*", dst="src/Develop", src="Develop", root_package="vtd")
 
-    def _configure_cmake(self):
-        if self._cmake:
-            return self._cmake
-        self._cmake = CMake(self)
-        self._cmake.definitions["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
-        self._cmake.configure()
-        return self._cmake
+    def layout(self):
+        cmake.cmake_layout(self)
+
+    def generate(self):
+        tc = cmake.CMakeToolchain(self)
+        tc.generate()
 
     def build(self):
-        cmake = self._configure_cmake()
-        cmake.build()
+        cm = cmake.CMake(self)
+        cm.configure()
+        cm.build()
 
     def package(self):
-        cmake = self._configure_cmake()
-        cmake.install()
+        cm = cmake.CMake(self)
+        cm.install()
         self.copy("Develop", src="src", symlinks=True)
 
     def package_info(self):
+        self.cpp_info.set_property("cmake_find_mode", "both")
+        self.cpp_info.set_property("cmake_file_name", "vtd-api")
+        self.cpp_info.set_property("cmake_target_name", "vtd::api")
+        self.cpp_info.set_property("pkg_config_name", "vtd-api")
         if self.in_local_cache:
-            self.cpp_info.libs = tools.collect_libs(self)
+            self.cpp_info.libs = files.collect_libs(self)
         else:
             self.cpp_info.libs = ["vtd_api"]

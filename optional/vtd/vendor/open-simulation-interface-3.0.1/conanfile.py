@@ -6,6 +6,8 @@ import shutil
 
 from conans import CMake, ConanFile, tools
 
+required_conan_version = ">=1.52.0"
+
 
 class OpenSimulationInterfaceConan(ConanFile):
     name = "open-simulation-interface"

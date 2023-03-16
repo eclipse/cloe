@@ -4,10 +4,8 @@ project(open_simulation_interface
     LANGUAGES CXX
 )
 
-include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS NO_OUTPUT_DIRS)
-
 find_package(Protobuf REQUIRED)
+
 # make sure that protobuf_generate_cpp finds the protobuf headers
 set(Protobuf_IMPORT_DIRS ${Protobuf_INCLUDE_DIRS})
 
@@ -58,7 +56,7 @@ target_include_directories(${PROJECT_NAME}
 )
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
-        CONAN_PKG::protobuf
+        Protobuf::protobuf
 )
 
 include(GNUInstallDirs)

@@ -1,24 +1,24 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 
 project(OSMPDummySensor
     LANGUAGES CXX
 )
 
-include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS NO_OUTPUT_DIRS)
+set(VTD_ROOT ${CONAN_VTD_ROOT} CACHE FILEPATH "Path to VTD root installation directory")
 
 # Compiler definitions
 string(TIMESTAMP FMUTIMESTAMP UTC)
 string(MD5 FMUGUID modelDescription.in.xml)
 configure_file(modelDescription.in.xml modelDescription.xml @ONLY)
 find_library(VTD_OSI_LIBRARY NAME libopen_simulation_interface.so
-    PATHS "${CONAN_VTD_ROOT}/Data/Setups/Standard.OSI3/Bin/"
+    PATHS "${VTD_ROOT}/Data/Setups/Standard.OSI3/Bin/"
     NO_DEFAULT_PATH
 )
 if(NOT VTD_OSI_LIBRARY)
     message(WARNING "VTD OSI library not found. Using Conan package..")
     set(VTD_OSI_LIBRARY CONAN_PKG::open-simulation-interface)
 endif()
+
 # Library ------------------------------------------------------------
 add_library(${PROJECT_NAME} SHARED
     OSMPDummySensor.cpp
