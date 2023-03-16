@@ -149,19 +149,22 @@ int main(int argc, char** argv) {
   }
 
   // Setup stack, applying strict/secure mode if necessary, and provide launch command.
-  if (stack_options.secure_mode) {
-    stack_options.strict_mode = true;
-    stack_options.no_hooks = true;
-    stack_options.interpolate_vars = false;
+  {
+    if (stack_options.secure_mode) {
+      stack_options.strict_mode = true;
+      stack_options.no_hooks = true;
+      stack_options.interpolate_vars = false;
+    }
+    if (stack_options.strict_mode) {
+      stack_options.no_system_plugins = true;
+      stack_options.no_system_confs = true;
+      run_options.require_success = true;
+    }
+    stack_options.environment->prefer_external(false);
+    stack_options.environment->allow_undefined(stack_options.interpolate_undefined);
+    stack_options.environment->insert(CLOE_SIMULATION_UUID_VAR, "${" CLOE_SIMULATION_UUID_VAR "}");
   }
-  if (stack_options.strict_mode) {
-    stack_options.no_system_plugins = true;
-    stack_options.no_system_confs = true;
-    run_options.require_success = true;
-  }
-  stack_options.environment->prefer_external(false);
-  stack_options.environment->allow_undefined(stack_options.interpolate_undefined);
-  stack_options.environment->insert(CLOE_SIMULATION_UUID_VAR, "${" CLOE_SIMULATION_UUID_VAR "}");
+
   auto with_stack_options = [&](auto& opt) -> decltype(opt) {
     opt.stack_options = stack_options;
     return opt;
