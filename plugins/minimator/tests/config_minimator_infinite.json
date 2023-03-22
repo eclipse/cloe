@@ -84,7 +84,7 @@
           "from": "cloe::default_lane_sensor",
           "args": {
             "enable": true,
-            "estimation_distance": 40.0
+            "frustum_culling": true
           }
         }
       }
