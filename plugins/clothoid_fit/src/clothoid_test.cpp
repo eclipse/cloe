@@ -24,8 +24,10 @@
 #include <Eigen/Geometry>  // for Vector3d
 #include <cmath>           // for M_PI, M_PI_2
 
-#include <cloe/core.hpp>            // for Json
-#include <fable/utility/gtest.hpp>  // for assert_validate
+#include <cloe/component/frustum.hpp>        // for Frustum
+#include <cloe/component/lane_boundary.hpp>  // for LaneBoundary
+#include <cloe/core.hpp>                     // for Json
+#include <fable/utility/gtest.hpp>           // for assert_validate
 #include "clothoid_fit.hpp"
 #include "g1_fitting.hpp"  // for calc_clothoid
 
@@ -36,7 +38,7 @@ TEST(clothoid_fit, deserialization) {
 
   fable::assert_validate(c, R"({
       "enable": true,
-      "estimation_distance": 20.0
+      "frustum_culling": false
   })");
 }
 
@@ -73,88 +75,6 @@ std::vector<Eigen::Vector3d> get_half_circle_lb_points(const Eigen::Vector3d& pt
   return pts;
 }
 
-TEST(clothoid_fit, find_x0_hdg0) {
-  const double tol = 1E-6;
-  std::cout << "clothoid_fit cout" << std::endl;
-  // Polyline in x-direction.
-  auto lb_points =
-      get_line_lb_points(Eigen::Vector3d(-5.0, 0.0, 0.0), Eigen::Vector3d(25.0, 0.0, 0.0), 7);
-  Eigen::Vector3d x0;
-  double hdg0 = 0.0;
-  // Require at least 1 m distance between points for heading estimation.
-  double min_dist_hdg_est = 1.0;
-  cloe::component::get_clothoid_point_heading_start(lb_points, min_dist_hdg_est, 0.0, x0, hdg0);
-  ASSERT_DOUBLE_EQ(x0.x(), 0.0);
-  ASSERT_DOUBLE_EQ(hdg0, 0.0);
-  Eigen::Vector3d x1;
-  double hdg1 = 0.0;
-  double estimation_dist = 20.0;
-  cloe::component::get_clothoid_point_heading_end(lb_points, x0, min_dist_hdg_est, estimation_dist,
-                                                  x1, hdg1);
-  ASSERT_DOUBLE_EQ(x1.x(), estimation_dist);
-  ASSERT_DOUBLE_EQ(hdg1, hdg0);
-
-  std::cout << "dx_start: " << x0.x() << " dy_start: " << x0.y() << " heading_start: " << hdg0
-            << std::endl;
-  std::cout << "dx_end: " << x1.x() << " dy_end: " << x1.y() << " heading_end: " << hdg1
-            << std::endl;
-  //curv_hor_start, curv_hor_change and dx_end.Note that these should be
-  // exactly the parameters (k, dk, L)
-  double i0 = 0.0, i1 = 1.0, theta0 = 0.0, i2 = 1.0, i3 = 1.0, theta1 = 2.0, k = 0.0, dk = 0.0,
-         L = 0.0;
-  g1_fit::calc_clothoid(x0.x(), x0.y(), hdg0, x1.x(), x1.y(), hdg1, k, dk, L);
-  std::cout << "curv_hor_start: " << k << " curv_hor_change: " << dk << " dx_end: " << L
-            << std::endl;
-  EXPECT_NEAR(k, 0.0, tol);
-  EXPECT_NEAR(dk, 0.0, tol);
-  EXPECT_NEAR(L, (x1 - x0).norm(), tol);
-
-  // Polyline in y-direction.
-  lb_points =
-      get_line_lb_points(Eigen::Vector3d(0.0, -5.0, 0.0), Eigen::Vector3d(0.0, 25.0, 0.0), 7);
-  cloe::component::get_clothoid_point_heading_start(lb_points, min_dist_hdg_est, 0.0, x0, hdg0);
-  EXPECT_NEAR(hdg0, M_PI_2, tol);
-  cloe::component::get_clothoid_point_heading_end(lb_points, x0, min_dist_hdg_est, estimation_dist,
-                                                  x1, hdg1);
-  ASSERT_DOUBLE_EQ(x1.y(), x0.y() + estimation_dist);
-  ASSERT_DOUBLE_EQ(hdg1, hdg0);
-
-  std::cout << "Polyline in y-direction." << std::endl;
-  std::cout << "dx_start: " << x0.x() << " dy_start: " << x0.y() << " heading_start: " << hdg0
-            << std::endl;
-  std::cout << "dx_end: " << x1.x() << " dy_end: " << x1.y() << " heading_end: " << hdg1
-            << std::endl;
-
-  g1_fit::calc_clothoid(x0.x(), x0.y(), hdg0, x1.x(), x1.y(), hdg1, k, dk, L);
-  std::cout << "curv_hor_start: " << k << " curv_hor_change: " << dk << " dx_end: " << L
-            << std::endl;
-  EXPECT_NEAR(k, 0.0, tol);
-  EXPECT_NEAR(dk, 0.0, tol);
-  EXPECT_NEAR(L, (x1 - x0).norm(), tol);
-
-  // Polyline in pos. x-, neg. y-direction.
-  lb_points =
-      get_line_lb_points(Eigen::Vector3d(-5.0, 5.0, 0.0), Eigen::Vector3d(25.0, -25.0, 0.0), 8);
-  cloe::component::get_clothoid_point_heading_start(lb_points, min_dist_hdg_est, 0.0, x0, hdg0);
-  EXPECT_NEAR(hdg0, -M_PI_4, tol);
-  cloe::component::get_clothoid_point_heading_end(lb_points, x0, min_dist_hdg_est, estimation_dist,
-                                                  x1, hdg1);
-  ASSERT_DOUBLE_EQ(hdg1, hdg0);
-
-  std::cout << "Polyline in pos. x-, neg. y-direction." << std::endl;
-  std::cout << "dx_start: " << x0.x() << " dy_start: " << x0.y() << " heading_start: " << hdg0
-            << std::endl;
-  std::cout << "dx_end: " << x1.x() << " dy_end: " << x1.y() << " heading_end: " << hdg1
-            << std::endl;
-
-  g1_fit::calc_clothoid(x0.x(), x0.y(), hdg0, x1.x(), x1.y(), hdg1, k, dk, L);
-  std::cout << "curv_hor_start: " << k << " curv_hor_change: " << dk << " dx_end: " << L
-            << std::endl;
-  EXPECT_NEAR(k, 0.0, tol);
-  EXPECT_NEAR(dk, 0.0, tol);
-  EXPECT_NEAR(L, (x1 - x0).norm(), tol);
-}
-
 TEST(clothoid_fit, circle_calc_curv) {
   const double tol = 1E-6;
   double radius = 10.0;
@@ -186,4 +106,91 @@ TEST(clothoid_fit, spiral_calc_curv_change) {
   EXPECT_NEAR(k, 0.0, tol);
   EXPECT_NEAR(dk, 1 / (aa * aa), tol);
   EXPECT_NEAR(L, length, tol);
+}
+
+TEST(lane_boundary, clothoid_line) {
+  const double tol = 1E-6;
+  const double tol_cull = 1.1E-3;  // Interpolation to frustum planes adds up to 1 mm offset.
+  auto logger = cloe::logger::get("clothoid");
+  cloe::Frustum frustum;
+  frustum.fov_h = M_2X_PI;
+  frustum.fov_v = M_2X_PI;
+  frustum.offset_h = 0.0;
+  frustum.offset_v = 0.0;
+  frustum.clip_near = -0.001;
+  frustum.clip_far = 20.001;
+  cloe::LaneBoundary lb;
+  // Polyline in x-direction, no culling.
+  lb.points =
+      get_line_lb_points(Eigen::Vector3d(-5.0, 0.0, 0.0), Eigen::Vector3d(25.0, 0.0, 0.0), 7);
+  bool frustum_culling = false;
+  ASSERT_TRUE(cloe::component::fit_clothoid(logger, frustum_culling, frustum, lb));
+  EXPECT_NEAR(lb.dx_start, -5.0, tol);
+  EXPECT_NEAR(lb.dy_start, 0.0, tol);
+  EXPECT_NEAR(lb.heading_start, 0.0, tol);
+  EXPECT_NEAR(lb.curv_hor_start, 0.0, tol);
+  EXPECT_NEAR(lb.curv_hor_change, 0.0, tol);
+  EXPECT_NEAR(lb.dx_end, 30.0, tol);
+  // Polyline in x-direction, culling (x-range). Cull at near-plane.
+  frustum_culling = true;
+  ASSERT_TRUE(cloe::component::fit_clothoid(logger, frustum_culling, frustum, lb));
+  EXPECT_NEAR(lb.dx_start, 0.0, tol_cull);
+  EXPECT_NEAR(lb.dy_start, 0.0, tol_cull);
+  EXPECT_NEAR(lb.heading_start, 0.0, tol);
+  EXPECT_NEAR(lb.curv_hor_start, 0.0, tol);
+  EXPECT_NEAR(lb.curv_hor_change, 0.0, tol);
+  EXPECT_NEAR(lb.dx_end, 20.0, tol_cull);
+  // Polyline in x-direction, culling.
+  frustum_culling = true;
+  frustum.fov_h = M_PI_2;
+  // Cull line at vertical planes.
+  frustum.fov_v = M_PI_2;
+  // Make sure no culling occurs at near/far planes.
+  frustum.clip_near = -10.0;
+  frustum.clip_far = 30.0;
+  lb.points =
+      get_line_lb_points(Eigen::Vector3d(-5.0, 0.0, -5.0), Eigen::Vector3d(25.0, 0.0, -5.0), 7);
+  ASSERT_TRUE(cloe::component::fit_clothoid(logger, frustum_culling, frustum, lb));
+  EXPECT_NEAR(lb.dx_start, 5.0, tol_cull);
+  EXPECT_NEAR(lb.dy_start, 0.0, tol_cull);
+  EXPECT_NEAR(lb.heading_start, 0.0, tol);
+  EXPECT_NEAR(lb.curv_hor_start, 0.0, tol);
+  EXPECT_NEAR(lb.curv_hor_change, 0.0, tol);
+  EXPECT_NEAR(lb.dx_end, 20.0, tol_cull);
+  // Polyline in y-direction, no culling.
+  frustum_culling = false;
+  lb.points =
+      get_line_lb_points(Eigen::Vector3d(10.0, -5.0, 0.0), Eigen::Vector3d(10.0, 25.0, 0.0), 7);
+  ASSERT_TRUE(cloe::component::fit_clothoid(logger, frustum_culling, frustum, lb));
+  EXPECT_NEAR(lb.dx_start, 10.0, tol);
+  EXPECT_NEAR(lb.dy_start, -5.0, tol);
+  EXPECT_NEAR(lb.heading_start, M_PI_2, tol);
+  EXPECT_NEAR(lb.curv_hor_start, 0.0, tol);
+  EXPECT_NEAR(lb.curv_hor_change, 0.0, tol);
+  EXPECT_NEAR(lb.dx_end, 30.0, tol);
+  // Polyline in y-direction, culling.
+  frustum_culling = true;
+  // Cull at horizontal frustum planes.
+  frustum.fov_h = M_PI_2;
+  frustum.offset_h = M_PI_4;  // fov = positive quadrant +x/+y or 0..90deg.
+  lb.points =
+      get_line_lb_points(Eigen::Vector3d(10.0, 0.0, 0.0), Eigen::Vector3d(10.0, 25.0, 0.0), 6);
+  ASSERT_TRUE(cloe::component::fit_clothoid(logger, frustum_culling, frustum, lb));
+  EXPECT_NEAR(lb.dx_start, 10.0, tol_cull);
+  EXPECT_NEAR(lb.dy_start, 0.0, tol_cull);
+  EXPECT_NEAR(lb.heading_start, M_PI_2, tol);
+  EXPECT_NEAR(lb.curv_hor_start, 0.0, tol);
+  EXPECT_NEAR(lb.curv_hor_change, 0.0, tol);
+  EXPECT_NEAR(lb.dx_end, 25.0, tol_cull);
+  // Polyline in pos. x-, neg. y-direction, no culling.
+  frustum_culling = false;
+  lb.points =
+      get_line_lb_points(Eigen::Vector3d(-5.0, 5.0, 0.0), Eigen::Vector3d(25.0, -25.0, 0.0), 8);
+  ASSERT_TRUE(cloe::component::fit_clothoid(logger, frustum_culling, frustum, lb));
+  EXPECT_NEAR(lb.dx_start, -5.0, tol);
+  EXPECT_NEAR(lb.dy_start, 5.0, tol);
+  EXPECT_NEAR(lb.heading_start, -M_PI_4, tol);
+  EXPECT_NEAR(lb.curv_hor_start, 0.0, tol);
+  EXPECT_NEAR(lb.curv_hor_change, 0.0, tol);
+  EXPECT_NEAR(lb.dx_end, (lb.points.back() - lb.points.front()).norm(), tol);
 }
