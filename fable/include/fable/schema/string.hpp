@@ -39,8 +39,28 @@ class Environment;  // from <fable/environment.hpp>
 
 namespace schema {
 
+/**
+ * \macro FABLE_REGEX_C_PATTERN specifies the regex for the
+ * String::c_identifier() method.
+ *
+ * Overriding it will not have any effect.
+ */
 #define FABLE_REGEX_C_IDENTIFIER "^[a-zA-Z_][a-zA-Z0-9_]*$"
 
+/**
+ * String de-/serializes a string.
+ *
+ * A string can have the following validation properties set:
+ *
+ * - minimum length (in bytes)
+ * - maximum length (in bytes)
+ * - regular expression pattern
+ * - with or without ENV variable interpolation
+ * - with or withot a special environment for interpolation
+ *
+ * The String schema type allows these properties to be specified
+ * and will validate them during deserialization.
+ */
 class String : public Base<String> {
  public:  // Types and Constructors
   using Type = std::string;
@@ -48,71 +68,160 @@ class String : public Base<String> {
   String(Type* ptr, std::string&& desc) : Base(JsonType::string, std::move(desc)), ptr_(ptr) {}
 
  public:  // Special
-  String not_empty() && {
-    set_min_length(1);
-    return std::move(*this);
-  }
+  /**
+   * Ensure input is not empty if present.
+   *
+   * This is effectively an alias for `min_length(1)`.
+   *
+   * \return *this, for chaining
+   */
+  String not_empty() &&;
 
-  String c_identifier() && {
-    set_pattern(FABLE_REGEX_C_IDENTIFIER);
-    return std::move(*this);
-  }
+  /**
+   * Return the current minimum length (0 if unset).
+   *
+   * \return minimum string length in bytes
+   */
+  size_t min_length() const;
 
-  size_t min_length() const { return min_length_; }
-  void set_min_length(size_t value) { min_length_ = value; }
-  String min_length(size_t value) && {
-    min_length_ = value;
-    return std::move(*this);
-  }
+  /**
+   * Set the minimum string length in bytes.
+   *
+   * \param value min bytes
+   * \return *this, for chaining
+   */
+  String min_length(size_t value) &&;
 
-  size_t max_length() const { return max_length_; }
-  void set_max_length(size_t value) { max_length_ = value; }
-  String max_length(size_t value) && {
-    max_length_ = value;
-    return std::move(*this);
-  }
+  /**
+   * Set the minimum string length in bytes.
+   *
+   * \param value min bytes
+   */
+  void set_min_length(size_t value);
 
-  const std::string& pattern() const { return pattern_; }
-  void set_pattern(const std::string& value) { pattern_ = value; }
-  String pattern(const std::string& value) && {
-    pattern_ = value;
-    return std::move(*this);
-  }
+  /**
+   * Return the current maximum length (max size_t value if unset).
+   *
+   * \return maximum string length in bytes
+   */
+  size_t max_length() const;
 
-  bool interpolate() const { return interpolate_; }
-  void set_interpolate(bool value) { interpolate_ = value; }
-  String interpolate(bool value) && {
-    interpolate_ = value;
-    return std::move(*this);
-  }
+  /**
+   * Set the maximum string length in bytes.
+   *
+   * \param value max bytes
+   * \return *this, for chaining
+   */
+  String max_length(size_t value) &&;
 
-  Environment* environment() const { return env_; }
-  void set_environment(Environment* env) { env_ = env; }
-  String environment(Environment* env) && {
-    env_ = env;
-    return std::move(*this);
-  }
+  /**
+   * Set the maximum string length in bytes.
+   *
+   * \param value maximum string length in bytes
+   */
+  void set_max_length(size_t value);
+
+  /**
+   * Return the regular expression pattern the string should match.
+   *
+   * \return regex pattern
+   */
+  const std::string& pattern() const;
+
+  /**
+   * Set the string regular expression pattern.
+   *
+   * \param value regex pattern
+   * \return *this, for chaining
+   */
+  String pattern(const std::string& value) &&;
+
+  /**
+   * Set the string regular expression pattern.
+   *
+   * \param value regex pattern
+   */
+  void set_pattern(const std::string& value);
+
+  /**
+   * Ensure that the input matches an identifier as roughly specified
+   * by C.
+   *
+   * This is shorthand for setting the pattern to FABLE_REGEX_C_IDENTIFIER.
+   */
+  String c_identifier() &&;
+
+  /**
+   * Return whether shell-style variable interpolation is enabled (default false).
+   *
+   * \return true if enabled
+   */
+  bool interpolate() const;
+
+  /**
+   * \copydoc String::set_interpolate(bool)
+   *
+   * \return *this, for chaining
+   */
+  String interpolate(bool value) &&;
+
+  /**
+   * Set whether variable interpolation is enabled.
+   *
+   * The following strings are then interpolated:
+   *
+   * This uses the `Environment` set by the `set_environment()` method.
+   * If no environment is set, a default empty environment is used with OS environment
+   * fallback.
+   *
+   * The string `"${SHELL}"` for example will evaluate to the current shell as defined
+   * in the OS environment, unless explicitely set in an `Environment` that is passed
+   * to `set_environment()`.
+   *
+   * Alternatives can be provided, such as with `"${NOT_EXIST-alternate string}"`.
+   *
+   * \see Environment
+   * \see String::set_environment(Environment)
+   *
+   * \param value true to enable
+   */
+  void set_interpolate(bool value);
+
+  /**
+   * Return the Environment used for variable interpolation.
+   *
+   * \return environment
+   */
+  Environment* environment() const;
+
+  /**
+   * Set the Environment used for variable interpolation.
+   *
+   * \see String::set_interpolate(bool)
+   *
+   * \param environment
+   * \return *this, for chaining
+   */
+  String environment(Environment* env) &&;
+
+  /**
+   * Set the Environment used for variable interpolation.
+   *
+   * \see String::set_interpolate(bool)
+   *
+   * \param environment
+   */
+  void set_environment(Environment* env);
 
  public:  // Overrides
   Json json_schema() const override;
   void validate(const Conf& c) const override;
-
   using Interface::to_json;
-  void to_json(Json& j) const override {
-    assert(ptr_ != nullptr);
-    j = serialize(*ptr_);
-  }
-
-  void from_conf(const Conf& c) override {
-    assert(ptr_ != nullptr);
-    *ptr_ = deserialize(c);
-  }
-
-  Json serialize(const Type& x) const { return x; }
-
+  void to_json(Json& j) const override;
+  void from_conf(const Conf& c) override;
+  Json serialize(const Type& x) const;
   Type deserialize(const Conf& c) const;
-
-  void reset_ptr() override { ptr_ = nullptr; }
+  void reset_ptr() override;
 
  private:
   bool interpolate_{false};

@@ -31,6 +31,51 @@
 namespace fable {
 namespace schema {
 
+size_t String::min_length() const { return min_length_; }
+void String::set_min_length(size_t value) { min_length_ = value; }
+String String::min_length(size_t value) && {
+  min_length_ = value;
+  return std::move(*this);
+}
+
+String String::not_empty() && {
+  set_min_length(1);
+  return std::move(*this);
+}
+
+size_t String::max_length() const { return max_length_; }
+void String::set_max_length(size_t value) { max_length_ = value; }
+String String::max_length(size_t value) && {
+  max_length_ = value;
+  return std::move(*this);
+}
+
+const std::string& String::pattern() const { return pattern_; }
+void String::set_pattern(const std::string& value) { pattern_ = value; }
+String String::pattern(const std::string& value) && {
+  pattern_ = value;
+  return std::move(*this);
+}
+
+String String::c_identifier() && {
+  set_pattern(FABLE_REGEX_C_IDENTIFIER);
+  return std::move(*this);
+}
+
+bool String::interpolate() const { return interpolate_; }
+void String::set_interpolate(bool value) { interpolate_ = value; }
+String String::interpolate(bool value) && {
+  interpolate_ = value;
+  return std::move(*this);
+}
+
+Environment* String::environment() const { return env_; }
+void String::set_environment(Environment* env) { env_ = env; }
+String String::environment(Environment* env) && {
+  env_ = env;
+  return std::move(*this);
+}
+
 Json String::json_schema() const {
   Json j{
       {"type", "string"},
@@ -66,9 +111,23 @@ void String::validate(const Conf& c) const {
   }
 }  // namespace schema
 
+void String::reset_ptr() { ptr_ = nullptr; }
+
+Json String::serialize(const String::Type& x) const { return x; }
+
 String::Type String::deserialize(const Conf& c) const {
   auto s = c.get<Type>();
   return (interpolate_ ? interpolate_vars(s, env_) : s);
+}
+
+void String::to_json(Json& j) const {
+  assert(ptr_ != nullptr);
+  j = serialize(*ptr_);
+}
+
+void String::from_conf(const Conf& c) {
+  assert(ptr_ != nullptr);
+  *ptr_ = deserialize(c);
 }
 
 }  // namespace schema
