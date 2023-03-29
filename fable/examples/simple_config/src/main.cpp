@@ -24,6 +24,7 @@
 
 #include <fable/confable.hpp>  // for fable::{Conf, Confable, Schema, ...}
 #include <fable/utility.hpp>   // for fable::read_conf
+#include <fable/schema.hpp>    // for Schema
 
 // A nested configuration structure
 struct NestedConfig : public fable::Confable {

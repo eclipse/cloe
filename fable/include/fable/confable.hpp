@@ -27,9 +27,8 @@
 
 #include <memory>  // for unique_ptr<>
 
-#include <fable/conf.hpp>    // for Conf
 #include <fable/json.hpp>    // for Json
-#include <fable/schema.hpp>  // for Schema
+#include <fable/conf.hpp>    // for Conf
 
 #define CONFABLE_FRIENDS(xType)                                           \
   using ::fable::Confable::to_json;                                       \
@@ -42,34 +41,25 @@
 
 namespace fable {
 
+class Schema;
+
 class Confable {
  public:
-  Confable() noexcept = default;
+  Confable() noexcept;
+  Confable(const Confable&) noexcept;
+  Confable(Confable&&) noexcept;
 
-  Confable(const Confable&) noexcept : schema_(nullptr) {}
-  Confable(Confable&&) noexcept : schema_(nullptr) {}
+  Confable& operator=(const Confable& other) noexcept;
+  Confable& operator=(Confable&& other) noexcept;
 
-  Confable& operator=(const Confable& other) noexcept {
-    if (this != &other) {
-      schema_.reset();
-    }
-    return *this;
-  }
-  Confable& operator=(Confable&& other) noexcept {
-    if (this != &other) {
-      schema_.reset();
-    }
-    return *this;
-  }
-
-  virtual ~Confable() noexcept = default;
+  virtual ~Confable() noexcept;
 
   /**
    * Reset the internal schema cache.
    *
    * This causes schema_impl to be called next time the schema is requested.
    */
-  virtual void reset_schema() { schema_.reset(); }
+  virtual void reset_schema();
 
   /**
    * Return the object schema for deserialization.
@@ -77,12 +67,7 @@ class Confable {
    * This method uses `schema_impl` under the hood, which the object should
    * implement.
    */
-  Schema& schema() {
-    if (!schema_) {
-      schema_ = std::make_unique<Schema>(schema_impl());
-    }
-    return *schema_.get();
-  }
+  Schema& schema();
 
   /**
    * Return the object schema for description and validation.
@@ -90,7 +75,7 @@ class Confable {
    * This method uses `schema_impl` under the hood, which the object should
    * implement.
    */
-  const Schema& schema() const { return const_cast<Confable*>(this)->schema(); }
+  const Schema& schema() const;
 
   /**
    * Validate a Conf without applying it.
@@ -102,7 +87,7 @@ class Confable {
    * This methodshould NOT call from_conf without also overriding from_conf
    * to prevent infinite recursion.
    */
-  virtual void validate(const Conf& c) const { schema().validate(c); }
+  virtual void validate(const Conf& c) const;
 
   /**
    * Deserialize a Confable from a Conf.
@@ -113,11 +98,7 @@ class Confable {
    *
    * and use the default implementation of this.
    */
-  virtual void from_conf(const Conf& c) {
-    validate(c);
-    schema().from_conf(c);
-    reset_schema();
-  }
+  virtual void from_conf(const Conf& c);
 
   /**
    * Serialize a Confable to Json.
@@ -125,16 +106,12 @@ class Confable {
    * Note: If you implement this type, make sure to either use CONFABLE_FRIENDS
    * or a using Confable::to_json statement in your derived type.
    */
-  virtual void to_json(Json& j) const { schema().to_json(j); }
+  virtual void to_json(Json& j) const;
 
   /**
    * Serialize a Confable to Json.
    */
-  Json to_json() const {
-    Json j;
-    to_json(j);
-    return j;
-  }
+  Json to_json() const;
 
  protected:
   /**
@@ -144,10 +121,10 @@ class Confable {
    * object is created or moved, since Schema contains references to fields
    * that (should be) in the object.
    */
-  virtual Schema schema_impl() { return schema::Struct(); }
+  virtual Schema schema_impl();
 
  private:
-  mutable std::unique_ptr<Schema> schema_{nullptr};
+  mutable std::unique_ptr<Schema> schema_;
 };
 
 }  // namespace fable
