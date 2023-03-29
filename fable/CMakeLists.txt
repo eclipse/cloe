@@ -19,6 +19,7 @@ file(GLOB ${target}_PUBLIC_HEADERS "include/**/*.hpp")
 add_library(${target}
     # find src -type f -name "*.cpp" \! -name "*_test.cpp"
     src/fable/conf.cpp
+    src/fable/confable.cpp
     src/fable/json.cpp
     src/fable/schema.cpp
     src/fable/schema/boolean.cpp

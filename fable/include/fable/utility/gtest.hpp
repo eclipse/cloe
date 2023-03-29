@@ -29,6 +29,7 @@
 
 #include <fable/conf.hpp>      // for Conf, Json
 #include <fable/confable.hpp>  // for Confable
+#include <fable/schema.hpp>    // for Schema
 #include <fable/error.hpp>     // for SchemaError
 #include <fable/utility.hpp>   // for pretty_print
 
