@@ -37,35 +37,17 @@ class Boolean : public Base<Boolean> {
  public:  // Types and Constructors
   using Type = bool;
 
-  Boolean(Type* ptr, std::string&& desc) : Base(JsonType::boolean, std::move(desc)), ptr_(ptr) {}
+  Boolean(Type* ptr, std::string&& desc);
 
  public:  // Overrides
-  Json json_schema() const override {
-    Json j{
-        {"type", "boolean"},
-    };
-    this->augment_schema(j);
-    return j;
-  }
-
-  void validate(const Conf& c) const override { this->validate_type(c); }
-
+  Json json_schema() const override;
+  void validate(const Conf& c) const override;
   using Interface::to_json;
-  void to_json(Json& j) const override {
-    assert(ptr_ != nullptr);
-    j = serialize(*ptr_);
-  }
-
-  void from_conf(const Conf& c) override {
-    assert(ptr_ != nullptr);
-    *ptr_ = deserialize(c);
-  }
-
-  Json serialize(const Type& x) const { return x; }
-
-  Type deserialize(const Conf& c) const { return c.get<Type>(); }
-
-  void reset_ptr() override { ptr_ = nullptr; }
+  void to_json(Json& j) const override;
+  void from_conf(const Conf& c) override;
+  Json serialize(const Type& x) const;
+  Type deserialize(const Conf& c) const;
+  void reset_ptr() override;
 
  private:
   Type* ptr_{nullptr};
