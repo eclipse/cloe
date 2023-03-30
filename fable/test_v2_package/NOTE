@@ -3,7 +3,7 @@ Note on `test_v2_package`.
 The standard naming for the test package is `test_package`.
 Conan will pick this up automatically and then build it.
 However, when using a lockfile, Conan runs into an error
-when trying to build this lockfile.
+when trying to build this test package.
 
 Once we have migrated to using Conan 2.0, we will rename this
 directory to `test_package`.
