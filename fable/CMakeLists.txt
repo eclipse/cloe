@@ -77,6 +77,7 @@ if(BUILD_TESTING)
         src/fable/schema/ignore_test.cpp
         src/fable/schema/number_test.cpp
         src/fable/schema/optional_test.cpp
+        src/fable/schema/string_test.cpp
         src/fable/schema/struct_test.cpp
         src/fable/schema_test.cpp
     )
