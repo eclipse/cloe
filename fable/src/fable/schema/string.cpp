@@ -22,9 +22,10 @@
 
 #include <fable/schema/string.hpp>
 
-#include <limits>  // for numeric_limits
-#include <regex>   // for regex, regex_match
-#include <string>  // for string
+#include <algorithm>  // for find
+#include <limits>     // for numeric_limits
+#include <regex>      // for regex, regex_match
+#include <string>     // for string
 
 #include <fable/environment.hpp>  // for interpolate_vars
 
@@ -76,12 +77,22 @@ String String::environment(Environment* env) && {
   return std::move(*this);
 }
 
+const std::vector<std::string>& String::enum_of() const { return enum_; }
+void String::set_enum_of(std::vector<std::string>&& init) { enum_ = std::move(init); }
+String String::enum_of(std::vector<std::string>&& init) {
+  enum_ = std::move(init);
+  return std::move(*this);
+}
+
 Json String::json_schema() const {
   Json j{
       {"type", "string"},
   };
   if (!pattern_.empty()) {
     j["pattern"] = pattern_;
+  }
+  if (!enum_.empty()) {
+    j["enum"] = enum_;
   }
   if (min_length_ != 0) {
     j["minLength"] = min_length_;
@@ -108,6 +119,11 @@ void String::validate(const Conf& c) const {
   }
   if (!pattern_.empty() && !std::regex_match(src, std::regex(pattern_))) {
     this->throw_error(c, "expect string to match regex '{}': {}", pattern_, src);
+  }
+  if (!enum_.empty()) {
+    if (std::find(enum_.begin(), enum_.end(), src) == enum_.end()) {
+      this->throw_error(c, "expect string to match one of {}, got {}", Json{enum_}.dump(), src);
+    }
   }
 }  // namespace schema
 

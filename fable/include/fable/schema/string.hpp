@@ -18,6 +18,7 @@
 /**
  * \file fable/schema/string.hpp
  * \see  fable/schema/string.cpp
+ * \see  fable/schema/string_test.cpp
  * \see  fable/schema.hpp
  * \see  fable/schema_test.cpp
  */
@@ -29,6 +30,7 @@
 #include <limits>   // for numeric_limits<>
 #include <string>   // for string
 #include <utility>  // for move
+#include <vector>   // for vector<>
 
 #include <fable/schema/interface.hpp>  // for Base<>
 
@@ -213,6 +215,34 @@ class String : public Base<String> {
    */
   void set_environment(Environment* env);
 
+  /**
+   * Return the set of valid values for the string.
+   *
+   * \return valid values
+   */
+  const std::vector<std::string>& enum_of() const;
+
+  /**
+   * Set the valid values for the string.
+   *
+   * \note If a pattern is set, the string will need to validate
+   * against the pattern in addition to this list.
+   *
+   * \param init list of valid values
+   * \return *this, for chaining
+   */
+  String enum_of(std::vector<std::string>&& init);
+
+  /**
+   * Set the valid values for the string.
+   *
+   * \note If a pattern is set, the string will need to validate
+   * against the pattern in addition to this list.
+   *
+   * \param init list of valid values
+   */
+  void set_enum_of(std::vector<std::string>&& init);
+
  public:  // Overrides
   Json json_schema() const override;
   void validate(const Conf& c) const override;
@@ -228,6 +258,7 @@ class String : public Base<String> {
   size_t min_length_{0};
   size_t max_length_{std::numeric_limits<size_t>::max()};
   std::string pattern_{};
+  std::vector<std::string> enum_{};
   Environment* env_{nullptr};
   Type* ptr_{nullptr};
 };
