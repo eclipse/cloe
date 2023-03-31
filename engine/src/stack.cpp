@@ -137,6 +137,7 @@ Conf default_conf_reader(const std::string& filepath) { return Conf{filepath}; }
 Stack::Stack()
     : Confable()
     , reserved_ids_({"_", "cloe", "sim", "simulation"})
+    , version(CLOE_STACK_VERSION)
     , engine_schema(&engine, "engine configuration")
     , include_schema(&include, include_prototype(), "include configurations")
     , plugins_schema(&plugins, "plugin configuration")
@@ -147,6 +148,7 @@ Stack::Stack(const Stack& other)
     // Constants (1)
     , reserved_ids_(other.reserved_ids_)
     // Configuration (13)
+    , version(other.version)
     , engine(other.engine)
     , server(other.server)
     , include(other.include)
@@ -191,6 +193,7 @@ void swap(Stack& left, Stack& right) {
   swap(left.reserved_ids_, right.reserved_ids_);
 
   // Configuration (13)
+  swap(left.version, right.version);
   swap(left.engine, right.engine);
   swap(left.server, right.server);
   swap(left.include, right.include);
@@ -435,27 +438,29 @@ void Stack::to_json(Json& j) const {
 }
 
 void Stack::from_conf(const Conf& _conf, size_t depth) {
+  static std::vector<std::string> versions CLOE_STACK_SUPPORTED_VERSIONS;
+
   applied_confs_.emplace_back(_conf);
   Conf c = _conf;
 
   // First check the version so the user gets higher-level errors first.
   if (c.has("version")) {
     auto ver = c.get<std::string>("version");
-    if (ver != CLOE_STACK_VERSION) {
+    if (std::find(versions.begin(), versions.end(), ver) == versions.end()) {
       // If we threw a SchemaError, it would look like this:
       //
       //     throw SchemaError{
       //       c,
       //       this->schema().json_schema(),
       //       Json{},
-      //       "require version {}, got {}",
+      //       "require version compatible with {}, got {}",
       //       CLOE_STACK_VERSION,
       //       ver,
       //     };
       //
       // But that would result in a very verbose error message, so we shall
       // throw a more user-friendly error message instead.
-      throw Error{"require version {}, got {}", CLOE_STACK_VERSION, ver}.explanation(R"(
+      throw Error{"require version compatible with {}, got {}", CLOE_STACK_VERSION, ver}.explanation(R"(
             It looks like you are attempting to load a stack file with an
             incompatible version.
 

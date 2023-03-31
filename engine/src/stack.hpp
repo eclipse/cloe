@@ -45,7 +45,11 @@
 #include "plugin.hpp"  // for Plugin
 
 #ifndef CLOE_STACK_VERSION
-#define CLOE_STACK_VERSION "4"
+#define CLOE_STACK_VERSION "4.1"
+#endif
+
+#ifndef CLOE_STACK_SUPPORTED_VERSIONS
+#define CLOE_STACK_SUPPORTED_VERSIONS {"4", "4.0", "4.1"}
 #endif
 
 #ifndef CLOE_XDG_SUFFIX
@@ -887,6 +891,7 @@ class Stack : public Confable {
   boost::optional<std::string> schema_ref_;
 
  public:  // Configuration (13)
+  std::string version;
   EngineConf engine;
   ServerConf server;
   std::vector<IncludeConf> include;
@@ -1091,7 +1096,9 @@ class Stack : public Confable {
 
     return Struct{
         {"$schema", make_schema(&schema_ref_, "valid URI to schema describing this cloe stack version")},
-        {"version", make_const_str(CLOE_STACK_VERSION, "version of stackfile").require()},
+        {"version", make_schema(&version, "version of stackfile").require().enum_of(
+          CLOE_STACK_SUPPORTED_VERSIONS
+        )},
         {"engine", engine_schema},
         {"include", include_schema},
         {"logging", make_schema(&logging, "logging configuration").extend(true)},

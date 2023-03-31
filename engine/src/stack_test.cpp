@@ -37,7 +37,7 @@ TEST(cloe_stack, serialization_of_empty_stack) {
   Stack s;
 
   fable::assert_from_conf(s, R"({
-    "version": "4"
+    "version": "4.1"
   })");
 
   Json expect = R"({
@@ -110,7 +110,7 @@ TEST(cloe_stack, serialization_of_empty_stack) {
     "simulators": [],
     "triggers": [],
     "vehicles": [],
-    "version": "4"
+    "version": "4.1"
   })"_json;
 
   ASSERT_EQ(s.to_json().dump(2), expect.dump(2));
@@ -120,7 +120,7 @@ TEST(cloe_stack, serialization_with_logging) {
   Stack s;
 
   assert_from_conf(s, R"({
-    "version": "4",
+    "version": "4.1",
     "defaults": {
       "simulators": [
         { "binding": "vtd", "args": { "label_vehicle": "symbol" } }
@@ -205,7 +205,7 @@ TEST(cloe_stack, serialization_with_logging) {
     },
     "triggers": [],
     "vehicles": [],
-    "version": "4"
+    "version": "4.1"
   })"_json;
 
   ASSERT_NO_THROW(Json{s.logging[0]}.dump());
