@@ -342,7 +342,13 @@ def cli_prepare(
     engine.conan_options = list(conan_option)
     engine.conan_settings = list(conan_setting)
 
-    engine.prepare()
+    try:
+        engine.prepare()
+    except ChildProcessError:
+        # Most likely scenario:
+        # 1. conan had an error and terminated with non-zero error
+        # 2. error has already been logged
+        sys.exit(1)
 
 
 # _________________________________________________________________________
