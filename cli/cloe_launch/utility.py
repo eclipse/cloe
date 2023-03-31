@@ -25,7 +25,8 @@ def run_cmd(
     )
     if result.returncode != 0:
         logging.error(f"Error running: {' '.join(cmd)}")
-        logging.error(result.stdout)
+        if result.stdout is not None:
+            logging.error(result.stdout)
         if must_succeed:
             raise ChildProcessError()
     return result
