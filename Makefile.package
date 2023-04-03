@@ -85,7 +85,7 @@ BUILD_LAYOUT     := ${PROJECT_ROOT}/.conan-layout.ini
 
 # Default Conan build policy to use when installing Conan dependencies
 # as well as creating packages. See Conan documentation for possible values.
-BUILD_POLICY     := missing
+BUILD_POLICY     := outdated
 
 # Package name and version are normally derived from the Conanfile and files
 # in the repository.
