@@ -77,6 +77,7 @@ to run on Windows as well.
    install
    usage
    develop
+   contributing
    reference
    design
    faq

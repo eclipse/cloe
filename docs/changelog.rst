@@ -6,11 +6,17 @@ composed of multiple "packages", which could potentially be versioned
 individually. At the moment, however, we are versioning all together and noting
 here what changes for each package.
 
+The following change-log contains grouped selections of commits that are part
+of a release; some commits may be missing. See the :doc:`news` for a more
+readable perspective on new releases.
+
 .. note::
    We currently do not release any binaries, each "release" is just a way of
    referring to a tagged set of all packages.
 
 ..
+   TODO(release) // Update release change log
+
    When creating new release notes, use the following procedure:
 
    1. Use changelog-gen.sh script to generate grouped entries of commits for
@@ -28,12 +34,12 @@ here what changes for each package.
       - Tooling & Dependencies
 
    3. Delete items that are not really relevant for the end-user:
-      - Changes to documentation
-      - Changes to vendored packages
-      - Changes to CI
-      - Changes to Node dependencies
-      - Refactoring
-      - Net-zero changes (commits within the release that introduce bugs and
+      - changes to documentation
+      - changes to vendored packages
+      - changes to CI
+      - changes to Node dependencies
+      - refactoring
+      - net-zero changes (commits within the release that introduce bugs and
         then fix them, for example)
 
    4. Change or delete items that are not worded clearly:
@@ -47,6 +53,8 @@ here what changes for each package.
          Followed by one or more sentences or paragraphs describing on a high
          level what the release is about or if there are any important breaking
          changes that are relevant.
+
+         Link to the human-readable news article.
 
       Note that the most recent release is at the *top* of the document.
 
