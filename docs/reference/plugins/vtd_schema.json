@@ -1,5 +1,5 @@
 {
-  "$id": "~/.conan/data/cloe-plugin-vtd/0.19.0/cloe/develop/package/2bd0cc62d3fc2207609267f32772fead9736d2f1/lib/cloe/simulator_vtd.so",
+  "$id": "~/.conan/data/cloe-plugin-vtd/0.20.0/cloe/develop/package/7e58df8cb379ba7703d10f34d6afe33281d13a30/lib/cloe/simulator_vtd.so",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "additionalProperties": false,
   "description": "VIRES Virtual Test Drive",
@@ -127,6 +127,13 @@
     "scenario": {
       "description": "VTD scenario to use (project must already be loaded)",
       "type": "string"
+    },
+    "scp_actions": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "predefined SCP actions for use by action trigger",
+      "type": "object"
     },
     "sensor_initial_port": {
       "description": "initial port for sensor communication",

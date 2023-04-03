@@ -58,6 +58,90 @@ readable perspective on new releases.
 
       Note that the most recent release is at the *top* of the document.
 
+0.20.0 (2023-04-03)
+-------------------
+
+This is the third public minor release of the Cloe packages.
+Read all about it :doc:`here <news/release-0.20.0>`.
+
+**CLI:**
+
+- cli: Provide better error message behavior when prepare fails `[cff17e3] <https://github.com/eclipse/cloe/commit/cff17e3ee8d2cff1783ba1c3602b1bcf5450cfbf>`_
+
+**Engine:**
+
+- engine: Support stack minor versions and bump to "4.1" `[751fa28] <https://github.com/eclipse/cloe/commit/751fa28317407cd8b9a215ed2bc8bc634f6a8d45>`_
+- engine: Add `conceal` key to trigger conf `[385b5e4] <https://github.com/eclipse/cloe/commit/385b5e40285cb8a25f94ba0ffa94ad071f9acc8f>`_
+- engine: Add `optional` parameter to trigger configuration `[918f795] <https://github.com/eclipse/cloe/commit/918f79587bb05bc20c80204bdb7a6a0911b29917>`_
+- engine: Improve error handling of invalid triggers `[87b6cf5] <https://github.com/eclipse/cloe/commit/87b6cf5a94bab60a5da5599d322345dce6e583a7>`_
+
+**Core Libraries:**
+
+- fable: Update examples to use modern CMake `[6f06b12] <https://github.com/eclipse/cloe/commit/6f06b128f435ed7ed1199df4c92df13610e5e360>`_
+- fable: Extend String schema with enum_of method `[70d5760] <https://github.com/eclipse/cloe/commit/70d57607ad7b3c54946ef86ce77b8ba64f3ec4e8>`_
+- fable: Extend gtest.hpp utility header `[1a97427] <https://github.com/eclipse/cloe/commit/1a97427804599d977c94444ba74ea1b0fff93e3c>`_
+- fable: Extract Number<T> implementation into number_impl.hpp `[e104e76] <https://github.com/eclipse/cloe/commit/e104e7677959f023fc4d5cd00b37b590de6be5a6>`_
+- fable: Check key existence with contains method, not at `[b9aafa8] <https://github.com/eclipse/cloe/commit/b9aafa80873e69817032d7941bb0cecf05419238>`_
+
+- runtime: Add ModelStop exception to signal simulation stop `[c78a4ef] <https://github.com/eclipse/cloe/commit/c78a4ef3d3e6bd58eb69fba9c5ebf97283fa8a5c>`_
+- runtime: Fix error in utility/inja.hpp header `[68634ca] <https://github.com/eclipse/cloe/commit/68634ca448ed1940d04be5e2086850ac00e33a36>`_
+
+- models: Add driver request component `[11a5dfe] <https://github.com/eclipse/cloe/commit/11a5dfe391a44642f799125b940b432e2bf627be>`_
+- models: Add vehicle state model component `[157e999] <https://github.com/eclipse/cloe/commit/157e9997e2c235131ff87c2922becd1f68cd8f6f>`_
+- models: Allow overriding of actuation methods `[9e738c4] <https://github.com/eclipse/cloe/commit/9e738c44d7fc5c75e08f4320151604517b1a0266>`_
+- models: Add geometry utility functions `[9e9169e] <https://github.com/eclipse/cloe/commit/9e9169ed55df235282a18ad05524c8fa57f43c07>`_
+
+**Plugins:**
+
+- basic: Add option for setting driver request `[dd7ec17] <https://github.com/eclipse/cloe/commit/dd7ec174a9531dbaf381feaf4b227296ad8c622b>`_
+
+- minimator: Fix assertion failed on abort `[b60f8be] <https://github.com/eclipse/cloe/commit/b60f8bedb25010fa2f2e60c8c1d98f77dcc9d6bb>`_
+
+- vtd: Add external ego model class `[e2c724f] <https://github.com/eclipse/cloe/commit/e2c724f08bf152876253fb80161913220f5407c8>`_
+- vtd: Set actuation after sensor update `[42a5ec9] <https://github.com/eclipse/cloe/commit/42a5ec9d84623691370e29cc3261e5fdc88a09f2>`_
+- vtd: Support actuation requests from driver `[2c7f356] <https://github.com/eclipse/cloe/commit/2c7f35690e712f1f53d3108e05166651c2b93ee8>`_
+- vtd: Add SCP Action `[f356001] <https://github.com/eclipse/cloe/commit/f356001b2df4fdd9b5a58254348414705108cfc0>`_
+- vtd: Allow vendor package selection orthogonal to cloe `[4969e08] <https://github.com/eclipse/cloe/commit/4969e088a577ce1db6b71815b0ecd71537483499>`_
+- vtd: Fix use of protobuf deprecated function use ByteSize `[a6a0548] <https://github.com/eclipse/cloe/commit/a6a0548d026aee02f302dcb2d7d8b57603bd36d7>`_
+- vtd: Handle scenario where VTD sends Stop signal `[3dc3236] <https://github.com/eclipse/cloe/commit/3dc323664aa75d050aaa6b9639319a2643c42d41>`_
+- vtd: Change compression method to avoid revision change `[f3a8b17] <https://github.com/eclipse/cloe/commit/f3a8b170b7bc981dcd45bfe17e8e702aa61e9b14>`_
+- vtd: Add vtd setups for 2022.3 `[ec3a14c] <https://github.com/eclipse/cloe/commit/ec3a14c57c6732a7c5a819de48c29c3c5f952040>`_
+- vtd: Add vtd-2022.3 package `[880bb2e] <https://github.com/eclipse/cloe/commit/880bb2e295c688b64a212e478bf23ec99baf8a7b>`_
+- vtd: Add vtd-api-2022.3 package `[f564d1b] <https://github.com/eclipse/cloe/commit/f564d1b9d4619a5bf7af6bd344c8d66262244306>`_
+- vtd: Move vtd to vtd-2.2.0 and vtd-api to vtd-api-2.2.0 `[74ffe1c] <https://github.com/eclipse/cloe/commit/74ffe1ca30bde93e47eb4f6ef43743c561952ade>`_
+- vtd: Add support for xosc v1.0 `[83103e6] <https://github.com/eclipse/cloe/commit/83103e6853f82385cfa44109a356ea67a42ab2c9>`_
+
+**Tooling & Dependencies:**
+
+Some notable changes that didn't fit cleanly in the changelog below are:
+
+- Most Conan packages have been updated to support use with Conan 2.0.
+  The tooling in the project is still limited to Conan 1.X though.
+
+- Smoketests in the project have been renamed from ``tests/profile_*``
+  to ``tests/conanfile_`` to prevent confusion with Conan profiles.
+
+- tooling: Change Conan build policy to outdated by default `[61fba38] <https://github.com/eclipse/cloe/commit/61fba381a72d077b747d5cd9580e2e9aaa1a98e2>`_
+- tooling: Fix incorrect installation of Conan profiles `[aa8d04a] <https://github.com/eclipse/cloe/commit/aa8d04a44e7b3d67b09c8d25d6a70cb48857692d>`_
+- tooling: Allow conanfiles used by smoketest to be overridden `[50c9d95] <https://github.com/eclipse/cloe/commit/50c9d95458e81fad58cee1900ff53d1cac647ab6>`_
+- tooling: Fix smoketest-deps continuing after failure `[19cd6cc] <https://github.com/eclipse/cloe/commit/19cd6cc33a1cc4c53502c9d68e27ab323b7bcc6c>`_
+- tooling: Fix warning from missing default build profile `[2038c80] <https://github.com/eclipse/cloe/commit/2038c80fa94ba3e033e966796da15f9fdfd35272>`_
+- tooling: Limit Conan installation to <2.0 `[d27bbcb] <https://github.com/eclipse/cloe/commit/d27bbcbed577ce38ba7abb8c3dee6121b703d92a>`_
+- tooling: Handle GCC versions >= 11 `[64936d6] <https://github.com/eclipse/cloe/commit/64936d6b306a58f704d95ccb879fc646ed0fd589>`_
+- tooling: Use CMake standard BUILD_TESTING variable `[1b31578] <https://github.com/eclipse/cloe/commit/1b3157898dbaad9073f5a7b8cfb48853bb2d5963>`_
+- tooling: Ensure an up-to-date (>= 3.15) CMake is configured `[f5ffe92] <https://github.com/eclipse/cloe/commit/f5ffe929b514e94aab254758a00a0c90895d2f31>`_
+- tooling: Bump required CMake version from 3.7 to 3.15 `[37e6078] <https://github.com/eclipse/cloe/commit/37e6078037780c1d0808eda799702fa8397afb0d>`_
+
+- docker: Provide more robust setup.sh.example file `[1fc57ed] <https://github.com/eclipse/cloe/commit/1fc57edf74cdb057d9c1104be87392d6f0305a03>`_
+- docker: Fix and extend setup.sh.example `[e304d15] <https://github.com/eclipse/cloe/commit/e304d1520d3bc8bd481d72c31d59b90921376312>`_
+- docker: Use /bin/bash as SHELL to support setup.sh functions `[0d58bf5] <https://github.com/eclipse/cloe/commit/0d58bf59caf1086b600eaefaafebdda47b43c3a7>`_
+- docker: Fix --build-arg passing from Makefile `[fab9c13] <https://github.com/eclipse/cloe/commit/fab9c13c8af34bdef77e736aa59e2ae6ba5e5c58>`_
+
+- vendor: Update openssl require to 1.1.1t for cpp-netlib `[3f793df] <https://github.com/eclipse/cloe/commit/3f793dfe81d4ca94cad603d7ff3ac125e01155a7>`_
+- vendor: Update cpp-netlib requires openssl/1.1.1s `[a942a45] <https://github.com/eclipse/cloe/commit/a942a45fda67be3a7af6da18a7b54699800eab9c>`_
+- vendor: Use incbin from Conan Center `[1dd42fc] <https://github.com/eclipse/cloe/commit/1dd42fc2a46936a75bf63b44fcf0532a0bbbd0dd>`_
+- vendor: Remove bundled libbacktrace `[df6994c] <https://github.com/eclipse/cloe/commit/df6994c4a8e4afb77a3dee9d079f6f8d040e6883>`_
+
 0.19.0 (2022-12-05)
 -------------------
 
@@ -152,122 +236,122 @@ This marks the initial "release" of the Cloe packages.
 
 **CLI:**
 
-- cli: Use logging library functions instead of print                    `[0617841] <https://github.com/eclipse/cloe/commit/0617841>`_
-- cli: Fix broken logging statements                                     `[dfc3452] <https://github.com/eclipse/cloe/commit/dfc3452>`_
-- cli: Add Makefile with install and editable targets                    `[33d831d] <https://github.com/eclipse/cloe/commit/33d831d>`_
-- cli: Pass extra arguments to shell command                             `[154828f] <https://github.com/eclipse/cloe/commit/154828f>`_
+- cli: Use logging library functions instead of print `[0617841] <https://github.com/eclipse/cloe/commit/0617841>`_
+- cli: Fix broken logging statements `[dfc3452] <https://github.com/eclipse/cloe/commit/dfc3452>`_
+- cli: Add Makefile with install and editable targets `[33d831d] <https://github.com/eclipse/cloe/commit/33d831d>`_
+- cli: Pass extra arguments to shell command `[154828f] <https://github.com/eclipse/cloe/commit/154828f>`_
 - cli: Add --conan-arg and --conan-setting options to exec and shell commands `[734944c] <https://github.com/eclipse/cloe/commit/734944c>`_
-- cli: Add activate command                                              `[9aca3db] <https://github.com/eclipse/cloe/commit/9aca3db>`_
+- cli: Add activate command `[9aca3db] <https://github.com/eclipse/cloe/commit/9aca3db>`_
 
 **Engine:**
 
-- engine: Provide better errors when simulation errors occur             `[e4c94ca] <https://github.com/eclipse/cloe/commit/e4c94ca>`_
-- engine: Add interpolation for ${THIS_STACKFILE_DIR} and -FILE          `[072e577] <https://github.com/eclipse/cloe/commit/072e577>`_
-- engine: Fix in ComponentConf serialization                             `[0ab2bc2] <https://github.com/eclipse/cloe/commit/0ab2bc2>`_
-- engine: Fix package bin path for in-source builds                      `[988bf3d] <https://github.com/eclipse/cloe/commit/988bf3d>`_
-- engine: Fix plugin clobbering not working                              `[820ff72] <https://github.com/eclipse/cloe/commit/820ff72>`_
-- engine: Stream JSON api data to a file                                 `[08938d6] <https://github.com/eclipse/cloe/commit/08938d6>`_
-- engine: Avoid compiler bug in xenial build                             `[4c08424] <https://github.com/eclipse/cloe/commit/4c08424>`_
-- engine: Fix missing CXX_STANDARD_REQUIRED for libstack                 `[db0a41f] <https://github.com/eclipse/cloe/commit/db0a41f>`_
+- engine: Provide better errors when simulation errors occur `[e4c94ca] <https://github.com/eclipse/cloe/commit/e4c94ca>`_
+- engine: Add interpolation for ${THIS_STACKFILE_DIR} and -FILE `[072e577] <https://github.com/eclipse/cloe/commit/072e577>`_
+- engine: Fix in ComponentConf serialization `[0ab2bc2] <https://github.com/eclipse/cloe/commit/0ab2bc2>`_
+- engine: Fix package bin path for in-source builds `[988bf3d] <https://github.com/eclipse/cloe/commit/988bf3d>`_
+- engine: Fix plugin clobbering not working `[820ff72] <https://github.com/eclipse/cloe/commit/820ff72>`_
+- engine: Stream JSON api data to a file `[08938d6] <https://github.com/eclipse/cloe/commit/08938d6>`_
+- engine: Avoid compiler bug in xenial build `[4c08424] <https://github.com/eclipse/cloe/commit/4c08424>`_
+- engine: Fix missing CXX_STANDARD_REQUIRED for libstack `[db0a41f] <https://github.com/eclipse/cloe/commit/db0a41f>`_
 
 **Core Libraries:**
 
-- fable: Set version to project version from conanfile.py                `[cea763a] <https://github.com/eclipse/cloe/commit/cea763a>`_
-- fable: Forward-declare make_prototype<> in interface.hpp               `[a868f9a] <https://github.com/eclipse/cloe/commit/a868f9a>`_
-- fable: Add extra type traits for working with schema types             `[b0ae81b] <https://github.com/eclipse/cloe/commit/b0ae81b>`_
-- fable: Add and use gtest utility functions                             `[902dfc9] <https://github.com/eclipse/cloe/commit/902dfc9>`_
-- fable: Fix unorthogonal interface of Struct schema                     `[de9d324] <https://github.com/eclipse/cloe/commit/de9d324>`_
-- fable: Fix un-reusable interface of Factory class                      `[d771921] <https://github.com/eclipse/cloe/commit/d771921>`_
-- fable: Add to_json() method to all schema types                        `[a97ee64] <https://github.com/eclipse/cloe/commit/a97ee64>`_
-- fable: Add CustomDeserializer schema type                              `[d42419e] <https://github.com/eclipse/cloe/commit/d42419e>`_
-- fable: Add set_factory() method to Factory schema                      `[3d26e0a] <https://github.com/eclipse/cloe/commit/3d26e0a>`_
-- fable: Add examples and documentation                                  `[599da29] <https://github.com/eclipse/cloe/commit/599da29>`_
-- fable: Relax version fmt version requirement                           `[d990c19] <https://github.com/eclipse/cloe/commit/d990c19>`_
+- fable: Set version to project version from conanfile.py `[cea763a] <https://github.com/eclipse/cloe/commit/cea763a>`_
+- fable: Forward-declare make_prototype<> in interface.hpp `[a868f9a] <https://github.com/eclipse/cloe/commit/a868f9a>`_
+- fable: Add extra type traits for working with schema types `[b0ae81b] <https://github.com/eclipse/cloe/commit/b0ae81b>`_
+- fable: Add and use gtest utility functions `[902dfc9] <https://github.com/eclipse/cloe/commit/902dfc9>`_
+- fable: Fix unorthogonal interface of Struct schema `[de9d324] <https://github.com/eclipse/cloe/commit/de9d324>`_
+- fable: Fix un-reusable interface of Factory class `[d771921] <https://github.com/eclipse/cloe/commit/d771921>`_
+- fable: Add to_json() method to all schema types `[a97ee64] <https://github.com/eclipse/cloe/commit/a97ee64>`_
+- fable: Add CustomDeserializer schema type `[d42419e] <https://github.com/eclipse/cloe/commit/d42419e>`_
+- fable: Add set_factory() method to Factory schema `[3d26e0a] <https://github.com/eclipse/cloe/commit/3d26e0a>`_
+- fable: Add examples and documentation `[599da29] <https://github.com/eclipse/cloe/commit/599da29>`_
+- fable: Relax version fmt version requirement `[d990c19] <https://github.com/eclipse/cloe/commit/d990c19>`_
 
-- runtime: Fix Vehicle error handling                                    `[5376189] <https://github.com/eclipse/cloe/commit/5376189>`_
-- runtime: Add SetVariable and SetData trigger actions                   `[d21fbd7] <https://github.com/eclipse/cloe/commit/d21fbd7>`_
-- runtime: Support components with multiple inputs                       `[c867eab] <https://github.com/eclipse/cloe/commit/c867eab>`_
+- runtime: Fix Vehicle error handling `[5376189] <https://github.com/eclipse/cloe/commit/5376189>`_
+- runtime: Add SetVariable and SetData trigger actions `[d21fbd7] <https://github.com/eclipse/cloe/commit/d21fbd7>`_
+- runtime: Support components with multiple inputs `[c867eab] <https://github.com/eclipse/cloe/commit/c867eab>`_
 
-- models: Add existence probability to lane boundary and object          `[8e25a97] <https://github.com/eclipse/cloe/commit/8e25a97>`_
-- models: Add utility function for coordinate transformation             `[f24216c] <https://github.com/eclipse/cloe/commit/f24216c>`_
-- models: Fix actuation state is_consistent() method                     `[34ba08e] <https://github.com/eclipse/cloe/commit/34ba08e>`_
-- models: Fix compile error in actuation_state.cpp                       `[8698921] <https://github.com/eclipse/cloe/commit/8698921>`_
-- models: Initialize members of LaneBoundary class                       `[f688e32] <https://github.com/eclipse/cloe/commit/f688e32>`_
+- models: Add existence probability to lane boundary and object `[8e25a97] <https://github.com/eclipse/cloe/commit/8e25a97>`_
+- models: Add utility function for coordinate transformation `[f24216c] <https://github.com/eclipse/cloe/commit/f24216c>`_
+- models: Fix actuation state is_consistent() method `[34ba08e] <https://github.com/eclipse/cloe/commit/34ba08e>`_
+- models: Fix compile error in actuation_state.cpp `[8698921] <https://github.com/eclipse/cloe/commit/8698921>`_
+- models: Initialize members of LaneBoundary class `[f688e32] <https://github.com/eclipse/cloe/commit/f688e32>`_
 
 **Plugins:**
 
-- gndtruth_extractor: Fix compiler warning                               `[6ee61e4] <https://github.com/eclipse/cloe/commit/6ee61e4>`_
-- gndtruth_extractor: Replace enumconfable by fable                      `[21e8f53] <https://github.com/eclipse/cloe/commit/21e8f53>`_
+- gndtruth_extractor: Fix compiler warning `[6ee61e4] <https://github.com/eclipse/cloe/commit/6ee61e4>`_
+- gndtruth_extractor: Replace enumconfable by fable `[21e8f53] <https://github.com/eclipse/cloe/commit/21e8f53>`_
 
-- minimator: Provide lanes of a straight road                            `[f9b60c2] <https://github.com/eclipse/cloe/commit/f9b60c2>`_
-- minimator: Fix JSON api                                                `[5df6e9d] <https://github.com/eclipse/cloe/commit/5df6e9d>`_
+- minimator: Provide lanes of a straight road `[f9b60c2] <https://github.com/eclipse/cloe/commit/f9b60c2>`_
+- minimator: Fix JSON api `[5df6e9d] <https://github.com/eclipse/cloe/commit/5df6e9d>`_
 
 - noisy_sensor: Extend to lane boundaries and refine noise configuration `[a00f64f] <https://github.com/eclipse/cloe/commit/a00f64f>`_
-- noisy_sensor: Add trigger for noise activation                         `[f8e488f] <https://github.com/eclipse/cloe/commit/f8e488f>`_
+- noisy_sensor: Add trigger for noise activation `[f8e488f] <https://github.com/eclipse/cloe/commit/f8e488f>`_
 
-- nop: Provide a NopLaneSensor component                                 `[fc75ea1] <https://github.com/eclipse/cloe/commit/fc75ea1>`_
+- nop: Provide a NopLaneSensor component `[fc75ea1] <https://github.com/eclipse/cloe/commit/fc75ea1>`_
 
-- virtue: Add irrational event                                           `[c672e06] <https://github.com/eclipse/cloe/commit/c672e06>`_
-- virtue: Add safety event                                               `[83ee4d5] <https://github.com/eclipse/cloe/commit/83ee4d5>`_
-- virtue: Add missing_lane_boundaries event                              `[43af6a6] <https://github.com/eclipse/cloe/commit/43af6a6>`_
+- virtue: Add irrational event `[c672e06] <https://github.com/eclipse/cloe/commit/c672e06>`_
+- virtue: Add safety event `[83ee4d5] <https://github.com/eclipse/cloe/commit/83ee4d5>`_
+- virtue: Add missing_lane_boundaries event `[43af6a6] <https://github.com/eclipse/cloe/commit/43af6a6>`_
 
-- vtd: Set object existence probabilities                                `[8d31704] <https://github.com/eclipse/cloe/commit/8d31704>`_
-- vtd: Obtain OSI lane boundaries from ground truth                      `[3310de6] <https://github.com/eclipse/cloe/commit/3310de6>`_
-- vtd: Fix missing CXX_STANDARD option                                   `[8dd562c] <https://github.com/eclipse/cloe/commit/8dd562c>`_
-- vtd: Use vendored vtd package                                          `[a62a118] <https://github.com/eclipse/cloe/commit/a62a118>`_
-- vtd: Avoid spin-logging on empty RDB message queue                     `[886c562] <https://github.com/eclipse/cloe/commit/886c562>`_
-- vtd: Enable VTD dynamics models                                        `[08e64ce] <https://github.com/eclipse/cloe/commit/08e64ce>`_
-- vtd: Remove non-recommended startup options                            `[69aa806] <https://github.com/eclipse/cloe/commit/69aa806>`_
-- vtd: Add linking of external models to runtime directory               `[45587b5] <https://github.com/eclipse/cloe/commit/45587b5>`_
-- vtd: Add vtd-launch script to conan package                            `[c7b1826] <https://github.com/eclipse/cloe/commit/c7b1826>`_
-- vtd: Add logging option to startup script                              `[5712175] <https://github.com/eclipse/cloe/commit/5712175>`_
-- vtd: Add vtd-setups to conan package                                   `[955a980] <https://github.com/eclipse/cloe/commit/955a980>`_
-- vtd: Only remove simulation artifacts                                  `[daa98b2] <https://github.com/eclipse/cloe/commit/daa98b2>`_
-- vtd: Add more timers for performance analysis                          `[1598272] <https://github.com/eclipse/cloe/commit/1598272>`_
+- vtd: Set object existence probabilities `[8d31704] <https://github.com/eclipse/cloe/commit/8d31704>`_
+- vtd: Obtain OSI lane boundaries from ground truth `[3310de6] <https://github.com/eclipse/cloe/commit/3310de6>`_
+- vtd: Fix missing CXX_STANDARD option `[8dd562c] <https://github.com/eclipse/cloe/commit/8dd562c>`_
+- vtd: Use vendored vtd package `[a62a118] <https://github.com/eclipse/cloe/commit/a62a118>`_
+- vtd: Avoid spin-logging on empty RDB message queue `[886c562] <https://github.com/eclipse/cloe/commit/886c562>`_
+- vtd: Enable VTD dynamics models `[08e64ce] <https://github.com/eclipse/cloe/commit/08e64ce>`_
+- vtd: Remove non-recommended startup options `[69aa806] <https://github.com/eclipse/cloe/commit/69aa806>`_
+- vtd: Add linking of external models to runtime directory `[45587b5] <https://github.com/eclipse/cloe/commit/45587b5>`_
+- vtd: Add vtd-launch script to conan package `[c7b1826] <https://github.com/eclipse/cloe/commit/c7b1826>`_
+- vtd: Add logging option to startup script `[5712175] <https://github.com/eclipse/cloe/commit/5712175>`_
+- vtd: Add vtd-setups to conan package `[955a980] <https://github.com/eclipse/cloe/commit/955a980>`_
+- vtd: Only remove simulation artifacts `[daa98b2] <https://github.com/eclipse/cloe/commit/daa98b2>`_
+- vtd: Add more timers for performance analysis `[1598272] <https://github.com/eclipse/cloe/commit/1598272>`_
 
 **Web UI:**
 
-- ui: Add option to render object labels                                 `[06e1c25] <https://github.com/eclipse/cloe/commit/06e1c25>`_
-- ui: Change rendering color palette                                     `[3d8585b] <https://github.com/eclipse/cloe/commit/3d8585b>`_
-- ui: Fix existence probability output                                   `[d77a66a] <https://github.com/eclipse/cloe/commit/d77a66a>`_
-- ui: Fix orbit control axes orientation                                 `[4094d04] <https://github.com/eclipse/cloe/commit/4094d04>`_
-- ui: Add replay functionality                                           `[f88eba5] <https://github.com/eclipse/cloe/commit/f88eba5>`_
-- ui: Add canvas recording functionality                                 `[798b3f9] <https://github.com/eclipse/cloe/commit/798b3f9>`_
-- ui: Add web server for replay feature                                   `[4ee6475] <https://github.com/eclipse/cloe/commit/4ee6475>`_
-- ui: Add Plotly graph import function for replay                        `[a9102fd] <https://github.com/eclipse/cloe/commit/a9102fd>`_
-- ui: Add python cli script to launch data replay                        `[3ed385c] <https://github.com/eclipse/cloe/commit/3ed385c>`_
-- ui: Add button to switch between label attributes                      `[aa6ae75] <https://github.com/eclipse/cloe/commit/aa6ae75>`_
+- ui: Add option to render object labels `[06e1c25] <https://github.com/eclipse/cloe/commit/06e1c25>`_
+- ui: Change rendering color palette `[3d8585b] <https://github.com/eclipse/cloe/commit/3d8585b>`_
+- ui: Fix existence probability output `[d77a66a] <https://github.com/eclipse/cloe/commit/d77a66a>`_
+- ui: Fix orbit control axes orientation `[4094d04] <https://github.com/eclipse/cloe/commit/4094d04>`_
+- ui: Add replay functionality `[f88eba5] <https://github.com/eclipse/cloe/commit/f88eba5>`_
+- ui: Add canvas recording functionality `[798b3f9] <https://github.com/eclipse/cloe/commit/798b3f9>`_
+- ui: Add web server for replay feature `[4ee6475] <https://github.com/eclipse/cloe/commit/4ee6475>`_
+- ui: Add Plotly graph import function for replay `[a9102fd] <https://github.com/eclipse/cloe/commit/a9102fd>`_
+- ui: Add python cli script to launch data replay `[3ed385c] <https://github.com/eclipse/cloe/commit/3ed385c>`_
+- ui: Add button to switch between label attributes `[aa6ae75] <https://github.com/eclipse/cloe/commit/aa6ae75>`_
 
 **Tooling & Dependencies:**
 
-- depends: Pin cli11 dependency to 2.1.2                                 `[0cdb2e8] <https://github.com/eclipse/cloe/commit/0cdb2e8>`_
-- depends: Pin boost dependency to 1.69                                  `[0e04650] <https://github.com/eclipse/cloe/commit/0e04650>`_
-- depends: Pin fmt dependency to 8.1.1                                   `[2dc7902] <https://github.com/eclipse/cloe/commit/2dc7902>`_
-- depends: Pin inja dependency to 3.3.0                                  `[9e23f02] <https://github.com/eclipse/cloe/commit/9e23f02>`_
-- depends: Pin nlohmann_json dependency to 3.10.5                        `[5dd97d7] <https://github.com/eclipse/cloe/commit/5dd97d7>`_
-- depends: Pin incbin dependency to 0.88.0                               `[66caf6b] <https://github.com/eclipse/cloe/commit/66caf6b>`_
+- depends: Pin cli11 dependency to 2.1.2 `[0cdb2e8] <https://github.com/eclipse/cloe/commit/0cdb2e8>`_
+- depends: Pin boost dependency to 1.69 `[0e04650] <https://github.com/eclipse/cloe/commit/0e04650>`_
+- depends: Pin fmt dependency to 8.1.1 `[2dc7902] <https://github.com/eclipse/cloe/commit/2dc7902>`_
+- depends: Pin inja dependency to 3.3.0 `[9e23f02] <https://github.com/eclipse/cloe/commit/9e23f02>`_
+- depends: Pin nlohmann_json dependency to 3.10.5 `[5dd97d7] <https://github.com/eclipse/cloe/commit/5dd97d7>`_
+- depends: Pin incbin dependency to 0.88.0 `[66caf6b] <https://github.com/eclipse/cloe/commit/66caf6b>`_
 
-- tooling: Remove export of VERSION file                                 `[db93f33] <https://github.com/eclipse/cloe/commit/db93f33>`_
-- tooling: Package the cloe meta-package by default                      `[75fb6c5] <https://github.com/eclipse/cloe/commit/75fb6c5>`_
-- tooling: Simplify and streamline Makefiles                             `[0d75409] <https://github.com/eclipse/cloe/commit/0d75409>`_
-- tooling: Do not build vtd plugin by default                            `[7422e3e] <https://github.com/eclipse/cloe/commit/7422e3e>`_
-- tooling: Add package-debug target to Makefile.package                  `[67fec7e] <https://github.com/eclipse/cloe/commit/67fec7e>`_
-- tooling: Skip build of VTD related vendor packages by default          `[86dac87] <https://github.com/eclipse/cloe/commit/86dac87>`_
-- tooling: Add pre-commit configuration                                  `[0833719] <https://github.com/eclipse/cloe/commit/0833719>`_
-- tooling: Add BUILD_TYPE argument to Makefile                           `[4cb2bef] <https://github.com/eclipse/cloe/commit/4cb2bef>`_
-- tooling: Add Ubuntu 16.04 Dockerfile                                   `[e893a98] <https://github.com/eclipse/cloe/commit/e893a98>`_
-- tooling: Add authentication and extra parameters to Dockerfiles        `[2bd67c8] <https://github.com/eclipse/cloe/commit/2bd67c8>`_
-- tooling: Add package-auto target to Makefile.all                       `[570e05a] <https://github.com/eclipse/cloe/commit/570e05a>`_
-- tooling: Use buildkit frontend for building Docker images              `[875b93c] <https://github.com/eclipse/cloe/commit/875b93c>`_
-- tooling: Derive package version from git describe                      `[fe8a3e2] <https://github.com/eclipse/cloe/commit/fe8a3e2>`_
-- tooling: Remove VTD dependency from cloe and cloe-plugin-vtd           `[83265ee] <https://github.com/eclipse/cloe/commit/83265ee>`_
-- tooling: Upgrade Doxyfile for compatibility with latest Doxygen        `[f118108] <https://github.com/eclipse/cloe/commit/f118108>`_
-- tooling: Fix installation of documentation dependencies                `[e0d8c33] <https://github.com/eclipse/cloe/commit/e0d8c33>`_
-- tooling: Set boost dependency to full package mode                     `[d5447a6] <https://github.com/eclipse/cloe/commit/d5447a6>`_
-- tooling: Add test UUIDs                                                `[9e850c1] <https://github.com/eclipse/cloe/commit/9e850c1>`_
-- tooling: Specify override=True in meta-package for overrides           `[e8a17a1] <https://github.com/eclipse/cloe/commit/e8a17a1>`_
+- tooling: Remove export of VERSION file `[db93f33] <https://github.com/eclipse/cloe/commit/db93f33>`_
+- tooling: Package the cloe meta-package by default `[75fb6c5] <https://github.com/eclipse/cloe/commit/75fb6c5>`_
+- tooling: Simplify and streamline Makefiles `[0d75409] <https://github.com/eclipse/cloe/commit/0d75409>`_
+- tooling: Do not build vtd plugin by default `[7422e3e] <https://github.com/eclipse/cloe/commit/7422e3e>`_
+- tooling: Add package-debug target to Makefile.package `[67fec7e] <https://github.com/eclipse/cloe/commit/67fec7e>`_
+- tooling: Skip build of VTD related vendor packages by default `[86dac87] <https://github.com/eclipse/cloe/commit/86dac87>`_
+- tooling: Add pre-commit configuration `[0833719] <https://github.com/eclipse/cloe/commit/0833719>`_
+- tooling: Add BUILD_TYPE argument to Makefile `[4cb2bef] <https://github.com/eclipse/cloe/commit/4cb2bef>`_
+- tooling: Add Ubuntu 16.04 Dockerfile `[e893a98] <https://github.com/eclipse/cloe/commit/e893a98>`_
+- tooling: Add authentication and extra parameters to Dockerfiles `[2bd67c8] <https://github.com/eclipse/cloe/commit/2bd67c8>`_
+- tooling: Add package-auto target to Makefile.all `[570e05a] <https://github.com/eclipse/cloe/commit/570e05a>`_
+- tooling: Use buildkit frontend for building Docker images `[875b93c] <https://github.com/eclipse/cloe/commit/875b93c>`_
+- tooling: Derive package version from git describe `[fe8a3e2] <https://github.com/eclipse/cloe/commit/fe8a3e2>`_
+- tooling: Remove VTD dependency from cloe and cloe-plugin-vtd `[83265ee] <https://github.com/eclipse/cloe/commit/83265ee>`_
+- tooling: Upgrade Doxyfile for compatibility with latest Doxygen `[f118108] <https://github.com/eclipse/cloe/commit/f118108>`_
+- tooling: Fix installation of documentation dependencies `[e0d8c33] <https://github.com/eclipse/cloe/commit/e0d8c33>`_
+- tooling: Set boost dependency to full package mode `[d5447a6] <https://github.com/eclipse/cloe/commit/d5447a6>`_
+- tooling: Add test UUIDs `[9e850c1] <https://github.com/eclipse/cloe/commit/9e850c1>`_
+- tooling: Specify override=True in meta-package for overrides `[e8a17a1] <https://github.com/eclipse/cloe/commit/e8a17a1>`_
 
-- all: Make C++14 required for all packages                              `[77a135a] <https://github.com/eclipse/cloe/commit/77a135a>`_
-- all: Ensure editable mode works for all packages                       `[2b5cf81] <https://github.com/eclipse/cloe/commit/2b5cf81>`_
-- all: Simplify CMakeLists.txt for all plugins                           `[5e61078] <https://github.com/eclipse/cloe/commit/5e61078>`_
-- all: Add CMAKE_EXPORT_COMPILE_COMMANDS to Conan recipes                `[fd28630] <https://github.com/eclipse/cloe/commit/fd28630>`_
+- all: Make C++14 required for all packages `[77a135a] <https://github.com/eclipse/cloe/commit/77a135a>`_
+- all: Ensure editable mode works for all packages `[2b5cf81] <https://github.com/eclipse/cloe/commit/2b5cf81>`_
+- all: Simplify CMakeLists.txt for all plugins `[5e61078] <https://github.com/eclipse/cloe/commit/5e61078>`_
+- all: Add CMAKE_EXPORT_COMPILE_COMMANDS to Conan recipes `[fd28630] <https://github.com/eclipse/cloe/commit/fd28630>`_

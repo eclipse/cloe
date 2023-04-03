@@ -1,5 +1,5 @@
 {
-  "$id": "~/.conan/data/cloe-plugin-speedometer/0.19.0/cloe/develop/package/92ad7de317f3f6912937cd857aa135205c7384fe/lib/cloe/component_speedometer.so",
+  "$id": "~/.conan/data/cloe-plugin-speedometer/0.20.0/cloe/develop/package/498421a99d2afdb65ec3f6555b924a691c6b5f97/lib/cloe/component_speedometer.so",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "additionalProperties": false,
   "description": "provide an event trigger to evaluate speed in km/h",

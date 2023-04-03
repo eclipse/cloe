@@ -158,7 +158,7 @@ to inject environment variables:
 
 ```python
 class CloeTest(ConanFile):
-    python_requires = "cloe-launch-profile/[~=0.19.0]@cloe/develop"
+    python_requires = "cloe-launch-profile/[~=0.20.0]@cloe/develop"
     python_requires_extend = "cloe-launch-profile.Base"
 
     @property
@@ -233,7 +233,7 @@ class CloeTest(ConanFile):
     ...
 
     def requirements(self):
-        self.requires(f"cloe-engine/0.19.0@cloe/develop")
+        self.requires(f"cloe-engine/0.20.0@cloe/develop")
         ...
 ```
 
