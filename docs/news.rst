@@ -1,6 +1,24 @@
 News
 ====
 
+..
+    TODO(release) // Write release news article
+
+    1. Write a news entry about the new release, in the `news/`
+       folder and named `release-X.Y.Z`. See the previous release
+       and follow the same pattern.
+
+       These blog entries should cover the truly interesting
+       changes and also help a user migrate from an older version
+       if they need to make any changes.
+
+    2. Add it to the toctree below and write or copy a TLDR from
+       the article.
+
+    3. Keep the written TLDRs from the last few releases in this
+       document and remove the old ones. Keep at least three.
+
+
 .. toctree::
    :hidden:
    :maxdepth: 1

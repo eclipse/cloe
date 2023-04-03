@@ -1,6 +1,18 @@
 Plugins
 =======
 
+..
+    TODO(release) // Generate plugin documentation
+
+    1. Create Conan packages for the entire project locally or in a dev
+       container.
+
+    2. Run `docs/reference-gen.sh` to update the plugin documentation.
+
+    Make sure that the VERSION file is set with the version about to be released
+    when creating the packages, otherwise the reference documentation will
+    contain references to the wrong version.
+
 As much "external" functionality as possible is implemented through plugins.
 These provide an orthogonal, *horizontal* extension of the Cloe system. Only
 two of these plugins are built-in to Cloe itself, the ``nop`` simulator and
