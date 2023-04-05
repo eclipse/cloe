@@ -42,8 +42,7 @@ help::
 	$(call print_help_target, status, "show status of each of the Conan packages")
 	$(call print_help_target, smoketest-deps, "build system test pre-requisites")
 	$(call print_help_target, smoketest, "run system tests")
-	$(call print_help_target, sphinx, "generate Sphinx documentation")
-	$(call print_help_target, doxygen, "generate Doxygen documentation")
+	$(call print_help_target, docs, "generate documentation")
 	$(call print_help_target, deploy, "deploy Cloe to INSTALL_DIR [=${INSTALL_DIR}]")
 	$(call print_help_target, deploy-cli, "install ${_yel}cloe-launch${_rst} with ${_dim}${PIPX}${_rst}")
 	$(call print_help_target, export-cli, "export ${_yel}cloe-launch-profile${_rst} Conan recipe")
@@ -78,17 +77,12 @@ deploy-cli:
 export-cli:
 	${MAKE} -C cli conan-profile
 
-.PHONY: sphinx
-sphinx:
-	$(call print_header, "Generating Sphinx documentation...")
-	mkdir -p ${BUILD_DIR}/sphinx
-	${MAKE} -C docs html
-
-.PHONY: doxygen
-doxygen:
+.PHONY: docs
+docs:
 	$(call print_header, "Generating Doxygen documentation...")
-	mkdir -p ${BUILD_DIR}/doxygen
-	doxygen Doxyfile
+	${MAKE} -C docs doxygen
+	$(call print_header, "Generating Sphinx documentation...")
+	${MAKE} -C docs html
 
 .PHONY: smoketest-deps
 smoketest-deps: export-cli smoketest-deps-select

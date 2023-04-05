@@ -1,9 +1,10 @@
-name: Build User Documentation
+name: Build Documentation
 
 on:
   pull_request:
     paths:
       - "docs/**"
+      - "*.hpp"
 
 jobs:
   sphinx:
@@ -11,15 +12,17 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - run: mkdir build
-      - run: sudo apt-get update && sudo apt-get install -y git
-      - name: Build documentation
+      - name: Build Doxygen documentation
+        uses: mattnotmitt/doxygen-action@v1.9.5
+        with:
+          working-directory: docs
+      - name: Build Sphinx documentation
         uses: ammaraskar/sphinx-action@master
         with:
-          docs-folder: docs/
+          docs-folder: docs
           build-command: make html
       - name: Upload documentation
         uses: actions/upload-artifact@v3
         with:
-          name: user-documentation
-          path: build/sphinx/html/
+          name: documentation
+          path: docs/_build/html/

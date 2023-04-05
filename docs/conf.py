@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# mypy: ignore-errors
+# pylint: skip-file
 #
 # Configuration file for the Sphinx documentation builder.
 #
@@ -77,7 +79,7 @@ language = "en"
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path .
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+exclude_patterns = ["_vendor", "_build", "Thumbs.db", ".DS_Store"]
 
 # The name of the Pygments (syntax highlighting) style to use.
 #
@@ -89,6 +91,13 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 pygments_style = "tango"
 highlight_language = "none"
 
+
+# -- Options for Breathe Extension -------------------------------------------
+
+import subprocess, os
+read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
+if read_the_docs_build:
+    subprocess.call('doxygen', shell=True)
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -140,7 +149,9 @@ html_last_updated_fmt = ""
 html_scaled_image_link = True
 
 # A list of files that are directly copied.
-html_extra_path = []
+html_extra_path = [
+    "_extra",
+]
 
 # -- Options for HTMLHelp output ---------------------------------------------
 

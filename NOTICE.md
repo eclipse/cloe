@@ -40,6 +40,12 @@ The following third-party libraries are included in the Cloe repository:
   - Website: http://getbootstrap.com
   - Source: engine/webui/bootstrap.min.css
 
+- Doxygen-Awesome-CSS
+  - License: MIT
+  - License-Source: docs/_vendor/doxygen-awesome/LICENSE
+  - Website: https://jothepro.github.io/doxygen-awesome-css
+  - Source: docs/_vendor/doxygen-awesome
+
 The following third-party libraries are used by this project (these are usually
 installed with the help of Conan):
 
