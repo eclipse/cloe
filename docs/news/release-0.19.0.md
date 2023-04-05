@@ -4,7 +4,7 @@ This version contains some breaking changes in how the project is built.
 It also contains improvements across the board. This post highlights some of
 the more interesting changes.
 
-For the entire changelog, see the Git commit history.
+For the entire changelog, see the [Git commit history](https://github.com/eclipse/cloe/compare/v0.18.0...v0.19.0).
 
 ## Makefile Refactoring
 
