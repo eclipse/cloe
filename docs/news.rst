@@ -23,7 +23,35 @@ News
    :hidden:
    :maxdepth: 1
 
+   news/release-0.20.0
    news/release-0.19.0
+
+:doc:`Version 0.20.0 Release <news/release-0.20.0>`
+---------------------------------------------------
+
+This version includes several improvements to the simulator plugin for
+VTD and an update to the stack file format, among other smaller improvements.
+
+The `vtd` simulator binding now has support for VTD 2022.3,
+OpenScenario files, and the `scp` action to send SCP messages from
+triggers.
+
+You can now integrate custom vehicle dynamics models as Cloe
+plugins.
+
+The stackfile schema format has been updated to support minor versions.
+
+Triggers can have an `optional: true` field set to make them not fail
+when the action or event does not exist.
+
+The fable library has been refactored and may require you to include
+`fable/schema/number_impl.hpp` or `fable/schema.hpp` for your code to keep
+compiling. Compile performance should be better though.
+
+The tooling in the project has been updated for better compatibility with
+Conan 2.0 and packages that use more recent Conan features.
+
+Read all about it :doc:`here <news/release-0.20.0>`.
 
 :doc:`Version 0.19.0 Release <news/release-0.19.0>`
 ---------------------------------------------------
