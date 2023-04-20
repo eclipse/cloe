@@ -185,7 +185,7 @@ class MinimatorLaneSensor : public cloe::LaneBoundarySensor {
  private:
   cloe::LaneBoundaries lane_boundaries_;
   cloe::Frustum frustum_;
-  Eigen::Isometry3d mount_pose_;
+  Eigen::Isometry3d mount_pose_ = Eigen::Isometry3d::Identity();
 };
 
 /**
