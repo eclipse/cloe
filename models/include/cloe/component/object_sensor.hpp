@@ -88,7 +88,7 @@ class NopObjectSensor : public ObjectSensor {
  protected:
   Frustum frustum_;
   Objects objects_;
-  Eigen::Isometry3d mount_;
+  Eigen::Isometry3d mount_ = Eigen::Isometry3d::Identity();
 };
 
 }  // namespace cloe
