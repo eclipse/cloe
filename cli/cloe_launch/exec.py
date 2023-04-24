@@ -431,20 +431,10 @@ class Engine:
         prompt_sh_file = self.runtime_dir / "prompt.sh"
         prompt_sh_data = textwrap.dedent(
             """\
-            CLOE_PROMPT="\u001b[2m[cloe-shell]\u001b[0m"
-
-            prompt_cloe() {
-                if [[ -n $CLOE_SHELL ]]; then
-                    PROMPT="%{%F{242}%}[cloe-shell]%f ${PROMPT}"
-                fi
-            }
-
-            CURRENT_SHELL=$(basename $0)
-            if [[ $CURRENT_SHELL = "zsh" ]]; then
-                autoload -Uz add-zsh-hook
-                add-zsh-hook precmd prompt_cloe
+            if [[ -n $ZSH_VERSION ]]; then
+                export PS1="%{%F{242}%}[cloe-shell]%{%f%} ${PS1}"
             else
-                export PS1="$CLOE_PROMPT $PS1"
+                export PS1="\u001b[2m[cloe-shell]\u001b[0m $PS1"
             fi
             """
         )
