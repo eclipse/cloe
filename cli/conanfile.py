@@ -10,7 +10,6 @@ required_conan_version = ">=1.52.0"
 
 class Base(object):
     settings = "os", "compiler", "build_type", "arch"
-    generators = "virtualenv", "virtualrunenv"
 
     def generate(self):
         if "cloe_launch_env" not in dir(self):
