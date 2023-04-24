@@ -81,7 +81,6 @@ BUILD_DIR        := build
 BUILD_CONANINFO  := ${BUILD_DIR}/conanbuildinfo.txt
 BUILD_CMAKECACHE := ${BUILD_DIR}/CMakeCache.txt
 BUILD_LOCKFILE   := ${BUILD_DIR}/conan.lock
-BUILD_LAYOUT     := ${PROJECT_ROOT}/.conan-layout.ini
 
 # Default Conan build policy to use when installing Conan dependencies
 # as well as creating packages. See Conan documentation for possible values.
@@ -334,7 +333,7 @@ editable:
 	#
 	#   Run `make uneditable` to leave this mode.
 	#
-	conan editable add . --layout "${BUILD_LAYOUT}" ${PACKAGE_FQN}
+	conan editable add . ${PACKAGE_FQN}
 
 .PHONY: uneditable
 uneditable:
