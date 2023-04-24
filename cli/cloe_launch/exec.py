@@ -412,6 +412,10 @@ class Engine:
         self._write_cloe_env()
         self._write_activate_all(
             [
+                # From Conan VirtualRunEnv (!= virtualrunenv) generator:
+                self.runtime_dir / "conanrun.sh",
+            ],
+            [
                 # From Conan virtualenv generator:
                 self.runtime_dir / "environment.sh.env",
                 # From Conan virtualrunenv generator:
@@ -492,7 +496,22 @@ class Engine:
 
     def _write_cloe_env(self) -> None:
         """Derive important CLOE_ variables and write environment_cloe.sh.env file."""
-        env = Environment(self.runtime_dir / "activate_run.sh", source_file=True)
+        conanrun = self.runtime_dir / "conanrun.sh"    # From newer VirtualRunEnv generator
+        activate_run = self.runtime_dir / "activate_run.sh"  # From older virtualrunenv generator
+        if conanrun.exists():
+            if activate_run.exists():
+                logging.warning("Warning: Found both conanrun.sh and activate_run.sh in runtime directory!")
+                logging.warning("Note:")
+                logging.warning("  It looks like /both/ VirtualRunEnv and virtualrunenv generators are being run.")
+                logging.warning("  This may come from using an out-of-date cloe-launch-profile package.")
+                logging.warning("")
+                logging.warning("  Continuing with hybrid approach. Environment variables may be incorrectly set.")
+            env = Environment(conanrun, source_file = True)
+        elif activate_run.exists():
+            env = Environment(activate_run, source_file = True)
+        else:
+            raise RuntimeError("cannot find conanrun.sh or activate_run.sh in runtime directory")
+
         if env.has("CLOE_SHELL"):
             logging.error("Error: recursive cloe shells are not supported.")
             logging.error("Note:")
@@ -512,7 +531,7 @@ class Engine:
         cloe_env.path_set("CLOE_PLUGIN_PATH", self._extract_plugin_paths(env))
         cloe_env.export(self.runtime_dir / "environment_cloe.sh.env")
 
-    def _write_activate_all(self, files: List[Path]) -> None:
+    def _write_activate_all(self, source_files: List[Path], env_files: List[Path]) -> None:
         """Write activate_all.sh file."""
         activate_file = self.runtime_dir / "activate_all.sh"
         activate_data = textwrap.dedent(
@@ -529,7 +548,16 @@ class Engine:
 
             """
         )
-        for file in files:
+
+        for file in source_files:
+            if not file.exists():
+                logging.info(f"Skipping source: {file}")
+            filename = shlex.quote(file.as_posix())
+            activate_data += f". {filename}\n"
+
+        for file in env_files:
+            if not file.exists():
+                logging.info(f"Skipping export: {file}")
             filename = shlex.quote(file.as_posix())
             activate_data += f"export_vars_from_file {filename}\n"
         activate_data += "\nunset export_vars_from_file\n"
@@ -548,9 +576,7 @@ class Engine:
             "--install-folder",
             str(self.runtime_dir),
             "-g",
-            "virtualenv",
-            "-g",
-            "virtualrunenv",
+            "VirtualRunEnv",
         ]
         for arg in self.conan_args:
             conan_cmd.append(arg)
