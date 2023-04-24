@@ -115,7 +115,12 @@ class CloeEngine(ConanFile):
             self.cpp_info.system_libs.append("dl")
         if self.in_local_cache:
             bindir = os.path.join(self.package_folder, "bin")
+            luadir = os.path.join(self.package_folder, "lib/cloe/lua")
         else:
             bindir = os.path.join(self.build_folder, "bin")
+            luadir = os.path.join(self.build_folder, "lib/cloe/lua")
+
         self.output.info(f"Appending PATH environment variable: {bindir}")
         self.runenv_info.prepend_path("PATH", bindir)
+        self.output.info(f"Appending CLOE_LUA_PATH environment variable: {luadir}")
+        self.runenv_info.prepend_path("CLOE_LUA_PATH", luadir)

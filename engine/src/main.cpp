@@ -27,7 +27,6 @@
 #include <iostream>  // for cerr
 #include <string>    // for string
 
-#include <boost/dll.hpp>
 #include <CLI/CLI.hpp>
 
 #include "main_check.hpp"
@@ -107,7 +106,9 @@ int main(int argc, char** argv) {
   cloe::StackOptions stack_options;
   stack_options.environment.reset(new fable::Environment());
   app.add_option("-p,--plugin-path", stack_options.plugin_paths,
-                 "Scan additional directory for plugins");
+                 "Scan additional directory for plugins (Env:CLOE_PLUGIN_PATH)");
+  app.add_option("--lua-path", stack_options.lua_paths,
+                 "Scan directory for lua files when loading modules (Env:CLOE_LUA_PATH)");
   app.add_option("-i,--ignore", stack_options.ignore_sections,
                  "Ignore sections by JSON pointer syntax");
   app.add_flag("--no-builtin-plugins", stack_options.no_builtin_plugins,
@@ -116,6 +117,8 @@ int main(int argc, char** argv) {
                "Disable automatic loading of system plugins");
   app.add_flag("--no-system-confs", stack_options.no_system_confs,
                "Disable automatic sourcing of system configurations");
+  app.add_flag("--no-system-lua", stack_options.no_system_lua,
+               "Disable default Lua system paths");
   app.add_flag("--no-hooks", stack_options.no_hooks, "Disable execution of hooks");
   app.add_flag("!--no-interpolate", stack_options.interpolate_vars,
                "Interpolate variables of the form ${XYZ} in stack files");
@@ -126,7 +129,7 @@ int main(int argc, char** argv) {
   // combination of flags we use for maximum reproducibility / isolation.
   // Note: This option also affects / overwrites options for the run subcommand!
   app.add_flag("-t,--strict,!--no-strict", stack_options.strict_mode,
-               "Forces flags: --no-system-plugins --no-system-confs --require-success")
+               "Forces flags: --no-system-plugins --no-system-confs --no-system-lua --require-success")
       ->envname("CLOE_STRICT_MODE");
   app.add_flag("-s,--secure,!--no-secure", stack_options.secure_mode,
                "Forces flags: --strict --no-hooks --no-interpolate")
@@ -151,8 +154,6 @@ int main(int argc, char** argv) {
 
   // Setup stack, applying strict/secure mode if necessary, and provide launch command.
   {
-    stack_options.lua_paths.push_back((boost::dll::program_location().parent_path().parent_path()/"lua").string());
-    stack_options.lua_paths.push_back((boost::dll::program_location().parent_path().parent_path()/"lib/cloe/lua").string());
     if (stack_options.secure_mode) {
       stack_options.strict_mode = true;
       stack_options.no_hooks = true;
@@ -161,6 +162,7 @@ int main(int argc, char** argv) {
     if (stack_options.strict_mode) {
       stack_options.no_system_plugins = true;
       stack_options.no_system_confs = true;
+      stack_options.no_system_lua = true;
       run_options.require_success = true;
     }
     stack_options.environment->prefer_external(false);

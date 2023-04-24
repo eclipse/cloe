@@ -40,6 +40,7 @@
 #include "stack.hpp"                   // for Stack
 
 #define CLOE_PLUGIN_PATH "CLOE_PLUGIN_PATH"
+#define CLOE_LUA_PATH "CLOE_LUA_PATH"
 
 namespace cloe {
 
@@ -138,17 +139,34 @@ Stack new_stack(const StackOptions& opt) {
 
   // Setup plugin path:
   if (!opt.no_system_plugins) {
+    // FIXME(windows): These paths are linux-specific.
     s.engine.plugin_path = {
         "/usr/local/lib/cloe",
         "/usr/lib/cloe",
     };
   }
-  std::string paths = opt.environment.get()->get_or(CLOE_PLUGIN_PATH, "");
-  for (auto&& p : utility::split_string(std::move(paths), ":")) {
+  std::string plugin_paths = opt.environment.get()->get_or(CLOE_PLUGIN_PATH, "");
+  for (auto&& p : utility::split_string(std::move(plugin_paths), ":")) {
     s.engine.plugin_path.emplace_back(std::move(p));
   }
   for (const auto& p : opt.plugin_paths) {
     s.engine.plugin_path.emplace_back(p);
+  }
+
+  // Setup lua path:
+  if (!opt.no_system_lua) {
+    // FIXME(windows): These paths are linux-specific.
+    s.lua_path = {
+      "/usr/local/lib/cloe/lua",
+      "/usr/lib/cloe/lua",
+    };
+  }
+  std::string lua_paths = opt.environment.get()->get_or(CLOE_LUA_PATH, "");
+  for (auto&& p : utility::split_string(std::move(lua_paths), ":")) {
+    s.lua_path.emplace_back(std::move(p));
+  }
+  for (const auto& p : opt.plugin_paths) {
+    s.lua_path.emplace_back(p);
   }
 
   // Merge system configurations:
@@ -164,7 +182,6 @@ Stack new_stack(const StackOptions& opt) {
   // Initialize configuration (scan and load plugins):
   s.initialize();
 
-  s.lua_path = opt.lua_paths;
   s.setup_lua();
 
   return s;
