@@ -60,6 +60,7 @@ struct StackOptions {
   bool no_builtin_plugins = false;
   bool no_system_plugins = false;
   bool no_system_confs = false;
+  bool no_system_lua = false;
   bool no_hooks = false;
   bool interpolate_vars = true;
   bool interpolate_undefined = false;
