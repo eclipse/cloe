@@ -595,7 +595,14 @@ class Engine:
             pp = Path(bindir) / "cloe-engine"
             if pp.exists():
                 return pp
-        raise RuntimeError("cannot locate cloe-engine executable")
+
+        logging.error("Error: cannot locate cloe-engine exectuable!")
+        logging.error("Note:")
+        logging.error("  This problem usually stems from one of two common errors:")
+        logging.error("  - The conanfile for cloe-launch does not require cloe-engine.")
+        logging.error("  - The cloe-engine package or binary has not been built / is corrupted.")
+        logging.error("  However, unconvential or unsupported package configuration may also trigger this.")
+        sys.exit(2)
 
     def _extract_plugin_paths(self, env: Environment) -> List[Path]:
         """Return all Cloe plugin paths we find in LD_LIBRARY_PATH."""
