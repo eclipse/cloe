@@ -163,8 +163,21 @@ else()
   )
 endif()
 
+add_custom_command(
+    TARGET ${target}
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_SOURCE_DIR}/lua
+        ${CMAKE_CURRENT_BINARY_DIR}/lib/cloe/lua
+)
+
 # Installation -------------------------------------------------------
 install(TARGETS ${target}
     RUNTIME
         DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+install(
+    DIRECTORY lua/
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cloe/lua
 )
