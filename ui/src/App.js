@@ -73,7 +73,7 @@ class App extends Component {
       configData: {},
       initialHost: "",
       host: "",
-      updateInterval: 500,
+      updateInterval: 1000,
       connected: false,
       sideBarOpen: false,
       dragNDropActivated: false,
@@ -91,7 +91,7 @@ class App extends Component {
     this.jsonVersionChecked = false;
     this.fetchCloeApi = 0;
     this.bufferInterval = 0;
-    this.defaultUpdateInterval = 500;
+    this.defaultUpdateInterval = 1000;
     // Definitions for the one-time fetched information.
     this.controllers = [];
     this.simulators = [];
@@ -523,18 +523,16 @@ class App extends Component {
     axios
       .get(`http://${this.state.host}`)
       .then(() => {
-        // If connected set new interval.
-        this.renewFetchInterval(this.defaultUpdateInterval);
         if (!this.state.connected) {
           this.setState({ connected: true, startupPhase: 2 });
         }
       })
       .catch(() => {
         this.setState({ connected: false });
-        if (this.startupPhase === 2) {
+        if (this.state.startupPhase === 2) {
           this.setState({ startupPhase: 1 });
         }
-        if (this.startupPhase === 3) {
+        if (this.state.startupPhase === 3) {
           this.setState({ startupPhase: 4 });
         }
       });
@@ -609,7 +607,7 @@ class App extends Component {
   startupStepFour = () => {
     if (this.state.connected) {
       this.setState({ startupPhase: 2 });
-      this.renewFetchInterval(100);
+      this.renewFetchInterval(this.defaultUpdateInterval);
     }
   };
 
