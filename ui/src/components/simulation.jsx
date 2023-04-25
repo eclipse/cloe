@@ -54,7 +54,7 @@ class Simulation extends Component {
   triggerHMI = (dest, value) => {
     const data = {
       action: { name: dest, factor: value },
-      event: { name: "_loop" },
+      event: { name: "next" },
       visible: false
     };
     axios.post(
