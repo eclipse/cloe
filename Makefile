@@ -75,7 +75,10 @@ deploy-cli:
 
 .PHONY: export-cli
 export-cli:
-	${MAKE} -C cli conan-profile
+	${MAKE} -C cli export
+
+export: export-cli
+package: export-cli
 
 .PHONY: docs
 docs:
