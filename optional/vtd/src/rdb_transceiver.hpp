@@ -25,12 +25,15 @@
 
 #include <memory>  // for shared_ptr<>
 #include <vector>  // for vector<>
-#ifdef VTD_API_2_2_0
+
+#include <cloe/core.hpp>  // for Json, Error
+
+#include "vtd_version.hpp"
+#if (VTD_API_VERSION_EPOCH == 0)
   #include <viRDBIcd.h>  // for RDB_MSG_t
 #else
   #include <VtdToolkit/viRDBIcd.h>
 #endif
-#include <cloe/core.hpp>  // for Json, Error
 
 namespace vtd {
 

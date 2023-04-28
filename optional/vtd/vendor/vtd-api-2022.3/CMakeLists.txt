@@ -1,30 +1,29 @@
-cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 
 project(vtd_api LANGUAGES CXX VERSION 2022.3)
 
-include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS)
-
-set(target vtd_api)
-
-add_library(${target}
+add_library(vtd-api
     src/Develop/Communication/VtdFramework/VtdToolkit/src/Common/RDBHandler.cc
 )
-target_include_directories(${target}
+add_library(vtd::api ALIAS vtd-api)
+target_include_directories(vtd-api
   PUBLIC
-    src/Develop/Communication/VtdFramework/VtdToolkit/include
+    "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src/Develop/Communication/VtdFramework/VtdToolkit/include>"
+    add_library(vtd::api ALIAS vtd-api)
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
 # Installation -------------------------------------------------------
 include(GNUInstallDirs)
-install(TARGETS ${target}
+install(TARGETS vtd-api
     LIBRARY
         DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        add_library(vtd::api ALIAS vtd-api)
     ARCHIVE
         DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 install(
     DIRECTORY
-        src/Develop/Communication/VtdFramework/VtdToolkit/include/VtdToolkit
+        ${CMAKE_BINARY_DIR}/src/Develop/Communication/VtdFramework/VtdToolkit/include/VtdToolkit
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )

@@ -27,13 +27,14 @@
 #include <string>   // for string
 #include <utility>  // for move
 
-// This comes from VTD:
-#ifdef VTD_API_2_2_0
+#include <cloe/core.hpp>  // for Json, Duration
+
+#include "vtd_version.hpp"
+#if (VTD_API_VERSION_EPOCH == 0)
   #include <RDBHandler.hh>  // for RDB_MSG_t
 #else
   #include <VtdToolkit/RDBHandler.hh>
 #endif
-#include <cloe/core.hpp>  // for Json, Duration
 
 #include "rdb_transceiver.hpp"  // for RdbTransceiver
 

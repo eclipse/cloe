@@ -27,15 +27,16 @@
 
 #include <Eigen/Geometry>  // for Vector3d, Quaterniond
 
-#ifdef VTD_API_2_2_0
-  #include <viRDBIcd.h>  // for RDB_OBJECT_TYPE_*
-#else
-  #include <VtdToolkit/viRDBIcd.h>
-#endif 
-
 #include <cloe/component/lane_boundary.hpp>  // for LaneBoundary
 #include <cloe/component/object.hpp>         // for Object
 #include <cloe/utility/geometry.hpp>         // for quaternion_from_rpy
+
+#include "vtd_version.hpp"
+#if (VTD_API_VERSION_EPOCH == 0)
+  #include <viRDBIcd.h>  // for RDB_OBJECT_TYPE_*
+#else
+  #include <VtdToolkit/viRDBIcd.h>
+#endif
 
 #include "vtd_logger.hpp"  // for lane_logger
 

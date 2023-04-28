@@ -24,13 +24,14 @@
 #include <iostream>  // for snprintf
 #include <string>    // for string
 
-#ifdef VTD_API_2_2_0
+#include <cloe/utility/tcp_transceiver.hpp>  // for TcpReadError
+
+#include "vtd_version.hpp"
+#if (VTD_API_VERSION_EPOCH == 0)
   #include <scpIcd.h> // for SCP_MAGIC_NO, SCP_VERSION, SCP_MSG_HDR_t, ...
 #else
   #include <VtdToolkit/scpIcd.h>
-#endif  
-
-#include <cloe/utility/tcp_transceiver.hpp>  // for TcpReadError
+#endif
 
 namespace vtd {
 

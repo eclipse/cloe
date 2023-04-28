@@ -1,7 +1,13 @@
+# mypy: ignore-errors
+# pylint: skip-file
+
 from pathlib import Path
 
-from conans import CMake, ConanFile, tools
-from conans.errors import ConanInvalidConfiguration
+from conan import ConanFile
+from conan.errors import ConanInvalidConfiguration
+from conan.tools import cmake, files
+
+required_conan_version = ">=1.52.0"
 
 
 class VtdApiConan(ConanFile):
@@ -28,37 +34,49 @@ class VtdApiConan(ConanFile):
     build_requires = [
         "vtd/2022.3@cloe-restricted/stable",
     ]
-    generators = "cmake"
-
-    _cmake = None
+    generators = "CMakeDeps", "CMakeToolchain"
 
     def configure(self):
         if self.settings.os == "Windows":
             raise ConanInvalidConfiguration("VTD binaries do not exist for Windows")
 
-    def imports(self):
-        self.copy("*", dst="src/Develop", src="Develop", root_package="vtd")
+    def layout(self):
+        cmake.cmake_layout(self)
 
-    def _configure_cmake(self):
-        if self._cmake:
-            return self._cmake
-        self._cmake = CMake(self)
-        self._cmake.definitions["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
-        #TODO VTD project version, shared-lib....
-        self._cmake.configure()
-        return self._cmake
+    def generate(self):
+        files.copy(self, "Develop/*", src=self.dependencies.build["vtd"].package_folder, dst="../src")
 
     def build(self):
-        cmake = self._configure_cmake()
-        cmake.build()
+        cm = cmake.CMake(self)
+        cm.configure()
+        cm.build()
 
     def package(self):
-        cmake = self._configure_cmake()
-        cmake.install()
-        self.copy("Develop", src="src", symlinks=True)
+        cm = cmake.CMake(self)
+        cm.install()
+        files.copy(self, "Develop", src="src", dst=".")
 
     def package_info(self):
-        if self.in_local_cache:
-            self.cpp_info.libs = tools.collect_libs(self)
-        else:
+        self.cpp_info.set_property("cmake_find_mode", "both")
+        self.cpp_info.set_property("cmake_file_name", "vtd-api")
+        self.cpp_info.set_property("cmake_target_name", "vtd::api")
+        self.cpp_info.set_property("pkg_config_name", "vtd-api")
+
+        # This define takes the format:
+        #
+        #   (EPOCH << 24) | (MAJOR_VERSION << 16) | (MINOR_VERSION << 8) | PATCH_VERSION
+        #
+        # Each version consists of at most 8 bits, so 256 potential values, including 0.
+        # The epoch starts with 0, and is bumped after each version naming scheme.
+        #
+        # When years are involved, such as in releases versioned YYYY.MM, use the last
+        # two years, since the full year will not fit in the 8 bits.
+        #
+        # VTD VERSION   : (1)       2022     . 03
+        vtd_api_version = (1<<24) | (22<<16) | (3<<8) | 0
+        self.cpp_info.defines = ["VTD_API_VERSION={vtd_api_version}"]
+
+        if not self.in_local_cache:
             self.cpp_info.libs = ["vtd_api"]
+        else:
+            self.cpp_info.libs = files.collect_libs(self)

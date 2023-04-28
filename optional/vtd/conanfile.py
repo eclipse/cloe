@@ -104,15 +104,8 @@ class CloeSimulatorVTD(ConanFile):
         cmake.cmake_layout(self)
 
     def generate(self):
-        vtd_api_version = str(self.requires.get("vtd-api"))
-        if "vtd-api/2.2.0" in vtd_api_version:
-            self.vtd_api_version = "2.2.0"
-        else:
-            self.vtd_api_version = "2022.3"
         tc = cmake.CMakeToolchain(self)
         tc.cache_variables["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
-        tc.preprocessor_definitions["VTD_API_VERSION"] = self.vtd_api_version
-        tc.cache_variables["VTD_API_VERSION"] = self.vtd_api_version
         tc.cache_variables["CLOE_PROJECT_VERSION"] = self.version
         tc.cache_variables["TargetLintingExtended"] = self.options.pedantic
         tc.generate()
@@ -124,13 +117,15 @@ class CloeSimulatorVTD(ConanFile):
         cm.test()
 
     def package(self):
+        vtd_api_version = self.dependencies["vtd-api"].ref.version
+
         cm = cmake.CMake(self)
         cm.install()
         self.copy("vtd-launch", dst="bin", src=f"{self.source_folder}/bin")
         self.copy(
             "*.tar",
             dst=self._setup_folder,
-            src=f"{self.source_folder}/{self._setup_folder}/{self.vtd_api_version}"
+            src=f"{self.source_folder}/{self._setup_folder}/{vtd_api_version}"
         )
 
     def package_id(self):
