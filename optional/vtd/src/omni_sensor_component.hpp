@@ -27,11 +27,12 @@
 #include <memory>  // for shared_ptr<>, unique_ptr<>
 #include <string>  // for string, to_string
 
-#ifdef VTD_API_2_2_0
+#include "vtd_version.hpp"
+#if (VTD_API_VERSION_EPOCH == 0)
   #include <viRDBIcd.h>  // for RDB_OBJECT_STATE_t, ...
 #else
   #include <VtdToolkit/viRDBIcd.h>
-#endif  
+#endif
 
 #include "rdb_codec.hpp"        // for RdbCodec, RdbTransceiver
 #include "vtd_logger.hpp"       // for vtd_logger

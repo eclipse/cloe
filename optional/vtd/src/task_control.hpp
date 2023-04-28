@@ -25,14 +25,15 @@
 #include <string>   // for string
 #include <utility>  // for move
 
-#ifdef VTD_API_2_2_0
-  #include <RDBHandler.hh>  
-#else
-  #include <VtdToolkit/RDBHandler.hh>
-#endif  
-
 #include <cloe/component/object.hpp>  // for Object
 #include <cloe/core.hpp>              // for Json
+
+#include "vtd_version.hpp"
+#if (VTD_API_VERSION_EPOCH == 0)
+  #include <RDBHandler.hh>
+#else
+  #include <VtdToolkit/RDBHandler.hh>
+#endif
 
 #include "omni_sensor_component.hpp"  // for VtdOmniSensor
 #include "rdb_codec.hpp"              // for RdbCodec

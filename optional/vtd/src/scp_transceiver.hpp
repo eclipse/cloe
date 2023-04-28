@@ -36,13 +36,16 @@
 #pragma once
 
 #include <string>  // for string
-#ifdef VTD_API_2_2_0
+
+#include <cloe/core.hpp>                     // for Json, Error
+#include <cloe/utility/tcp_transceiver.hpp>  // for TcpTransceiver
+
+#include "vtd_version.hpp"
+#if (VTD_API_VERSION_EPOCH == 0)
   #include <scpIcd.h>
 #else
   #include <VtdToolkit/scpIcd.h>
 #endif
-#include <cloe/core.hpp>                     // for Json, Error
-#include <cloe/utility/tcp_transceiver.hpp>  // for TcpTransceiver
 
 #include "vtd_logger.hpp"  // for scp_logger
 
