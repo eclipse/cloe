@@ -84,9 +84,8 @@ class CloeRuntime(ConanFile):
 
         # Make sure we can find the libs and *.cmake files, both in editable
         # mode and in the normal package mode:
-        # TODO: Is this still necessarytools?
         if not self.in_local_cache:
-            self.cpp_info.builddirs.append("cmake")
+            self.cpp_info.builddirs.append(os.path.join(self.source_folder, "cmake"))
             self.cpp_info.libs = ["cloe-runtime"]
         else:
             self.cpp_info.builddirs.append(os.path.join("lib", "cmake", "cloe"))
