@@ -22,7 +22,10 @@
 #include "stack.hpp"
 
 #include <filesystem>          // for path
+
 #include <sol/state_view.hpp>  // for state_view
+
+#include <cloe/core/duration.hpp>
 
 // This variable is set from CMakeLists.txt, but in case it isn't,
 // we will assume that the server is disabled.
@@ -84,6 +87,16 @@ sol::table make_cloe_api_features(sol::state_view& lua) {
 
 void throw_exception(const std::string& msg) { throw cloe::Error(msg); }
 
+sol::table make_cloe_api_duration(sol::state_view& lua) {
+  Duration (*parse_ptr)(const std::string&) = ::cloe::parse_duration;
+  std::string (*to_string_ptr)(const Duration&) = ::cloe::to_string;
+  return lua.create_table_with(
+    "parse", parse_ptr,
+    "to_string", to_string_ptr
+  );
+  // TODO: Add usertype for Duration
+}
+
 void cloe_api_log(const std::string& level, const std::string& prefix, const std::string& msg) {
   auto lev = logger::into_level(level);
   auto log = cloe::logger::get(prefix.empty() ? prefix : "lua");
@@ -125,8 +138,10 @@ void Stack::setup_lua() {
     from_conf(config);
   });
   api.set_function("log", cloe_api_log);
+  api["duration"] = make_cloe_api_duration(lua);
 
   lua["cloe"]["api"] = api;
+
 
   // Load cloe lua library extensions.
   // This should extend the cloe table we already defined here.
