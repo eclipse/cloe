@@ -91,6 +91,7 @@ if(BUILD_TESTING)
     add_executable(test-cloe
         # find src -type f -name "*_test.cpp"
         src/cloe/version_test.cpp
+        src/cloe/core/duration_test.cpp
         src/cloe/utility/statistics_test.cpp
         src/cloe/utility/uid_tracker_test.cpp
     )
