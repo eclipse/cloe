@@ -42,16 +42,17 @@
 
 int main(int argc, char** argv) {
   CLI::App app("Cloe " CLOE_ENGINE_VERSION);
+  app.option_defaults()->always_capture_default();
 
   // Version Command:
-  engine::VersionOptions version_options;
+  engine::VersionOptions version_options{};
   auto version = app.add_subcommand("version", "Show program version information.");
   version->add_flag("-j,--json", version_options.output_json,
                     "Output version information as JSON data");
   version->add_option("-J,--json-indent", version_options.json_indent, "JSON indentation level");
 
   // Usage Command:
-  engine::UsageOptions usage_options;
+  engine::UsageOptions usage_options{};
   std::string usage_key_or_path;
   auto usage = app.add_subcommand("usage", "Show schema or plugin usage information.");
   usage->add_flag("-j,--json", usage_options.output_json, "Output global/plugin JSON schema");
@@ -59,14 +60,14 @@ int main(int argc, char** argv) {
   usage->add_option("files", usage_key_or_path, "Plugin name, key or path to show schema of");
 
   // Dump Command:
-  engine::DumpOptions dump_options;
+  engine::DumpOptions dump_options{};
   std::vector<std::string> dump_files;
   auto dump = app.add_subcommand("dump", "Dump configuration of (merged) stack files.");
   dump->add_option("-J,--json-indent", dump_options.json_indent, "JSON indentation level");
   dump->add_option("files", dump_files, "Files to read into the stack");
 
   // Check Command:
-  engine::CheckOptions check_options;
+  engine::CheckOptions check_options{};
   std::vector<std::string> check_files;
   auto check = app.add_subcommand("check", "Validate stack file configurations.");
   check->add_flag("-s,--summarize", check_options.summarize, "Summarize results");
@@ -75,8 +76,8 @@ int main(int argc, char** argv) {
   check->add_option("files", check_files, "Files to check");
 
   // Run Command:
-  engine::RunOptions run_options;
-  std::vector<std::string> run_files;
+  engine::RunOptions run_options{};
+  std::vector<std::string> run_files{};
   auto run = app.add_subcommand("run", "Run a simulation with (merged) stack files.");
   run->add_option("-J,--json-indent", run_options.json_indent, "JSON indentation level");
   run->add_option("-u,--uuid", run_options.uuid, "Override simulation UUID")
@@ -103,7 +104,7 @@ int main(int argc, char** argv) {
       ->envname("CLOE_LOG_LEVEL");
 
   // Stack Options:
-  cloe::StackOptions stack_options;
+  cloe::StackOptions stack_options{};
   stack_options.environment.reset(new fable::Environment());
   app.add_option("-p,--plugin-path", stack_options.plugin_paths,
                  "Scan additional directory for plugins (Env:CLOE_PLUGIN_PATH)");

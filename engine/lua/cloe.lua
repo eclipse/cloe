@@ -71,8 +71,9 @@ end
 --- @param file (string)
 --- @return nil
 cloe.load_stackfile = function(file)
-    if std.path.is_relative(file) then
-        file = cloe.api.SCRIPT_DIR .. "/" .. file
+    assert(cloe.api.THIS_SCRIPT_DIR)
+    if cloe.fs.is_relative(file) then
+        file = cloe.api.THIS_SCRIPT_DIR .. "/" .. file
     end
     cloe.api.load_stackfile(file)
 end

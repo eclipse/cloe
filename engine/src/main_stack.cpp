@@ -25,6 +25,7 @@
 #include <iostream>  // for ostream, cerr
 #include <string>    // for string
 #include <vector>    // for vector<>
+#include <filesystem>  // for path
 
 #include <boost/filesystem.hpp>  // for path
 #include <boost/optional.hpp>    // for optional<>
@@ -38,6 +39,7 @@
 #include "plugins/nop_controller.hpp"  // for NopFactory
 #include "plugins/nop_simulator.hpp"   // for NopFactory
 #include "stack.hpp"                   // for Stack
+#include "lua_api.hpp"
 
 #define CLOE_PLUGIN_PATH "CLOE_PLUGIN_PATH"
 #define CLOE_LUA_PATH "CLOE_LUA_PATH"
@@ -61,11 +63,7 @@ Conf read_conf(const StackOptions& opt, const std::string& filepath) {
 
 void merge_lua(const StackOptions& /*opt*/, Stack& s, const std::string& filepath) {
   s.logger()->debug("Load script {}", filepath);
-  s.lua["cloe"]["api"]["SCRIPT_FILEPATH"] = filepath;
-  s.lua["cloe"]["api"]["SCRIPT_DIR"] = boost::filesystem::path(filepath).parent_path().string();
-  s.lua.safe_script_file(filepath);
-  s.lua["cloe"]["api"]["SCRIPT_FILEPATH"] = nullptr;
-  s.lua["cloe"]["api"]["SCRIPT_DIR"] = nullptr;
+  load_lua_script(s.lua, std::filesystem::path(filepath));
 }
 
 void merge_stack(const StackOptions& opt, Stack& s, const std::string& filepath) {
