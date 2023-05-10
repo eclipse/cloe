@@ -35,12 +35,6 @@ namespace fs = boost::filesystem;
 
 #include <cloe/utility/std_extensions.hpp>  // for join_vector
 
-// This variable is set from CMakeLists.txt, but in case it isn't,
-// we will assume that the server is disabled.
-#ifndef CLOE_ENGINE_WITH_SERVER
-#define CLOE_ENGINE_WITH_SERVER 0
-#endif
-
 namespace cloe {
 
 StackIncompleteError::StackIncompleteError(std::vector<std::string>&& missing)
@@ -243,85 +237,6 @@ void Stack::reset_schema() {
   plugins_schema = PluginsSchema(&plugins, "plugin configuration").extend(true);
   Confable::reset_schema();
   // clang-format on
-}
-
-sol::table setup_lua_std(sol::state_view& lua) {
-  return lua.create_table_with(
-    "path", lua.create_table_with(
-      "is_relative", [](const std::string& filepath) -> bool {
-        return boost::filesystem::path(filepath).is_relative();
-      },
-      "is_absolute", [](const std::string& filepath) -> bool {
-        return boost::filesystem::path(filepath).is_absolute();
-      }
-    )
-  );
-}
-
-void Stack::setup_lua() {
-  lua.open_libraries(
-    sol::lib::base,
-    sol::lib::coroutine,
-    sol::lib::debug,
-    sol::lib::io,
-    sol::lib::math,
-    sol::lib::os,
-    sol::lib::package,
-    sol::lib::string,
-    sol::lib::table
-  );
-
-  auto api = lua.create_table();
-  api.set("_FEATURES", lua.create_table_with(
-    // Version compatibility:
-    "cloe-0.18.0", true,
-    "cloe-0.18", true,
-    "cloe-0.19.0", true,
-    "cloe-0.19", true,
-    "cloe-0.20.0", true,
-    "cloe-0.20", true,
-    "cloe-0.21.0", true, // nightly
-    "cloe-0.21", true,   // nightly
-
-    // Stackfile versions support:
-    "cloe-stackfile", true,
-    "cloe-stackfile-4", true,
-    "cloe-stackfile-4.0", true,
-    "cloe-stackfile-4.1", true,
-
-    // Server enabled:
-    "cloe-server", CLOE_ENGINE_WITH_SERVER
-  ));
-
-  api.set_function("load_stackfile", [this](const std::string& filepath) {
-    logger()->info("Include conf: {}", filepath);
-    Conf config;
-    try {
-      config = conf_reader_func_(filepath);
-    } catch (std::exception& e) {
-      logger()->error("Error including conf {}: {}", filepath, e.what());
-    }
-    from_conf(config);
-  });
-
-  api.set_function("throw_exception", [this](const std::string& msg) {
-    throw cloe::Error(msg);
-  });
-
-  lua["cloe"] = lua.create_table_with("api", api);
-  lua["std"] = setup_lua_std(lua);
-
-  // Add expected cloe-engine package paths.
-  std::string package_path = lua["package"]["path"];
-  for (const std::string& p : lua_path) {
-    logger()->debug("Add Lua path: {}", p);
-    package_path += ";" + p + "/?.lua";
-  }
-  lua["package"]["path"] = package_path;
-
-  // Load cloe lua library extensions.
-  // This should extend the cloe table we already defined here.
-  lua.do_string("require('cloe')");
 }
 
 void Stack::apply_plugin_conf(const PluginConf& c) {

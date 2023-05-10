@@ -27,6 +27,10 @@ set(PROJECT_GIT_REF "unknown")
 add_library(${libstack}
     src/stack.hpp
     src/stack.cpp
+    src/stack_lua.cpp
+    src/lua_api.hpp
+    src/lua_api.cpp
+    src/lua_api_fs.cpp
     src/plugin.hpp
     src/plugin.cpp
 )
@@ -129,10 +133,10 @@ target_include_directories(${target}
 )
 target_link_libraries(${target}
   PRIVATE
+    ${libstack}
     CLI11::CLI11
     cloe::models
     sol2::sol2
-    ${libstack}
 )
 
 option(CLOE_ENGINE_WITH_SERVER "Enable integrated server component?" ON)
@@ -169,6 +173,10 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_CURRENT_SOURCE_DIR}/lua
         ${CMAKE_CURRENT_BINARY_DIR}/lib/cloe/lua
+    OUTPUT 
+        ${CMAKE_CURRENT_BINARY_DIR}/lib/cloe/lua/cloe.lua
+    DEPENDS
+        ${CMAKE_CURRENT_SOURCE_DIR}/lua/cloe.lua
 )
 
 # Installation -------------------------------------------------------
