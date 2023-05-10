@@ -336,10 +336,6 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
 
   { // 3. Initialize Lua
 
-    // FIXME: Needs to be integrated
-    auto mod = ctx.config.lua["cloe"].get_or_create<sol::table>();
-    mod["log_info"] = [&](std::string s) { this->logger()->info(s); };
-    mod.set_function("step", &SimulationSync::step, &ctx.sync);
   }
 
   { // 4. Enroll endpoints and triggers for the server
