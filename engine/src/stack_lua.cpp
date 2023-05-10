@@ -84,6 +84,12 @@ sol::table make_cloe_api_features(sol::state_view& lua) {
 
 void throw_exception(const std::string& msg) { throw cloe::Error(msg); }
 
+void cloe_api_log(const std::string& level, const std::string& prefix, const std::string& msg) {
+  auto lev = logger::into_level(level);
+  auto log = cloe::logger::get(prefix.empty() ? prefix : "lua");
+  log->log(lev, msg.c_str());
+}
+
 }  // anonymous namespace
 
 void Stack::setup_lua() {
@@ -118,6 +124,7 @@ void Stack::setup_lua() {
     }
     from_conf(config);
   });
+  api.set_function("log", cloe_api_log);
 
   lua["cloe"]["api"] = api;
 
