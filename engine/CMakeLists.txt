@@ -85,6 +85,8 @@ add_executable(cloe-engine
     src/coordinator.cpp
     src/simulation.cpp
     src/simulation_context.cpp
+    src/simulation_context.hpp
+    src/simulation_progress.hpp
     src/utility/command.cpp
 )
 set_target_properties(cloe-engine PROPERTIES
