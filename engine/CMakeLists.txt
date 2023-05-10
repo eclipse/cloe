@@ -174,8 +174,6 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_CURRENT_SOURCE_DIR}/lua
         ${CMAKE_CURRENT_BINARY_DIR}/lib/cloe/lua
-    OUTPUT 
-        ${CMAKE_CURRENT_BINARY_DIR}/lib/cloe/lua/cloe.lua
     DEPENDS
         ${CMAKE_CURRENT_SOURCE_DIR}/lua/cloe.lua
 )
