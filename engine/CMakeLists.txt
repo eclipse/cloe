@@ -105,6 +105,7 @@ add_executable(${target}
     src/simulation.hpp
     src/simulation_context.cpp
     src/simulation_context.hpp
+    src/simulation_progress.hpp
     src/utility/command.cpp
     src/utility/command.hpp
     src/utility/defer.hpp
