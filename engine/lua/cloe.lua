@@ -57,7 +57,13 @@ end
 
 cloe.debug = function() end
 
-cloe.log = function() end
+--- Log a message with a given severity
+--- @param level (string) severity level, one of: trace, debug, info, warn, error, critical
+--- @param fmt (string) format string with trailing arguments compatible with string.format
+cloe.log = function(level, fmt, ...)
+    local msg = string.format(fmt, ...)
+    cloe.api.log(level, "lua", msg)
+end
 
 --- Try to load plugin, returns nil if fail, otherwise plugin object.
 ---
