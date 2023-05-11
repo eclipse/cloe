@@ -45,4 +45,20 @@ cloe.load_stackfile = function(file)
     cloe.api.load_stackfile(file)
 end
 
+--- Return a human-readable representation of Lua objects.
+---
+--- This is primarily used for debugging and should not be used
+--- when performance is important. It is a table, but acts as a
+--- function.
+---
+--- For more details, see: https://github.com/kikito/inspect.lua
+---
+--- @return string representation of object
+cloe.inspect = require("cloe.inspect")
+
+--- Wraps cloe.inspect with a print function for faster inspection.
+cloe.describe = function(...)
+    print(cloe.inspect(...))
+end
+
 return cloe
