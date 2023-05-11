@@ -110,6 +110,11 @@ void merge_stack(const StackOptions& opt, Stack& s, const std::string& filepath)
   }
 }
 
+template <typename T>
+inline bool contains(const std::vector<T>& v, const T& x) {
+  return std::find(v.begin(), v.end(), x) != v.end();
+}
+
 Stack new_stack(const StackOptions& opt) {
   Stack s;
 
@@ -145,9 +150,15 @@ Stack new_stack(const StackOptions& opt) {
   }
   std::string plugin_paths = opt.environment.get()->get_or(CLOE_PLUGIN_PATH, "");
   for (auto&& p : utility::split_string(std::move(plugin_paths), ":")) {
+    if (contains(s.engine.plugin_path, p)) {
+      continue;
+    }
     s.engine.plugin_path.emplace_back(std::move(p));
   }
   for (const auto& p : opt.plugin_paths) {
+    if (contains(s.engine.plugin_path, p)) {
+      continue;
+    }
     s.engine.plugin_path.emplace_back(p);
   }
 
@@ -161,9 +172,15 @@ Stack new_stack(const StackOptions& opt) {
   }
   std::string lua_paths = opt.environment.get()->get_or(CLOE_LUA_PATH, "");
   for (auto&& p : utility::split_string(std::move(lua_paths), ":")) {
+    if (contains(s.lua_path, p)) {
+      continue;
+    }
     s.lua_path.emplace_back(std::move(p));
   }
-  for (const auto& p : opt.plugin_paths) {
+  for (const auto& p : opt.lua_paths) {
+    if (contains(s.lua_path, p)) {
+      continue;
+    }
     s.lua_path.emplace_back(p);
   }
 

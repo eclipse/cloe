@@ -113,6 +113,7 @@ void Stack::setup_lua() {
   for (const std::string& p : lua_path) {
     logger()->debug("Add Lua path: {}", p);
     package_path += ";" + p + "/?.lua";
+    package_path += ";" + p + "/?/init.lua";
   }
   lua["package"]["path"] = package_path;
 
