@@ -187,6 +187,7 @@ DEFINE_NIL_EVENT(Failure, "failure", "simulation failure")
 DEFINE_NIL_EVENT(Reset, "reset", "reset of simulation")
 DEFINE_NIL_EVENT(Pause, "pause", "pausation of simulation")
 DEFINE_NIL_EVENT(Resume, "resume", "resumption of simulation after pause")
+DEFINE_NIL_EVENT(Loop, "loop", "begin of inner simulation loop each cycle")
 
 }  // namespace events
 
@@ -222,6 +223,7 @@ struct SimulationContext {
   bool pause_execution{false};
 
   // Events
+  std::shared_ptr<events::LoopCallback> callback_loop;
   std::shared_ptr<events::PauseCallback> callback_pause;
   std::shared_ptr<events::ResumeCallback> callback_resume;
   std::shared_ptr<events::StartCallback> callback_start;

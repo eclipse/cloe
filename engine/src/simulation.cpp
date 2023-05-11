@@ -390,6 +390,7 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
     ctx.coordinator->enroll(r);
 
     // Events:
+    ctx.callback_loop = r.register_event<events::LoopFactory>();
     ctx.callback_start = r.register_event<events::StartFactory>();
     ctx.callback_stop = r.register_event<events::StopFactory>();
     ctx.callback_success = r.register_event<events::SuccessFactory>();
@@ -809,6 +810,7 @@ StateId SimulationMachine::StepBegin::impl(SimulationContext& ctx) {
   ctx.server->refresh_buffer();
 
   // Run time-based triggers
+  ctx.callback_loop->trigger(ctx.sync);
   ctx.callback_time->trigger(ctx.sync);
 
   // Determine whether to continue simulating or stop
@@ -1041,6 +1043,7 @@ StateId SimulationMachine::Pause::impl(SimulationContext& ctx) {
   // TODO(ben): Process triggers that come in so we can also conclude.
   // What kind of triggers do we want to allow? Should we also be processing
   // NEXT trigger events? How after pausing do we resume?
+  ctx.callback_loop->trigger(ctx.sync);
   ctx.callback_pause->trigger(ctx.sync);
   std::this_thread::sleep_for(ctx.config.engine.polling_interval);
 
