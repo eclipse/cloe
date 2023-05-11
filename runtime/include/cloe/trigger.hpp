@@ -374,6 +374,9 @@ enum class Source {
 
   /// Triggers that are instance of a sticky trigger.
   INSTANCE,
+
+  /// Triggers that originate from a Lua script
+  LUA,
 };
 
 // clang-format off
@@ -383,6 +386,7 @@ ENUM_SERIALIZATION(Source, ({
   {Source::MODEL, "model"},
   {Source::TRIGGER, "trigger"},
   {Source::INSTANCE, "instance"},
+  {Source::LUA, "lua"},
 }))
 // clang-format on
 
@@ -395,7 +399,7 @@ ENUM_SERIALIZATION(Source, ({
  * reproduction.
  */
 inline bool source_is_transient(Source s) {
-  return (s != Source::FILESYSTEM && s != Source::NETWORK);
+  return (s != Source::FILESYSTEM && s != Source::NETWORK && s != Source::LUA);
 }
 
 /**
