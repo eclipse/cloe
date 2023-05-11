@@ -80,6 +80,7 @@ if(BUILD_TESTING)
 endif()
 
 # Executable ---------------------------------------------------------
+add_subdirectory(vendor/linenoise)
 add_executable(${target}
     src/coordinator.cpp
     src/coordinator.hpp
@@ -137,6 +138,7 @@ target_link_libraries(${target}
     CLI11::CLI11
     cloe::models
     sol2::sol2
+    linenoise::linenoise
 )
 
 option(CLOE_ENGINE_WITH_SERVER "Enable integrated server component?" ON)
