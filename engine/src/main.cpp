@@ -32,6 +32,7 @@
 #include "main_check.hpp"
 #include "main_dump.hpp"
 #include "main_run.hpp"
+#include "main_shell.hpp"
 #include "main_stack.hpp"
 #include "main_usage.hpp"
 #include "main_version.hpp"
@@ -96,6 +97,15 @@ int main(int argc, char** argv) {
   // One of the above subcommands must be used.
   app.require_subcommand();
 
+  // Shell Command:
+  engine::ShellOptions shell_options{};
+  std::vector<std::string> shell_files{};
+  auto shell = app.add_subcommand("shell", "Start a Lua shell.");
+  shell->add_flag("-i,--interactive,!--no-interactive", shell_options.interactive,
+                    "Drop into interactive mode (default)");
+  shell->add_option("-c,--command", shell_options.commands, "Lua to run after running files");
+  shell->add_option("files", shell_files, "Lua files to run before starting the shell");
+
   // Global Options:
   std::string log_level = "warn";
   app.set_help_all_flag("-H,--help-all", "Print all help messages and exit");
@@ -118,8 +128,7 @@ int main(int argc, char** argv) {
                "Disable automatic loading of system plugins");
   app.add_flag("--no-system-confs", stack_options.no_system_confs,
                "Disable automatic sourcing of system configurations");
-  app.add_flag("--no-system-lua", stack_options.no_system_lua,
-               "Disable default Lua system paths");
+  app.add_flag("--no-system-lua", stack_options.no_system_lua, "Disable default Lua system paths");
   app.add_flag("--no-hooks", stack_options.no_hooks, "Disable execution of hooks");
   app.add_flag("!--no-interpolate", stack_options.interpolate_vars,
                "Interpolate variables of the form ${XYZ} in stack files");
@@ -129,8 +138,9 @@ int main(int argc, char** argv) {
   // The --strict flag here is useful for all our smoketests, since this is the
   // combination of flags we use for maximum reproducibility / isolation.
   // Note: This option also affects / overwrites options for the run subcommand!
-  app.add_flag("-t,--strict,!--no-strict", stack_options.strict_mode,
-               "Forces flags: --no-system-plugins --no-system-confs --no-system-lua --require-success")
+  app.add_flag(
+         "-t,--strict,!--no-strict", stack_options.strict_mode,
+         "Forces flags: --no-system-plugins --no-system-confs --no-system-lua --require-success")
       ->envname("CLOE_STRICT_MODE");
   app.add_flag("-s,--secure,!--no-secure", stack_options.secure_mode,
                "Forces flags: --strict --no-hooks --no-interpolate")
@@ -181,18 +191,16 @@ int main(int argc, char** argv) {
   try {
     if (*version) {
       return engine::version(version_options);
-    }
-    if (*usage) {
+    } else if (*usage) {
       return engine::usage(with_stack_options(usage_options), usage_key_or_path);
-    }
-    if (*dump) {
+    } else if (*dump) {
       return engine::dump(with_stack_options(dump_options), dump_files);
-    }
-    if (*check) {
+    } else if (*check) {
       return engine::check(with_stack_options(check_options), check_files);
-    }
-    if (*run) {
+    } else if (*run) {
       return engine::run(with_stack_options(run_options), run_files);
+    } else if (*shell) {
+      return engine::shell(with_stack_options(shell_options), shell_files);
     }
   } catch (std::exception& e) {
     bool is_logic_error = false;
