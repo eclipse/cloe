@@ -117,36 +117,43 @@ void Stack::setup_lua() {
   }
   lua["package"]["path"] = package_path;
 
-  lua["cloe"] = lua.create_table();
-  lua["cloe"]["fs"] = make_cloe_fs_table(lua);
+  // Create cloe table
+  {
+    lua["cloe"] = lua.create_table();
+    lua["cloe"]["fs"] = make_cloe_fs_table(lua);
 
-  auto api = lua.create_table();
+    register_duration_usertype(lua);
 
-  auto experimental = lua.create_table();
-  experimental.set_function("throw_exception", throw_exception);
-  api["experimental"] = experimental;
+    auto api = lua.create_table();
 
-  api["_FEATURES"] = make_cloe_api_features(lua);
-  api.set_function("load_stackfile", [this](const std::string& filepath) {
-    this->logger()->info("Include conf: {}", filepath);
-    Conf config;
-    try {
-      config = this->conf_reader_func_(filepath);
-    } catch (std::exception& e) {
-      this->logger()->error("Error including conf {}: {}", filepath, e.what());
-      throw;
-    }
-    from_conf(config);
-  });
-  api.set_function("log", cloe_api_log);
-  api["duration"] = make_cloe_api_duration(lua);
+    auto experimental = lua.create_table();
+    experimental.set_function("throw_exception", throw_exception);
+    api["experimental"] = experimental;
 
-  lua["cloe"]["api"] = api;
+    api["_FEATURES"] = make_cloe_api_features(lua);
+    api.set_function("load_stackfile", [this](const std::string& filepath) {
+      this->logger()->info("Include conf: {}", filepath);
+      Conf config;
+      try {
+        config = this->conf_reader_func_(filepath);
+      } catch (std::exception& e) {
+        this->logger()->error("Error including conf {}: {}", filepath, e.what());
+        throw;
+      }
+      from_conf(config);
+    });
+    api.set_function("log", cloe_api_log);
 
+    lua["cloe"]["api"] = api;
+  }
 
   // Load cloe lua library extensions.
   // This should extend the cloe table we already defined here.
-  lua.do_string("require('cloe')");
+  auto result = lua.safe_script("require('cloe')");
+  if (!result.valid()) {
+    sol::error err = result;
+    throw err;
+  }
 }
 
 }  // namespace cloe

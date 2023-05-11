@@ -30,9 +30,7 @@ namespace cloe {
 
 /**
  * Safely load and run a user Lua script.
- *
- *
  */
-void load_lua_script(sol::state_view& lua, const std::filesystem::path& filepath);
+sol::protected_function_result load_lua_script(sol::state_view& lua, const std::filesystem::path& filepath);
 
 }  // namespace cloe
