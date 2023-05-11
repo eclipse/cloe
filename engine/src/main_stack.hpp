@@ -88,4 +88,9 @@ Stack new_stack(const StackOptions& opt, const std::vector<std::string>& filepat
  */
 void merge_stack(const StackOptions& opt, Stack& s, const std::string& filepath);
 
+/**
+ * Merge the provided Lua file into the existing `Stack`, respecting `StackOptions`.
+ */
+void merge_lua(const StackOptions& opt, Stack& s, const std::string& filepath);
+
 }  // namespace cloe
