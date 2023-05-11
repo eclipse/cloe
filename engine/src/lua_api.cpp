@@ -27,7 +27,7 @@
 
 namespace cloe {
 
-void load_lua_script(sol::state_view& lua, const std::filesystem::path& filepath) {
+sol::protected_function_result load_lua_script(sol::state_view& lua, const std::filesystem::path& filepath) {
   auto file = std::filesystem::path(filepath);
   auto dir = file.parent_path().generic_string();
   if (dir == "") {
@@ -37,9 +37,10 @@ void load_lua_script(sol::state_view& lua, const std::filesystem::path& filepath
   auto api = lua["cloe"]["api"];
   api["THIS_SCRIPT_FILE"] = file.generic_string();
   api["THIS_SCRIPT_DIR"] = dir;
-  lua.safe_script_file(file.generic_string());
+  auto result = lua.safe_script_file(file.generic_string(), sol::script_pass_on_error);
   api["THIS_SCRIPT_FILE"] = nullptr;
   api["THIS_SCRIPT_DIR"] = nullptr;
+  return result;
 }
 
 }  // namespace cloe
