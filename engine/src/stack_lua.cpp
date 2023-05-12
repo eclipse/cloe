@@ -87,14 +87,26 @@ sol::table make_cloe_api_features(sol::state_view& lua) {
 
 void throw_exception(const std::string& msg) { throw cloe::Error(msg); }
 
-sol::table make_cloe_api_duration(sol::state_view& lua) {
-  Duration (*parse_ptr)(const std::string&) = ::cloe::parse_duration;
+void register_duration_usertype(sol::state_view& lua) {
+  Duration (*parse_duration_ptr)(const std::string&) = ::cloe::parse_duration;
   std::string (*to_string_ptr)(const Duration&) = ::cloe::to_string;
-  return lua.create_table_with(
-    "parse", parse_ptr,
-    "to_string", to_string_ptr
+  sol::table lua_cloe = lua["cloe"];
+  lua_cloe.new_usertype<::cloe::Duration>("Duration",
+    sol::factories(parse_duration_ptr),
+    sol::meta_function::to_string, to_string_ptr,
+    sol::meta_function::addition,
+    sol::resolve<Duration(const Duration&, const Duration&)>(std::chrono::operator+),
+    sol::meta_function::subtraction,
+    sol::resolve<Duration(const Duration&, const Duration&)>(std::chrono::operator-),
+    sol::meta_function::division,
+    [](const Duration& x, double d) -> Duration { Duration y(x); y /= d; return y; },
+    sol::meta_function::multiplication,
+    [](const Duration& x, double d) -> Duration { Duration y(x); y *= d; return y; },
+    "ns", &Duration::count,
+    "us", [](const Duration& d) -> double { return static_cast<double>(d.count()) / 10e2; },
+    "ms", [](const Duration& d) -> double { return static_cast<double>(d.count()) / 10e5; },
+    "s", [](const Duration& d) -> double { return static_cast<double>(d.count()) / 10e8; }
   );
-  // TODO: Add usertype for Duration
 }
 
 void cloe_api_log(const std::string& level, const std::string& prefix, const std::string& msg) {
