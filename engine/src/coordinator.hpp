@@ -40,7 +40,7 @@ class Registrar;
 namespace engine {
 
 // Forward declarations:
-class TriggerRegistrar;  // from trigger_manager.cpp
+class TriggerRegistrar;  // from coordinator.cpp
 
 /**
  * TriggerUnknownAction is thrown when an Action cannot be created because the

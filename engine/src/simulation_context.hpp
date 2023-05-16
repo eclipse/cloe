@@ -30,6 +30,7 @@
 #include <vector>      // for vector<>
 
 #include <boost/optional.hpp>  // for optional<>
+#include <sol/state_view.hpp>  // for state_view
 
 #include <cloe/controller.hpp>          // for Controller
 #include <cloe/core.hpp>                // for Duration
@@ -199,6 +200,10 @@ DEFINE_NIL_EVENT(Loop, "loop", "begin of inner simulation loop each cycle")
  * performed in the simulation states in the `simulation.cpp` file.
  */
 struct SimulationContext {
+  SimulationContext(sol::state_view&& l) : lua(l) {}
+
+  sol::state_view lua;
+
   // Setup
   std::unique_ptr<Server> server;
   std::shared_ptr<Coordinator> coordinator;

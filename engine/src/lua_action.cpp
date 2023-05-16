@@ -16,17 +16,56 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
- * \file utility/lua_action.cpp
- * \see  utility/lua_action.hpp
+ * \file lua_action.cpp
+ * \see  lua_action.hpp
  */
 
-#include "utility/lua_action.hpp"
+#include "lua_action.hpp"
+
+#include <string>
+#include <optional>
+#include <utility>
+
+#include <sol/optional.hpp>
+
+#include <cloe/sync.hpp>
+#include <cloe/trigger.hpp>
+
+#include "lua_api.hpp"
 
 namespace engine {
+
+cloe::TriggerPtr make_trigger_from_lua(cloe::TriggerRegistrar& r, const sol::table& lua) {
+  sol::optional<std::string> label = lua["label"];
+
+  cloe::EventPtr event = r.make_event(cloe::Conf{cloe::Json(lua["event"])});
+
+  cloe::ActionPtr action;
+  if (lua["action"].get_type() == sol::type::function) {
+    action = std::make_unique<actions::LuaFunction>("luafunction", lua["action"]);
+    if (!label) {
+      label = lua["action_source"];
+    }
+  } else {
+    action = r.make_action(cloe::Conf{cloe::Json(lua["action"])});
+  }
+
+  sol::optional<bool> sticky = lua["sticky"];
+
+  auto trigger = std::make_unique<cloe::Trigger>(label.value_or(""), cloe::Source::LUA,
+                                                 std::move(event), std::move(action));
+  trigger->set_sticky(sticky.value_or(false));
+  return trigger;
+}
+
 namespace actions {
 
 void Lua::operator()(const cloe::Sync&, cloe::TriggerRegistrar&) {
-  state_->script(script_);
+  auto result = lua_.script(script_);
+  if (!result.valid()) {
+    sol::error err = result;
+    throw err;
+  }
 }
 
 void Lua::to_json(cloe::Json& j) const {
@@ -49,7 +88,7 @@ cloe::TriggerSchema LuaFactory::schema() const {
 
 cloe::ActionPtr LuaFactory::make(const cloe::Conf& c) const {
   auto script = c.get<std::string>("script");
-  return std::make_unique<Lua>(name(), script, state_);
+  return std::make_unique<Lua>(name(), script, lua_);
 }
 
 cloe::ActionPtr LuaFactory::make(const std::string& s) const {

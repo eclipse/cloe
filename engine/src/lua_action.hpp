@@ -16,32 +16,51 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
- * \file utility/lua_action.hpp
- * \see  utility/lua_action.cpp
+ * \file lua_action.hpp
+ * \see  lua_action.cpp
  *
  * This file contains several types that make use of cloe::Lua.
  */
 
 #pragma once
 
-#include <sol/sol.hpp>
+#include <sol/state_view.hpp>
+#include <sol/function.hpp>
 
-#include <cloe/core.hpp>             // for Logger, Json, Conf, ...
-#include <cloe/trigger.hpp>          // for Action, ActionFactory, ...
+#include <cloe/core.hpp>     // for Logger, Json, Conf, ...
+#include <cloe/trigger.hpp>  // for Action, ActionFactory, ...
 
 namespace engine {
+
+cloe::TriggerPtr make_trigger_from_lua(cloe::TriggerRegistrar& r, const sol::table& lua);
+
 namespace actions {
+
+class LuaFunction : public cloe::Action {
+ public:
+  LuaFunction(const std::string& name, sol::function fun) : Action(name), func_(fun) {}
+
+  cloe::ActionPtr clone() const override {
+    return std::make_unique<LuaFunction>(this->name(), func_);
+  }
+
+  void operator()(const cloe::Sync& sync, cloe::TriggerRegistrar&) override {
+    logger()->trace("Running lua function.");
+    func_(std::ref(sync));
+  }
+
+  void to_json(cloe::Json& j) const override { j = cloe::Json{}; }
+
+ private:
+  sol::function func_;
+};
 
 class Lua : public cloe::Action {
  public:
-  Lua(const std::string& name, const std::string& script, sol::state* state)
-      : Action(name), script_(script), state_(state) {
-    assert(state_ != nullptr);
-  }
+  Lua(const std::string& name, const std::string& script, sol::state_view lua)
+      : Action(name), script_(script), lua_(lua) {}
 
-  cloe::ActionPtr clone() const override {
-    return std::make_unique<Lua>(name(), script_, state_);
-  }
+  cloe::ActionPtr clone() const override { return std::make_unique<Lua>(name(), script_, lua_); }
 
   void operator()(const cloe::Sync&, cloe::TriggerRegistrar&) override;
 
@@ -50,22 +69,21 @@ class Lua : public cloe::Action {
 
  private:
   std::string script_;
-  sol::state* state_{nullptr};
+  sol::state_view lua_;
 };
 
 class LuaFactory : public cloe::ActionFactory {
  public:
   using ActionType = Lua;
-  explicit LuaFactory(sol::state* state)
-      : cloe::ActionFactory("lua", "run a lua script"), state_(state) {
-    assert(state_ != nullptr);
+  explicit LuaFactory(sol::state_view lua)
+      : cloe::ActionFactory("lua", "run a lua script"), lua_(lua) {
   }
   cloe::TriggerSchema schema() const override;
   cloe::ActionPtr make(const cloe::Conf& c) const override;
   cloe::ActionPtr make(const std::string& s) const override;
 
  private:
-  sol::state* state_{nullptr};
+  sol::state_view lua_;
 };
 
 }  // namespace actions

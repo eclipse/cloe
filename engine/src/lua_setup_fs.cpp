@@ -15,14 +15,13 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-/**
- * \file lua_api_fs.cpp
- */
+
+#include "lua_setup.hpp"
 
 #include <filesystem>  // for path
 namespace fs = std::filesystem;
 
-#include <sol/state_view.hpp>
+#include <sol/table.hpp>
 
 namespace cloe {
 
@@ -74,24 +73,20 @@ bool exists(const std::string& file) { return fs::exists(fs::path(file)); }
 
 }  // anonymous namespace
 
-sol::table make_cloe_fs_table(sol::state_view& lua) {
-  auto m = lua.create_table();
+void register_lib_fs(sol::table& lua) {
+  lua.set_function("basename", basename);
+  lua.set_function("dirname", dirname);
+  lua.set_function("normalize", normalize);
+  lua.set_function("realpath", realpath);
+  lua.set_function("join", join);
 
-  m.set_function("basename", basename);
-  m.set_function("dirname", dirname);
-  m.set_function("normalize", normalize);
-  m.set_function("realpath", realpath);
-  m.set_function("join", join);
+  lua.set_function("is_absolute", is_absolute);
+  lua.set_function("is_relative", is_relative);
+  lua.set_function("is_dir", is_dir);
+  lua.set_function("is_file", is_file);
+  lua.set_function("is_other", is_other);
 
-  m.set_function("is_absolute", is_absolute);
-  m.set_function("is_relative", is_relative);
-  m.set_function("is_dir", is_dir);
-  m.set_function("is_file", is_file);
-  m.set_function("is_other", is_other);
-
-  m.set_function("exists", exists);
-
-  return m;
+  lua.set_function("exists", exists);
 }
 
 }  // namespace cloe

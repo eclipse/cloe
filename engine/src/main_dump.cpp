@@ -15,35 +15,23 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-/**
- * \file main_dump.hpp
- * \see  main.cpp
- *
- * This file contains the "dump" options and commands.
- */
-
-#pragma once
 
 #include <iostream>  // for ostream, cout
 #include <string>    // for string
 #include <vector>    // for vector<>
 
-#include "main_stack.hpp"  // for Stack, new_stack
+#include <cloe/core/error.hpp>
+
+#include "main_commands.hpp" // for DumpOptions, new_stack
+#include "stack.hpp" // for Stack
 
 namespace engine {
 
-struct DumpOptions {
-  cloe::StackOptions stack_options;
-  std::ostream& output = std::cout;
-
-  // Flags:
-  int json_indent = 2;
-};
-
-inline int dump(const DumpOptions& opt, const std::vector<std::string>& filepaths) {
+int dump(const DumpOptions& opt, const std::vector<std::string>& filepaths) {
+  assert(opt.output != nullptr && opt.error != nullptr);
   try {
     cloe::Stack s = cloe::new_stack(opt.stack_options, filepaths);
-    opt.output << s.to_json().dump(opt.json_indent) << std::endl;
+    *opt.output << s.to_json().dump(opt.json_indent) << std::endl;
     return EXIT_SUCCESS;
   } catch (cloe::ConcludedError& e) {
     return EXIT_FAILURE;

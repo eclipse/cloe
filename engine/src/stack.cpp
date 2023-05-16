@@ -163,7 +163,6 @@ Stack::Stack(const Stack& other)
     , vehicles(other.vehicles)
     , triggers(other.triggers)
     , simulation(other.simulation)
-    , lua_path(other.lua_path)
     // Schemas (3) & Prototypes (3)
     , engine_schema(&engine, "engine configuration")
     , include_schema(&include, include_prototype(), "include configurations")
@@ -178,7 +177,6 @@ Stack::Stack(const Stack& other)
     , conf_reader_func_(other.conf_reader_func_) {
   // Reset invalidated schema caches.
   Stack::reset_schema();
-  setup_lua();
 }
 
 Stack::Stack(Stack&& other) : Stack() { swap(*this, other); }
@@ -210,8 +208,6 @@ void swap(Stack& left, Stack& right) {
   swap(left.vehicles, right.vehicles);
   swap(left.triggers, right.triggers);
   swap(left.simulation, right.simulation);
-  swap(left.lua_path, right.lua_path);
-  swap(left.lua, right.lua);
 
   // Prototypes (3)
   swap(left.simulator_prototype, right.simulator_prototype);
@@ -237,6 +233,18 @@ void Stack::reset_schema() {
   plugins_schema = PluginsSchema(&plugins, "plugin configuration").extend(true);
   Confable::reset_schema();
   // clang-format on
+}
+
+void Stack::merge_stackfile(const std::string& filepath) {
+      this->logger()->info("Include conf: {}", filepath);
+      Conf config;
+      try {
+        config = this->conf_reader_func_(filepath);
+      } catch (std::exception& e) {
+        this->logger()->error("Error including conf {}: {}", filepath, e.what());
+        throw;
+      }
+      from_conf(config);
 }
 
 void Stack::apply_plugin_conf(const PluginConf& c) {

@@ -15,14 +15,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-/**
- * \file main_shell.hpp
- * \see  main.cpp
- *
- * This file contains the "lua" options and command.
- */
-
-#pragma once
 
 #include <iostream>  // for cout, cerr, endl
 #include <optional>  // for optional<>
@@ -34,25 +26,18 @@
 
 #include <fmt/format.h>
 
-#include "lua_api.hpp"     // for load_lua_script
-#include "main_stack.hpp"  // for Stack, new_stack
+#include "lua_api.hpp"     // for lua_safe_script_file
+#include "stack.hpp"           // for Stack
+#include "main_commands.hpp"   // for Stack, new_stack, LuaOptions, new_lua
 
 namespace engine {
 
-struct ShellOptions {
-  cloe::StackOptions stack_options;
+int shell(const ShellOptions& opt, const std::vector<std::string>& filepaths) {
+  assert(opt.output != nullptr && opt.error != nullptr);
 
-  // Options:
-  std::vector<std::string> commands;
-
-  // Flags:
-  std::optional<bool> interactive;
-  bool ignore_errors;
-};
-
-inline int shell(const ShellOptions& opt, const std::vector<std::string>& filepaths) {
   cloe::StackOptions stack_opt = opt.stack_options;
-  cloe::Stack s = cloe::new_stack(stack_opt);
+  cloe::Stack stack = cloe::new_stack(stack_opt);
+  sol::state lua = cloe::new_lua(opt.lua_options, stack);
 
   // Determine whether we should be interactive or not
   bool interactive = opt.interactive ? *opt.interactive : opt.commands.empty() && filepaths.empty();
@@ -63,14 +48,14 @@ inline int shell(const ShellOptions& opt, const std::vector<std::string>& filepa
 
   auto evaluate = [&](const char* buf) {
     try {
-      auto result = s.lua.safe_script(buf, sol::script_pass_on_error);
+      auto result = lua.safe_script(buf, sol::script_pass_on_error);
       if (!result.valid()) {
         sol::error err = result;
-        std::cerr << "Error: " << err.what() << std::endl;
+        *opt.error << "Error: " << err.what() << std::endl;
         return false;
       }
     } catch (const std::exception& e) {
-      std::cerr << "Error: " << e.what() << std::endl;
+      *opt.error << "Error: " << e.what() << std::endl;
       return false;
     }
     return true;
@@ -78,14 +63,14 @@ inline int shell(const ShellOptions& opt, const std::vector<std::string>& filepa
 
   auto evaluate_file = [&](const std::string& file) {
     try {
-      auto result = cloe::load_lua_script(s.lua, file);
+      auto result = cloe::lua_safe_script_file(lua, file);
       if (!result.valid()) {
         sol::error err = result;
-        std::cerr << "Error: " << err.what() << std::endl;
+        *opt.error << "Error: " << err.what() << std::endl;
         return false;
       }
     } catch (const std::exception& e) {
-      std::cerr << "Error: " << e.what() << std::endl;
+      *opt.error << "Error: " << e.what() << std::endl;
       return false;
     }
     return true;
@@ -101,13 +86,13 @@ inline int shell(const ShellOptions& opt, const std::vector<std::string>& filepa
   }
 
   if (interactive) {
-    std::cout << "Cloe " << CLOE_ENGINE_VERSION << " Lua interactive shell" << std::endl;
-    std::cout << "Press [Ctrl+D] or [Ctrl+C] to exit." << std::endl;
+    *opt.output << "Cloe " << CLOE_ENGINE_VERSION << " Lua interactive shell" << std::endl;
+    *opt.output << "Press [Ctrl+D] or [Ctrl+C] to exit." << std::endl;
   }
   for (size_t i = 0; i < actions.size(); i++) {
     auto action = actions[i];
     if (interactive) {
-      std::cout << "<<< " << action.first << std::endl;
+      *opt.output << "<<< " << action.first << std::endl;
       linenoiseHistoryAdd(action.first.c_str());
     }
     auto ok = action.second();
@@ -119,7 +104,7 @@ inline int shell(const ShellOptions& opt, const std::vector<std::string>& filepa
         return EXIT_FAILURE;
       }
       if (i < actions.size() - 1) {
-        std::cerr << "Warning: dropping to interactive console early due to error." << std::endl;
+        *opt.error << "Warning: dropping to interactive console early due to error." << std::endl;
       }
       break;
     }

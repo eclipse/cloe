@@ -1,13 +1,12 @@
 -- This example shows that you don't actually need any plugins at
+-- 
 -- all to have a simulation. You can simple schedule some tasks.
 local cloe = require("cloe")
 
-cloe.setup_scheduler {
-    step_size = "100ms",
-}
+cloe.log("info", "Hello world!");
 
 cloe.schedule {
-    on = "step",
+    on = "loop",
     priority = 101, -- higher than the default
     pin = false,
     run = function(_)
@@ -16,14 +15,14 @@ cloe.schedule {
 }
 
 cloe.schedule {
-    on = "step",
+    on = "loop",
     pin = true,
-    run = function(ctx)
-        cloe.log("info", "Current time is %s", ctx.simulation_time())
+    run = function(sync)
+        cloe.log("info", "Current time is %s", sync:time())
     end
 }
 
 cloe.schedule {
-    on = "time=1s",
+    on = "time=1",
     run = "succeed"
 }
