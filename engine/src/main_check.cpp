@@ -15,33 +15,17 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-/**
- * \file main_check.hpp
- * \see  main.cpp
- *
- * This file contains the "check" options and command.
- */
-
-#pragma once
 
 #include <iostream>  // for ostream, cout
 #include <string>    // for string
 #include <vector>    // for vector<>
 
-#include "main_stack.hpp"  // for Stack, StackOptions, new_stack
+#include <cloe/core/fable.hpp>
+
+#include "main_commands.hpp"
+#include "stack.hpp"
 
 namespace engine {
-
-struct CheckOptions {
-  cloe::StackOptions stack_options;
-  std::ostream& output = std::cout;
-  std::string delimiter = ",";
-
-  // Flags:
-  bool summarize = false;
-  bool output_json = false;
-  int json_indent = 2;
-};
 
 /**
  * Output nothing in the case that a file is valid, and an error message if
@@ -49,7 +33,7 @@ struct CheckOptions {
  *
  * This mirrors most closely the standard unix command-line philosophy.
  */
-inline void check_stack(const cloe::StackOptions& opt, const std::vector<std::string>& files,
+void check_stack(const cloe::StackOptions& opt, const std::vector<std::string>& files,
                         bool* ok = nullptr) {
   if (ok) {
     *ok = false;
@@ -66,10 +50,10 @@ inline void check_stack(const cloe::StackOptions& opt, const std::vector<std::st
  *
  * This is useful for those who want a definitive answer for the input.
  */
-inline std::string check_summary(const CheckOptions& opt, const std::vector<std::string>& files,
+std::string check_summary(const CheckOptions& opt, const std::vector<std::string>& files,
                                  bool* ok = nullptr) {
   cloe::StackOptions stack_opt = opt.stack_options;
-  stack_opt.error = boost::none;
+  stack_opt.error = nullptr;
 
   try {
     check_stack(stack_opt, files, ok);
@@ -87,10 +71,10 @@ inline std::string check_summary(const CheckOptions& opt, const std::vector<std:
  * Output a JSON value of its state, with null returned for ok, and an
  * error object for each error.
  */
-inline cloe::Json check_json(const CheckOptions& opt, const std::vector<std::string>& files,
+cloe::Json check_json(const CheckOptions& opt, const std::vector<std::string>& files,
                              bool* ok = nullptr) {
   cloe::StackOptions stack_opt = opt.stack_options;
-  stack_opt.error = boost::none;
+  stack_opt.error = nullptr;
 
   if (opt.summarize) {
     return check_summary(opt, files, ok);
@@ -110,25 +94,25 @@ inline cloe::Json check_json(const CheckOptions& opt, const std::vector<std::str
   }
 }
 
-inline int check_merged(const CheckOptions& opt, const std::vector<std::string>& filepaths) {
+int check_merged(const CheckOptions& opt, const std::vector<std::string>& filepaths) {
   bool ok = false;
   if (opt.output_json) {
-    opt.output << check_json(opt, filepaths, &ok).dump(opt.json_indent) << std::endl;
+    *opt.output << check_json(opt, filepaths, &ok).dump(opt.json_indent) << std::endl;
   } else if (opt.summarize) {
-    opt.output << check_summary(opt, filepaths, &ok) << std::endl;
+    *opt.output << check_summary(opt, filepaths, &ok) << std::endl;
   } else {
     try {
       check_stack(opt.stack_options, filepaths, &ok);
     } catch (cloe::ConcludedError&) {
     } catch (std::exception& e) {
-      opt.output << e.what() << std::endl;
+      *opt.output << e.what() << std::endl;
     }
   }
 
   return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-inline int check(const CheckOptions& opt, const std::vector<std::string>& filepaths) {
+int check(const CheckOptions& opt, const std::vector<std::string>& filepaths) {
   return check_merged(opt, filepaths);
 }
 

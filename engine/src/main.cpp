@@ -15,31 +15,17 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-/**
- * \file main.cpp
- * \see  main_check.hpp
- * \see  main_dump.hpp
- * \see  main_run.hpp
- * \see  main_usage.hpp
- * \see  main_version.hpp
- */
 
 #include <iostream>  // for cerr
 #include <string>    // for string
+#include <utility>   // for swap
 
 #include <CLI/CLI.hpp>
 
-#include "main_check.hpp"
-#include "main_dump.hpp"
-#include "main_run.hpp"
-#include "main_shell.hpp"
-#include "main_stack.hpp"
-#include "main_usage.hpp"
-#include "main_version.hpp"
+#include <cloe/core/logger.hpp>
 
-#ifndef CLOE_CONTACT_EMAIL
-#define CLOE_CONTACT_EMAIL "cloe-dev@eclipse.org"
-#endif
+#include "main_commands.hpp"
+#include "config.hpp"
 
 int main(int argc, char** argv) {
   CLI::App app("Cloe " CLOE_ENGINE_VERSION);
@@ -118,8 +104,6 @@ int main(int argc, char** argv) {
   stack_options.environment.reset(new fable::Environment());
   app.add_option("-p,--plugin-path", stack_options.plugin_paths,
                  "Scan additional directory for plugins (Env:CLOE_PLUGIN_PATH)");
-  app.add_option("--lua-path", stack_options.lua_paths,
-                 "Scan directory for lua files when loading modules (Env:CLOE_LUA_PATH)");
   app.add_option("-i,--ignore", stack_options.ignore_sections,
                  "Ignore sections by JSON pointer syntax");
   app.add_flag("--no-builtin-plugins", stack_options.no_builtin_plugins,
@@ -128,12 +112,17 @@ int main(int argc, char** argv) {
                "Disable automatic loading of system plugins");
   app.add_flag("--no-system-confs", stack_options.no_system_confs,
                "Disable automatic sourcing of system configurations");
-  app.add_flag("--no-system-lua", stack_options.no_system_lua, "Disable default Lua system paths");
   app.add_flag("--no-hooks", stack_options.no_hooks, "Disable execution of hooks");
   app.add_flag("!--no-interpolate", stack_options.interpolate_vars,
                "Interpolate variables of the form ${XYZ} in stack files");
   app.add_flag("--interpolate-undefined", stack_options.interpolate_undefined,
                "Interpolate undefined variables with empty strings");
+
+  cloe::LuaOptions lua_options{};
+  lua_options.environment = stack_options.environment;
+  app.add_option("--lua-path", lua_options.lua_paths,
+                 "Scan directory for lua files when loading modules (Env:CLOE_LUA_PATH)");
+  app.add_flag("--no-system-lua", lua_options.no_system_lua, "Disable default Lua system paths");
 
   // The --strict flag here is useful for all our smoketests, since this is the
   // combination of flags we use for maximum reproducibility / isolation.
@@ -173,7 +162,7 @@ int main(int argc, char** argv) {
     if (stack_options.strict_mode) {
       stack_options.no_system_plugins = true;
       stack_options.no_system_confs = true;
-      stack_options.no_system_lua = true;
+      lua_options.no_system_lua = true;
       run_options.require_success = true;
     }
     stack_options.environment->prefer_external(false);
@@ -181,8 +170,9 @@ int main(int argc, char** argv) {
     stack_options.environment->insert(CLOE_SIMULATION_UUID_VAR, "${" CLOE_SIMULATION_UUID_VAR "}");
   }
 
-  auto with_stack_options = [&](auto& opt) -> decltype(opt) {
-    opt.stack_options = stack_options;
+  auto with_global_options = [&](auto& opt) -> decltype(opt) {
+    std::swap(opt.stack_options, stack_options);
+    std::swap(opt.lua_options, lua_options);
     return opt;
   };
 
@@ -192,15 +182,15 @@ int main(int argc, char** argv) {
     if (*version) {
       return engine::version(version_options);
     } else if (*usage) {
-      return engine::usage(with_stack_options(usage_options), usage_key_or_path);
+      return engine::usage(with_global_options(usage_options), usage_key_or_path);
     } else if (*dump) {
-      return engine::dump(with_stack_options(dump_options), dump_files);
+      return engine::dump(with_global_options(dump_options), dump_files);
     } else if (*check) {
-      return engine::check(with_stack_options(check_options), check_files);
+      return engine::check(with_global_options(check_options), check_files);
     } else if (*run) {
-      return engine::run(with_stack_options(run_options), run_files);
+      return engine::run(with_global_options(run_options), run_files);
     } else if (*shell) {
-      return engine::shell(with_stack_options(shell_options), shell_files);
+      return engine::shell(with_global_options(shell_options), shell_files);
     }
   } catch (std::exception& e) {
     bool is_logic_error = false;
