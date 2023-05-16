@@ -28,6 +28,7 @@
 #include <boost/filesystem/path.hpp>  // for path
 
 #include <fable/enum.hpp>  // for ENUM_SERIALIZATION
+#include <sol/state.hpp> // for state
 
 #include "simulation_context.hpp"
 #include "stack.hpp"  // for Stack
@@ -101,7 +102,7 @@ struct SimulationResult {
 
 class Simulation {
  public:
-  Simulation(const cloe::Stack& config, const std::string& uuid);
+  Simulation(cloe::Stack&& config, sol::state&& lua, const std::string& uuid);
   ~Simulation() = default;
 
   /**
@@ -145,8 +146,9 @@ class Simulation {
   void signal_abort();
 
  private:
-  cloe::Logger logger_;
   cloe::Stack config_;
+  sol::state lua_;
+  cloe::Logger logger_;
   std::string uuid_;
   std::function<void()> abort_fn_;
 

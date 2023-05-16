@@ -15,14 +15,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-/**
- * \file main_usage.hpp
- * \see  main.cpp
- *
- * This file contains the "usage" options and command.
- */
-
-#pragma once
 
 #include <iostream>  // for ostream
 #include <memory>    // for shared_ptr<>
@@ -32,25 +24,15 @@
 
 #include <cloe/utility/xdg.hpp>  // for find_all_config
 
-#include "main_stack.hpp"  // for Stack, new_stack
+#include "stack.hpp" // for Stack
+#include "main_commands.hpp"  // for new_stack
 
 namespace engine {
 
-struct UsageOptions {
-  cloe::StackOptions stack_options;
-  std::ostream& output = std::cout;
-  std::ostream& error = std::cerr;
-
-  // Flags:
-  bool plugin_usage = false;
-  bool output_json = false;
-  int json_indent = 2;
-};
-
-void show_usage(cloe::Stack s, std::ostream& output);
+void show_usage(const cloe::Stack& s, std::ostream& output);
 void show_plugin_usage(std::shared_ptr<cloe::Plugin> p, std::ostream& os, bool json, size_t indent);
 
-inline int usage(const UsageOptions& opt, const std::string& argument) {
+int usage(const UsageOptions& opt, const std::string& argument) {
   cloe::Stack s;
   try {
     s = cloe::new_stack(opt.stack_options);
@@ -62,13 +44,13 @@ inline int usage(const UsageOptions& opt, const std::string& argument) {
   bool result = true;
   if (argument.empty()) {
     if (opt.output_json) {
-      opt.output << s.schema().json_schema().dump(opt.json_indent) << std::endl;
+      *opt.output << s.schema().json_schema().dump(opt.json_indent) << std::endl;
     } else {
-      show_usage(s, opt.output);
+      show_usage(s, *opt.output);
     }
   } else {
     std::shared_ptr<cloe::Plugin> p = s.get_plugin_or_load(argument);
-    show_plugin_usage(p, opt.output, opt.output_json, opt.json_indent);
+    show_plugin_usage(p, *opt.output, opt.output_json, opt.json_indent);
   }
   return result ? EXIT_SUCCESS : EXIT_FAILURE;
 }
@@ -85,7 +67,7 @@ void print_plugin_usage(std::ostream& os, const cloe::Plugin& p, const std::stri
 /**
  * Print a nicely formatted list of available plugins.
  */
-inline void print_available_plugins(const cloe::Stack& s, std::ostream& os,
+void print_available_plugins(const cloe::Stack& s, std::ostream& os,
                                     const std::string& word = "Available") {
   const std::string prefix = "  ";
   auto print_available = [&](const std::string& type) {
@@ -127,7 +109,7 @@ inline void print_available_plugins(const cloe::Stack& s, std::ostream& os,
 /**
  * Print full program usage.
  */
-inline void show_usage(cloe::Stack s, std::ostream& os) {
+void show_usage(const cloe::Stack& s, std::ostream& os) {
   os << fmt::format("Cloe {} ({})", CLOE_ENGINE_VERSION, CLOE_ENGINE_TIMESTAMP) << std::endl;
 
   os << R"(
@@ -234,10 +216,10 @@ Please report any bugs to: cloe-dev@eclipse.org
     }
   }
 
-  print_available_plugins(std::move(s), os);
+  print_available_plugins(s, os);
 }
 
-inline void show_plugin_usage(std::shared_ptr<cloe::Plugin> p, std::ostream& os, bool json,
+void show_plugin_usage(std::shared_ptr<cloe::Plugin> p, std::ostream& os, bool json,
                               size_t indent) {
   auto m = p->make<cloe::ModelFactory>();
 

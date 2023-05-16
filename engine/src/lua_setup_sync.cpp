@@ -15,33 +15,25 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-/**
- * This file contains functions for dealing with Lua *after* it has been
- * set up.
- *
- * \file lua_api.hpp
- * \see  lua_api.cpp
- */
 
-#pragma once
+#include "lua_setup.hpp"
 
-#include <sol/sol.hpp>  // for state_view
-#include <fable/json.hpp> // for Json
+#include <cloe/sync.hpp>
 
 namespace cloe {
 
-/**
- * Safely load and run a user Lua script.
- */
-sol::protected_function_result lua_safe_script_file(sol::state_view& lua, const std::filesystem::path& filepath);
+void register_usertype_sync(sol::table& lua) {
+  lua.new_usertype<::cloe::Sync>
+  ("Sync",
+    sol::no_constructor,
+    "step", &Sync::step,
+    "step_width", &Sync::step_width,
+    "time", &Sync::time,
+    "eta", &Sync::eta,
+    "realtime_factor", &Sync::realtime_factor,
+    "is_realtime_factor_unlimited", &Sync::is_realtime_factor_unlimited,
+    "achievable_realtime_factor", &Sync::achievable_realtime_factor
+  );
+}
 
 }  // namespace cloe
-
-namespace nlohmann {
-
-template <>
-struct adl_serializer<sol::object> {
-  static void to_json(json& j, const sol::object& obj);
-};
-
-} // namespace nlohmann

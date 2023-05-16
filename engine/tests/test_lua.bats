@@ -9,3 +9,8 @@ load "${CLOE_ROOT}/tests/setup_testname.bash"
     cloe-engine check test_lua01_include_json.lua
     cloe-engine run test_lua01_include_json.lua
 }
+
+@test "$(testname 'Expect success' 'test_lua02_schedule.lua' '93053c17-af8d-461d-b457-e6722e857306')" {
+    cloe-engine check test_lua02_schedule.lua
+    cloe-engine run test_lua02_schedule.lua
+}

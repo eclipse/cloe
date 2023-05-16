@@ -15,33 +15,19 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-/**
- * \file main_version.hpp
- * \see  main.cpp
- *
- * This file contains the "version" options and command.
- */
-
-#pragma once
 
 #include <iostream>  // for ostream, cout
 
+#include <cloe/core/fable.hpp>
 #include <cloe/plugin.hpp>        // for CLOE_PLUGIN_MANIFEST_VERSION
 #include <cloe/utility/inja.hpp>  // for inja_env
 
-#include "stack.hpp"  // for CLOE_STACK_VERSION
+#include "main_commands.hpp" // for VersionOptions
+#include "config.hpp"  // for CLOE_STACK_VERSION
 
 namespace engine {
 
-struct VersionOptions {
-  std::ostream& output = std::cout;
-
-  // Flags:
-  bool output_json = false;
-  int json_indent = 2;
-};
-
-inline int version(const VersionOptions& opt) {
+int version(const VersionOptions& opt) {
   cloe::Json v{
       {"engine", CLOE_ENGINE_VERSION},                             // from CMakeLists.txt
       {"build_date", CLOE_ENGINE_TIMESTAMP},                       // from CMakeLists.txt
@@ -51,10 +37,10 @@ inline int version(const VersionOptions& opt) {
   };
 
   if (opt.output_json) {
-    opt.output << v.dump(opt.json_indent) << std::endl;
+    *opt.output << v.dump(opt.json_indent) << std::endl;
   } else {
     auto env = cloe::utility::inja_env();
-    opt.output << env.render(R"(Cloe [[engine]]
+    *opt.output << env.render(R"(Cloe [[engine]]
 
 Engine Version:  [[engine]]
 Build Date:      [[build_date]]

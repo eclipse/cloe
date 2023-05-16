@@ -16,8 +16,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
- * \file main_stack.hpp
- * \see  main_stack.cpp
+ * \file stack_factory.hpp
+ * \see  stack_factory.cpp
  *
  * This file provides methods for creating `Stack` objects.
  *
@@ -35,12 +35,11 @@
 #include <string>    // for string
 #include <vector>    // for vector<>
 
-#include <boost/optional.hpp>  // for optional<>
-
 #include <fable/environment.hpp>  // for Environment
-#include "stack.hpp"         // for Stack
 
 namespace cloe {
+
+class Stack;
 
 /**
  * StackOptions contains the configuration required to create new `Stack` objects.
@@ -50,17 +49,15 @@ namespace cloe {
  * \see main.cpp for description of flags
  */
 struct StackOptions {
-  boost::optional<std::ostream&> error = std::cerr;
+  std::ostream* error = &std::cerr;
   std::shared_ptr<fable::Environment> environment;
 
   // Flags:
-  std::vector<std::string> lua_paths;
   std::vector<std::string> plugin_paths;
   std::vector<std::string> ignore_sections;
   bool no_builtin_plugins = false;
   bool no_system_plugins = false;
   bool no_system_confs = false;
-  bool no_system_lua = false;
   bool no_hooks = false;
   bool interpolate_vars = true;
   bool interpolate_undefined = false;
@@ -87,10 +84,5 @@ Stack new_stack(const StackOptions& opt, const std::vector<std::string>& filepat
  * Merge the provided stackfile into the existing `Stack`, respecting `StackOptions`.
  */
 void merge_stack(const StackOptions& opt, Stack& s, const std::string& filepath);
-
-/**
- * Merge the provided Lua file into the existing `Stack`, respecting `StackOptions`.
- */
-void merge_lua(const StackOptions& opt, Stack& s, const std::string& filepath);
 
 }  // namespace cloe

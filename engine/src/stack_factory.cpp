@@ -16,33 +16,28 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
- * \file main_stack.cpp
- * \see  main_stack.hpp
+ * \file stack_factory.cpp
+ * \see  stack_factory.hpp
  */
 
-#include "main_stack.hpp"
+#include "stack_factory.hpp"
 
-#include <iostream>  // for ostream, cerr
-#include <string>    // for string
-#include <vector>    // for vector<>
 #include <filesystem>  // for path
+#include <iostream>    // for ostream, cerr
+#include <string>      // for string
+#include <vector>      // for vector<>
 
-#include <boost/filesystem.hpp>  // for path
-#include <boost/optional.hpp>    // for optional<>
-#include <boost/algorithm/string/predicate.hpp> // for ends_with
+#include <boost/filesystem.hpp>                  // for path
 
 #include <cloe/utility/std_extensions.hpp>  // for split_string
 #include <cloe/utility/xdg.hpp>             // for merge_config
 #include <fable/environment.hpp>            // for Environment
 #include <fable/utility.hpp>                // for pretty_print, read_conf_from_file
 
+#include "config.hpp"                  // for CLOE_PLUGIN_PATH
 #include "plugins/nop_controller.hpp"  // for NopFactory
 #include "plugins/nop_simulator.hpp"   // for NopFactory
 #include "stack.hpp"                   // for Stack
-#include "lua_api.hpp"
-
-#define CLOE_PLUGIN_PATH "CLOE_PLUGIN_PATH"
-#define CLOE_LUA_PATH "CLOE_LUA_PATH"
 
 namespace cloe {
 
@@ -61,18 +56,8 @@ Conf read_conf(const StackOptions& opt, const std::string& filepath) {
   return fable::read_conf_with_interpolation(filepath, &env);
 }
 
-void merge_lua(const StackOptions& /*opt*/, Stack& s, const std::string& filepath) {
-  s.logger()->debug("Load script {}", filepath);
-  load_lua_script(s.lua, std::filesystem::path(filepath));
-}
-
 void merge_stack(const StackOptions& opt, Stack& s, const std::string& filepath) {
   auto merge = [&]() {
-    if (boost::algorithm::ends_with(filepath, ".lua")) {
-      merge_lua(opt, s, filepath);
-      return;
-    }
-
     Conf c = read_conf(opt, filepath);
 
     if (opt.no_hooks) {
@@ -86,27 +71,28 @@ void merge_stack(const StackOptions& opt, Stack& s, const std::string& filepath)
     s.validate_self();
   };
 
-  if (!opt.error) {
+  if (opt.error == nullptr) {
     merge();
-  } else {
-    try {
-      merge();
-    } catch (SchemaError& e) {
-      fable::pretty_print(e, *opt.error);
-      throw ConcludedError{e};
-    } catch (ConfError& e) {
-      fable::pretty_print(e, *opt.error);
-      throw ConcludedError{e};
-    } catch (Error& e) {
-      *opt.error << filepath << ": " << e.what() << std::endl;
-      if (e.has_explanation()) {
-        *opt.error << "    Note:\n" << fable::indent_string(e.explanation(), "    ") << std::endl;
-      }
-      throw ConcludedError{e};
-    } catch (std::exception& e) {
-      *opt.error << filepath << ": " << e.what() << std::endl;
-      throw ConcludedError{e};
+    return;
+  }
+
+  try {
+    merge();
+  } catch (SchemaError& e) {
+    fable::pretty_print(e, *opt.error);
+    throw ConcludedError{e};
+  } catch (ConfError& e) {
+    fable::pretty_print(e, *opt.error);
+    throw ConcludedError{e};
+  } catch (Error& e) {
+    *opt.error << filepath << ": " << e.what() << std::endl;
+    if (e.has_explanation()) {
+      *opt.error << "    Note:\n" << fable::indent_string(e.explanation(), "    ") << std::endl;
     }
+    throw ConcludedError{e};
+  } catch (std::exception& e) {
+    *opt.error << filepath << ": " << e.what() << std::endl;
+    throw ConcludedError{e};
   }
 }
 
@@ -162,28 +148,6 @@ Stack new_stack(const StackOptions& opt) {
     s.engine.plugin_path.emplace_back(p);
   }
 
-  // Setup lua path:
-  if (!opt.no_system_lua) {
-    // FIXME(windows): These paths are linux-specific.
-    s.lua_path = {
-      "/usr/local/lib/cloe/lua",
-      "/usr/lib/cloe/lua",
-    };
-  }
-  std::string lua_paths = opt.environment.get()->get_or(CLOE_LUA_PATH, "");
-  for (auto&& p : utility::split_string(std::move(lua_paths), ":")) {
-    if (contains(s.lua_path, p)) {
-      continue;
-    }
-    s.lua_path.emplace_back(std::move(p));
-  }
-  for (const auto& p : opt.lua_paths) {
-    if (contains(s.lua_path, p)) {
-      continue;
-    }
-    s.lua_path.emplace_back(p);
-  }
-
   // Merge system configurations:
   if (!opt.no_system_confs) {
     auto mergefn = [&](const boost::filesystem::path& file) -> bool {
@@ -197,8 +161,6 @@ Stack new_stack(const StackOptions& opt) {
   // Initialize configuration (scan and load plugins):
   s.initialize();
 
-  s.setup_lua();
-
   return s;
 }
 
@@ -207,7 +169,6 @@ Stack new_stack(const StackOptions& opt, const std::string& filepath) {
   if (!filepath.empty()) {
     merge_stack(opt, s, filepath);
   }
-
   return s;
 }
 
