@@ -14,7 +14,7 @@ teardown() {
     rm -r "${CLOE_TMP_REGISTRY}" || true
 }
 
-@test "$(testname "Expect exact replication" "test_engine_replica_smoketest.json" "f4fa1794-cc78-4ae6-aa5e-6a3ed3c7913c")" {
+@test "$(testname 'Expect exact replication' 'test_engine_replica_smoketest.json' 'f4fa1794-cc78-4ae6-aa5e-6a3ed3c7913c')" {
     # Clean up in case temporary registry already exists.
     if [[ -d "$CLOE_TMP_REGISTRY" ]]; then
         rm -r "$CLOE_TMP_REGISTRY" || true
