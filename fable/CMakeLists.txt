@@ -29,6 +29,7 @@ add_library(fable
     src/fable/schema/path.cpp
     src/fable/environment.cpp
     src/fable/utility.cpp
+    src/fable/utility/string.cpp
 
     # For IDE integration
     ${fable_PUBLIC_HEADERS}
