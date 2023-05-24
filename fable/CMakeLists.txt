@@ -19,17 +19,18 @@ add_library(fable
     # find src -type f -name "*.cpp" \! -name "*_test.cpp"
     src/fable/conf.cpp
     src/fable/confable.cpp
+    src/fable/environment.cpp
     src/fable/json.cpp
     src/fable/schema.cpp
     src/fable/schema/boolean.cpp
     src/fable/schema/number.cpp
-    src/fable/schema/struct.cpp
-    src/fable/schema/string.cpp
-    src/fable/schema/variant.cpp
     src/fable/schema/path.cpp
-    src/fable/environment.cpp
+    src/fable/schema/string.cpp
+    src/fable/schema/struct.cpp
+    src/fable/schema/variant.cpp
     src/fable/utility.cpp
     src/fable/utility/chrono.cpp
+    src/fable/utility/path.cpp
     src/fable/utility/string.cpp
 
     # For IDE integration
@@ -76,13 +77,14 @@ if(BUILD_TESTING)
         src/fable/schema/const_test.cpp
         src/fable/schema/custom_test.cpp
         src/fable/schema/enum_test.cpp
-        src/fable/schema/factory_test.cpp
         src/fable/schema/factory_advanced_test.cpp
+        src/fable/schema/factory_test.cpp
         src/fable/schema/ignore_test.cpp
         src/fable/schema/map_nested_test.cpp
         src/fable/schema/map_test.cpp
         src/fable/schema/number_test.cpp
         src/fable/schema/optional_test.cpp
+        src/fable/schema/path_test.cpp
         src/fable/schema/string_test.cpp
         src/fable/schema/struct_test.cpp
         src/fable/schema_test.cpp
