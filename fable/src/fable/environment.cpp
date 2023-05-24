@@ -23,10 +23,9 @@
 
 #include <fable/environment.hpp>
 
-#include <cstdlib>  // for getenv
-#include <string>   // for string
-
-#include <boost/optional.hpp>  // for optional<>
+#include <cstdlib>    // for getenv
+#include <stdexcept>  // for out_of_range
+#include <string>     // for string
 
 namespace fable {
 
@@ -40,8 +39,8 @@ std::string slice(const std::string& s, size_t start) { return s.substr(start); 
 
 }  // anonymous namespace
 
-boost::optional<std::string> Environment::get(const std::string& key, bool prefer_external) const {
-  boost::optional<std::string> value;
+std::optional<std::string> Environment::get(const std::string& key, bool prefer_external) const {
+  std::optional<std::string> value;
 
   auto try_external = [&]() -> bool {
     char* s = std::getenv(key.c_str());

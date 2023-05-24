@@ -22,20 +22,19 @@
 
 #include <cstdlib>  // for getenv
 #include <string>   // for string
+#include <optional> // for optional<>
 
 #include <gtest/gtest.h>       // for TEST, ASSERT_EQ, ...
-#include <boost/optional.hpp>  // for optional<>
-#include <boost/optional/optional_io.hpp>
 
 #include <fable/environment.hpp>  // for Environment
 
 #define ENV_VAR_HOME "HOME"
 #define ENV_VAR_NONEXISTENT "NONEXISTENT_ENTRY"
 
-boost::optional<std::string> getenv_optional(const std::string& key) {
+std::optional<std::string> getenv_optional(const std::string& key) {
   char* v = getenv(key.c_str());
   if (v == nullptr) {
-    return boost::none;
+    return std::nullopt;
   } else {
     return std::string(v);
   }
@@ -47,7 +46,7 @@ TEST(fable_environment, get_variable) {
   ASSERT_EQ(env.get(ENV_VAR_HOME), getenv_optional(ENV_VAR_HOME));
   if (!getenv_optional(ENV_VAR_NONEXISTENT)) {
     ASSERT_THROW(env.require(ENV_VAR_NONEXISTENT), std::out_of_range);
-    ASSERT_EQ(env.get(ENV_VAR_NONEXISTENT), boost::none);
+    ASSERT_EQ(env.get(ENV_VAR_NONEXISTENT), std::nullopt);
   }
 }
 
