@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Robert Bosch GmbH
+ * Copyright 2023 Robert Bosch GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,36 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
- * \file fable/fable.hpp
- *
- * This file includes all fable headers so the users don't need to know exactly
- * which headers they need. This is acceptable since most users will end up
- * needing all the headers anyway.
+ * \file fable/fable_fwd.hpp
  */
 
-#pragma once
+#include <string>
 
-#include <fable/fable_fwd.hpp>
-#include <fable/conf.hpp>
-#include <fable/confable.hpp>
-#include <fable/enum.hpp>
-#include <fable/error.hpp>
-#include <fable/json.hpp>
-#include <fable/json/with_std.hpp>
-#include <fable/schema.hpp>
+#include <nlohmann/detail/value_t.hpp>
+#include <nlohmann/json_fwd.hpp>
+
+namespace fable {
+
+// from json.hpp
+using Json = nlohmann::json;
+using JsonPointer = nlohmann::json_pointer<std::string>;
+using JsonType = nlohmann::detail::value_t;
+
+// from conf.hpp
+class Conf;
+
+// from error.hpp
+class Error;
+class ConfError;
+class SchemaError;
+
+// from schema.hpp
+class Schema;
+
+// from confable.hpp
+class Confable;
+
+// from environment.hpp
+class Environment;
+
+}  // namespace fable
