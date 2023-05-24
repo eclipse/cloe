@@ -33,6 +33,7 @@
 #include <boost/filesystem/path.hpp>        // for path
 #include <boost/optional.hpp>               // for optional<>
 #include <fable/schema/boost_optional.hpp>  // for Optional<>
+#include <fable/schema/boost_path.hpp>      // for Path
 #include <fable/schema/custom.hpp>          // for CustomDeserializer
 #include <fable/schema/factory.hpp>         // for Factory
 
