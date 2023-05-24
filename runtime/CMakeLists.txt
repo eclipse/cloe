@@ -45,6 +45,7 @@ add_library(${target} SHARED
     src/cloe/utility/std_extensions.cpp
     src/cloe/utility/uid_tracker.cpp
     src/cloe/utility/xdg.cpp
+    src/cloe/data_broker.cpp
 
     # For IDE integration
     ${${target}_PUBLIC_HEADERS}
@@ -94,6 +95,7 @@ if(BUILD_TESTING)
         src/cloe/core/duration_test.cpp
         src/cloe/utility/statistics_test.cpp
         src/cloe/utility/uid_tracker_test.cpp
+        src/cloe/data_broker_test.cpp
     )
     set_target_properties(test-cloe PROPERTIES
         CXX_STANDARD 17
