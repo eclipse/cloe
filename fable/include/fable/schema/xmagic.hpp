@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
- * \file fable/schema/magic.hpp
+ * \file fable/schema/xmagic.hpp
  * \see  fable/schema.hpp
  * \see  fable/schema_test.cpp
  *
