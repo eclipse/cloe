@@ -30,8 +30,7 @@
 #include <string>   // for string
 #include <utility>  // for move
 #include <vector>   // for vector<>
-
-#include <boost/optional.hpp>  // for optional<>
+#include <optional> // for optional<>
 
 #include <fable/schema/interface.hpp>  // for Base<>
 
@@ -126,7 +125,7 @@ class Map : public Base<Map<T, P>> {
       c.assert_has(k);
     }
 
-    boost::optional<std::regex> pattern;
+    std::optional<std::regex> pattern;
     if (!pattern_.empty()) {
       *pattern = std::regex(pattern_);
     }

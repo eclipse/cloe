@@ -22,12 +22,12 @@
 
 #include <fable/conf.hpp>
 
-#include <fstream>  // for ifstream
-#include <string>   // for string
-#include <vector>   // for vector<>
+#include <filesystem>  // for path
+#include <fstream>     // for ifstream
+#include <string>      // for string
+#include <vector>      // for vector<>
 
-#include <fmt/format.h>          // for fmt::format
-#include <boost/filesystem.hpp>  // for path
+#include <fmt/format.h>  // for fmt::format
 
 #include <fable/error.hpp>  // for ConfError, WrongType, MissingProperty
 #include <fable/json.hpp>   // for NLOHMANN_JSON_ALLOW_COMMENTS
@@ -148,8 +148,8 @@ void Conf::assert_has_type(const JsonPointer& key, JsonType t) const {
   }
 }
 
-boost::filesystem::path Conf::resolve_file(const boost::filesystem::path& filepath) const {
-  namespace fs = boost::filesystem;
+std::filesystem::path Conf::resolve_file(const std::filesystem::path& filepath) const {
+  namespace fs = std::filesystem;
 
   auto fp = filepath;
   if (fp.is_relative()) {
@@ -164,7 +164,7 @@ boost::filesystem::path Conf::resolve_file(const boost::filesystem::path& filepa
 }
 
 std::string Conf::resolve_file(const std::string& filepath) const {
-  return resolve_file(boost::filesystem::path(filepath)).native();
+  return resolve_file(std::filesystem::path(filepath)).native();
 }
 
 [[noreturn]] void Conf::throw_error(const std::string& msg) const { throw ConfError{*this, msg}; }

@@ -27,8 +27,7 @@
 #include <map>      // for map<>
 #include <string>   // for string
 #include <utility>  // for pair<>, move, make_pair
-
-#include <boost/optional.hpp>  // for optional<>
+#include <optional> // for optional<>
 
 namespace fable {
 
@@ -63,10 +62,10 @@ class Environment {
    *
    * This is roughly equivalent to ${KEY}.
    */
-  boost::optional<std::string> get(const std::string& key) const {
+  std::optional<std::string> get(const std::string& key) const {
     return get(key, prefer_external_);
   }
-  boost::optional<std::string> get(const std::string& key, bool prefer_external) const;
+  std::optional<std::string> get(const std::string& key, bool prefer_external) const;
 
   /**
    * Return the value of a literal key, trying both environment and internal

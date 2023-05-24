@@ -10,7 +10,6 @@ set(FABLE_VERSION_U32 0 CACHE STRING "Fable version as (MAJOR<<16)|(MINOR<<8)|PA
 include(GNUInstallDirs)
 
 # Library ------------------------------------------------------------
-find_package(Boost COMPONENTS headers filesystem REQUIRED)
 find_package(fmt REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
@@ -51,8 +50,6 @@ target_include_directories(fable
 )
 target_link_libraries(fable
   PUBLIC
-    Boost::headers
-    Boost::filesystem
     fmt::fmt
     nlohmann_json::nlohmann_json
 )
@@ -68,6 +65,7 @@ endif()
 include(CTest)
 if(BUILD_TESTING)
     find_package(GTest REQUIRED)
+    find_package(Boost COMPONENTS headers filesystem REQUIRED)
     include(GoogleTest)
 
     add_executable(test-fable

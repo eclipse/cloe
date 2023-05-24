@@ -46,12 +46,12 @@ class Fable(ConanFile):
             self.version = git.run("describe --dirty=-dirty")[1:]
 
     def requirements(self):
-        self.requires("boost/[>=1.65.1]")
         self.requires("fmt/9.1.0")
         self.requires("nlohmann_json/3.11.2")
 
     def build_requirements(self):
         self.test_requires("gtest/1.13.0")
+        self.test_requires("boost/[>=1.65.1]")
 
     def layout(self):
         cmake.cmake_layout(self)
@@ -87,9 +87,6 @@ class Fable(ConanFile):
         cm = cmake.CMake(self)
         if self.should_install:
             cm.install()
-
-    def package_id(self):
-        self.info.requires["boost"].full_package_mode()
 
     def package_info(self):
         self.cpp_info.set_property("cmake_find_mode", "both")
