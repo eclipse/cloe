@@ -48,9 +48,9 @@ class Optional : public Base<Optional<T, P>> {
   }
 
 #if 0
-  // This is defined in: fable/schema/magic.hpp
   Optional(Type* ptr, std::string&& desc)
       : Optional(ptr, make_prototype<T>(), std::move(desc)) {}
+  // This is defined in: fable/schema/xmagic.hpp
 #endif
 
  public:  // Overrides

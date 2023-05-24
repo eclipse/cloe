@@ -17,7 +17,7 @@
  */
 /**
  * \file fable/schema/const.hpp
- * \see  fable/schema/magic.hpp
+ * \see  fable/schema/xmagic.hpp
  * \see  fable/schema/const_test.cpp
  * \see  fable/schema_test.cpp
  */
@@ -48,7 +48,7 @@ class Const : public Base<Const<T, P>> {
   }
 
 #if 0
-  // This is defined in: fable/schema/magic.hpp
+  // This is defined in: fable/schema/xmagic.hpp
   Const(const T& constant, std::string&& desc)
       : Const(constant, make_prototype<T>(), std::move(desc)) {}
 #endif

@@ -17,7 +17,7 @@
  */
 /**
  * \file fable/schema/array.hpp
- * \see  fable/schema/magic.hpp
+ * \see  fable/schema/xmagic.hpp
  * \see  fable/schema.hpp
  * \see  fable/schema_test.cpp
  */
@@ -49,7 +49,7 @@ class Array : public Base<Array<T, P>> {
       : Base<Array<T, P>>(JsonType::array, std::move(desc)), prototype_(prototype), ptr_(ptr) {}
 
 #if 0
-  // This is defined in: fable/schema/magic.hpp
+  // This is defined in: fable/schema/xmagic.hpp
   Array(Type* ptr, std::string&& desc)
       : Array(ptr, make_prototype<T>(), std::move(desc)) {}
 #endif

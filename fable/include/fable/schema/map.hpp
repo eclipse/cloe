@@ -63,7 +63,7 @@ class Map : public Base<Map<T, P>> {
   }
 
 #if 0
-  // This is defined in: fable/schema/magic.hpp
+  // This is defined in: fable/schema/xmagic.hpp
   Map(Type* ptr, std::string&& desc)
       : Map(ptr, make_prototype<T>(), std::move(desc)) {}
 #endif

@@ -144,7 +144,7 @@
 
 // It is important that this include comes after all the other ones,
 // so that it has access to ALL the previous definitions.
-#include <fable/schema/magic.hpp>  // for make_prototype, ...
+#include <fable/schema/xmagic.hpp>  // for make_prototype, ...
 
 namespace fable {
 
