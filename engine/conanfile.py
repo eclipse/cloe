@@ -37,6 +37,7 @@ class CloeEngine(ConanFile):
     exports_sources = [
         "src/*",
         "webui/*",
+        "vendor/*",
         "CMakeLists.txt",
     ]
 
