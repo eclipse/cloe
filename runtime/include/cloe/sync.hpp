@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_SYNC_HPP_
-#define CLOE_SYNC_HPP_
 
 #include <cstdint>  // for uint64_t
 
@@ -110,5 +108,3 @@ inline void to_json(Json& j, const Sync& s) {
 }
 
 }  // namespace cloe
-
-#endif  // CLOE_SYNC_HPP_

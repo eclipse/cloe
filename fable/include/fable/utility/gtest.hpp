@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef FABLE_UTILITY_GTEST_HPP_
-#define FABLE_UTILITY_GTEST_HPP_
 
 #include <iostream>  // for cerr
 
@@ -188,5 +186,3 @@ inline void assert_from_eq_to(T& x, const char json_input[]) {
 }
 
 }  // namespace fable
-
-#endif  // FABLE_UTILITY_GTEST_HPP_

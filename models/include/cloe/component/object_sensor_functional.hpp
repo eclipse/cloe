@@ -25,8 +25,6 @@
  */
 
 #pragma once
-#ifndef CLOE_COMPONENT_OBJECT_SENSOR_FUNCTIONAL_HPP_
-#define CLOE_COMPONENT_OBJECT_SENSOR_FUNCTIONAL_HPP_
 
 #include <functional>  // for function
 #include <memory>      // for shared_ptr<>
@@ -243,5 +241,3 @@ class ObjectSensorFilterMap : public ObjectSensor {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_COMPONENT_OBJECT_SENSOR_FUNCTIONAL_HPP_

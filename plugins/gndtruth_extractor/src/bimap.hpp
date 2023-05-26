@@ -19,6 +19,8 @@
  * \file bimap.hpp
  */
 
+#pragma once
+
 #include <vector>  // for vector<>
 
 #include <boost/algorithm/string/join.hpp>  // for boost::algorithm::join

@@ -24,8 +24,6 @@
  */
 
 #pragma once
-#ifndef FABLE_JSON_WITH_BOOST_HPP_
-#define FABLE_JSON_WITH_BOOST_HPP_
 
 #include <nlohmann/json.hpp>
 
@@ -61,5 +59,3 @@ struct adl_serializer<boost::optional<T>> {
 };
 
 }  // namespace nlohmann
-
-#endif  // FABLE_JSON_WITH_BOOST_HPP_

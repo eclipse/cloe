@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_UTILITY_SIMPLE_STEERING_MODEL_HPP_
-#define CLOE_UTILITY_SIMPLE_STEERING_MODEL_HPP_
 
 namespace cloe {
 namespace utility {
@@ -82,5 +80,3 @@ class SimpleSteeringModel {
 
 }  // namespace utility
 }  // namespace cloe
-
-#endif  // CLOE_UTILITY_SIMPLE_STEERING_MODEL_HPP_

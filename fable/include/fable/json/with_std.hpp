@@ -24,8 +24,6 @@
  */
 
 #pragma once
-#ifndef FABLE_JSON_WITH_STD_HPP_
-#define FABLE_JSON_WITH_STD_HPP_
 
 #include <memory>  // for unique_ptr<>, shared_ptr<>, weak_ptr<>
 
@@ -76,5 +74,3 @@ struct adl_serializer<std::weak_ptr<T>> {
 };
 
 }  // namespace nlohmann
-
-#endif  // FABLE_JSON_WITH_STD_HPP_

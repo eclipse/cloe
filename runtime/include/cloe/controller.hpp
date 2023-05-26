@@ -23,8 +23,6 @@
  */
 
 #pragma once
-#ifndef CLOE_CONTROLLER_HPP_
-#define CLOE_CONTROLLER_HPP_
 
 #include <memory>       // for shared_ptr<>, unique_ptr<>, make_unique<>
 #include <type_traits>  // for decay
@@ -198,5 +196,3 @@ class ControllerFactory : public ModelFactory {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_CONTROLLER_HPP_

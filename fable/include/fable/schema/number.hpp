@@ -22,8 +22,6 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_NUMBER_HPP_
-#define FABLE_SCHEMA_NUMBER_HPP_
 
 #include <initializer_list>  // for initializer_list<>
 #include <set>               // for set<>
@@ -112,5 +110,3 @@ inline Number<T> make_schema(T* ptr, std::string&& desc) {
 
 }  // namespace schema
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_NUMBER_HPP_

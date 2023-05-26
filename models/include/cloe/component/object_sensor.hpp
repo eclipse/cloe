@@ -21,8 +21,6 @@
  */
 
 #pragma once
-#ifndef CLOE_COMPONENT_OBJECT_SENSOR_HPP_
-#define CLOE_COMPONENT_OBJECT_SENSOR_HPP_
 
 #include <cloe/component.hpp>          // for Component, Json
 #include <cloe/component/frustum.hpp>  // for Frustum
@@ -92,5 +90,3 @@ class NopObjectSensor : public ObjectSensor {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_COMPONENT_OBJECT_SENSOR_HPP_

@@ -21,8 +21,6 @@
  */
 
 #pragma once
-#ifndef CLOE_SIMULATOR_NOP_HPP_
-#define CLOE_SIMULATOR_NOP_HPP_
 
 #include <memory>  // for unique_ptr<>
 #include <string>  // for string
@@ -53,5 +51,3 @@ DEFINE_SIMULATOR_FACTORY(NopFactory, NopConfiguration, "nop", "stand-in no-opera
 
 }  // namespace simulator
 }  // namespace cloe
-
-#endif  // CLOE_SIMULATOR_NOP_HPP_

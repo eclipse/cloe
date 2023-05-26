@@ -21,8 +21,6 @@
  */
 
 #pragma once
-#ifndef CLOE_CORE_DURATION_HPP_
-#define CLOE_CORE_DURATION_HPP_
 
 #include <chrono>  // for duration<>, duration_cast<>, nanoseconds
 #include <ratio>   // for micro, milli
@@ -111,5 +109,3 @@ struct adl_serializer<cloe::Duration> {
 };
 
 }  // namespace nlohmann
-
-#endif  // CLOE_CORE_DURATION_HPP_

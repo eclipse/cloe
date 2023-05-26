@@ -22,8 +22,6 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_PASSTHRU_HPP_
-#define FABLE_SCHEMA_PASSTHRU_HPP_
 
 #include <string>   // for string
 #include <utility>  // for move
@@ -105,5 +103,3 @@ Passthru<P> make_schema(Conf* ptr, const P& prototype, std::string&& desc) {
 
 }  // namespace schema
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_PASSTHRU_HPP_

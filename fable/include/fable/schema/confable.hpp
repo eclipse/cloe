@@ -23,8 +23,6 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_CONFABLE_HPP_
-#define FABLE_SCHEMA_CONFABLE_HPP_
 
 #include <memory>   // for shared_ptr<>
 #include <string>   // for string
@@ -110,5 +108,3 @@ FromConfable<T> make_schema(T* ptr, std::string&& desc) {
 
 }  // namespace schema
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_CONFABLE_HPP_

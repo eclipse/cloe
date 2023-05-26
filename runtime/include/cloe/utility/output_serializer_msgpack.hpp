@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_UTILITY_OUTPUT_SERIALIZER_MSGPACK_HPP_
-#define CLOE_UTILITY_OUTPUT_SERIALIZER_MSGPACK_HPP_
 
 #include <string>  // for string
 
@@ -63,5 +61,3 @@ class AbstractMsgPackSerializer : public Serializer<TSerializerArgs...> {
 
 }  // namespace utility
 }  // namespace cloe
-
-#endif  // CLOE_UTILITY_OUTPUT_SERIALIZER_MSGPACK_HPP_

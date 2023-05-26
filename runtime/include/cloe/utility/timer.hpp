@@ -34,8 +34,6 @@
  */
 
 #pragma once
-#ifndef CLOE_UTILITY_TIMER_HPP_
-#define CLOE_UTILITY_TIMER_HPP_
 
 #include <chrono>      // for now, duration, ...
 #include <functional>  // for functional<>
@@ -101,5 +99,3 @@ class DurationTimer {
 };
 
 }  // namespace timer
-
-#endif  // CLOE_UTILITY_TIMER_HPP_

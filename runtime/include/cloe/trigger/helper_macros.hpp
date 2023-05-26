@@ -20,10 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_TRIGGER_HELPER_MACROS_HPP_
-#define CLOE_TRIGGER_HELPER_MACROS_HPP_
 
 #define _X_FACTORY(xName) xName##Factory
 #define _X_CALLBACK(xName) xName##Callback
-
-#endif  // CLOE_TRIGGER_HELPER_MACROS_HPP_

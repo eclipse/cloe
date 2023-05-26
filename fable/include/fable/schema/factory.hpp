@@ -21,8 +21,6 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_FACTORY_HPP_
-#define FABLE_SCHEMA_FACTORY_HPP_
 
 #include <functional>   // for function<>
 #include <limits>       // for numeric_limits<>
@@ -420,5 +418,3 @@ class Factory : public FactoryBase<T, Factory<T>> {
 
 }  // namespace schema
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_FACTORY_HPP_

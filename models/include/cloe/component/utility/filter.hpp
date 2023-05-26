@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_COMPONENT_UTILITY_FILTER_HPP_
-#define CLOE_COMPONENT_UTILITY_FILTER_HPP_
 
 #include <vector>
 
@@ -66,5 +64,3 @@ F any_of(std::vector<F> fs) {
 }  // namespace filter
 }  // namespace utility
 }  // namespace cloe
-
-#endif  // CLOE_COMPONENT_UTILITY_FILTER_HPP_

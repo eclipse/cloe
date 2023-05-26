@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_UTILITY_RESOURCE_HANDLER_HPP_
-#define CLOE_UTILITY_RESOURCE_HANDLER_HPP_
 
 #include <fstream>
 #include <string>  // for string
@@ -96,5 +94,3 @@ void to_json(cloe::Json& j, const ResourceLoader& c) {
 
 }  // namespace utility
 }  // namespace cloe
-
-#endif  // CLOE_UTILITY_RESOURCE_HANDLER_HPP_

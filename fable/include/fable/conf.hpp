@@ -49,8 +49,6 @@
  */
 
 #pragma once
-#ifndef FABLE_CONF_HPP_
-#define FABLE_CONF_HPP_
 
 #include <functional>  // for function<>
 #include <string>      // for string
@@ -348,5 +346,3 @@ class Conf {
 };
 
 }  // namespace fable
-
-#endif  // FABLE_CONF_HPP_

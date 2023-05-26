@@ -19,6 +19,8 @@
  * \file vtd_sensor_components.hpp
  */
 
+#pragma once
+
 #include <cloe/component/driver_request.hpp>  // for DriverRequest
 #include <cloe/component/ego_sensor.hpp>      // for EgoSensor
 #include <cloe/component/lane_sensor.hpp>     // for LaneBoundarySensor

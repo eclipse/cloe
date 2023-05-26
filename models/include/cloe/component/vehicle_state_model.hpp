@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_COMPONENT_VEHICLE_STATE_MODEL_HPP_
-#define CLOE_COMPONENT_VEHICLE_STATE_MODEL_HPP_
 
 #include <functional>  // for function
 
@@ -124,5 +122,3 @@ class VehicleStateModel : public Component {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_COMPONENT_VEHICLE_STATE_MODEL_HPP_

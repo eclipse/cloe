@@ -34,8 +34,6 @@
  */
 
 #pragma once
-#ifndef CLOE_HANDLER_HPP_
-#define CLOE_HANDLER_HPP_
 
 #include <functional>  // for function
 #include <map>         // for map, map<>::mapped_type
@@ -430,5 +428,3 @@ class FromConf {
 
 }  // namespace handler
 }  // namespace cloe
-
-#endif  // CLOE_HANDLER_HPP_

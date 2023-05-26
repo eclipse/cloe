@@ -21,8 +21,6 @@
  */
 
 #pragma once
-#ifndef FABLE_ENUM_HPP_
-#define FABLE_ENUM_HPP_
 
 #include <map>          // for map<>
 #include <string>       // for string
@@ -172,5 +170,3 @@ T from_string(const std::string& s) {
 }
 
 }  // namespace fable
-
-#endif  // FABLE_ENUM_HPP_

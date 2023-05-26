@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_UTILITY_INJA_HPP_
-#define CLOE_UTILITY_INJA_HPP_
 
 #include <utility>  // for move
 
@@ -47,5 +45,3 @@ inline inja::Environment inja_env() {
 
 }  // namespace utility
 }  // namespace cloe
-
-#endif  // CLOE_UTILITY_INJA_HPP_

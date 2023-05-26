@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_COMPONENT_ACTUATOR_HPP_
-#define CLOE_COMPONENT_ACTUATOR_HPP_
 
 #include <boost/optional.hpp>  // for optional
 #include <cloe/component.hpp>  // for Component
@@ -57,5 +55,3 @@ class Actuator : public Component {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_COMPONENT_ACTUATOR_HPP_

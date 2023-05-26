@@ -21,8 +21,6 @@
  */
 
 #pragma once
-#ifndef CLOE_COMPONENT_LANE_BOUNDARY_HPP_
-#define CLOE_COMPONENT_LANE_BOUNDARY_HPP_
 
 #include <map>     // for map
 #include <vector>  // for vector
@@ -95,5 +93,3 @@ ENUM_SERIALIZATION(LaneBoundary::Color, ({
 // clang-format on
 
 }  // namespace cloe
-
-#endif  // CLOE_COMPONENT_LANE_BOUNDARY_HPP_

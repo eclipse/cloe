@@ -22,8 +22,6 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_CUSTOM_HPP_
-#define FABLE_SCHEMA_CUSTOM_HPP_
 
 #include <functional>  // for function<>
 
@@ -93,5 +91,3 @@ class CustomDeserializer : public schema::Interface {
 
 }  // namespace schema
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_CUSTOM_HPP_

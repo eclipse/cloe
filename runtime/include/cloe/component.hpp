@@ -25,8 +25,6 @@
  */
 
 #pragma once
-#ifndef CLOE_COMPONENT_HPP_
-#define CLOE_COMPONENT_HPP_
 
 #include <cstdint>      // for uint64_t
 #include <memory>       // for shared_ptr<>, unique_ptr<>, make_unique<>
@@ -243,5 +241,3 @@ class ComponentFactory : public ModelFactory {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_COMPONENT_HPP_
