@@ -22,8 +22,6 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_BOOLEAN_HPP_
-#define FABLE_SCHEMA_BOOLEAN_HPP_
 
 #include <string>   // for string
 #include <utility>  // for move
@@ -57,5 +55,3 @@ inline Boolean make_schema(bool* ptr, std::string&& desc) { return Boolean(ptr, 
 
 }  // namespace schema
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_BOOLEAN_HPP_

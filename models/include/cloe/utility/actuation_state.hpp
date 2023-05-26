@@ -21,8 +21,6 @@
  */
 
 #pragma once
-#ifndef CLOE_UTILITY_ACTUATION_STATE_HPP_
-#define CLOE_UTILITY_ACTUATION_STATE_HPP_
 
 #include <string>  // for string
 
@@ -113,5 +111,3 @@ struct ActuationStatistics {
 
 }  // namespace utility
 }  // namespace cloe
-
-#endif  // CLOE_UTILITY_ACTUATION_STATE_HPP_

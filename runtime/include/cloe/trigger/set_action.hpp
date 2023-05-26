@@ -22,8 +22,6 @@
  */
 
 #pragma once
-#ifndef CLOE_TRIGGER_SET_ACTION_HPP_
-#define CLOE_TRIGGER_SET_ACTION_HPP_
 
 #include <memory>   // for unique_ptr<>
 #include <string>   // for string
@@ -253,5 +251,3 @@ class SetVariableActionFactory : public ActionFactory {
    private:                                                                                     \
     xDataType* ptr_;                                                                            \
   };
-
-#endif  // CLOE_TRIGGER_SET_ACTION_HPP_

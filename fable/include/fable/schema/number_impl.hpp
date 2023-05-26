@@ -25,8 +25,6 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_NUMBER_IMPL_HPP_
-#define FABLE_SCHEMA_NUMBER_IMPL_HPP_
 
 #include <initializer_list>  // for initializer_list<>
 #include <limits>            // for numeric_limits<>
@@ -265,5 +263,3 @@ void Number<T>::check_bounds(const Conf& c) const {
 
 }  // namespace schema
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_NUMBER_IMPL_HPP_

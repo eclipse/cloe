@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_COMPONENT_GEARBOX_ACTUATOR_HPP_
-#define CLOE_COMPONENT_GEARBOX_ACTUATOR_HPP_
 
 #include <cloe/component/actuator.hpp>  // for Actuator
 #include <fable/json.hpp>               // for Json
@@ -53,5 +51,3 @@ class GearboxActuator : public Actuator<GearboxRequest> {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_COMPONENT_GEARBOX_ACTUATOR_HPP_

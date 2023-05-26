@@ -22,8 +22,6 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_IGNORE_HPP_
-#define FABLE_SCHEMA_IGNORE_HPP_
 
 #include <string>   // for string
 #include <utility>  // for move
@@ -68,5 +66,3 @@ inline Ignore make_schema(std::string&& desc, JsonType t = JsonType::object) {
 
 }  // namespace schema
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_IGNORE_HPP_

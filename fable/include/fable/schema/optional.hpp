@@ -23,8 +23,6 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_OPTIONAL_HPP_
-#define FABLE_SCHEMA_OPTIONAL_HPP_
 
 #include <string>   // for string
 #include <utility>  // for move
@@ -121,5 +119,3 @@ Optional<T, P> make_schema(boost::optional<T>* ptr, const P& prototype, std::str
 
 }  // namespace schema
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_OPTIONAL_HPP_

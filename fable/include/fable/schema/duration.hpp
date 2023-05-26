@@ -23,8 +23,6 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_DURATION_HPP_
-#define FABLE_SCHEMA_DURATION_HPP_
 
 #include <chrono>   // for duration<>
 #include <limits>   // for numeric_limits<>
@@ -196,5 +194,3 @@ inline Duration<Rep, Period> make_schema(std::chrono::duration<Rep, Period>* ptr
 
 }  // namespace schema
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_DURATION_HPP_

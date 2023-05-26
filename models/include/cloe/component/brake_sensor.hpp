@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_COMPONENT_BRAKE_SENSOR_HPP_
-#define CLOE_COMPONENT_BRAKE_SENSOR_HPP_
 
 #include <cloe/component.hpp>  // for Component, Json
 
@@ -66,5 +64,3 @@ class NopBrakeSensor : public BrakeSensor {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_COMPONENT_BRAKE_SENSOR_HPP_

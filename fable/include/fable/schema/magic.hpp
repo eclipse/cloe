@@ -34,8 +34,6 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_MAGIC_HPP_
-#define FABLE_SCHEMA_MAGIC_HPP_
 
 #include <map>      // for map<>
 #include <string>   // for string
@@ -105,5 +103,3 @@ auto make_prototype(std::string&& desc) {
 
 }  // namespace schema
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_MAGIC_HPP_

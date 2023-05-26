@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_COMPONENT_WHEEL_HPP_
-#define CLOE_COMPONENT_WHEEL_HPP_
 
 #include <fable/json.hpp>  // for to_json
 
@@ -47,5 +45,3 @@ struct Wheel {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_COMPONENT_WHEEL_HPP_

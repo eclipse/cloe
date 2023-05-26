@@ -23,8 +23,6 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_ARRAY_HPP_
-#define FABLE_SCHEMA_ARRAY_HPP_
 
 #include <limits>       // for numeric_limits<>
 #include <memory>       // for shared_ptr<>
@@ -182,5 +180,3 @@ Array<T, P> make_schema(std::vector<T>* ptr, const P& prototype, std::string&& d
 
 }  // namespace schema
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_ARRAY_HPP_

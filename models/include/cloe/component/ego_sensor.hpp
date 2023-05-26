@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_COMPONENT_EGO_SENSOR_HPP_
-#define CLOE_COMPONENT_EGO_SENSOR_HPP_
 
 #include <cloe/component.hpp>         // for Component, Json
 #include <cloe/component/object.hpp>  // for Object
@@ -92,5 +90,3 @@ class NopEgoSensor : public EgoSensor {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_COMPONENT_EGO_SENSOR_HPP_

@@ -25,8 +25,7 @@
  * Inspiration for the API of this library taken from https://github.com/goulash/xdg.
  */
 
-#ifndef CLOE_UTILITY_XDG_HPP_
-#define CLOE_UTILITY_XDG_HPP_
+#pragma once
 
 #include <functional>  // for function
 #include <string>      // for string
@@ -234,5 +233,3 @@ inline void merge_data(const boost::filesystem::path& file,
 
 }  // namespace utility
 }  // namespace cloe
-
-#endif  // CLOE_UTILITY_XDG_HPP_

@@ -44,8 +44,6 @@
  */
 
 #pragma once
-#ifndef CLOE_TRIGGER_EVALUATE_EVENT_HPP_
-#define CLOE_TRIGGER_EVALUATE_EVENT_HPP_
 
 #include <functional>  // for function<>
 #include <string>      // for string
@@ -82,5 +80,3 @@ using EvaluateCallback = DirectCallback<Evaluate, double>;
 
 }  // namespace events
 }  // namespace cloe
-
-#endif  // CLOE_TRIGGER_EVALUATE_EVENT_HPP_

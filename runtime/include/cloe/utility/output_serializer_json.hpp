@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_UTILITY_OUTPUT_SERIALIZER_JSON_HPP_
-#define CLOE_UTILITY_OUTPUT_SERIALIZER_JSON_HPP_
 
 #include <string>  // for string
 
@@ -136,5 +134,3 @@ std::unique_ptr<JsonFileSerializer> make_json_file_serializer(JsonFileType type,
 
 }  // namespace utility
 }  // namespace cloe
-
-#endif  // CLOE_UTILITY_OUTPUT_SERIALIZER_JSON_HPP_

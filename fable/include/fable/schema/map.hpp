@@ -22,8 +22,6 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_MAP_HPP_
-#define FABLE_SCHEMA_MAP_HPP_
 
 #include <limits>   // for numeric_limits<>
 #include <map>      // for map<>
@@ -197,5 +195,3 @@ Map<T, P> make_schema(std::map<std::string, T>* ptr, const P& prototype, std::st
 
 }  // namespace schema
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_MAP_HPP_

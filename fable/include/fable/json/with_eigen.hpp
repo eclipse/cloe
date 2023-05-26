@@ -24,8 +24,6 @@
  */
 
 #pragma once
-#ifndef FABLE_JSON_WITH_EIGEN_HPP_
-#define FABLE_JSON_WITH_EIGEN_HPP_
 
 #include <nlohmann/json.hpp>
 
@@ -87,5 +85,3 @@ struct adl_serializer<Eigen::Isometry3d> {
 };
 
 }  // namespace nlohmann
-
-#endif  // FABLE_JSON_WITH_EIGEN_HPP_

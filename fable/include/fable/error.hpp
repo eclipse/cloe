@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef FABLE_ERROR_HPP_
-#define FABLE_ERROR_HPP_
 
 #include <stdexcept>  // for exception
 #include <string>     // for string
@@ -154,5 +152,3 @@ class SchemaError : public ConfError {
 };
 
 }  // namespace fable
-
-#endif  // FABLE_ERROR_HPP_

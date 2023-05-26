@@ -62,8 +62,6 @@
  */
 
 #pragma once
-#ifndef CLOE_TRIGGER_TRANSITION_EVENT_HPP_
-#define CLOE_TRIGGER_TRANSITION_EVENT_HPP_
 
 #include <string>  // for string
 
@@ -168,5 +166,3 @@ using TransitionCallback = DirectCallback<Transition<T>, T>;
 
 }  // namespace events
 }  // namespace cloe
-
-#endif  // CLOE_TRIGGER_TRANSITION_EVENT_HPP_

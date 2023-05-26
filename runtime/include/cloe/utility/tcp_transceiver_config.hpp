@@ -21,8 +21,6 @@
  */
 
 #pragma once
-#ifndef CLOE_UTILITY_TCP_TRANSCEIVER_CONFIG_HPP_
-#define CLOE_UTILITY_TCP_TRANSCEIVER_CONFIG_HPP_
 
 #include <chrono>   // for duration
 #include <string>   // for string
@@ -117,5 +115,3 @@ struct TcpTransceiverFullConfiguration : public TcpTransceiverConfiguration {
 
 }  // namespace utility
 }  // namespace cloe
-
-#endif  // CLOE_UTILITY_TCP_TRANSCEIVER_CONFIG_HPP_

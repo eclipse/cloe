@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_COMPONENT_STEERING_SENSOR_HPP_
-#define CLOE_COMPONENT_STEERING_SENSOR_HPP_
 
 #include <cloe/component.hpp>  // for Component, Json
 
@@ -65,5 +63,3 @@ class NopSteeringSensor : public SteeringSensor {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_COMPONENT_STEERING_SENSOR_HPP_

@@ -21,8 +21,6 @@
  */
 
 #pragma once
-#ifndef CLOE_CORE_ABORT_HPP_
-#define CLOE_CORE_ABORT_HPP_
 
 #include <atomic>     // for atomic_bool
 #include <stdexcept>  // for exception
@@ -64,5 +62,3 @@ inline void abort_checkpoint(AbortFlag& sig) {
 }
 
 }  // namespace cloe
-
-#endif  // CLOE_CORE_ABORT_HPP_

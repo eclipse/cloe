@@ -21,8 +21,6 @@
  */
 
 #pragma once
-#ifndef CLOE_UTILITY_COMMAND_HPP_
-#define CLOE_UTILITY_COMMAND_HPP_
 
 #include <string>  // for string
 #include <vector>  // for vector<>
@@ -182,5 +180,3 @@ ENUM_SERIALIZATION(Command::Verbosity, ({
 // clang-format on
 
 }  // namespace cloe
-
-#endif  // CLOE_UTILITY_COMMAND_HPP_

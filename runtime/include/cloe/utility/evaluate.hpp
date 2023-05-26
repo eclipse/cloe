@@ -21,8 +21,6 @@
  */
 
 #pragma once
-#ifndef CLOE_UTILITY_EVALUATE_HPP_
-#define CLOE_UTILITY_EVALUATE_HPP_
 
 #include <functional>  // for function<>
 #include <string>      // for string
@@ -46,5 +44,3 @@ std::function<bool(double)> compile_evaluation(const std::string& op, double val
 
 }  // namespace utility
 }  // namespace cloe
-
-#endif  // CLOE_UTILITY_EVALUATE_HPP_

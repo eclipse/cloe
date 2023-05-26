@@ -22,8 +22,6 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_STRUCT_HPP_
-#define FABLE_SCHEMA_STRUCT_HPP_
 
 #include <map>          // for map<>
 #include <memory>       // for shared_ptr<>
@@ -241,5 +239,3 @@ inline Struct make_schema(std::string&& desc, const Struct& base, T&& props) {
 
 }  // namespace schema
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_STRUCT_HPP_
