@@ -21,8 +21,6 @@
  */
 
 #pragma once
-#ifndef CLOE_CONTROLLER_NOP_HPP_
-#define CLOE_CONTROLLER_NOP_HPP_
 
 #include <cloe/controller.hpp>  // for DEFINE_CONTROLLER_FACTORY, Json, ...
 
@@ -42,5 +40,3 @@ DEFINE_CONTROLLER_FACTORY(NopFactory, NopConfiguration, "nop", "stand-in that do
 
 }  // namespace controller
 }  // namespace cloe
-
-#endif  // CLOE_CONTROLLER_NOP_HPP_

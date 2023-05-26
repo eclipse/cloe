@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_UTILITY_RESOURCE_HPP_
-#define CLOE_UTILITY_RESOURCE_HPP_
 
 #include <cstddef>
 #include <string>
@@ -74,5 +72,3 @@ class Resource {
   const size_t size_;
   const char* filepath_;
 };
-
-#endif  // CLOE_UTILITY_RESOURCE_HPP_

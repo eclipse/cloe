@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_COMPONENT_OBJECT_HPP_
-#define CLOE_COMPONENT_OBJECT_HPP_
 
 #include <memory>  // for shared_ptr<>
 #include <vector>  // for vector<>
@@ -137,5 +135,3 @@ ENUM_SERIALIZATION(Object::Class, ({
 // clang-format on
 
 }  // namespace cloe
-
-#endif  // CLOE_COMPONENT_OBJECT_HPP_

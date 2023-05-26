@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_UTILITY_OUTPUT_SERIALIZER_HPP_
-#define CLOE_UTILITY_OUTPUT_SERIALIZER_HPP_
 
 #include <fstream>  // for ofstream
 #include <string>   // for string
@@ -225,5 +223,3 @@ class SequentialFileSerializer
 
 }  // namespace utility
 }  // namespace cloe
-
-#endif  // CLOE_UTILITY_OUTPUT_SERIALIZER_HPP_

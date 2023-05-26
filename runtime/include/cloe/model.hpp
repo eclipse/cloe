@@ -47,8 +47,6 @@
  */
 
 #pragma once
-#ifndef CLOE_MODEL_HPP_
-#define CLOE_MODEL_HPP_
 
 #include <cloe/core.hpp>    // for Duration, Error, Confable
 #include <cloe/entity.hpp>  // for Entity
@@ -418,5 +416,3 @@ class ModelFactory : public Entity, public Confable {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_MODEL_HPP_

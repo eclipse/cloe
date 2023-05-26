@@ -19,6 +19,8 @@
  * \file defer.hpp
  */
 
+#pragma once
+
 #include <functional> // for function<>
 
 namespace engine {

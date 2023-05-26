@@ -24,12 +24,8 @@
  */
 
 #pragma once
-#ifndef CLOE_CORE_HPP_
-#define CLOE_CORE_HPP_
 
 #include <cloe/core/duration.hpp>
 #include <cloe/core/error.hpp>
 #include <cloe/core/fable.hpp>
 #include <cloe/core/logger.hpp>
-
-#endif  // CLOE_CORE_HPP_

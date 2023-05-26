@@ -21,8 +21,6 @@
  */
 
 #pragma once
-#ifndef CLOE_ENTITY_HPP_
-#define CLOE_ENTITY_HPP_
 
 #include <string>  // for string
 
@@ -123,5 +121,3 @@ inline void to_json(Json& j, const Entity& e) {
 }
 
 }  // namespace cloe
-
-#endif  // CLOE_ENTITY_HPP_

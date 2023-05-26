@@ -113,8 +113,6 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_HPP_
-#define FABLE_SCHEMA_HPP_
 
 #include <chrono>       // for duration<>
 #include <map>          // for map<>
@@ -269,5 +267,3 @@ class Schema : public schema::Interface {
 };
 
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_HPP_

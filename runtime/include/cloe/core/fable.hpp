@@ -21,8 +21,6 @@
  */
 
 #pragma once
-#ifndef CLOE_CORE_FABLE_HPP_
-#define CLOE_CORE_FABLE_HPP_
 
 #include <fable/fable.hpp>
 
@@ -50,5 +48,3 @@ using namespace fable::schema;  // NOLINT(build/namespaces)
 }  // namespace schema
 
 }  // namespace cloe
-
-#endif  // CLOE_CORE_FABLE_HPP_

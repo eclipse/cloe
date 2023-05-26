@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_COMPONENT_FRUSTUM_HPP_
-#define CLOE_COMPONENT_FRUSTUM_HPP_
 
 #include <cmath>  // for M_PI
 
@@ -77,5 +75,3 @@ struct Frustum : public Confable {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_COMPONENT_FRUSTUM_HPP_

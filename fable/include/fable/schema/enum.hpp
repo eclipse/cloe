@@ -22,8 +22,6 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_ENUM_HPP_
-#define FABLE_SCHEMA_ENUM_HPP_
 
 #include <map>          // for map<>
 #include <string>       // for string
@@ -111,5 +109,3 @@ inline Enum<T> make_schema(T* ptr, std::string&& desc) {
 
 }  // namespace schema
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_ENUM_HPP_

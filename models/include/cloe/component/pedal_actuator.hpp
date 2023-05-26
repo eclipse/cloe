@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_COMPONENT_PEDAL_ACTUATOR_HPP_
-#define CLOE_COMPONENT_PEDAL_ACTUATOR_HPP_
 
 #include <cloe/component/actuator.hpp>  // for Actuator
 #include <fable/json.hpp>               // for Json
@@ -59,5 +57,3 @@ class PedalActuator : public Actuator<PedalRequest> {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_COMPONENT_PEDAL_ACTUATOR_HPP_

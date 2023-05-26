@@ -22,8 +22,6 @@
  */
 
 #pragma once
-#ifndef FABLE_ENVIRONMENT_HPP_
-#define FABLE_ENVIRONMENT_HPP_
 
 #include <cassert>  // for assert
 #include <map>      // for map<>
@@ -134,5 +132,3 @@ inline std::string interpolate_vars(const std::string& s, const Environment* env
 }
 
 }  // namespace fable
-
-#endif  // FABLE_ENVIRONMENT_HPP_

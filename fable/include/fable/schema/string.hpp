@@ -24,8 +24,6 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_STRING_HPP_
-#define FABLE_SCHEMA_STRING_HPP_
 
 #include <limits>   // for numeric_limits<>
 #include <string>   // for string
@@ -269,5 +267,3 @@ inline String make_schema(std::string* ptr, std::string&& desc) {
 
 }  // namespace schema
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_STRING_HPP_

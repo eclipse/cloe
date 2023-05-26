@@ -23,8 +23,6 @@
  */
 
 #pragma once
-#ifndef CLOE_SIMULATOR_HPP_
-#define CLOE_SIMULATOR_HPP_
 
 #include <memory>       // for shared_ptr<>, unique_ptr<>, make_unique<>
 #include <string>       // for string
@@ -233,5 +231,3 @@ class SimulatorFactory : public ModelFactory {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_SIMULATOR_HPP_

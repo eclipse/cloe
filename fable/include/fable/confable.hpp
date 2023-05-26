@@ -22,8 +22,6 @@
  */
 
 #pragma once
-#ifndef FABLE_CONFABLE_HPP_
-#define FABLE_CONFABLE_HPP_
 
 #include <memory>  // for unique_ptr<>
 
@@ -138,5 +136,3 @@ struct adl_serializer<fable::Confable> {
 };
 
 }  // namespace nlohmann
-
-#endif  // FABLE_CONFABLE_HPP_

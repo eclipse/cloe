@@ -37,8 +37,6 @@
  */
 
 #pragma once
-#ifndef CLOE_UTILITY_ACTUATION_LEVEL_HPP_
-#define CLOE_UTILITY_ACTUATION_LEVEL_HPP_
 
 #include <string>  // for string
 
@@ -185,5 +183,3 @@ inline std::string to_string(const ActuationLevel::Enum level) {
 
 }  // namespace utility
 }  // namespace cloe
-
-#endif  // CLOE_UTILITY_ACTUATION_LEVEL_HPP_

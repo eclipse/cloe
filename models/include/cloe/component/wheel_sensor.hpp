@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_COMPONENT_WHEEL_SENSOR_HPP_
-#define CLOE_COMPONENT_WHEEL_SENSOR_HPP_
 
 #include <cloe/component.hpp>        // for Component, Json
 #include <cloe/component/wheel.hpp>  // for Wheel
@@ -96,5 +94,3 @@ class NopWheelSensor : public WheelSensor {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_COMPONENT_WHEEL_SENSOR_HPP_

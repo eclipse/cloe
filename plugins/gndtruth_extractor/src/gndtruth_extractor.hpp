@@ -19,6 +19,8 @@
  * \file gndtruth_extractor.hpp
  */
 
+#pragma once
+
 #include <cloe/core.hpp>  // for Confable, Schema
 
 namespace cloe {

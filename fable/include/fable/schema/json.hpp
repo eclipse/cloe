@@ -22,8 +22,6 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_JSON_HPP_
-#define FABLE_SCHEMA_JSON_HPP_
 
 #include <string>   // for string
 #include <utility>  // for move
@@ -88,5 +86,3 @@ inline FromJson<T> make_schema(T* ptr, JsonType t, std::string&& desc) {
 
 }  // namespace schema
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_JSON_HPP_

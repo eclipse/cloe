@@ -23,8 +23,6 @@
  */
 
 #pragma once
-#ifndef CLOE_COMPONENT_LATLONG_ACTUATOR_HPP_
-#define CLOE_COMPONENT_LATLONG_ACTUATOR_HPP_
 
 #include <boost/optional.hpp>         // for optional<>
 #include <fable/json/with_boost.hpp>  // for to_json
@@ -132,5 +130,3 @@ class LatActuator : public Actuator<double> {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_COMPONENT_LATLONG_ACTUATOR_HPP_

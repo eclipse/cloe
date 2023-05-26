@@ -24,8 +24,6 @@
  */
 
 #pragma once
-#ifndef FABLE_FABLE_HPP_
-#define FABLE_FABLE_HPP_
 
 #include <fable/conf.hpp>
 #include <fable/confable.hpp>
@@ -34,5 +32,3 @@
 #include <fable/json.hpp>
 #include <fable/json/with_std.hpp>
 #include <fable/schema.hpp>
-
-#endif  // FABLE_FABLE_HPP_

@@ -25,8 +25,6 @@
  */
 
 #pragma once
-#ifndef CLOE_TRIGGER_HPP_
-#define CLOE_TRIGGER_HPP_
 
 #include <memory>   // for unique_ptr<>, shared_ptr<>
 #include <string>   // for string
@@ -664,4 +662,3 @@ using ActionFactory = TriggerFactory<Action>;
 using ActionFactoryPtr = std::unique_ptr<ActionFactory>;
 
 }  // namespace cloe
-#endif  // CLOE_TRIGGER_HPP_

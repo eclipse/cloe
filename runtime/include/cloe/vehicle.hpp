@@ -23,8 +23,6 @@
  */
 
 #pragma once
-#ifndef CLOE_VEHICLE_HPP_
-#define CLOE_VEHICLE_HPP_
 
 #include <cstdint>      // for uint64_t
 #include <map>          // for map<>
@@ -283,5 +281,3 @@ class Vehicle : public Model {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_VEHICLE_HPP_

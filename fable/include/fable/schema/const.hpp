@@ -23,8 +23,6 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_CONST_HPP_
-#define FABLE_SCHEMA_CONST_HPP_
 
 #include <string>   // for string
 #include <utility>  // for move
@@ -105,5 +103,3 @@ inline Const<std::string, String> make_const_str(const char* constant, std::stri
 
 }  // namespace schema
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_CONST_HPP_

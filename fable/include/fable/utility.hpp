@@ -21,8 +21,6 @@
  */
 
 #pragma once
-#ifndef FABLE_UTILITY_HPP_
-#define FABLE_UTILITY_HPP_
 
 #include <string>  // for string
 
@@ -78,5 +76,3 @@ void pretty_print(const ConfError& e, std::ostream& os);
 void pretty_print(const SchemaError& e, std::ostream& os);
 
 }  // namespace fable
-
-#endif  // FABLE_UTILITY_HPP_

@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_COMPONENT_STEERING_ACTUATOR_HPP_
-#define CLOE_COMPONENT_STEERING_ACTUATOR_HPP_
 
 #include <cloe/component/actuator.hpp>  // for Actuator
 #include <fable/json.hpp>               // for Json
@@ -55,5 +53,3 @@ class SteeringActuator : public Actuator<SteeringRequest> {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_COMPONENT_STEERING_ACTUATOR_HPP_

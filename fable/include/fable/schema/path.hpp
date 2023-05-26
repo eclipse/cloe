@@ -22,8 +22,6 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_PATH_HPP_
-#define FABLE_SCHEMA_PATH_HPP_
 
 #include <limits>   // for numeric_limits<>
 #include <string>   // for string
@@ -231,5 +229,3 @@ struct adl_serializer<boost::filesystem::path> {
 };
 
 }  // namespace nlohmann
-
-#endif  // FABLE_SCHEMA_PATH_HPP_

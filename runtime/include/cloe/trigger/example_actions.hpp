@@ -24,8 +24,6 @@
  */
 
 #pragma once
-#ifndef CLOE_TRIGGER_EXAMPLE_ACTIONS_HPP_
-#define CLOE_TRIGGER_EXAMPLE_ACTIONS_HPP_
 
 #include <memory>   // for unique_ptr<>
 #include <string>   // for string
@@ -166,5 +164,3 @@ class PushReleaseFactory : public ActionFactory {
 
 }  // namespace actions
 }  // namespace cloe
-
-#endif  // CLOE_TRIGGER_EXAMPLE_ACTIONS_HPP_

@@ -23,8 +23,6 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_VARIANT_HPP_
-#define FABLE_SCHEMA_VARIANT_HPP_
 
 #include <string>   // for string
 #include <utility>  // for move
@@ -139,5 +137,3 @@ inline Variant make_schema(std::string&& desc, std::vector<Box>&& vec) {
 
 }  // namespace schema
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_VARIANT_HPP_

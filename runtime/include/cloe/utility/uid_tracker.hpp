@@ -27,8 +27,6 @@
  */
 
 #pragma once
-#ifndef CLOE_UTILITY_UID_TRACKER_HPP_
-#define CLOE_UTILITY_UID_TRACKER_HPP_
 
 #include <cassert>     // for assert
 #include <functional>  // for std::function
@@ -118,5 +116,3 @@ class UniqueIDTracker {
 
 }  // namespace utility
 }  // namespace cloe
-
-#endif  // CLOE_UTILITY_UID_TRACKER_HPP_

@@ -23,8 +23,6 @@
  */
 
 #pragma once
-#ifndef FABLE_JSON_HPP_
-#define FABLE_JSON_HPP_
 
 #include <string>  // for string
 
@@ -108,5 +106,3 @@ inline Json parse_json(InputType&& input) {
 }
 
 }  // namespace fable
-
-#endif  // FABLE_JSON_HPP_

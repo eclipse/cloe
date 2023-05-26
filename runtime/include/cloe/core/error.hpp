@@ -22,8 +22,6 @@
  */
 
 #pragma once
-#ifndef CLOE_CORE_ERROR_HPP_
-#define CLOE_CORE_ERROR_HPP_
 
 #include <stdexcept>  // for exception
 #include <string>     // for string
@@ -90,5 +88,3 @@ class ConcludedError : public std::exception {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_CORE_ERROR_HPP_

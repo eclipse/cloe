@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_REGISTRAR_HPP_
-#define CLOE_REGISTRAR_HPP_
 
 #include <list>     // for list<>
 #include <memory>   // for unique_ptr<>
@@ -227,5 +225,3 @@ class Registrar {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_REGISTRAR_HPP_

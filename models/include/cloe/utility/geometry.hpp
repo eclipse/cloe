@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_UTILITY_GEOMETRY_HPP_
-#define CLOE_UTILITY_GEOMETRY_HPP_
 
 #include <Eigen/Geometry>
 
@@ -84,5 +82,3 @@ inline void transform_point_to_parent_frame(const Eigen::Isometry3d& child_frame
 
 }  // namespace utility
 }  // namespace cloe
-
-#endif  // CLOE_UTILITY_GEOMETRY_HPP_

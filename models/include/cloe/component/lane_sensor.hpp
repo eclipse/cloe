@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_COMPONENT_LANE_SENSOR_HPP_
-#define CLOE_COMPONENT_LANE_SENSOR_HPP_
 
 #include <Eigen/Geometry>             // for Isometry3d
 #include <fable/json/with_eigen.hpp>  // for to_json
@@ -77,5 +75,3 @@ class NopLaneSensor : public LaneBoundarySensor {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_COMPONENT_LANE_SENSOR_HPP_
