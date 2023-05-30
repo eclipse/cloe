@@ -155,21 +155,29 @@ class Map : public Base<Map<T, P>> {
     }
   }
 
-  Json serialize(const Type& xm) const {
+  Json serialize(const Type& x) const {
     Json j;
-    for (const auto& kv : xm) {
-      j[kv.first] = prototype_.serialize(kv.second);
-    }
+    serialize_into(j, x);
     return j;
   }
 
   Type deserialize(const Conf& c) const {
     Type tmp;
+    deserialize_into(c, tmp);
+    return tmp;
+  }
+
+  void serialize_into(Json& j, const Type& x) const {
+    for (const auto& kv : x) {
+      j[kv.first] = prototype_.serialize(kv.second);
+    }
+  }
+
+  void deserialize_into(const Conf& c, Type& x) const {
     for (auto& i : c->items()) {
       const auto key = i.key();
-      tmp.insert(std::make_pair(key, deserialize_item(c, key)));
+      x.insert(std::make_pair(key, deserialize_item(c, key)));
     }
-    return tmp;
   }
 
   T deserialize_item(const Conf& c, const std::string& key) const {

@@ -53,7 +53,11 @@ void Boolean::from_conf(const Conf& c) {
 
 Json Boolean::serialize(const Type& x) const { return x; }
 
+void Boolean::serialize_into(Json& j, const Type& x) const { j = x; }
+
 Boolean::Type Boolean::deserialize(const Conf& c) const { return c.get<Type>(); }
+
+void Boolean::deserialize_into(const Conf& c, Type& x) const { x = c.get<Type>(); }
 
 void Boolean::reset_ptr() { ptr_ = nullptr; }
 
