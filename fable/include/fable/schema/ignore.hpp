@@ -43,6 +43,8 @@ namespace schema {
  */
 class Ignore : public Base<Ignore> {
  public:  // Constructors
+  using Type = struct {};
+
   Ignore() : Base(JsonType::object, "ignored") {}
   explicit Ignore(std::string&& desc, JsonType t = JsonType::object) : Base(t, std::move(desc)) {}
 
@@ -58,6 +60,11 @@ class Ignore : public Base<Ignore> {
   void to_json(Json& j) const override { j = nullptr; }
   void from_conf(const Conf&) override {}
   void reset_ptr() override {}
+
+  Json serialize(const Type&) const { return nullptr; }
+  Type deserialize(const Conf&) const { return {}; }
+  void serialize_into(Json&, const Type&) const {}
+  void deserialize_into(const Conf&, Type&) const {}
 };
 
 inline Ignore make_schema(std::string&& desc, JsonType t = JsonType::object) {

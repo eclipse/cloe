@@ -210,6 +210,12 @@ template <typename T>
 T Number<T>::deserialize(const Conf& c) const { return c.get<T>(); }
 
 template <typename T>
+void Number<T>::serialize_into(Json& j, const T& x) const { j = x; }
+
+template <typename T>
+void Number<T>::deserialize_into(const Conf& c, T& x) const { x = c.get<T>(); }
+
+template <typename T>
 void Number<T>::reset_ptr() { ptr_ = nullptr; }
 
 /**

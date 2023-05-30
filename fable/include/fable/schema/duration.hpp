@@ -138,6 +138,10 @@ class Duration : public Base<Duration<T, Period>> {
 
   Type deserialize(const Conf& c) const { return Type(c.get<T>()); }
 
+  void serialize_into(Json& j, const Type& x) const { j = x.count(); }
+
+  void deserialize_into(const Conf& c, Type& x) const { x = deserialize(c); }
+
   void reset_ptr() override { ptr_ = nullptr; }
 
  private:

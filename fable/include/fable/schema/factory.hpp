@@ -292,6 +292,10 @@ class FactoryBase : public Base<CRTP> {
 
   Json serialize(const Type& x) const { return x; }
 
+  void serialize_into(Json& j, const Type& x) const { j = serialize(x); }
+
+  void deserialize_into(const Conf& c, Type& x) const { x = deserialize(c); }
+
   void from_conf(const Conf& c) override {
     throw std::logic_error("FactoryBase::from_conf() should not be used");
   }

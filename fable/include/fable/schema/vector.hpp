@@ -125,26 +125,21 @@ class Vector : public Base<Vector<T, P>> {
   using Interface::to_json;
   void to_json(Json& j) const override {
     assert(ptr_ != nullptr);
-    j = serialize(*ptr_);
+    if (j.type() != JsonType::array) {
+      j = Json::array();
+    }
+    serialize_into(j, *ptr_);
   }
 
   void from_conf(const Conf& c) override {
     assert(ptr_ != nullptr);
     assert(c->type() == this->type_);
-
-    if (!option_extend_) {
-      ptr_->clear();
-    }
-
-    ptr_->reserve(c->size() + ptr_->size());
-    fill(*ptr_, c);
+    deserialize_into(c, *ptr_);
   }
 
   Json serialize(const Type& xs) const {
     Json j = Json::array();
-    for (const auto& x : xs) {
-      j.emplace_back(prototype_.serialize(x));
-    }
+    serialize_into(j, xs);
     return j;
   }
 
@@ -153,6 +148,23 @@ class Vector : public Base<Vector<T, P>> {
     vec.reserve(c->size());
     fill(vec, c);
     return vec;
+  }
+
+  void serialize_into(Json& j, const Type& xs) const {
+    for (const auto& x : xs) {
+      j.emplace_back(prototype_.serialize(x));
+    }
+  }
+
+  void deserialize_into(const Conf& c, Type& x) const {
+    auto size = c->size();
+    if (option_extend_) {
+      size += x.size();
+    } else {
+      x.clear();
+    }
+    x.reserve(size);
+    fill(x, c);
   }
 
   void reset_ptr() override { ptr_ = nullptr; }
