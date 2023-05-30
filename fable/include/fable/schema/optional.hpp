@@ -133,6 +133,10 @@ class Optional : public Base<Optional<T, P>> {
     return prototype_.deserialize(c);
   }
 
+  void serialize_into(Json& j, const Type& x) const { j = serialize(x); }
+
+  void deserialize_into(const Conf& c, Type& x) const { x = deserialize(c); }
+
   void reset_ptr() override { ptr_ = nullptr; }
 
  private:

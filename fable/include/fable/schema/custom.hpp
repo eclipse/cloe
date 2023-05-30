@@ -84,6 +84,12 @@ class CustomDeserializer : public schema::Interface {
 
   friend void to_json(Json& j, const CustomDeserializer& b) { b.impl_->to_json(j); }
 
+  // TODO: Implement or explain why we don't need the following methods:
+  // - serialize
+  // - serialize_into
+  // - deserialize
+  // - deserialize_into
+
  private:
   std::shared_ptr<schema::Interface> impl_{nullptr};
   std::function<void(CustomDeserializer*, const Conf&)> from_conf_fn_{};

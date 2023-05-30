@@ -207,6 +207,12 @@ class Struct : public Base<Struct> {
   void to_json(Json& j) const override;
   void from_conf(const Conf& c) override;
 
+  // TODO: Implement or explain why we don't need the following methods:
+  // - serialize
+  // - serialize_into
+  // - deserialize
+  // - deserialize_into
+
  private:
   void set_properties(const std::map<std::string, Box>& props);
 

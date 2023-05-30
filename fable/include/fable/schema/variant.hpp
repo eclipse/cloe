@@ -111,6 +111,12 @@ class Variant : public Interface {
     schemas_[index].from_conf(c);
   }
 
+  // TODO: Implement or explain why we don't need the following methods:
+  // - serialize
+  // - serialize_into
+  // - deserialize
+  // - deserialize_into
+
   void reset_ptr() override;
 
  private:

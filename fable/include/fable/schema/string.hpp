@@ -249,6 +249,8 @@ class String : public Base<String> {
   void from_conf(const Conf& c) override;
   Json serialize(const Type& x) const;
   Type deserialize(const Conf& c) const;
+  void serialize_into(Json& j, const Type& x) const { j = serialize(x); }
+  void deserialize_into(const Conf& c, Type& x) const { x = deserialize(c); }
   void reset_ptr() override;
 
  private:

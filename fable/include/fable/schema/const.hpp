@@ -81,6 +81,15 @@ class Const : public Base<Const<T, P>> {
     return constant_;
   }
 
+  void serialize_into(Json& j, const Type& x) const {
+    prototype_.serialize_into(j, x);
+  }
+
+  void deserialize_into(const Conf& c, Type& x) const {
+    validate(c);
+    x = constant_;
+  }
+
   void reset_ptr() override {}
 
  private:

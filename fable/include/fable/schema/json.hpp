@@ -75,6 +75,12 @@ class FromJson : public Base<FromJson<T>> {
 
   void reset_ptr() override { ptr_ = nullptr; }
 
+  // TODO: Implement or explain why we don't need the following methods:
+  // - serialize
+  // - serialize_into
+  // - deserialize
+  // - deserialize_into
+
  private:
   Type* ptr_{nullptr};
 };
