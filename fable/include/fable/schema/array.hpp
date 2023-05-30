@@ -128,7 +128,7 @@ class Array : public Base<Array<T, N, P>> {
     assert(ptr_ != nullptr);
     assert(c->type() == JsonType::array || c->type() == JsonType::object);
 
-    this->fill(*ptr_, c);
+    this->deserialize_to(c, *ptr_);
   }
 
   Json serialize(const Type& xs) const {
@@ -146,13 +146,30 @@ class Array : public Base<Array<T, N, P>> {
    * initialized and therefore only support setting the full array.
    */
   Type deserialize(const Conf& c) const {
-    if (c->type() != JsonType::array) {
-      throw error::WrongType(c, JsonType::array);
-    }
-
     Type array;
-    this->fill_from_array(array, c);
+    this->deserialize_into(c, array);
     return array;
+  }
+
+  void deserialize_into(const Conf& c, Type& v) {
+    if (c->type() == JsonType::array) {
+      this->deserialize_from_array(arr, c);
+    } else if (c->type() == JsonType::object) {
+      this->deserialize_from_object(arr, c);
+    } else {
+      this->throw_wrong_type(c);
+    }
+  }
+
+  /**
+   * Serialize contents of `v` into `j`.
+   *
+   * NOTE: The behavior of this function may change as requirements are better
+   * understood.
+   */
+  void serialize_into(const Type& v, Json& j) {
+    for (const auto& x : xs) {
+      j.emplace_back(prototype_.serialize_into(
   }
 
   void reset_ptr() override { ptr_ = nullptr; }
@@ -262,17 +279,7 @@ class Array : public Base<Array<T, N, P>> {
     this->throw_error(c, "property must have type array or object, got {}", got);
   }
 
-  void fill(Type& arr, const Conf& c) const {
-    if (c->type() == JsonType::array) {
-      this->fill_from_array(arr, c);
-    } else if (c->type() == JsonType::object) {
-      this->fill_from_object(arr, c);
-    } else {
-      this->throw_wrong_type(c);
-    }
-  }
-
-  void fill_from_object(Type& array, const Conf& c) const {
+  void deserialize_from_object(Type& array, const Conf& c) const {
     for (const auto& kv : c->items()) {
       const auto& key = kv.key();
       size_t idx = this->parse_index(c, key);
@@ -284,11 +291,11 @@ class Array : public Base<Array<T, N, P>> {
       //   schemas and reimplement deserialize and serialize in terms of
       //   deserialize_to and serialize_from. This is fine. We learn from mistakes.
       // TODO: Implement and use deserialize_to
-      array[idx] = prototype_.deserialize(c.at(key));
+      prototype_.deserialize_to(c.at(key), array[idx]);
     }
   }
 
-  void fill_from_array(Type& array, const Conf& c) const {
+  void deserialize_from_array(Type& array, const Conf& c) const {
     auto src = c.to_array();
     size_t n = src.size();
     assert(n == N);
