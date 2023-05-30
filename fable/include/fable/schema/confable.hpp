@@ -93,6 +93,10 @@ class FromConfable : public Base<FromConfable<T>> {
     return tmp;
   }
 
+  void serialize_into(Json& j, const Type& x) const { x.to_json(j); }
+
+  void deserialize_into(const Conf& c, Type& x) const { x.from_conf(c); }
+
   void reset_ptr() override {
     ptr_ = nullptr;
     schema_.reset_ptr();
