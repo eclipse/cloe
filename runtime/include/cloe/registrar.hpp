@@ -28,6 +28,7 @@
 
 #include <cloe/handler.hpp>  // for Handler
 #include <cloe/trigger.hpp>  // for ActionFactory, EventFactory, Callback, ...
+#include <fable/json.hpp>    // for Json
 
 namespace cloe {
 
@@ -46,7 +47,7 @@ class DirectCallback : public Callback {
   bool empty() const { return triggers_.empty(); }
 
   void emplace(TriggerPtr&& t, const Sync&) override { triggers_.emplace_back(std::move(t)); }
-  void to_json(Json& j) const override { j = triggers_; }
+  void to_json(fable::Json& j) const override { j = triggers_; }
 
   void trigger(const Sync& sync, const Ctx&... args) {
     auto it = triggers_.begin();

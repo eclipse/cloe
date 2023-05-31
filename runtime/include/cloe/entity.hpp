@@ -24,7 +24,8 @@
 
 #include <string>  // for string
 
-#include <cloe/core.hpp>  // for Json, Error, Logger
+#include <cloe/core.hpp>  // for Error, Logger
+#include <fable/json.hpp> // for Json
 
 namespace cloe {
 
@@ -99,11 +100,11 @@ class Entity {
   // Note: moving the definition from the inline into this declaration here
   // will result in cloe/trigger.hpp not compiling because:
   //
-  //   no matching function for call to 'to_json(Json, const Entity&)'
+  //   no matching function for call to 'to_json(fable::Json, const Entity&)'
   //
   // I have no idea why it works in many other instances, but not here. If you,
   // my dear reader, know why, please open a pull request!
-  friend void to_json(Json& j, const Entity& e);
+  friend void to_json(fable::Json& j, const Entity& e);
 
  protected:
   std::string name_;
@@ -113,7 +114,7 @@ class Entity {
 /**
  * Return JSON representation of an Entity.
  */
-inline void to_json(Json& j, const Entity& e) {
+inline void to_json(fable::Json& j, const Entity& e) {
   j["name"] = e.name();
   if (!e.desc_.empty()) {
     j["description"] = e.description();

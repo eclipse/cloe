@@ -23,7 +23,8 @@
 
 #include <cstdint>  // for uint64_t
 
-#include <cloe/core.hpp>  // for Json, Duration
+#include <cloe/core/duration.hpp>  // for Duration, to_convenient_json
+#include <fable/json.hpp>          // for Json
 
 namespace cloe {
 
@@ -86,14 +87,14 @@ class Sync {
   /**
    * Write the JSON representation into j.
    */
-  friend void to_json(Json& j, const Sync& s);
+  friend void to_json(fable::Json& j, const Sync& s);
 };
 
 /**
  * Write the JSON representation of Sync into j.
  */
-inline void to_json(Json& j, const Sync& s) {
-  j = Json{
+inline void to_json(fable::Json& j, const Sync& s) {
+  j = fable::Json{
       {"step", s.step()},
       {"step_width", s.step_width()},
       {"time", to_convenient_json(s.time())},
