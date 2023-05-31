@@ -79,7 +79,6 @@ BUILD_DIR        := build
 
 # Don't change these unless you know what you are doing.
 BUILD_CONANINFO  := ${BUILD_DIR}/conanbuildinfo.txt
-BUILD_CMAKECACHE := ${BUILD_DIR}/CMakeCache.txt
 BUILD_LOCKFILE   := ${BUILD_DIR}/conan.lock
 
 # Default Conan build policy to use when installing Conan dependencies
@@ -202,8 +201,7 @@ ifeq (${BUILD_IN_SOURCE}, true)
 	$(call print_help_target, uneditable, "instruct Conan to use local cache")
 	echo
 	$(call print_help_target, all, "build the package", "[in-source]")
-	$(call print_help_target, conan, "configure Conan and install dependencies", "[in-source]")
-	$(call print_help_target, configure, "configure CMake package", "[in-source]")
+	$(call print_help_target, configure, "install dependencies and configure package", "[in-source]")
 	$(call print_help_target, test, "run CMake tests if they are available", "[in-source]")
 	$(call print_help_target, export-pkg, "export build artifacts to Conan cache", "[in-source]")
 ifeq (${CLEAN_SOURCE_DIR}, true)
@@ -423,13 +421,16 @@ clean:
 	#
 	rm -rf "${BUILD_DIR}"
 	rm -rf __pycache__
+	rm -f CMakeUserPresets.json
+	rm -f compile_commands.json
+	rm -f graph_info.json
 ifeq (${CLEAN_SOURCE_DIR}, true)
 	[ "${SOURCE_DIR}" != "." ] && rm -rf "${SOURCE_DIR}"
 endif
 
 ifeq (${BUILD_IN_SOURCE}, false)
-.PHONY: all conan configure test export-pkg
-all conan configure test export-pkg ${SOURCE_DIR} ${SOURCE_CMAKELISTS} ${BUILD_CONANINFO} ${BUILD_CMAKECACHE}:
+.PHONY: all configure test export-pkg
+all configure test export-pkg ${SOURCE_DIR} ${SOURCE_CMAKELISTS} ${BUILD_CONANINFO}:
 	@echo "Error: [in-source] targets are not supported for this package."
 	@echo "Note: please use [conan-cache] targets, such as 'package'."
 	exit 1
@@ -440,11 +441,9 @@ all: ${BUILD_CONANINFO} | ${SOURCE_DIR}
 	#
 	conan build . --source-folder="${SOURCE_DIR}" --install-folder="${BUILD_DIR}"
 
-.PHONY: conan
-conan: ${BUILD_CONANINFO}
-
 .PHONY: configure
-configure: ${BUILD_CMAKECACHE}
+configure: ${BUILD_CONANINFO}
+	ln -rsf "$$(dirname $$(dirname $$(jq -r '.include[0]' CMakeUserPresets.json)))/compile_commands.json"
 
 .PHONY: test
 test:
@@ -481,15 +480,11 @@ ${SOURCE_DIR}:
 
 ${SOURCE_CMAKELISTS}: | ${SOURCE_DIR}
 
-${BUILD_CONANINFO}: ${SOURCE_CONANFILE} ${BUILD_LOCKFILE}
-	# Install package dependencies and prepare in-source build.
+${BUILD_CONANINFO}: ${SOURCE_CONANFILE} ${BUILD_LOCKFILE} ${SOURCE_CMAKELISTS}
+	# Install package dependencies and configure in-source build.
 	#
 	mkdir -p "${BUILD_DIR}"
 	conan install . ${PACKAGE_FQN} --install-folder="${BUILD_DIR}" --build=${BUILD_POLICY} ${ALL_OPTIONS}
-	touch ${BUILD_CONANINFO}
-
-${BUILD_CMAKECACHE}: ${SOURCE_CMAKELISTS} ${BUILD_CONANINFO}
-	# Configure in-source build with CMake.
-	#
 	conan build --configure . --source-folder="${SOURCE_DIR}" --install-folder="${BUILD_DIR}"
+	touch ${BUILD_CONANINFO}
 endif
