@@ -35,7 +35,7 @@ namespace schema {
 
 template <typename T>
 class Number : public Base<Number<T>> {
-  static_assert(std::is_arithmetic<T>::value, "arithmetic value required");
+  static_assert(std::is_arithmetic_v<T>, "arithmetic value required");
 
  public:  // Types and Constructors
   using Type = T;
@@ -51,7 +51,6 @@ class Number : public Base<Number<T>> {
   template <typename X = T, std::enable_if_t<std::is_floating_point_v<X>, int> = 0>
   Number(Type* ptr, std::string desc)
       : Base<Number<T>>(JsonType::number_float, std::move(desc)), ptr_(ptr) {}
-
 
  public:  // Special
   T minimum() const { return value_min_; }
