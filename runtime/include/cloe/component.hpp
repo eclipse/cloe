@@ -32,9 +32,10 @@
 #include <type_traits>  // for decay
 #include <utility>      // for move
 
+#include <fable/fable_fwd.hpp>  // for Json
+
 #include <cloe/model.hpp>  // for Model, ModelFactory
 #include <cloe/sync.hpp>   // for Sync
-#include <fable/enum.hpp>  // for ENUM_SERIALIZATION
 
 /**
  * This macro defines a ComponentFactory named xFactoryType and with the
@@ -59,7 +60,7 @@
       return std::make_unique<std::decay<decltype(*this)>::type>(*this);                      \
     }                                                                                         \
     std::unique_ptr<::cloe::Component> make(                                                  \
-        const ::cloe::Conf&, std::vector<std::shared_ptr<::cloe::Component>>) const override; \
+        const ::fable::Conf&, std::vector<std::shared_ptr<::cloe::Component>>) const override; \
                                                                                               \
    protected:                                                                                 \
     ::cloe::Schema schema_impl() override { return config_.schema(); }                        \
@@ -79,7 +80,7 @@
  */
 #define DEFINE_COMPONENT_FACTORY_MAKE(xFactoryType, xComponentType, xInputType)              \
   std::unique_ptr<::cloe::Component> xFactoryType::make(                                     \
-      const ::cloe::Conf& c, std::vector<std::shared_ptr<::cloe::Component>> comp) const {   \
+      const ::fable::Conf& c, std::vector<std::shared_ptr<::cloe::Component>> comp) const {   \
     decltype(config_) conf{config_};                                                         \
     assert(comp.size() == 1);                                                                \
     if (!c->is_null()) {                                                                     \
@@ -137,7 +138,7 @@ namespace cloe {
  *
  * - `uint64_t id() const`
  * - `T* as()`
- * - `Json active_state() const = 0`
+ * - `fable::Json active_state() const = 0`
  */
 class Component : public Model {
  public:
@@ -169,7 +170,7 @@ class Component : public Model {
   /**
    * Return the JSON representation of the component.
    */
-  virtual Json active_state() const = 0;
+  virtual fable::Json active_state() const = 0;
 
   /**
    * Clear any cache that may be accumulated during a step.
@@ -190,7 +191,7 @@ class Component : public Model {
   void abort() override {}
 
  protected:
-  friend void to_json(Json& j, const Component& c) {
+  friend void to_json(fable::Json& j, const Component& c) {
     j = c.active_state();
     j["id"] = c.id();
     j["name"] = c.name();
@@ -236,7 +237,7 @@ class ComponentFactory : public ModelFactory {
    *
    * - This method may throw Error.
    */
-  virtual std::unique_ptr<Component> make(const Conf& c,
+  virtual std::unique_ptr<Component> make(const fable::Conf& c,
                                           std::vector<std::shared_ptr<Component>>) const = 0;
 };
 
