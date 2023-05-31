@@ -93,7 +93,7 @@ template <typename T, typename P>
 Optional<T, P>::Optional(T* ptr, std::string desc)
     : Optional<T, P>(ptr, make_prototype<typename T::value_type>(), std::move(desc)) {}
 
-template <typename T, typename S, std::enable_if_t<is_optional<T>::value, bool> = true>
+template <typename T, typename S, std::enable_if_t<is_optional_v<T>, bool> = true>
 Optional<T, decltype(make_prototype<typename T::value_type>())> make_schema(T* ptr, S&& desc) {
   return Optional<T, decltype(make_prototype<typename T::value_type>())>(ptr, std::forward<S>(desc));
 }

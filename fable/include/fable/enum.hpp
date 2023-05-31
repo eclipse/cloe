@@ -128,6 +128,9 @@ class has_enum_serializer {
   enum { value = sizeof(test<T>(0)) == sizeof(one) };
 };
 
+template <typename T>
+inline constexpr bool has_enum_serializer_v = has_enum_serializer<T>::value;
+
 template <typename T, bool EnumSerializerPresent>
 struct EnumSerializerImpl {};
 
@@ -151,12 +154,12 @@ struct EnumSerializerImpl<T, false> {
 
 template <typename T, std::enable_if_t<std::is_enum_v<T>, int> = 0>
 const std::map<T, std::string>& enum_serialization() {
-  return EnumSerializerImpl<T, has_enum_serializer<T>::value>::serialization_impl();
+  return EnumSerializerImpl<T, has_enum_serializer_v<T>>::serialization_impl();
 }
 
 template <typename T, std::enable_if_t<std::is_enum_v<T>, int> = 0>
 const std::map<std::string, T>& enum_deserialization() {
-  return EnumSerializerImpl<T, has_enum_serializer<T>::value>::deserialization_impl();
+  return EnumSerializerImpl<T, has_enum_serializer_v<T>>::deserialization_impl();
 }
 
 template <typename T, std::enable_if_t<std::is_enum_v<T>, int> = 0>
