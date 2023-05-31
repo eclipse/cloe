@@ -48,7 +48,9 @@
 
 #pragma once
 
-#include <cloe/core.hpp>    // for Duration, Error, Confable
+#include <fable/confable.hpp> // for Confable
+
+#include <cloe/core.hpp>    // for Duration, Error
 #include <cloe/entity.hpp>  // for Entity
 
 namespace cloe {
@@ -409,7 +411,7 @@ class Model : public Entity {
  * The ModelFactory class serves as a base class for all other factory classes
  * that make models.
  */
-class ModelFactory : public Entity, public Confable {
+class ModelFactory : public Entity, public fable::Confable {
  public:
   using Entity::Entity;
   virtual ~ModelFactory() = default;
