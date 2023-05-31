@@ -48,13 +48,16 @@ class VtdApiConan(ConanFile):
 
     def build(self):
         cm = cmake.CMake(self)
-        cm.configure()
-        cm.build()
+        if self.should_configure:
+            cm.configure()
+        if self.should_build:
+            cm.build()
 
     def package(self):
         cm = cmake.CMake(self)
-        cm.install()
-        files.copy(self, "Develop", src="src", dst=".")
+        if self.should_install:
+            cm.install()
+            files.copy(self, "Develop", src="src", dst=".")
 
     def package_info(self):
         self.cpp_info.set_property("cmake_find_mode", "both")

@@ -171,8 +171,7 @@ help::
 	echo
 
 $(call make_select_target, all-select, "build selected packages", "[in-source]")
-$(call make_select_target, conan-select, "configure Conan and get dependencies", "[in-source]")
-$(call make_select_target, configure-select, "configure CMake packages", "[in-source]")
+$(call make_select_target, configure-select, "install dependencies and configure packages", "[in-source]")
 $(call make_select_target, test-select, "run CMake tests if they are available", "[in-source]")
 $(call make_select_target, export-pkg-select, "export build artifacts to Conan cache", "[in-source]")
 $(call make_select_target, clean-select, "remove build artifacts", "[in-source]")

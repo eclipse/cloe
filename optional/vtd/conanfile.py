@@ -112,21 +112,25 @@ class CloeSimulatorVTD(ConanFile):
 
     def build(self):
         cm = cmake.CMake(self)
-        cm.configure()
-        cm.build()
-        cm.test()
+        if self.should_configure:
+            cm.configure()
+        if self.should_build:
+            cm.build()
+        if self.should_test:
+            cm.test()
 
     def package(self):
         vtd_api_version = self.dependencies["vtd-api"].ref.version
 
         cm = cmake.CMake(self)
-        cm.install()
-        self.copy("vtd-launch", dst="bin", src=f"{self.source_folder}/bin")
-        self.copy(
-            "*.tar",
-            dst=self._setup_folder,
-            src=f"{self.source_folder}/{self._setup_folder}/{vtd_api_version}"
-        )
+        if self.should_install:
+            cm.install()
+            self.copy("vtd-launch", dst="bin", src=f"{self.source_folder}/bin")
+            self.copy(
+                "*.tar",
+                dst=self._setup_folder,
+                src=f"{self.source_folder}/{self._setup_folder}/{vtd_api_version}"
+            )
 
     def package_id(self):
         # Changes in a dependency's package_id need to be accounted for since
