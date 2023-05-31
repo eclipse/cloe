@@ -229,8 +229,8 @@ class FactoryBase : public Base<CRTP> {
    * Most types inheriting from `Confable` will fulfill these requirements.
    */
   template <typename F,
-            std::enable_if_t<(std::is_default_constructible<F>::value &&
-                              std::is_convertible<std::unique_ptr<F>, T>::value),
+            std::enable_if_t<(std::is_default_constructible_v<F> &&
+                              std::is_convertible_v<std::unique_ptr<F>, T>),
                              int> = 0>
   void add_default_factory(const std::string& key) {
     add_factory(key, make_prototype<F>().get_confable_schema(), [](const Conf& c) -> T {

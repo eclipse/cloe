@@ -107,7 +107,7 @@ Number<T> Number<T>::whitelist(std::initializer_list<T> xs) && {
 
 template <typename T>
 void Number<T>::insert_whitelist(T x) {
-  if (std::is_floating_point<T>::value) {
+  if (std::is_floating_point_v<T>) {
     throw std::logic_error("cannot whitelist floating-point numbers");
   }
   if (blacklist_.count(x)) {
@@ -132,7 +132,7 @@ Number<T> Number<T>::blacklist(std::initializer_list<T> xs) && {
 
 template <typename T>
 void Number<T>::insert_blacklist(T x) {
-  if (std::is_floating_point<T>::value) {
+  if (std::is_floating_point_v<T>) {
     throw std::logic_error("cannot blacklist floating-point numbers");
   }
   if (blacklist_.count(x)) {
@@ -149,7 +149,7 @@ Json Number<T>::json_schema() const {
       {exclusive_max_ ? "exclusiveMaximum" : "maximum", value_max_},
   };
 
-  if (!std::is_floating_point<T>::value) {
+  if (!std::is_floating_point_v<T>) {
     auto write_list = [&j](auto name, auto xlist) {
       if (!xlist.empty()) {
         std::vector<T> xs;
@@ -227,7 +227,7 @@ void Number<T>::check_bounds(const Conf& c) const {
   auto v = c.get<B>();
 
   // Check whitelist and blacklist first.
-  if (!std::is_floating_point<T>::value) {
+  if (!std::is_floating_point_v<T>) {
     if (whitelist_.count(v)) {
       return;
     }

@@ -201,7 +201,7 @@ class Schema : public schema::Interface {
   Schema(std::string&& desc, schema::BoxVec&& props);
 
   // Interface
-  template <typename T, std::enable_if_t<std::is_base_of<schema::Interface, T>::value, int> = 0>
+  template <typename T, std::enable_if_t<std::is_base_of_v<schema::Interface, T>, int> = 0>
   Schema(const T& value) : impl_(value.clone()) {}                      // NOLINT(runtime/explicit)
   Schema(schema::Interface* i) : impl_(i) { assert(impl_); }            // NOLINT(runtime/explicit)
   Schema(std::shared_ptr<schema::Interface> i) : impl_(std::move(i)) {  // NOLINT(runtime/explicit)

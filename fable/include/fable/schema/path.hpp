@@ -47,6 +47,9 @@ namespace schema {
 template <typename T>
 struct is_path : std::false_type {};
 
+template <typename T>
+inline constexpr bool is_path_v = is_path<T>::value;
+
 template <>
 struct is_path<std::filesystem::path> : std::true_type {};
 
@@ -85,13 +88,14 @@ enum class PathState {
  */
 template <typename T>
 class Path : public Base<Path<T>> {
-  static_assert(is_path<T>::value);
+  static_assert(is_path_v<T>);
 
  public:  // Types and Constructors
   using Type = T;
   using State = PathState;
 
-  Path(Type* ptr, std::string&& desc) : Base<Path<T>>(JsonType::string, std::move(desc)), ptr_(ptr) {}
+  Path(Type* ptr, std::string&& desc)
+      : Base<Path<T>>(JsonType::string, std::move(desc)), ptr_(ptr) {}
 
  public:  // Special
   /**
@@ -237,7 +241,7 @@ class Path : public Base<Path<T>> {
   Type* ptr_{nullptr};
 };
 
-template <typename T, std::enable_if_t<is_path<T>::value, bool> = true>
+template <typename T, std::enable_if_t<is_path_v<T>, bool> = true>
 inline Path<T> make_schema(T* ptr, std::string&& desc) {
   return Path(ptr, std::move(desc));
 }

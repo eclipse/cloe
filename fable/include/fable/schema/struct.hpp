@@ -55,7 +55,7 @@ template <typename S = Box>
 using PropertyList = std::initializer_list<std::pair<std::string const, S>>;
 
 template <typename T, typename S = Box>
-using enable_if_property_list_t = std::enable_if_t<std::is_same<PropertyList<S>, T>::value>;
+using enable_if_property_list_t = std::enable_if_t<std::is_same_v<PropertyList<S>, T>>;
 
 /**
  * Struct maintains a key-value mapping, where the list of keys is usually

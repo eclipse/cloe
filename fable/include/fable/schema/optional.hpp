@@ -47,8 +47,11 @@ namespace schema {
 template <typename T>
 struct is_optional : std::false_type {};
 
-template <typename X>
-struct is_optional<std::optional<X>> : std::true_type {};
+template <typename T>
+inline constexpr bool is_optional_v = is_optional<T>::value;
+
+template <typename T>
+struct is_optional<std::optional<T>> : std::true_type {};
 
 /**
  * Optional de-/serializes a value that can be null.
@@ -62,7 +65,7 @@ struct is_optional<std::optional<X>> : std::true_type {};
  */
 template <typename T, typename P>
 class Optional : public Base<Optional<T, P>> {
-  static_assert(is_optional<T>::value);
+  static_assert(is_optional_v<T>);
 
  public:  // Types and Constructors
   using Type = T;
@@ -145,7 +148,7 @@ class Optional : public Base<Optional<T, P>> {
 };
 
 // Define make_schema only for std::optional and boost::optional.
-template <typename T, typename P, std::enable_if_t<is_optional<T>::value, bool> = true>
+template <typename T, typename P, std::enable_if_t<is_optional_v<T>, bool> = true>
 inline Optional<T, P> make_schema(T* ptr, const P& prototype, std::string&& desc) {
   return Optional<T, P>(ptr, prototype, std::move(desc));
 }
