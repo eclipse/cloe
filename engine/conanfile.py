@@ -74,13 +74,17 @@ class CloeEngine(ConanFile):
 
     def build(self):
         cm = cmake.CMake(self)
-        cm.configure()
-        cm.build()
-        cm.test()
+        if self.should_configure:
+            cm.configure()
+        if self.should_build:
+            cm.build()
+        if self.should_test:
+            cm.test()
 
     def package(self):
         cm = cmake.CMake(self)
-        cm.install()
+        if self.should_install:
+            cm.install()
 
     def package_id(self):
         self.info.requires["boost"].full_package_mode()
