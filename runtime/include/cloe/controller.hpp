@@ -53,7 +53,7 @@
       return std::make_unique<std::decay<decltype(*this)>::type>(*this);          \
     }                                                                             \
                                                                                   \
-    std::unique_ptr<::cloe::Controller> make(const ::cloe::Conf&) const override; \
+    std::unique_ptr<::cloe::Controller> make(const ::fable::Conf&) const override; \
                                                                                   \
    protected:                                                                     \
     ::cloe::Schema schema_impl() override { return config_.schema(); }            \
@@ -71,7 +71,7 @@
  *    xControllerType(const std::string&, const xConfigType&)
  */
 #define DEFINE_CONTROLLER_FACTORY_MAKE(xFactoryType, xControllerType)                   \
-  std::unique_ptr<::cloe::Controller> xFactoryType::make(const ::cloe::Conf& c) const { \
+  std::unique_ptr<::cloe::Controller> xFactoryType::make(const ::fable::Conf& c) const { \
     decltype(config_) conf{config_};                                                    \
     if (!c->is_null()) {                                                                \
       conf.from_conf(c);                                                                \
@@ -192,7 +192,7 @@ class ControllerFactory : public ModelFactory {
    *
    * - This method may throw Error.
    */
-  virtual std::unique_ptr<Controller> make(const Conf& c) const = 0;
+  virtual std::unique_ptr<Controller> make(const fable::Conf& c) const = 0;
 };
 
 }  // namespace cloe

@@ -36,11 +36,12 @@
 #pragma once
 
 #include <functional>  // for function
-#include <map>         // for map, map<>::mapped_type
-#include <string>      // for string, basic_string
+#include <map>         // for map
+#include <string>      // for string
 #include <utility>     // for pair
 
-#include <cloe/core.hpp>  // for Confable, Json
+#include <fable/confable.hpp>  // for Confable
+#include <fable/json.hpp>      // for Json
 
 namespace cloe {
 
@@ -148,7 +149,7 @@ class Request {
   /**
    * Helper method that tries to convert the body to a JSON object.
    */
-  virtual Json as_json() const { return fable::parse_json(body()); }
+  virtual fable::Json as_json() const { return fable::parse_json(body()); }
 };
 
 /**
@@ -274,7 +275,7 @@ class Response {
    * - When NDEBUG is set, then the serialization of JSON to string does not
    *   pretty print.
    */
-  void set_body(const Json& js) {
+  void set_body(const fable::Json& js) {
 #ifdef NDEBUG
     this->set_body(js.dump(), ContentType::JSON);
 #else
@@ -285,28 +286,28 @@ class Response {
   /**
    * Write is an alias for `set_body(Json)`, for historical reasons.
    */
-  void write(const Json& js) { this->set_body(js); }
+  void write(const fable::Json& js) { this->set_body(js); }
 
   /**
    * Use bad_request when the method is correct, but the body content is not
    * correct.
    */
-  void bad_request(const Json& js) { this->error(StatusCode::BAD_REQUEST, js); }
+  void bad_request(const fable::Json& js) { this->error(StatusCode::BAD_REQUEST, js); }
 
   /**
    * Use not_found when the resource in question is not available.
    */
-  void not_found(const Json& js) { this->error(StatusCode::NOT_FOUND, js); }
+  void not_found(const fable::Json& js) { this->error(StatusCode::NOT_FOUND, js); }
 
   /**
    * Use not_allowed when the method (GET, POST, PUT, DELETE) is not allowed.
    *
    * Specify in `allow` which method is allowed:
    * ```
-   * r.not_allowed(RequestMethod::POST, Json{{"error", "try something else"}});
+   * r.not_allowed(RequestMethod::POST, fable::Json{{"error", "try something else"}});
    * ```
    */
-  void not_allowed(const RequestMethod& allow, const Json& js) {
+  void not_allowed(const RequestMethod& allow, const fable::Json& js) {
     this->set_status(StatusCode::NOT_ALLOWED);
     this->set_header("Allow", as_cstr(allow));
     this->set_body(js);
@@ -316,14 +317,14 @@ class Response {
    * Use not_implemented when the functionality represented by the endpoint
    * is not implemented yet.
    */
-  void not_implemented(const Json& js) { this->error(StatusCode::NOT_IMPLEMENTED, js); }
+  void not_implemented(const fable::Json& js) { this->error(StatusCode::NOT_IMPLEMENTED, js); }
 
   /**
    * Use server_error when an internal error occurred, such as a panic.
    */
-  void server_error(const Json& js) { this->error(StatusCode::SERVER_ERROR, js); }
+  void server_error(const fable::Json& js) { this->error(StatusCode::SERVER_ERROR, js); }
 
-  void error(StatusCode code, const Json& js) {
+  void error(StatusCode code, const fable::Json& js) {
     this->set_body(js);
     this->set_status(code);
   }
@@ -374,11 +375,11 @@ class Redirect {
  */
 class StaticJson {
  public:
-  StaticJson(Json j) : data_(j) {}  // NOLINT
+  StaticJson(fable::Json j) : data_(j) {}  // NOLINT
   void operator()(const cloe::Request&, cloe::Response& r) { r.write(data_); }
 
  private:
-  const Json data_;
+  const fable::Json data_;
 };
 
 /**
@@ -387,14 +388,14 @@ class StaticJson {
  * - It requires a pointer as input, as it assumes that the data will change.
  * - The type of the pointer must have the associated `to_json` function
  *   implemented. In other words, it must be directly convertible to a
- *   `cloe::Json`.
+ *   `fable::Json`.
  */
 template <typename T>
 class ToJson {
  public:
   explicit ToJson(const T* ptr) : ptr_(ptr) {}
   void operator()(const cloe::Request&, cloe::Response& r) {
-    Json j;
+    fable::Json j;
     to_json(j, *ptr_);
     r.set_body(j);
   }
@@ -417,12 +418,12 @@ class ToJson {
  */
 class FromConf {
  public:
-  explicit FromConf(Confable* ptr, bool query_map_as_json = true)
+  explicit FromConf(fable::Confable* ptr, bool query_map_as_json = true)
       : ptr_(ptr), convert_(query_map_as_json) {}
   void operator()(const cloe::Request& q, cloe::Response& r);
 
  private:
-  Confable* ptr_;
+  fable::Confable* ptr_;
   bool convert_;
 };
 
