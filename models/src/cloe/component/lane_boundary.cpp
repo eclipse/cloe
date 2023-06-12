@@ -27,7 +27,7 @@
 #include <string>       // for string
 #include <type_traits>  // for underlying_type<>
 
-#include <fable/json/with_eigen.hpp>  // for to_json
+#include <fable/utility/eigen.hpp>  // for to_json
 
 #include <cloe/core.hpp>  // for Json, Schema
 
