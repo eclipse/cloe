@@ -29,7 +29,9 @@
 #include <utility>  // for pair, make_pair
 #include <vector>   // for vector<>
 
-#include <boost/optional.hpp>  // for optional<>
+#include <boost/optional.hpp>               // for optional<>
+#include <fable/schema.hpp>                 // for Schema
+#include <fable/schema/boost_optional.hpp>  // for Optional<>
 
 #include <cloe/component/driver_request.hpp>            // for DriverRequest
 #include <cloe/component/latlong_actuator.hpp>          // for LatLongActuator
