@@ -29,6 +29,7 @@ add_library(fable
     src/fable/schema/path.cpp
     src/fable/environment.cpp
     src/fable/utility.cpp
+    src/fable/utility/chrono.cpp
     src/fable/utility/string.cpp
 
     # For IDE integration
@@ -85,6 +86,7 @@ if(BUILD_TESTING)
         src/fable/schema/string_test.cpp
         src/fable/schema/struct_test.cpp
         src/fable/schema_test.cpp
+        src/fable/utility/chrono_test.cpp
     )
     set_target_properties(test-fable PROPERTIES
         CXX_STANDARD 17
