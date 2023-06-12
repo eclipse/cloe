@@ -21,7 +21,8 @@
 
 #pragma once
 
-#include <cloe/component.hpp>  // for Component, Json
+#include <cloe/component.hpp>  // for Component
+#include <fable/json.hpp>      // for Json
 
 namespace cloe {
 
@@ -33,7 +34,7 @@ class BrakeSensor : public Component {
 
   /**
    * Return the position of the brake pedal with no unit.
-   * 
+   *
    * The range goes from 0 (unpressed) to 1 (fully pressed).
    */
   virtual double pedal_position_brake() const = 0;
@@ -41,8 +42,8 @@ class BrakeSensor : public Component {
   /**
    * Return sensor state as JSON.
    */
-  Json active_state() const override {
-    return Json{{"pedal_position_brake", pedal_position_brake()}};
+  fable::Json active_state() const override {
+    return fable::Json{{"pedal_position_brake", pedal_position_brake()}};
   }
 };
 

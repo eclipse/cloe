@@ -27,29 +27,31 @@
 
 #include <Eigen/Geometry>  // for Vector3d
 
-#include <cloe/core.hpp>  // for Confable, Json, Schema
+#include <fable/confable.hpp> // for Confable
+#include <fable/fable_fwd.hpp> // for Schema
+#include <fable/enum.hpp> // for ENUM_SERIALIZATION
 
 namespace cloe {
 
-class LaneBoundary : public Confable {
+class LaneBoundary : public fable::Confable {
  public:
   /**
    * Type of lane boundary.
    */
   enum class Type { Unknown, Solid, Dashed, Grass, Curb };
-  friend void to_json(Json& j, const LaneBoundary::Type& t);
-  friend void from_json(const Json& j, LaneBoundary::Type& t);
+  friend void to_json(fable::Json& j, const LaneBoundary::Type& t);
+  friend void from_json(const fable::Json& j, LaneBoundary::Type& t);
 
   /**
    * Color of the lane boundary.
    */
   enum class Color { Unknown, White, Yellow, Red, Green, Blue };
-  friend void to_json(Json& j, const LaneBoundary::Color& t);
-  friend void from_json(const Json& j, LaneBoundary::Color& t);
+  friend void to_json(fable::Json& j, const LaneBoundary::Color& t);
+  friend void from_json(const fable::Json& j, LaneBoundary::Color& t);
 
  public:
-  Schema schema_impl() override;
-  void to_json(Json& j) const override;
+  fable::Schema schema_impl() override;
+  void to_json(fable::Json& j) const override;
 
   CONFABLE_FRIENDS(LaneBoundary)
 
@@ -71,7 +73,7 @@ class LaneBoundary : public Confable {
 };
 
 using LaneBoundaries = std::map<int, LaneBoundary>;
-void to_json(Json& j, const LaneBoundaries& lbs);
+void to_json(fable::Json& j, const LaneBoundaries& lbs);
 
 // clang-format off
 ENUM_SERIALIZATION(LaneBoundary::Type, ({

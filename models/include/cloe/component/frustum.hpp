@@ -23,7 +23,9 @@
 
 #include <cmath>  // for M_PI
 
-#include <cloe/core.hpp>  // for Confable
+#include <fable/confable.hpp>  // for Confable
+#include <fable/json.hpp>      // for Json
+#include <fable/schema.hpp>    // for Schema, Struct, make_schema
 
 #define M_2X_PI (2 * M_PI)
 
@@ -32,7 +34,7 @@ namespace cloe {
 /**
  * This class describes the frustum of a sensor.
  */
-struct Frustum : public Confable {
+struct Frustum : public fable::Confable {
   double fov_h{M_2X_PI};
   double offset_h{0.0};
   double fov_v{M_2X_PI};
@@ -40,14 +42,14 @@ struct Frustum : public Confable {
   double clip_near{0.0};
   double clip_far{480.0};
 
-  void to_json(Json& j) const override {
-    j = Json{
+  void to_json(fable::Json& j) const override {
+    j = fable::Json{
         {"fov_h", fov_h},       {"offset_h", offset_h},   {"fov_v", fov_v},
         {"offset_v", offset_v}, {"clip_near", clip_near}, {"clip_far", clip_far},
     };
   }
 
-  void from_conf(const Conf& c) override {
+  void from_conf(const fable::Conf& c) override {
     assert(clip_near < clip_far);
     Confable::from_conf(c);
     if (clip_near >= clip_far) {
@@ -57,9 +59,9 @@ struct Frustum : public Confable {
   }
 
  protected:
-  Schema schema_impl() override {
+  fable::Schema schema_impl() override {
     // clang-format off
-    using namespace schema;  // NOLINT
+    using namespace fable::schema;  // NOLINT
     return Struct{
         {"fov_h",     make_schema(&fov_h, "horizontal field of view [rad]").bounds(0, M_2X_PI)},
         {"offset_h",  make_schema(&offset_h, "horizontal field-of-view offset [rad]").bounds(-M_2X_PI, M_2X_PI)},

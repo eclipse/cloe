@@ -21,7 +21,8 @@
 
 #pragma once
 
-#include <cloe/component.hpp>  // for Component, Json
+#include <cloe/component.hpp>  // for Component
+#include <fable/json.hpp>      // for Json
 
 namespace cloe {
 
@@ -33,14 +34,14 @@ class PowertrainSensor : public Component {
 
   /**
    * Return the position of the acceleration pedal with no unit.
-   * 
+   *
    * The range goes from 0 (unpressed) to 1 (fully pressed).
    */
   virtual double pedal_position_acceleration() const = 0;
 
   /**
    * Return the gear transmission.
-   * 
+   *
    * The sign of this field is linked to the mode of the gear
    * - positive: driving forward (e.g. a value of 3 means the third gear in driving forward mode)
    * - 0: means that the gear lever is in neutral position
@@ -52,8 +53,8 @@ class PowertrainSensor : public Component {
   /**
    * Return sensor state as JSON.
    */
-  Json active_state() const override {
-    return Json{
+  fable::Json active_state() const override {
+    return fable::Json{
         {"pedal_position_acceleration", pedal_position_acceleration()},
         {"gear_transmission", gear_transmission()},
     };
