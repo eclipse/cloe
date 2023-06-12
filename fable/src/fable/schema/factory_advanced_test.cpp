@@ -26,7 +26,7 @@
 #include <string>   // for string
 #include <utility>  // for move
 
-#include <fable/json/with_std.hpp>   // for to_json
+#include <fable/utility/memory.hpp>  // for adl_serializer<>
 #include <fable/schema.hpp>          // for Confable, Schema
 #include <fable/schema/factory.hpp>  // for Factory
 #include <fable/utility/gtest.hpp>   // for assert_validate
