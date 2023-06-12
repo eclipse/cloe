@@ -30,15 +30,16 @@
 #include <sstream>             // for stringstream
 #include <string>              // for string
 
-#include <oatpp/web/server/HttpConnectionHandler.hpp>
 #include <oatpp/network/tcp/server/ConnectionProvider.hpp>
+#include <oatpp/web/server/HttpConnectionHandler.hpp>
 
-#include <cloe/core.hpp>     // for logger::get
-#include <cloe/handler.hpp>  // for Request
-using namespace cloe;        // NOLINT(build/namespaces)
+#include <cloe/core/logger.hpp>  // for logger::get
+#include <cloe/handler.hpp>      // for Request
+#include <fable/json.hpp>        // for Json
+using namespace cloe;            // NOLINT(build/namespaces)
 
-#include "oak/route_muxer.hpp"  // for Muxer<>
 #include "oak/request_stub.hpp"  // for RequestStub
+#include "oak/route_muxer.hpp"   // for Muxer<>
 
 namespace oak {
 
@@ -62,7 +63,7 @@ class Request : public cloe::Request {
   explicit Request(const oatpp::web::protocol::http::incoming::Request& req) {
     auto head = req.getStartingLine();
     dest_ = head.path.std_str();
-    endpoint_ = Muxer<Handler>::normalize(dest_);
+    endpoint_ = Muxer<cloe::Handler>::normalize(dest_);
     for (const auto& [k, v] : req.getQueryParameters().getAll()) {
       queries_[k.std_str()] = v.std_str();
     }
@@ -94,9 +95,9 @@ class GreedyHandler : public oatpp::web::server::HttpRequestHandler {
   GreedyHandler() {
     muxer.set_default([this](const cloe::Request& q, cloe::Response& r) {
       logger()->debug("404 {}", q.endpoint());
-      r.not_found(Json{
+      r.not_found(fable::Json{
           {"error", "cannot find handler"},
-          {"endpoints", Json(this->muxer.routes())},
+          {"endpoints", fable::Json(this->muxer.routes())},
       });
     });
   }
@@ -109,7 +110,8 @@ class GreedyHandler : public oatpp::web::server::HttpRequestHandler {
    * gets passed through. The muxer has a default endpoint, so the nominal case
    * is that every request is passed to some handler from the muxer.
    */
-  std::shared_ptr<OutgoingResponse> handle(const std::shared_ptr<IncomingRequest>& request) override {
+  std::shared_ptr<OutgoingResponse> handle(
+      const std::shared_ptr<IncomingRequest>& request) override {
     auto to_response_impl = [](const cloe::Response& r) -> std::shared_ptr<OutgoingResponse> {
       auto code = Status(static_cast<int>(r.status()), "");
       auto type = cloe::as_cstr(r.type());
@@ -127,11 +129,11 @@ class GreedyHandler : public oatpp::web::server::HttpRequestHandler {
       muxer.get(q.endpoint()).first(q, r);
       return to_response_impl(r);
     } catch (const std::exception& e) {
-      Response err;
+      cloe::Response err;
       err.error(StatusCode::SERVER_ERROR, std::string(e.what()));
       return to_response_impl(err);
     } catch (...) {
-      Response err;
+      cloe::Response err;
       err.error(StatusCode::SERVER_ERROR, std::string("unknown error occurred"));
       return to_response_impl(err);
     }
@@ -140,7 +142,7 @@ class GreedyHandler : public oatpp::web::server::HttpRequestHandler {
   /**
    * Add a handler for a specific endpoint.
    */
-  void add(const std::string& key, Handler h) { muxer.add(key, h); }
+  void add(const std::string& key, cloe::Handler h) { muxer.add(key, h); }
 
   /**
    * Return a list of all registered endpoints.
@@ -150,11 +152,11 @@ class GreedyHandler : public oatpp::web::server::HttpRequestHandler {
   /**
    * Return endpoint data in json format.
    */
-  cloe::Json endpoints_to_json(const std::vector<std::string>& endpoints) const {
-    cloe::Json j;
+  fable::Json endpoints_to_json(const std::vector<std::string>& endpoints) const {
+    fable::Json j;
     for (const auto& endpoint : endpoints) {
       const RequestStub q;
-      Response r;
+      cloe::Response r;
       try {
         muxer.get(endpoint).first(q, r);
       } catch (std::logic_error& e) {
@@ -163,7 +165,7 @@ class GreedyHandler : public oatpp::web::server::HttpRequestHandler {
         continue;
       }
       if (r.status() == cloe::StatusCode::OK && r.type() == cloe::ContentType::JSON) {
-        j[endpoint] = cloe::Json(r.body());
+        j[endpoint] = fable::Json(r.body());
       }
     }
     return j;
@@ -173,7 +175,7 @@ class GreedyHandler : public oatpp::web::server::HttpRequestHandler {
   cloe::Logger logger() { return cloe::logger::get("cloe-server"); }
 
  private:
-  Muxer<Handler> muxer;
+  Muxer<cloe::Handler> muxer;
 };
 
 void Server::listen() {
@@ -191,11 +193,8 @@ void Server::listen() {
   router->route("DELETE", "/*", handler_);
 
   auto handler = oatpp::web::server::HttpConnectionHandler::createShared(router);
-  auto provider = oatpp::network::tcp::server::ConnectionProvider::createShared({
-    listen_addr_,
-    static_cast<v_uint16>(listen_port_),
-    oatpp::network::Address::IP_4
-  });
+  auto provider = oatpp::network::tcp::server::ConnectionProvider::createShared(
+      {listen_addr_, static_cast<v_uint16>(listen_port_), oatpp::network::Address::IP_4});
 
   server_ = oatpp::network::Server::createShared(provider, handler);
   server_->run(true);
@@ -213,23 +212,27 @@ void Server::stop() {
   listening_ = false;
 }
 
-void Server::add_handler(const std::string& key, Handler h) {
-  handler_->add(key, std::move(h));
-}
+void Server::add_handler(const std::string& key, cloe::Handler h) { handler_->add(key, std::move(h)); }
 
-std::vector<std::string> Server::endpoints() const {
-  return handler_->endpoints();
-}
+std::vector<std::string> Server::endpoints() const { return handler_->endpoints(); }
 
-cloe::Json Server::endpoints_to_json(const std::vector<std::string>& endpoints) const {
+fable::Json Server::endpoints_to_json(const std::vector<std::string>& endpoints) const {
   return handler_->endpoints_to_json(endpoints);
 }
 
 Server::Server(const std::string& addr, int port)
-  : listen_addr_(addr), listen_port_(port), listen_threads_(3), listening_(false), handler_(new GreedyHandler()) {}
+    : listen_addr_(addr)
+    , listen_port_(port)
+    , listen_threads_(3)
+    , listening_(false)
+    , handler_(new GreedyHandler()) {}
 
 Server::Server()
-  : listen_addr_("127.0.0.1"), listen_port_(8080), listen_threads_(3), listening_(false), handler_(new GreedyHandler()) {}
+    : listen_addr_("127.0.0.1")
+    , listen_port_(8080)
+    , listen_threads_(3)
+    , listening_(false)
+    , handler_(new GreedyHandler()) {}
 
 Server::~Server() {
   if (this->is_listening()) {
