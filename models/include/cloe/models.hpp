@@ -23,7 +23,7 @@
 
 #include <string>  // for string
 
-#include <cloe/core.hpp>  // for ENUM_SERIALIZATION
+#include <fable/enum.hpp>  // for ENUM_SERIALIZATION
 
 namespace cloe {
 
