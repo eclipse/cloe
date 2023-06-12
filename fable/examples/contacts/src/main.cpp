@@ -68,9 +68,10 @@
 #include <CLI/CLI.hpp>         // for CLI::App
 #include <boost/optional.hpp>  // for boost::optional<>
 
-#include <fable/confable.hpp>  // for fable::{Confable, CONFABLE_SCHEMA}
-#include <fable/schema.hpp>    // for fable::{Schema, String}
-#include <fable/utility.hpp>   // for fable::{read_conf}
+#include <fable/confable.hpp>               // for fable::{Confable, CONFABLE_SCHEMA}
+#include <fable/schema.hpp>                 // for fable::{Schema, String}
+#include <fable/schema/boost_optional.hpp>  // for fable::{Optional, make_schema}
+#include <fable/utility.hpp>                // for fable::{read_conf}
 
 // All structs that are used directly with fable for serialization and
 // deserialization need to inherit from fable::Confable and override the

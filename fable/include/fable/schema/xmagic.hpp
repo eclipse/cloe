@@ -82,13 +82,12 @@ Map<T, decltype(make_prototype<T>())> make_schema(std::map<std::string, T>* ptr,
 }
 
 template <typename T, typename P>
-Optional<T, P>::Optional(boost::optional<T>* ptr, std::string&& desc)
-    : Optional<T, P>(ptr, make_prototype<T>(), std::move(desc)) {}
+Optional<T, P>::Optional(T* ptr, std::string&& desc)
+    : Optional<T, P>(ptr, make_prototype<typename T::value_type>(), std::move(desc)) {}
 
-template <typename T>
-Optional<T, decltype(make_prototype<T>())> make_schema(boost::optional<T>* ptr,
-                                                       std::string&& desc) {
-  return Optional<T, decltype(make_prototype<T>())>(ptr, std::move(desc));
+template <typename T, std::enable_if_t<is_optional<T>::value, bool> = true>
+Optional<T, decltype(make_prototype<typename T::value_type>())> make_schema(T* ptr, std::string&& desc) {
+  return Optional<T, decltype(make_prototype<typename T::value_type>())>(ptr, std::move(desc));
 }
 
 template <typename T, std::enable_if_t<std::is_base_of<Confable, T>::value, int>>

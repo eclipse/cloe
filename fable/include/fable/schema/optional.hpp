@@ -24,21 +24,49 @@
 
 #pragma once
 
-#include <string>   // for string
-#include <utility>  // for move
+#include <optional>     // for optional<>
+#include <string>       // for string
+#include <type_traits>  // for is_same_v<>, enable_if<>
+#include <utility>      // for move
 
-#include <boost/optional.hpp>  // for optional<>
-
-#include <fable/schema/interface.hpp>        // for Base<>, Box
-#include <fable/utility/boost_optional.hpp>  // for to_json, from_json
+#include <fable/schema/interface.hpp>  // for Base<>, Box
+#include <fable/utility/optional.hpp>  // for adl_serializer<>
 
 namespace fable {
 namespace schema {
 
+/**
+ * Helper type trait class to use with std::enable_if and friends.
+ *
+ * The value `is_optional<T>::value` is true if T is one of:
+ * - std::optional
+ * - boost::optional, if boost_optional.hpp is included
+ *
+ * \see fable/schema/boost_optional.hpp
+ */
+template <typename T>
+struct is_optional : std::false_type {};
+
+template <typename X>
+struct is_optional<std::optional<X>> : std::true_type {};
+
+/**
+ * Optional de-/serializes a value that can be null.
+ *
+ * In a JSON object, a field that has the value null is not the
+ * same thing as a field that is missing!
+ *
+ * Optional is a template class that supports both:
+ * - std::optional
+ * - boost::optional, if boost_optional.hpp is included
+ */
 template <typename T, typename P>
 class Optional : public Base<Optional<T, P>> {
+  static_assert(is_optional<T>::value);
+
  public:  // Types and Constructors
-  using Type = boost::optional<T>;
+  using Type = T;
+  using ValueType = typename Type::value_type;
   using PrototypeSchema = P;
 
   Optional(Type* ptr, std::string&& desc);
@@ -48,9 +76,9 @@ class Optional : public Base<Optional<T, P>> {
   }
 
 #if 0
-  Optional(Type* ptr, std::string&& desc)
-      : Optional(ptr, make_prototype<T>(), std::move(desc)) {}
   // This is defined in: fable/schema/xmagic.hpp
+  Optional(T* ptr, std::string&& desc)
+    : Optional<T, P>(ptr, make_prototype<typename T::value_type>(), std::move(desc)) {}
 #endif
 
  public:  // Overrides
@@ -92,7 +120,7 @@ class Optional : public Base<Optional<T, P>> {
 
   Json serialize(const Type& x) const {
     if (x) {
-      return prototype_.serialize(x.get());
+      return prototype_.serialize(x.value());
     } else {
       return nullptr;
     }
@@ -100,7 +128,7 @@ class Optional : public Base<Optional<T, P>> {
 
   Type deserialize(const Conf& c) const {
     if (c->type() == JsonType::null) {
-      return boost::none;
+      return Type{};
     }
     return prototype_.deserialize(c);
   }
@@ -112,8 +140,9 @@ class Optional : public Base<Optional<T, P>> {
   Type* ptr_{nullptr};
 };
 
-template <typename T, typename P>
-Optional<T, P> make_schema(boost::optional<T>* ptr, const P& prototype, std::string&& desc) {
+// Define make_schema only for std::optional and boost::optional.
+template <typename T, typename P, std::enable_if_t<is_optional<T>::value, bool> = true>
+inline Optional<T, P> make_schema(T* ptr, const P& prototype, std::string&& desc) {
   return Optional<T, P>(ptr, prototype, std::move(desc));
 }
 
