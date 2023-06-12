@@ -26,11 +26,8 @@
 #include <string>   // for string
 #include <utility>  // for move
 
-#include <boost/optional.hpp>  // for optional<>
-
-#include <fable/schema/ignore.hpp>           // for Ignore
-#include <fable/schema/interface.hpp>        // for Base<>, Box
-#include <fable/utility/boost_optional.hpp>  // for to_json, from_json
+#include <fable/schema/ignore.hpp>     // for Ignore
+#include <fable/schema/interface.hpp>  // for Base<>, Box
 
 namespace fable {
 namespace schema {

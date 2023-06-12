@@ -30,8 +30,11 @@
 #include <utility>  // for move
 #include <vector>   // for vector<>
 
-#include <boost/filesystem/path.hpp>  // for path
-#include <boost/optional.hpp>         // for optional<>
+#include <boost/filesystem/path.hpp>        // for path
+#include <boost/optional.hpp>               // for optional<>
+#include <fable/schema/boost_optional.hpp>  // for Optional<>
+#include <fable/schema/custom.hpp>          // for CustomDeserializer
+#include <fable/schema/factory.hpp>         // for Factory
 
 #include <cloe/component.hpp>        // for ComponentFactory
 #include <cloe/controller.hpp>       // for ControllerFactory
@@ -39,8 +42,6 @@
 #include <cloe/simulator.hpp>        // for SimulatorFactory
 #include <cloe/trigger.hpp>          // for Source
 #include <cloe/utility/command.hpp>  // for Command
-#include <fable/schema/custom.hpp>   // for CustomDeserializer
-#include <fable/schema/factory.hpp>  // for Factory
 
 #include "plugin.hpp"  // for Plugin
 
@@ -49,7 +50,8 @@
 #endif
 
 #ifndef CLOE_STACK_SUPPORTED_VERSIONS
-#define CLOE_STACK_SUPPORTED_VERSIONS {"4", "4.0", "4.1"}
+#define CLOE_STACK_SUPPORTED_VERSIONS \
+  { "4", "4.0", "4.1" }
 #endif
 
 #ifndef CLOE_XDG_SUFFIX

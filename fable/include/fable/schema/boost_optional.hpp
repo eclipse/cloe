@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Robert Bosch GmbH
+ * Copyright 2023 Robert Bosch GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,22 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
- * \file fable/fable.hpp
- *
- * This file includes all fable headers so the users don't need to know exactly
- * which headers they need. This is acceptable since most users will end up
- * needing all the headers anyway.
+ * \file fable/schema/boost_optional.hpp
+ * \see  fable/schema/optional.cpp
  */
 
 #pragma once
 
-#include <fable/fable_fwd.hpp>
-#include <fable/conf.hpp>
-#include <fable/confable.hpp>
-#include <fable/enum.hpp>
-#include <fable/error.hpp>
-#include <fable/json.hpp>
-#include <fable/utility/memory.hpp>
-#include <fable/utility/optional.hpp>
-#include <fable/schema.hpp>
+#include <boost/optional/optional_fwd.hpp>  // for optional<>
+
+#include <fable/schema/optional.hpp>         // for is_optional<>
+#include <fable/utility/boost_optional.hpp>  // for adl_serializer<>
+
+namespace fable {
+namespace schema {
+
+template <typename X>
+struct is_optional<boost::optional<X>> : std::true_type {};
+
+}  // namespace schema
+}  // namespace fable

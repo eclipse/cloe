@@ -21,6 +21,7 @@
  */
 
 #include <string>  // for string
+#include <optional> // for optional
 
 #include <gtest/gtest.h>
 
@@ -56,7 +57,7 @@ struct MyStruct : public fable::Confable {
   std::string my_object_field = "";
   bool my_object_bool = false;
   MyEnum my_enum = MyEnum::Disable;
-  boost::optional<std::string> middlename;
+  std::optional<std::string> middlename;
 
   bool not_applicable = true;
   std::string applicable = "";
@@ -103,7 +104,7 @@ struct MyStruct : public fable::Confable {
         {"applicable", applicable},
     };
     if (middlename) {
-      j["middlename"] = middlename.get();
+      j["middlename"] = middlename.value();
     }
   }
 };
@@ -122,7 +123,7 @@ TEST(fable_schema, schema_wrapper) {
   MyEnum my_enum = MyEnum::Disable;
   bool not_applicable = true;
   std::string applicable = "";
-  boost::optional<std::string> middlename;
+  std::optional<std::string> middlename;
 
   auto s1 = Schema{
       {"author", make_const_str("me", "author of this code")},
