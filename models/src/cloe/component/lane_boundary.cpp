@@ -29,12 +29,13 @@
 
 #include <fable/utility/eigen.hpp>  // for to_json
 
-#include <cloe/core.hpp>  // for Json, Schema
+#include <fable/json.hpp> // for Json
+#include <fable/schema.hpp> // for Schema, Struct
 
 namespace cloe {
 
-void LaneBoundary::to_json(Json& j) const {
-  j = Json{
+void LaneBoundary::to_json(fable::Json& j) const {
+  j = fable::Json{
       {"id", id},
       {"prev_id", prev_id},
       {"next_id", next_id},
@@ -51,27 +52,28 @@ void LaneBoundary::to_json(Json& j) const {
   };
 }
 
-Schema LaneBoundary::schema_impl() {
+fable::Schema LaneBoundary::schema_impl() {
+  using namespace fable;
   return schema::Struct{
       // clang-format off
-      {"id", Schema(&id, "unique identifier in scene graph")},
-      {"prev_id", Schema(&prev_id, "previous identifier")},
-      {"next_id", Schema(&next_id, "next identifier")},
-      {"dx_start", Schema(&dx_start, "start of lane boundary in ego x-direction [m]")},
-      {"dy_start", Schema(&dy_start, "lateral distance to ego vehicle reference point [m]")},
-      {"heading_start", Schema(&heading_start, "yaw angle relative to ego x-direction [rad]")},
-      {"curv_hor_start", Schema(&curv_hor_start, "horizontal curvature at lane boundary start [1/m]")},
-      {"curv_hor_change", Schema(&curv_hor_change, "change of horizontal curvature at lane boundary start [1/m^2]")},
-      {"dx_end", Schema(&dx_end, "end of lane boundary in ego x-direction [m]")},
-      {"exist_prob", Schema(&exist_prob, "existence probability")},
-      {"type", Schema(&type, "lane boundary type")},
-      {"color", Schema(&color, "lane boundary color")},
+      {"id", make_schema(&id, "unique identifier in scene graph")},
+      {"prev_id", make_schema(&prev_id, "previous identifier")},
+      {"next_id", make_schema(&next_id, "next identifier")},
+      {"dx_start", make_schema(&dx_start, "start of lane boundary in ego x-direction [m]")},
+      {"dy_start", make_schema(&dy_start, "lateral distance to ego vehicle reference point [m]")},
+      {"heading_start", make_schema(&heading_start, "yaw angle relative to ego x-direction [rad]")},
+      {"curv_hor_start", make_schema(&curv_hor_start, "horizontal curvature at lane boundary start [1/m]")},
+      {"curv_hor_change", make_schema(&curv_hor_change, "change of horizontal curvature at lane boundary start [1/m^2]")},
+      {"dx_end", make_schema(&dx_end, "end of lane boundary in ego x-direction [m]")},
+      {"exist_prob", make_schema(&exist_prob, "existence probability")},
+      {"type", make_schema(&type, "lane boundary type")},
+      {"color", make_schema(&color, "lane boundary color")},
       // clang-format on
   }
       .require_all();
 }
 
-void to_json(Json& j, const LaneBoundaries& lbs) {
+void to_json(fable::Json& j, const LaneBoundaries& lbs) {
   for (auto lb_pair : lbs) {
     j[std::to_string(lb_pair.first)] = lb_pair.second;
   }

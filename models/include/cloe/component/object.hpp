@@ -24,8 +24,9 @@
 #include <memory>  // for shared_ptr<>
 #include <vector>  // for vector<>
 
-#include <Eigen/Geometry>             // for Isometry3d, Vector3d
-#include <cloe/core.hpp>  // for Json
+#include <Eigen/Geometry>           // for Isometry3d, Vector3d
+#include <fable/enum.hpp>           // for ENUM_SERIALIZATION
+#include <fable/json.hpp>           // for Json
 #include <fable/utility/eigen.hpp>  // for to_json
 
 namespace cloe {
@@ -82,8 +83,8 @@ struct Object {
 
   Object() = default;
 
-  friend void to_json(Json& j, const Object& o) {
-    j = Json{
+  friend void to_json(fable::Json& j, const Object& o) {
+    j = fable::Json{
         {"id", o.id},
         {"exist_prob", o.exist_prob},
         {"type", o.type},
@@ -107,8 +108,8 @@ struct Object {
  */
 using Objects = std::vector<std::shared_ptr<Object>>;
 
-inline void to_json(Json& j, const Objects& os) {
-  j = Json::array();
+inline void to_json(fable::Json& j, const Objects& os) {
+  j = fable::Json::array();
   for (const auto& o : os) {
     assert(o != nullptr);
     j.push_back(*o);

@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include <Eigen/Geometry>             // for Isometry3d
+#include <Eigen/Geometry>  // for Isometry3d
 
 #include <cloe/component.hpp>                // for Component
 #include <cloe/component/frustum.hpp>        // for Frustum
@@ -51,8 +51,8 @@ class LaneBoundarySensor : public Component {
    */
   virtual const Eigen::Isometry3d& mount_pose() const = 0;
 
-  Json active_state() const override {
-    return Json{
+  fable::Json active_state() const override {
+    return fable::Json{
         {"mount_pose", this->mount_pose()},
         {"frustum", this->frustum()},
         {"sensed_lane_boundaries", sensed_lane_boundaries()},

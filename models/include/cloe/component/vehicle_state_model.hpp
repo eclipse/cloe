@@ -24,9 +24,10 @@
 #include <functional>  // for function
 
 #include <boost/optional.hpp>                // for optional<>
+#include <fable/json.hpp>                    // for Json
 #include <fable/utility/boost_optional.hpp>  // for to_json
 
-#include <cloe/component.hpp>         // for Component, Json
+#include <cloe/component.hpp>         // for Component
 #include <cloe/component/object.hpp>  // for Object
 
 namespace cloe {
@@ -79,8 +80,8 @@ class VehicleStateModel : public Component {
    * Currently, the API is unstable, because we don't have access to any real
    * data.
    */
-  Json active_state() const override {
-    return Json{
+  fable::Json active_state() const override {
+    return fable::Json{
         {"vehicle_state", vehicle_state_},
     };
   }

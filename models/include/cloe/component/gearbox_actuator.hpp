@@ -27,8 +27,8 @@
 namespace cloe {
 
 struct GearboxRequest {
-  /* 
-   * Holds the requested gear selector position. 
+  /*
+   * Holds the requested gear selector position.
    *
    * The sign of this field is linked to the mode of the gear
    * - positive: driving forward (e.g. a value of 3 means to request the third gear in driving forward mode)
@@ -38,8 +38,8 @@ struct GearboxRequest {
    */
   int8_t gear_selector{0};
 
-  friend void to_json(Json& j, const GearboxRequest& g) {
-    j = Json{{"gear_selector", g.gear_selector}};
+  friend void to_json(fable::Json& j, const GearboxRequest& g) {
+    j = fable::Json{{"gear_selector", g.gear_selector}};
   }
 };
 
