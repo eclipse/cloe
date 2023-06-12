@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Robert Bosch GmbH
+ * Copyright 2023 Robert Bosch GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
- * \file fable/json/with_std.hpp
- * \see  fable/json.hpp
+ * \file fable/utility/memory.hpp
  *
  * This file contains specializations of `nlohmann::adl_serializer` for std
  * types in order to provide serialization for third-party types.
@@ -27,7 +26,7 @@
 
 #include <memory>  // for unique_ptr<>, shared_ptr<>, weak_ptr<>
 
-#include <nlohmann/json.hpp>
+#include <nlohmann/json.hpp>   // for adl_serializer<>, json
 
 /*
  * In order to provide serialization for third-party types, we need to either
