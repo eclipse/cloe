@@ -25,6 +25,7 @@
 #include <cloe/component.hpp>          // for Component, Json
 #include <cloe/component/frustum.hpp>  // for Frustum
 #include <cloe/component/object.hpp>   // for Object, Isometry3d
+#include <fable/utility/eigen.hpp>
 
 namespace cloe {
 
