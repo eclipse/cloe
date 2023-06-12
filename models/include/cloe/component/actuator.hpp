@@ -24,6 +24,7 @@
 #include <boost/optional.hpp>  // for optional
 #include <cloe/component.hpp>  // for Component
 #include <fable/json.hpp>      // for Json
+#include <fable/utility/boost_optional.hpp>
 
 namespace cloe {
 

@@ -24,8 +24,8 @@
 
 #pragma once
 
-#include <boost/optional.hpp>         // for optional<>
-#include <fable/json/with_boost.hpp>  // for to_json
+#include <boost/optional.hpp>                // for optional<>
+#include <fable/utility/boost_optional.hpp>  // for to_json
 
 #include <cloe/component.hpp>                // for Component, Json
 #include <cloe/component/actuator.hpp>       // for Actuator
