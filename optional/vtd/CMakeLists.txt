@@ -30,7 +30,6 @@ target_link_libraries(vtd-object-lib
     Boost::boost
     open-simulation-interface::open-simulation-interface
 )
-
 set_target_properties(vtd-object-lib PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
