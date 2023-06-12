@@ -25,9 +25,8 @@
 #include <vector>  // for vector<>
 
 #include <Eigen/Geometry>             // for Isometry3d, Vector3d
-#include <fable/json/with_eigen.hpp>  // for to_json
-
 #include <cloe/core.hpp>  // for Json
+#include <fable/utility/eigen.hpp>  // for to_json
 
 namespace cloe {
 

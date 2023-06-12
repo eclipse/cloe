@@ -22,11 +22,11 @@
 #pragma once
 
 #include <Eigen/Geometry>             // for Isometry3d
-#include <fable/json/with_eigen.hpp>  // for to_json
 
 #include <cloe/component.hpp>                // for Component
 #include <cloe/component/frustum.hpp>        // for Frustum
 #include <cloe/component/lane_boundary.hpp>  // for LaneBoundaries
+#include <fable/utility/eigen.hpp>           // for to_json
 
 namespace cloe {
 
