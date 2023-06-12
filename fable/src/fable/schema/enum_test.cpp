@@ -45,7 +45,7 @@ FABLE_ENUM_SERIALIZATION(logger::LogLevel, ({
 using LogLevel = logger::LogLevel;
 
 struct LoggerStruct : public fable::Confable {
-  boost::optional<LogLevel> level;
+  std::optional<LogLevel> level;
 
   CONFABLE_SCHEMA(LoggerStruct) {
     using namespace fable::schema;  // NOLINT(build/namespaces)
