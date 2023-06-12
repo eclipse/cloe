@@ -23,9 +23,9 @@
 
 #include <functional>  // for function
 
-#include <boost/optional.hpp>  // for optional<>
+#include <boost/optional.hpp>                // for optional<>
+#include <fable/utility/boost_optional.hpp>  // for to_json
 
-#include <fable/json/with_boost.hpp>  // for to_json
 #include <cloe/component.hpp>         // for Component, Json
 #include <cloe/component/object.hpp>  // for Object
 

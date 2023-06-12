@@ -33,7 +33,7 @@
 #include <boost/optional.hpp>                  // for optional<>
 #include <boost/property_tree/ptree.hpp>       // for ptree
 #include <boost/property_tree/xml_parser.hpp>  // for read_xml
-#include <fable/json/with_boost.hpp>           // for to_json
+#include <fable/utility/boost_optional.hpp>    // for to_json
 
 #include <cloe/core/abort.hpp>          // for AbortFlag, abort_checkpoint
 #include <cloe/plugin.hpp>              // for EXPORT_CLOE_PLUGIN
@@ -45,9 +45,9 @@
 #include <cloe/vehicle.hpp>             // for Vehicle
 
 #include "rdb_transceiver_tcp.hpp"  // for RdbTransceiverTcpFactory
+#include "scp_action.hpp"           // for ScpActionFactory
 #include "scp_messages.hpp"         // for scp::*
 #include "scp_transceiver.hpp"      // for ScpTransceiver
-#include "scp_action.hpp"           // for ScpActionFactory
 #include "task_control.hpp"         // for TaskControl
 #include "vtd_conf.hpp"             // for VtdConfiguration
 #include "vtd_vehicle.hpp"          // for VtdVehicle
@@ -668,7 +668,8 @@ class VtdBinding : public cloe::Simulator {
           continue;
         }
         auto& obj = it.second;
-        boost::optional<boost::property_tree::ptree&> properties_avail = obj.get_child("Vehicle").get_child_optional("Properties");
+        boost::optional<boost::property_tree::ptree&> properties_avail =
+            obj.get_child("Vehicle").get_child_optional("Properties");
         if (!properties_avail) {
           continue;
         }

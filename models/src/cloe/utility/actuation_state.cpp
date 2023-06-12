@@ -24,7 +24,7 @@
 
 #include <string>
 
-#include <fable/json/with_boost.hpp>
+#include <fable/utility/boost_optional.hpp>
 
 #include <cloe/core.hpp>
 

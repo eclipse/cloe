@@ -28,9 +28,9 @@
 
 #include <boost/optional.hpp>  // for optional<>
 
-#include <fable/json/with_boost.hpp>   // for to_json, from_json
-#include <fable/schema/ignore.hpp>     // for Ignore
-#include <fable/schema/interface.hpp>  // for Base<>, Box
+#include <fable/schema/ignore.hpp>           // for Ignore
+#include <fable/schema/interface.hpp>        // for Base<>, Box
+#include <fable/utility/boost_optional.hpp>  // for to_json, from_json
 
 namespace fable {
 namespace schema {

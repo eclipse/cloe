@@ -22,6 +22,7 @@
 #pragma once
 
 #include <cloe/component.hpp>  // for Component, Json
+#include <fable/utility/boost_optional.hpp>
 
 namespace cloe {
 
