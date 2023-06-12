@@ -22,9 +22,10 @@
 
 #pragma once
 
-#include <cloe/component.hpp>          // for Component, Json
+#include <cloe/component.hpp>          // for Component
 #include <cloe/component/frustum.hpp>  // for Frustum
 #include <cloe/component/object.hpp>   // for Object, Isometry3d
+#include <fable/json.hpp>              // for Json
 #include <fable/utility/eigen.hpp>
 
 namespace cloe {
@@ -58,8 +59,8 @@ class ObjectSensor : public Component {
   /**
    * Writes JSON representation into j.
    */
-  Json active_state() const override {
-    return Json{
+  fable::Json active_state() const override {
+    return fable::Json{
         {"mount_pose", this->mount_pose()},
         {"frustum", this->frustum()},
         {"sensed_objects", this->sensed_objects()},

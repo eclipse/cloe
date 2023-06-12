@@ -38,7 +38,7 @@ class Actuator : public Component {
   virtual bool is_set() { return static_cast<bool>(target_); }
   virtual T get() { return *target_; }
 
-  Json active_state() const override { return Json{{"target", target_}}; }
+  fable::Json active_state() const override { return fable::Json{{"target", target_}}; }
 
   Duration process(const Sync& sync) override {
     auto t = Component::process(sync);
