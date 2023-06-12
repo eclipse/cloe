@@ -16,8 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
- * \file fable/json/with_boost.hpp
- * \see  fable/json.hpp
+ * \file fable/utility/boost_optional.hpp
  *
  * This file contains specializations of `nlohmann::adl_serializer` for boost
  * types in order to provide serialization for third-party types.
@@ -25,9 +24,8 @@
 
 #pragma once
 
-#include <nlohmann/json.hpp>
-
-#include <boost/optional.hpp>
+#include <boost/optional.hpp>  // for optional<>
+#include <nlohmann/json.hpp>   // for adl_serializer<>, json
 
 /*
  * In order to provide serialization for third-party types, we need to either
