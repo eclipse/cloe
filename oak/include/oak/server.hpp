@@ -26,9 +26,11 @@
 #include <string>  // for string
 #include <vector>  // for vector<>
 
-#include <oatpp/network/Server.hpp>
+#include <cloe/cloe_fwd.hpp>         // for Handler
+#include <fable/fable_fwd.hpp>       // for Json
+#include <oatpp/network/Server.hpp>  // for Server
 
-#include "oak/registrar.hpp"    // for StaticRegistrar, BufferRegistrar
+#include "oak/registrar.hpp"  // for StaticRegistrar, BufferRegistrar
 
 namespace oak {
 
@@ -91,7 +93,7 @@ class Server {
   /**
    * Return endpoint data in json format.
    */
-  cloe::Json endpoints_to_json(const std::vector<std::string>& endpoints) const;
+  fable::Json endpoints_to_json(const std::vector<std::string>& endpoints) const;
 
   /**
    * Stop the server.
@@ -111,7 +113,7 @@ class Server {
   /**
    * Add a handler with the route muxer in the internal handler routine.
    */
-  void add_handler(const std::string& key, Handler h);
+  void add_handler(const std::string& key, cloe::Handler h);
 
  private:
   // Configuration

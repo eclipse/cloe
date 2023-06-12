@@ -21,7 +21,11 @@
 
 #pragma once
 
-#include <cloe/handler.hpp> // for Request
+#include <map>        // for map<>
+#include <stdexcept>  // for logic_error
+#include <string>     // for string
+
+#include <cloe/handler.hpp>  // for Request, RequestMethod, ContentType
 
 namespace oak {
 
