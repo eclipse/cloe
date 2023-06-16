@@ -74,7 +74,7 @@ class VtdApiConan(ConanFile):
         #
         # VTD VERSION   : (0)       2        . 2     . 0
         vtd_api_version = (0<<24) | (2<<16) | (2<<8) | 0
-        self.cpp_info.defines = ["VTD_API_VERSION={vtd_api_version}"]
+        self.cpp_info.defines = [f"VTD_API_VERSION={vtd_api_version}"]
 
         if not self.in_local_cache:
             self.cpp_info.libs = ["vtd_api"]
