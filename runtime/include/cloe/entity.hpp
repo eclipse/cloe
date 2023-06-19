@@ -34,8 +34,8 @@ namespace cloe {
  */
 class InvalidNameError : public Error {
  public:
-  explicit InvalidNameError(const std::string& name)
-      : Error("name is invalid: " + name), name_(name) {}
+  explicit InvalidNameError(std::string name)
+      : Error("name is invalid: " + name), name_(std::move(name)) {}
   virtual ~InvalidNameError() noexcept = default;
 
   const std::string& name() const { return name_; }
@@ -49,14 +49,14 @@ class InvalidNameError : public Error {
  */
 class Entity {
  public:
-  explicit Entity(const std::string& name) {
-    set_name(name);
+  explicit Entity(std::string name) {
+    set_name(std::move(name));
     set_description("");
   }
 
-  Entity(const std::string& name, const std::string& desc) {
-    set_name(name);
-    set_description(desc);
+  Entity(std::string name, std::string desc) {
+    set_name(std::move(name));
+    set_description(std::move(desc));
   }
 
   virtual ~Entity() noexcept = default;
@@ -64,7 +64,7 @@ class Entity {
   /**
    * Return the name of the Entity.
    */
-  std::string name() const { return name_; }
+  const std::string& name() const { return name_; }
 
   /**
    * Set the name of the Entity.
@@ -80,16 +80,19 @@ class Entity {
    *   start
    *   _/strange_but_0k
    */
-  void set_name(const std::string& name);
+  void set_name(std::string name);
 
   /**
    * Return the optional description of the Entity.
    *
    * If there is no description, the empty string is returned.
    */
-  std::string description() const { return desc_; }
+  const std::string& description() const { return desc_; }
 
-  void set_description(const std::string& desc) { desc_ = desc; }
+  /**
+   * Set the free-form description of the entity.
+   */
+  void set_description(std::string desc) { desc_ = std::move(desc); }
 
  protected:
   /**
