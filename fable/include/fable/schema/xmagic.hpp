@@ -37,7 +37,7 @@
 
 #include <map>      // for map<>
 #include <string>   // for string
-#include <utility>  // for move
+#include <utility>  // for move, forward
 #include <vector>   // for vector<>
 #include <array>    // for array<>
 
@@ -62,7 +62,7 @@ Vector<T, decltype(make_prototype<T>())> make_schema(std::vector<T>* ptr, S&& de
 }
 
 template <typename T, size_t N, typename P>
-Array<T, N, P>::Array(std::array<T, N>* ptr, std::string&& desc)
+Array<T, N, P>::Array(std::array<T, N>* ptr, std::string desc)
     : Array<T, N, P>(ptr, make_prototype<T>(), std::move(desc)) {}
 
 template <typename T, size_t N, typename S>
@@ -71,12 +71,12 @@ Array<T, N, decltype(make_prototype<T>())> make_schema(std::array<T, N>* ptr, S&
 }
 
 template <typename T, typename P>
-Const<T, P>::Const(const T& constant, std::string desc)
+Const<T, P>::Const(T constant, std::string desc)
     : Const<T, P>(constant, make_prototype<T>(), std::move(desc)) {}
 
 template <typename T, typename S>
-Const<T, decltype(make_prototype<T>())> make_const_schema(const T& constant, S&& desc) {
-  return Const<T, decltype(make_prototype<T>())>(constant, std::forward<S>(desc));
+Const<T, decltype(make_prototype<T>())> make_const_schema(T&& constant, S&& desc) {
+  return Const<T, decltype(make_prototype<T>())>(std::forward<T>(constant), std::forward<S>(desc));
 }
 
 template <typename T, typename P>

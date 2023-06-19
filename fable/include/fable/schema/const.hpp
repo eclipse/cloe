@@ -39,11 +39,11 @@ class Const : public Base<Const<T, P>> {
   using Type = T;
   using PrototypeSchema = std::remove_cv_t<std::remove_reference_t<P>>;
 
-  Const(const Type& constant, std::string desc);
-  Const(const Type& constant, PrototypeSchema prototype, std::string desc)
+  Const(Type constant, std::string desc);
+  Const(Type constant, PrototypeSchema prototype, std::string desc)
       : Base<Const<T, P>>(prototype.type(), std::move(desc))
       , prototype_(std::move(prototype))
-      , constant_(constant) {
+      , constant_(std::move(constant)) {
     prototype_.reset_ptr();
   }
 
@@ -98,8 +98,8 @@ class Const : public Base<Const<T, P>> {
 };
 
 template <typename T, typename P, typename S>
-Const<T, P> make_const_schema(const T& constant, P&& prototype, S&& desc) {
-  return Const<T, P>(constant, std::forward<P>(prototype), std::forward<S>(desc));
+Const<T, P> make_const_schema(T&& constant, P&& prototype, S&& desc) {
+  return Const<T, P>(std::forward<T>(constant), std::forward<P>(prototype), std::forward<S>(desc));
 }
 
 template <typename S1, typename S2>
