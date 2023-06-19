@@ -82,8 +82,7 @@ class Variant : public Interface {
   }
 
   bool has_description() const { return !desc_.empty(); }
-  void set_description(const std::string& s) override { desc_ = s; }
-  void set_description(std::string&& s) { desc_ = std::move(s); }
+  void set_description(std::string s) override { desc_ = std::move(s); }
   const std::string& description() const override { return desc_; }
   Variant description(std::string desc) && {
     desc_ = std::move(desc);

@@ -62,7 +62,7 @@ class CustomDeserializer : public schema::Interface {
   std::string type_string() const override { return impl_->type_string(); }
   bool is_required() const override { return impl_->is_required(); }
   const std::string& description() const override { return impl_->description(); }
-  void set_description(const std::string& s) override { return impl_->set_description(s); }
+  void set_description(std::string s) override { return impl_->set_description(std::move(s)); }
   Json usage() const override { return impl_->usage(); }
   Json json_schema() const override { return impl_->json_schema(); };
   void validate(const Conf& c) const override { impl_->validate(c); }
