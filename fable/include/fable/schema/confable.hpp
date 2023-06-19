@@ -28,13 +28,10 @@
 #include <string>   // for string
 #include <utility>  // for move
 
+#include <fable/fable_fwd.hpp>         // for Confable
 #include <fable/schema/interface.hpp>  // for Interface
 
 namespace fable {
-
-// Forward declarations:
-class Confable;
-
 namespace schema {
 
 template <typename T, std::enable_if_t<std::is_base_of_v<Confable, T>, int> = 0>

@@ -17,7 +17,6 @@
  */
 /**
  * \file fable/schema/vector.hpp
- * \see  fable/schema/xmagic.hpp
  * \see  fable/schema.hpp
  * \see  fable/schema_test.cpp
  */
@@ -42,17 +41,13 @@ class Vector : public Base<Vector<T, P>> {
   using Type = std::vector<T>;
   using PrototypeSchema = std::remove_cv_t<std::remove_reference_t<P>>;
 
-  Vector(Type* ptr, std::string desc);
+  Vector(Type* ptr, std::string desc) : Vector(ptr, make_prototype<T>(), std::move(desc)) {}
+
   Vector(Type* ptr, PrototypeSchema prototype)
       : Base<Vector<T, P>>(JsonType::array), prototype_(std::move(prototype)), ptr_(ptr) {}
+
   Vector(Type* ptr, PrototypeSchema prototype, std::string desc)
       : Base<Vector<T, P>>(JsonType::array, std::move(desc)), prototype_(std::move(prototype)), ptr_(ptr) {}
-
-#if 0
-  // This is defined in: fable/schema/xmagic.hpp
-  Vector(Type* ptr, std::string desc)
-      : Vector(ptr, make_prototype<T>(), std::move(desc)) {}
-#endif
 
  public:  // Specials
   /**
@@ -188,6 +183,11 @@ class Vector : public Base<Vector<T, P>> {
 template <typename T, typename P, typename S>
 Vector<T, P> make_schema(std::vector<T>* ptr, P&& prototype, S&& desc) {
   return Vector<T, P>(ptr, std::forward<P>(prototype), std::forward<S>(desc));
+}
+
+template <typename T, typename S>
+Vector<T, decltype(make_prototype<T>())> make_schema(std::vector<T>* ptr, S&& desc) {
+  return Vector<T, decltype(make_prototype<T>())>(ptr, std::forward<S>(desc));
 }
 
 }  // namespace schema
