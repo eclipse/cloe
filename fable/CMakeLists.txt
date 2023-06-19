@@ -88,6 +88,7 @@ if(BUILD_TESTING)
         src/fable/schema/struct_test.cpp
         src/fable/schema_test.cpp
         src/fable/utility/chrono_test.cpp
+        src/fable/utility/string_test.cpp
     )
     set_target_properties(test-fable PROPERTIES
         CXX_STANDARD 17
