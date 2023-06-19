@@ -20,13 +20,24 @@
  * \see  fable/utility/string.cpp
  */
 
-#include <string>  // for string
-#include <vector>  // for vector<>
+#include <string>       // for string
+#include <string_view>  // for string_view
+#include <vector>       // for vector<>
 
 namespace fable {
 
-std::string join_vector(const std::vector<std::string>& v, const std::string& sep);
+std::string join_vector(const std::vector<std::string>& v, std::string_view sep);
 
-std::vector<std::string> split_string(std::string&& s, const std::string& sep);
+/**
+ * Split string into vector by a separator.
+ *
+ * - The separator is stripped from the output.
+ * - Multiple separators result in empty strings.
+ * - An empty separator results in a vector of individual characters.
+ *
+ * \param s input string view
+ * \param sep separator to split by
+ */
+std::vector<std::string> split_string(std::string_view s, std::string_view sep);
 
 }  // namespace fable
