@@ -322,7 +322,7 @@ class FactoryBase : public Base<CRTP> {
     out.reserve(available_.size());
     for (auto& kv : available_) {
       Struct base{
-          {factory_key_, make_const_str(kv.first, "name of factory").require()},
+          {factory_key_, make_const_schema(kv.first, "name of factory").require()},
       };
       if (args_key_ == "") {
         base.set_properties_from(kv.second.schema);
