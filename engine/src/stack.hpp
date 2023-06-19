@@ -521,7 +521,7 @@ struct SimulatorConf : public Confable {
   CONFABLE_SCHEMA(SimulatorConf) {
     using namespace schema;  // NOLINT(build/namespaces)
     return Struct{
-        {"binding", make_const_str(binding, "name of simulator binding").require()},
+        {"binding", make_const_schema(binding, "name of simulator binding").require()},
         {"name", make_schema(&name, id_prototype(), "identifier override for binding")},
         {"args", make_schema(&args, factory->schema(), "factory-specific arguments")},
     };
@@ -555,7 +555,7 @@ struct ControllerConf : public Confable {
     // clang-format off
     using namespace schema;  // NOLINT(build/namespaces)
     return Struct{
-        {"binding", make_const_str(binding, "name of controller binding").require()},
+        {"binding", make_const_schema(binding, "name of controller binding").require()},
         {"name", make_schema(&name, id_prototype(), "identifier override for binding")},
         {"vehicle", make_schema(&vehicle, "vehicle controller is assigned to").c_identifier().require()},
         {"args", make_schema(&args, factory->schema(), "factory-specific arguments")},
@@ -639,7 +639,7 @@ struct ComponentConf : public Confable {
     // clang-format off
     using namespace schema;  // NOLINT(build/namespaces)
     return Struct{
-        {"binding", make_const_str(binding, "name of binding").require()},
+        {"binding", make_const_schema(binding, "name of binding").require()},
         {"name", make_schema(&name, id_prototype(), "globally unique identifier for component")},
         {"from", Variant{
              make_schema(&from, "component inputs for binding"),

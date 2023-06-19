@@ -25,7 +25,6 @@
 
 #include <limits>    // for numeric_limits<>
 #include <map>       // for map<>
-#include <memory>    // for shared_ptr<>
 #include <optional>  // for optional<>
 #include <regex>     // for regex, regex_match
 #include <string>    // for string
@@ -51,23 +50,19 @@ class Map : public Base<Map<T, P>> {
   using Type = std::map<std::string, T>;
   using PrototypeSchema = P;
 
-  Map(Type* ptr, std::string desc);
+  Map(Type* ptr, std::string desc) : Map(ptr, make_prototype<T>(), std::move(desc)) {}
+
   Map(Type* ptr, PrototypeSchema prototype)
       : Base<Map<T, P>>(JsonType::object), prototype_(std::move(prototype)), ptr_(ptr) {
     prototype_.reset_ptr();
   }
+
   Map(Type* ptr, PrototypeSchema prototype, std::string desc)
       : Base<Map<T, P>>(JsonType::object, std::move(desc))
       , prototype_(std::move(prototype))
       , ptr_(ptr) {
     prototype_.reset_ptr();
   }
-
-#if 0
-  // This is defined in: fable/schema/xmagic.hpp
-  Map(Type* ptr, std::string desc)
-      : Map(ptr, make_prototype<T>(), std::move(desc)) {}
-#endif
 
  public:  // Special
   bool unique_properties() const { return unique_properties_; }
@@ -200,6 +195,11 @@ class Map : public Base<Map<T, P>> {
 template <typename T, typename P>
 Map<T, P> make_schema(std::map<std::string, T>* ptr, P prototype, std::string desc) {
   return Map<T, P>(ptr, std::move(prototype), std::move(desc));
+}
+
+template <typename T>
+Map<T, decltype(make_prototype<T>())> make_schema(std::map<std::string, T>* ptr, std::string desc) {
+  return Map<T, decltype(make_prototype<T>())>(ptr, std::move(desc));
 }
 
 }  // namespace schema

@@ -72,19 +72,15 @@ class Optional : public Base<Optional<T, P>> {
   using ValueType = typename Type::value_type;
   using PrototypeSchema = P;
 
-  Optional(Type* ptr, std::string desc);
+  Optional(Type* ptr, std::string desc)
+      : Optional(ptr, make_prototype<typename T::value_type>(), std::move(desc)) {}
+
   Optional(Type* ptr, PrototypeSchema prototype, std::string desc)
       : Base<Optional<T, P>>(prototype.type(), std::move(desc))
       , prototype_(std::move(prototype))
       , ptr_(ptr) {
     prototype_.reset_ptr();
   }
-
-#if 0
-  // This is defined in: fable/schema/xmagic.hpp
-  Optional(T* ptr, std::string desc)
-    : Optional<T, P>(ptr, make_prototype<typename T::value_type>(), std::move(desc)) {}
-#endif
 
  public:  // Overrides
   std::string type_string() const override { return prototype_.type_string() + "?"; }
@@ -153,6 +149,12 @@ class Optional : public Base<Optional<T, P>> {
 template <typename T, typename P, std::enable_if_t<is_optional_v<T>, bool> = true>
 inline Optional<T, P> make_schema(T* ptr, P prototype, std::string desc) {
   return Optional<T, P>(ptr, std::move(prototype), std::move(desc));
+}
+
+template <typename T, std::enable_if_t<is_optional_v<T>, bool> = true>
+Optional<T, decltype(make_prototype<typename T::value_type>())> make_schema(T* ptr,
+                                                                            std::string desc) {
+  return Optional<T, decltype(make_prototype<typename T::value_type>())>(ptr, std::move(desc));
 }
 
 }  // namespace schema

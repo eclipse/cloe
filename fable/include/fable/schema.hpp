@@ -143,13 +143,12 @@
 
 // It is important that this include comes after all the other ones,
 // so that it has access to ALL the previous definitions.
-#include <fable/schema/xmagic.hpp>  // for make_prototype, ...
+#include <fable/schema/xmagic.hpp>  // for make_prototype
 
 namespace fable {
 
 // Bring all make_* functions into the fable namespace.
 using schema::make_const_schema;
-using schema::make_const_str;
 using schema::make_prototype;
 using schema::make_schema;
 

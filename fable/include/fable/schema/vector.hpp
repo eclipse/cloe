@@ -17,7 +17,6 @@
  */
 /**
  * \file fable/schema/array.hpp
- * \see  fable/schema/xmagic.hpp
  * \see  fable/schema.hpp
  * \see  fable/schema_test.cpp
  */
@@ -42,19 +41,15 @@ class Vector : public Base<Vector<T, P>> {
   using Type = std::vector<T>;
   using PrototypeSchema = P;
 
-  Vector(Type* ptr, std::string desc);
+  Vector(Type* ptr, std::string desc) : Vector(ptr, make_prototype<T>(), std::move(desc)) {}
+
   Vector(Type* ptr, PrototypeSchema prototype)
       : Base<Vector<T, P>>(JsonType::array), prototype_(std::move(prototype)), ptr_(ptr) {}
+
   Vector(Type* ptr, PrototypeSchema prototype, std::string desc)
       : Base<Vector<T, P>>(JsonType::array, std::move(desc))
       , prototype_(std::move(prototype))
       , ptr_(ptr) {}
-
-#if 0
-  // This is defined in: fable/schema/xmagic.hpp
-  Vector(Type* ptr, std::string desc)
-      : Vector(ptr, make_prototype<T>(), std::move(desc)) {}
-#endif
 
  public:  // Specials
   /**
@@ -190,6 +185,11 @@ class Vector : public Base<Vector<T, P>> {
 template <typename T, typename P>
 Vector<T, P> make_schema(std::vector<T>* ptr, P prototype, std::string desc) {
   return Vector<T, P>(ptr, std::move(prototype), std::move(desc));
+}
+
+template <typename T>
+Vector<T, decltype(make_prototype<T>())> make_schema(std::vector<T>* ptr, std::string desc) {
+  return Vector<T, decltype(make_prototype<T>())>(ptr, std::move(desc));
 }
 
 }  // namespace schema
