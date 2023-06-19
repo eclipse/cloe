@@ -43,15 +43,15 @@ class Array : public Base<Array<T, N, P>> {
   using Type = std::array<T, N>;
   using PrototypeSchema = P;
 
-  Array(Type* ptr, std::string&& desc);
-  Array(Type* ptr, const PrototypeSchema& prototype)
-      : Base<Array<T, N, P>>(), prototype_(prototype), ptr_(ptr) {}
-  Array(Type* ptr, const PrototypeSchema& prototype, std::string&& desc)
-      : Base<Array<T, N, P>>(std::move(desc)), prototype_(prototype), ptr_(ptr) {}
+  Array(Type* ptr, std::string desc);
+  Array(Type* ptr, PrototypeSchema prototype)
+      : Base<Array<T, N, P>>(), prototype_(std::move(prototype)), ptr_(ptr) {}
+  Array(Type* ptr, PrototypeSchema prototype, std::string desc)
+      : Base<Array<T, N, P>>(std::move(desc)), prototype_(std::move(prototype)), ptr_(ptr) {}
 
 #if 0
   // This is defined in: fable/schema/magic.hpp
-  Array(Type* ptr, std::string&& desc)
+  Array(Type* ptr, std::string desc)
       : Array(ptr, make_prototype<T>(), std::move(desc)) {}
 #endif
 
@@ -297,8 +297,8 @@ class Array : public Base<Array<T, N, P>> {
 };
 
 template <typename T, typename P, size_t N>
-Array<T, N, P> make_schema(std::array<T, N>* ptr, const P& prototype, std::string&& desc) {
-  return Array<T, N, P>(ptr, prototype, std::move(desc));
+Array<T, N, P> make_schema(std::array<T, N>* ptr, P prototype, std::string desc) {
+  return Array<T, N, P>(ptr, std::move(prototype), std::move(desc));
 }
 
 }  // namespace schema

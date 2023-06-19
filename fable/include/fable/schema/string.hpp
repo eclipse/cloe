@@ -30,13 +30,10 @@
 #include <utility>  // for move
 #include <vector>   // for vector<>
 
+#include <fable/fable_fwd.hpp>         // for Environment
 #include <fable/schema/interface.hpp>  // for Base<>
 
 namespace fable {
-
-// Forward declarations:
-class Environment;  // from <fable/environment.hpp>
-
 namespace schema {
 
 /**
