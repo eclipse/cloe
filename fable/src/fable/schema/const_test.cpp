@@ -30,9 +30,10 @@ namespace {
 
 struct MyConstStruct : public fable::Confable {
   CONFABLE_SCHEMA(MyConstStruct) {
+    using namespace std::literals;
     using namespace fable::schema;  // NOLINT(build/namespaces)
     return Struct{
-        {"release", make_const_str("2", "constant string").require()},
+        {"release", make_const_schema("2"s, "constant string").require()},
         {"major", Const<int, Number<int>>(2, "constant number")},
     };
   }

@@ -17,7 +17,6 @@
  */
 /**
  * \file fable/schema/const.hpp
- * \see  fable/schema/xmagic.hpp
  * \see  fable/schema/const_test.cpp
  * \see  fable/schema_test.cpp
  */
@@ -36,22 +35,18 @@ namespace schema {
 template <typename T, typename P>
 class Const : public Base<Const<T, P>> {
  public:  // Types and Constructors
-  using Type = T;
+  using Type = std::remove_cv_t<std::remove_reference_t<T>>;
   using PrototypeSchema = std::remove_cv_t<std::remove_reference_t<P>>;
 
-  Const(Type constant, std::string desc);
+  Const(Type constant, std::string desc)
+      : Const(std::move(constant), make_prototype<Type>(), std::move(desc)) {}
+
   Const(Type constant, PrototypeSchema prototype, std::string desc)
       : Base<Const<T, P>>(prototype.type(), std::move(desc))
       , prototype_(std::move(prototype))
       , constant_(std::move(constant)) {
     prototype_.reset_ptr();
   }
-
-#if 0
-  // This is defined in: fable/schema/xmagic.hpp
-  Const(const T& constant, std::string desc)
-      : Const(constant, make_prototype<T>(), std::move(desc)) {}
-#endif
 
  public:  // Overrides
   Json json_schema() const override {
@@ -81,9 +76,7 @@ class Const : public Base<Const<T, P>> {
     return constant_;
   }
 
-  void serialize_into(Json& j, const Type& x) const {
-    prototype_.serialize_into(j, x);
-  }
+  void serialize_into(Json& j, const Type& x) const { prototype_.serialize_into(j, x); }
 
   void deserialize_into(const Conf& c, Type& x) const {
     validate(c);
@@ -99,12 +92,12 @@ class Const : public Base<Const<T, P>> {
 
 template <typename T, typename P, typename S>
 Const<T, P> make_const_schema(T&& constant, P&& prototype, S&& desc) {
-  return Const<T, P>(std::forward<T>(constant), std::forward<P>(prototype), std::forward<S>(desc));
+  return {std::forward<T>(constant), std::forward<P>(prototype), std::forward<S>(desc)};
 }
 
-template <typename S1, typename S2>
-inline Const<std::string, String> make_const_str(S1&& constant, S2&& desc) {
-  return Const<std::string, String>(std::forward<S1>(constant), std::forward<S2>(desc));
+template <typename T, typename S>
+Const<T, decltype(make_prototype<std::remove_cv_t<std::remove_reference_t<T>>>())> make_const_schema(T&& constant, S&& desc) {
+  return {std::forward<T>(constant), std::forward<S>(desc)};
 }
 
 }  // namespace schema

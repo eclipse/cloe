@@ -16,8 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
- * \file fable/schema/array_fixed.hpp
- * \see  fable/schema/magic.hpp
+ * \file fable/schema/array.hpp
  * \see  fable/schema.hpp
  * \see  fable/schema_test.cpp
  */
@@ -100,17 +99,14 @@ class Array : public Base<Array<T, N, P>> {
   using Type = std::array<T, N>;
   using PrototypeSchema = P;
 
-  Array(Type* ptr, std::string desc);
+  Array(Type* ptr, std::string desc)
+      : Array<T, N, P>(ptr, make_prototype<T>(), std::move(desc)) {}
+
   Array(Type* ptr, PrototypeSchema prototype)
       : Base<Array<T, N, P>>(), prototype_(std::move(prototype)), ptr_(ptr) {}
+
   Array(Type* ptr, PrototypeSchema prototype, std::string desc)
       : Base<Array<T, N, P>>(std::move(desc)), prototype_(std::move(prototype)), ptr_(ptr) {}
-
-#if 0
-  // This is defined in: fable/schema/magic.hpp
-  Array(Type* ptr, std::string desc)
-      : Array(ptr, make_prototype<T>(), std::move(desc)) {}
-#endif
 
  public:  // Specials
   /**
@@ -381,6 +377,11 @@ class Array : public Base<Array<T, N, P>> {
 template <typename T, typename P, size_t N, typename S>
 Array<T, N, P> make_schema(std::array<T, N>* ptr, P&& prototype, S&& desc) {
   return Array<T, N, P>(ptr, std::forward<P>(prototype), std::forward<S>(desc));
+}
+
+template <typename T, size_t N, typename S>
+Array<T, N, decltype(make_prototype<T>())> make_schema(std::array<T, N>* ptr, S&& desc) {
+  return Array<T, N, decltype(make_prototype<T>())>(ptr, std::forward<S>(desc));
 }
 
 }  // namespace schema
