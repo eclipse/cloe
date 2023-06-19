@@ -29,7 +29,7 @@
 
 namespace cloe {
 
-InlineSchema::InlineSchema(std::string&& desc, JsonType type, bool required)
+InlineSchema::InlineSchema(std::string desc, JsonType type, bool required)
     : type_(type)
     , required_(required)
     , usage_("<" + fable::to_string(type) + ">")

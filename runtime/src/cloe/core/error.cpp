@@ -28,13 +28,13 @@
 
 namespace cloe {
 
-void Error::set_explanation(const std::string& s) {
+void Error::set_explanation(std::string s) {
   // Writing long explanations is a PITA, so we do some preprocessing on the
   // string s to make it nicer:
   //
   //    If s starts with a newline, then the following string of spaces is
   //    interpreted as the amount to be removed following every newline.
-  explanation_ = s;
+  explanation_ = std::move(s);
   if (explanation_.empty() || explanation_[0] != '\n') {
     return;
   }

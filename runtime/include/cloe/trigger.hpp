@@ -90,7 +90,7 @@ struct InlineSchema {
    * Construct an implicit inline schema if enabled is true, i.e., one where
    * only the name itself is sufficient.
    *
-   * If possible, it is recommended to use InlineSchema(std::string&&) instead.
+   * If possible, it is recommended to use InlineSchema(std::string) instead.
    * This constructor is primarily useful when you want to explicitly disable
    * an inline schema.
    */
@@ -99,14 +99,14 @@ struct InlineSchema {
   /**
    * Construct an implicit inline schema with the given description.
    */
-  explicit InlineSchema(std::string&& desc) : required_(false), desc_(std::move(desc)) {}
+  explicit InlineSchema(std::string desc) : required_(false), desc_(std::move(desc)) {}
 
   /**
    * Construct an inline schema that takes a particular primitive type.
    *
    * The type may not be null, object, or array.
    */
-  InlineSchema(std::string&& desc, fable::JsonType type, bool required = true);
+  InlineSchema(std::string desc, fable::JsonType type, bool required = true);
 
   /**
    * Construct an inline schema that takes a string with the given format.
@@ -131,7 +131,7 @@ struct InlineSchema {
    * ambiguity but should be used sparingly (for now, as usage is often
    * directly read from JSON).
    */
-  InlineSchema(std::string&& desc, std::string&& format, bool required = true)
+  InlineSchema(std::string desc, std::string format, bool required = true)
       : type_(fable::JsonType::string)
       , required_(required)
       , usage_(std::move(format))
@@ -221,52 +221,42 @@ struct TriggerSchema {
    *      "name": "stop"
    *    }
    */
-  TriggerSchema(const std::string& name, const std::string& desc)
-      : name_(name), schema_(std::string(desc)), inline_(true) {}
+  TriggerSchema(std::string name, std::string desc)
+      : name_(std::move(name)), schema_(std::move(desc)), inline_(true) {}
 
   /**
    * Construct a TriggerSchema that describes a trigger with parameters
    * but no inline format.
    */
-  TriggerSchema(const std::string& name, const std::string& desc,
-                fable::schema::PropertyList<> props)
-      : name_(name), schema_(std::string(desc), props), inline_(false) {}
+  TriggerSchema(std::string name, std::string desc, fable::schema::PropertyList<> props)
+      : name_(std::move(name)), schema_(std::move(desc), std::move(props)), inline_(false) {}
 
   /**
    * Construct a TriggerSchema that describes a trigger with the given Schema
    * but no inline format.
    */
-  TriggerSchema(const std::string& name, const std::string& desc, Schema&& s)
-      : name_(name), schema_(std::move(s)), inline_(false) {
-    schema_.set_description(desc);
+  TriggerSchema(std::string name, std::string desc, Schema s)
+      : name_(std::move(name)), schema_(std::move(s)), inline_(false) {
+    schema_.set_description(std::move(desc));
   }
 
   /**
    * Construct a TriggerSchema that describes a trigger with parameters
    * and a specified inline format.
    */
-  TriggerSchema(const std::string& name, const std::string& desc, InlineSchema&& usage,
+  TriggerSchema(std::string name, std::string desc, InlineSchema usage,
                 fable::schema::PropertyList<> props)
-      : name_(name), schema_(std::string(desc), props), inline_(std::move(usage)) {}
+      : name_(std::move(name))
+      , schema_(std::move(desc), std::move(props))
+      , inline_(std::move(usage)) {}
 
   /**
    * Construct a TriggerSchema that describes a trigger with the given Schema
    * and a specified inline format.
    */
-  TriggerSchema(const std::string& name, const std::string& desc, InlineSchema&& usage,
-                Schema&& init)
-      : name_(name), schema_(std::move(init)), inline_(std::move(usage)) {
-    schema_.set_description(desc);
-  }
-
-  /**
-   * Construct a TriggerSchema that describes a trigger with the given Schema
-   * and a specified inline format.
-   */
-  TriggerSchema(const std::string& name, const std::string& desc, InlineSchema&& usage,
-                const Schema& init)
-      : name_(name), schema_(init), inline_(std::move(usage)) {
-    schema_.set_description(desc);
+  TriggerSchema(std::string name, std::string desc, InlineSchema usage, Schema init)
+      : name_(std::move(name)), schema_(std::move(init)), inline_(std::move(usage)) {
+    schema_.set_description(std::move(desc));
   }
 
   const std::string& name() const { return name_; }

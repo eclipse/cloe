@@ -27,11 +27,11 @@
 namespace cloe {
 
 static std::regex VALID_NAME_REGEX{"^[a-zA-Z_][a-zA-Z0-9_]*(/[a-zA-Z_][a-zA-Z0-9_]*)*$"};
-void Entity::set_name(const std::string& name) {
+void Entity::set_name(std::string name) {
   if (!std::regex_match(name, VALID_NAME_REGEX)) {
     throw InvalidNameError(name);
   }
-  name_ = name;
+  name_ = std::move(name);
 }
 
 }  // namespace cloe
