@@ -81,9 +81,7 @@ struct TcpTransceiverConfiguration : public Confable {
  */
 struct TcpTransceiverFullConfiguration : public TcpTransceiverConfiguration {
   TcpTransceiverFullConfiguration() = default;
-  TcpTransceiverFullConfiguration(const std::string& host, uint16_t port)
-      : host(host), port(port) {}
-  TcpTransceiverFullConfiguration(std::string&& host, uint16_t port)
+  TcpTransceiverFullConfiguration(std::string host, uint16_t port)
       : host(std::move(host)), port(port) {}
 
   /**
