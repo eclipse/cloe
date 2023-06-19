@@ -30,13 +30,10 @@
 #include <utility>  // for move
 #include <vector>   // for vector<>
 
+#include <fable/fable_fwd.hpp>         // for Environment
 #include <fable/schema/interface.hpp>  // for Base<>
 
 namespace fable {
-
-// Forward declarations:
-class Environment;  // from <fable/environment.hpp>
-
 namespace schema {
 
 /**
@@ -65,7 +62,7 @@ class String : public Base<String> {
  public:  // Types and Constructors
   using Type = std::string;
 
-  String(Type* ptr, std::string&& desc) : Base(JsonType::string, std::move(desc)), ptr_(ptr) {}
+  String(Type* ptr, std::string desc) : Base(JsonType::string, std::move(desc)), ptr_(ptr) {}
 
  public:  // Special
   /**
@@ -263,7 +260,7 @@ class String : public Base<String> {
   Type* ptr_{nullptr};
 };
 
-inline String make_schema(std::string* ptr, std::string&& desc) {
+inline String make_schema(std::string* ptr, std::string desc) {
   return String(ptr, std::move(desc));
 }
 

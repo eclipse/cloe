@@ -41,15 +41,15 @@ class Number : public Base<Number<T>> {
   using Type = T;
 
   template <typename X = T, std::enable_if_t<std::is_integral_v<X> && std::is_unsigned_v<X>, int> = 0>
-  Number(Type* ptr, std::string&& desc)
+  Number(Type* ptr, std::string desc)
       : Base<Number<T>>(JsonType::number_unsigned, std::move(desc)), ptr_(ptr) {}
 
   template <typename X = T, std::enable_if_t<std::is_integral_v<X> && std::is_signed_v<X>, int> = 0>
-  Number(Type* ptr, std::string&& desc)
+  Number(Type* ptr, std::string desc)
       : Base<Number<T>>(JsonType::number_integer, std::move(desc)), ptr_(ptr) {}
 
   template <typename X = T, std::enable_if_t<std::is_floating_point_v<X>, int> = 0>
-  Number(Type* ptr, std::string&& desc)
+  Number(Type* ptr, std::string desc)
       : Base<Number<T>>(JsonType::number_float, std::move(desc)), ptr_(ptr) {}
 
  public:  // Special
@@ -104,7 +104,7 @@ class Number : public Base<Number<T>> {
 };
 
 template <typename T, std::enable_if_t<std::is_arithmetic_v<T> && !std::is_enum_v<T>, int> = 0>
-inline Number<T> make_schema(T* ptr, std::string&& desc) {
+inline Number<T> make_schema(T* ptr, std::string desc) {
   return Number<T>(ptr, std::move(desc));
 }
 

@@ -23,14 +23,14 @@
 
 #pragma once
 
-#include <limits>   // for numeric_limits<>
-#include <map>      // for map<>
-#include <memory>   // for shared_ptr<>
-#include <regex>    // for regex, regex_match
-#include <string>   // for string
-#include <utility>  // for move
-#include <vector>   // for vector<>
-#include <optional> // for optional<>
+#include <limits>    // for numeric_limits<>
+#include <map>       // for map<>
+#include <memory>    // for shared_ptr<>
+#include <optional>  // for optional<>
+#include <regex>     // for regex, regex_match
+#include <string>    // for string
+#include <utility>   // for move
+#include <vector>    // for vector<>
 
 #include <fable/schema/interface.hpp>  // for Base<>
 
@@ -51,19 +51,21 @@ class Map : public Base<Map<T, P>> {
   using Type = std::map<std::string, T>;
   using PrototypeSchema = P;
 
-  Map(Type* ptr, std::string&& desc);
-  Map(Type* ptr, const PrototypeSchema& prototype)
-      : Base<Map<T, P>>(JsonType::object), prototype_(prototype), ptr_(ptr) {
+  Map(Type* ptr, std::string desc);
+  Map(Type* ptr, PrototypeSchema prototype)
+      : Base<Map<T, P>>(JsonType::object), prototype_(std::move(prototype)), ptr_(ptr) {
     prototype_.reset_ptr();
   }
-  Map(Type* ptr, const PrototypeSchema& prototype, std::string&& desc)
-      : Base<Map<T, P>>(JsonType::object, std::move(desc)), prototype_(prototype), ptr_(ptr) {
+  Map(Type* ptr, PrototypeSchema prototype, std::string desc)
+      : Base<Map<T, P>>(JsonType::object, std::move(desc))
+      , prototype_(std::move(prototype))
+      , ptr_(ptr) {
     prototype_.reset_ptr();
   }
 
 #if 0
   // This is defined in: fable/schema/xmagic.hpp
-  Map(Type* ptr, std::string&& desc)
+  Map(Type* ptr, std::string desc)
       : Map(ptr, make_prototype<T>(), std::move(desc)) {}
 #endif
 
@@ -196,8 +198,8 @@ class Map : public Base<Map<T, P>> {
 };
 
 template <typename T, typename P>
-Map<T, P> make_schema(std::map<std::string, T>* ptr, const P& prototype, std::string&& desc) {
-  return Map<T, P>(ptr, prototype, std::move(desc));
+Map<T, P> make_schema(std::map<std::string, T>* ptr, P prototype, std::string desc) {
+  return Map<T, P>(ptr, std::move(prototype), std::move(desc));
 }
 
 }  // namespace schema

@@ -35,7 +35,7 @@ class Boolean : public Base<Boolean> {
  public:  // Types and Constructors
   using Type = bool;
 
-  Boolean(Type* ptr, std::string&& desc);
+  Boolean(Type* ptr, std::string desc);
 
  public:  // Overrides
   Json json_schema() const override;
@@ -53,7 +53,7 @@ class Boolean : public Base<Boolean> {
   Type* ptr_{nullptr};
 };
 
-inline Boolean make_schema(bool* ptr, std::string&& desc) { return Boolean(ptr, std::move(desc)); }
+inline Boolean make_schema(bool* ptr, std::string desc) { return Boolean(ptr, std::move(desc)); }
 
 }  // namespace schema
 }  // namespace fable

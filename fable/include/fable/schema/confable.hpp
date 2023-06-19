@@ -42,14 +42,14 @@ class FromConfable : public Base<FromConfable<T>> {
  public:  // Types and Constructors
   using Type = T;
 
-  explicit FromConfable(std::string&& desc = "") {
+  explicit FromConfable(std::string desc = "") {
     schema_ = Type().schema();
     schema_.reset_ptr();
     this->type_ = schema_.type();
     this->desc_ = std::move(desc);
   }
 
-  FromConfable(Type* ptr, std::string&& desc)
+  FromConfable(Type* ptr, std::string desc)
       : Base<FromConfable<Type>>(ptr->schema().type(), std::move(desc))
       , schema_(ptr->schema())
       , ptr_(ptr) {
@@ -105,7 +105,7 @@ class FromConfable : public Base<FromConfable<T>> {
 };
 
 template <typename T>
-FromConfable<T> make_schema(T* ptr, std::string&& desc) {
+FromConfable<T> make_schema(T* ptr, std::string desc) {
   assert(ptr != nullptr);
   return FromConfable<T>(ptr, std::move(desc));
 }

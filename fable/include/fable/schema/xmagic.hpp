@@ -53,58 +53,58 @@ namespace fable {
 namespace schema {
 
 template <typename T, typename P>
-Vector<T, P>::Vector(std::vector<T>* ptr, std::string&& desc)
+Vector<T, P>::Vector(std::vector<T>* ptr, std::string desc)
     : Vector<T, P>(ptr, make_prototype<T>(), std::move(desc)) {}
 
 template <typename T>
-Vector<T, decltype(make_prototype<T>())> make_schema(std::vector<T>* ptr, std::string&& desc) {
+Vector<T, decltype(make_prototype<T>())> make_schema(std::vector<T>* ptr, std::string desc) {
   return Vector<T, decltype(make_prototype<T>())>(ptr, std::move(desc));
 }
 
 template <typename T, size_t N, typename P>
-Array<T, N, P>::Array(std::array<T, N>* ptr, std::string&& desc)
+Array<T, N, P>::Array(std::array<T, N>* ptr, std::string desc)
     : Array<T, N, P>(ptr, make_prototype<T>(), std::move(desc)) {}
 
 template <typename T, size_t N>
-Array<T, N, decltype(make_prototype<T>())> make_schema(std::array<T, N>* ptr, std::string&& desc) {
+Array<T, N, decltype(make_prototype<T>())> make_schema(std::array<T, N>* ptr, std::string desc) {
   return Array<T, N, decltype(make_prototype<T>())>(ptr, std::move(desc));
 }
 
 template <typename T, typename P>
-Const<T, P>::Const(const T& constant, std::string&& desc)
+Const<T, P>::Const(T constant, std::string desc)
     : Const<T, P>(constant, make_prototype<T>(), std::move(desc)) {}
 
 template <typename T>
-Const<T, decltype(make_prototype<T>())> make_const_schema(const T& constant, std::string&& desc) {
-  return Const<T, decltype(make_prototype<T>())>(constant, std::move(desc));
+Const<T, decltype(make_prototype<T>())> make_const_schema(T constant, std::string desc) {
+  return Const<T, decltype(make_prototype<T>())>(std::move(constant), std::move(desc));
 }
 
 template <typename T, typename P>
-Map<T, P>::Map(std::map<std::string, T>* ptr, std::string&& desc)
+Map<T, P>::Map(std::map<std::string, T>* ptr, std::string desc)
     : Map<T, P>(ptr, make_prototype<T>(), std::move(desc)) {}
 
 template <typename T>
 Map<T, decltype(make_prototype<T>())> make_schema(std::map<std::string, T>* ptr,
-                                                  std::string&& desc) {
+                                                  std::string desc) {
   return Map<T, decltype(make_prototype<T>())>(ptr, std::move(desc));
 }
 
 template <typename T, typename P>
-Optional<T, P>::Optional(T* ptr, std::string&& desc)
+Optional<T, P>::Optional(T* ptr, std::string desc)
     : Optional<T, P>(ptr, make_prototype<typename T::value_type>(), std::move(desc)) {}
 
 template <typename T, std::enable_if_t<is_optional_v<T>, bool> = true>
-Optional<T, decltype(make_prototype<typename T::value_type>())> make_schema(T* ptr, std::string&& desc) {
+Optional<T, decltype(make_prototype<typename T::value_type>())> make_schema(T* ptr, std::string desc) {
   return Optional<T, decltype(make_prototype<typename T::value_type>())>(ptr, std::move(desc));
 }
 
 template <typename T, std::enable_if_t<std::is_base_of_v<Confable, T>, int>>
-auto make_prototype(std::string&& desc) {
+auto make_prototype(std::string desc) {
   return FromConfable<T>(std::move(desc));
 }
 
 template <typename T, std::enable_if_t<!std::is_base_of_v<Confable, T>, int>>
-auto make_prototype(std::string&& desc) {
+auto make_prototype(std::string desc) {
   return make_schema(static_cast<T*>(nullptr), std::move(desc));
 }
 

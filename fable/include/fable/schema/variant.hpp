@@ -57,11 +57,11 @@ using BoxList = std::initializer_list<Box>;
 class Variant : public Interface {
  public:  // Constructors
   Variant(std::initializer_list<Box> vec) : Variant("", vec) {}
-  Variant(std::string&& desc, std::initializer_list<Box> vec)
+  Variant(std::string desc, std::initializer_list<Box> vec)
       : Variant(std::move(desc), std::vector<Box>(vec)) {}
 
   Variant(std::vector<Box>&& vec) : Variant("", std::move(vec)) {}  // NOLINT(runtime/explicit)
-  Variant(std::string&& desc, std::vector<Box>&& vec);
+  Variant(std::string desc, std::vector<Box>&& vec);
 
  public:  // Base
   Interface* clone() const override { return new Variant(*this); }
@@ -82,10 +82,9 @@ class Variant : public Interface {
   }
 
   bool has_description() const { return !desc_.empty(); }
-  void set_description(const std::string& s) override { desc_ = s; }
-  void set_description(std::string&& s) { desc_ = std::move(s); }
+  void set_description(std::string s) override { desc_ = std::move(s); }
   const std::string& description() const override { return desc_; }
-  Variant description(std::string&& desc) && {
+  Variant description(std::string desc) && {
     desc_ = std::move(desc);
     return std::move(*this);
   }
@@ -132,12 +131,12 @@ class Variant : public Interface {
 };
 
 inline Variant make_schema(std::initializer_list<Box> vec) { return Variant(vec); }
-inline Variant make_schema(std::string&& desc, std::initializer_list<Box> vec) {
+inline Variant make_schema(std::string desc, std::initializer_list<Box> vec) {
   return Variant(std::move(desc), std::vector<Box>(vec));
 }
 
 inline Variant make_schema(std::vector<Box>&& vec) { return Variant(std::move(vec)); }
-inline Variant make_schema(std::string&& desc, std::vector<Box>&& vec) {
+inline Variant make_schema(std::string desc, std::vector<Box>&& vec) {
   return Variant(std::move(desc), std::move(vec));
 }
 

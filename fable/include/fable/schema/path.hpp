@@ -94,7 +94,7 @@ class Path : public Base<Path<T>> {
   using Type = T;
   using State = PathState;
 
-  Path(Type* ptr, std::string&& desc)
+  Path(Type* ptr, std::string desc)
       : Base<Path<T>>(JsonType::string, std::move(desc)), ptr_(ptr) {}
 
  public:  // Special
@@ -242,7 +242,7 @@ class Path : public Base<Path<T>> {
 };
 
 template <typename T, std::enable_if_t<is_path_v<T>, bool> = true>
-inline Path<T> make_schema(T* ptr, std::string&& desc) {
+inline Path<T> make_schema(T* ptr, std::string desc) {
   return Path(ptr, std::move(desc));
 }
 

@@ -78,14 +78,14 @@ class FactoryBase : public Base<CRTP> {
    *
    * \see add_factory()
    */
-  explicit FactoryBase(std::string&& desc = "") : Base<CRTP>(JsonType::object, std::move(desc)) {}
+  explicit FactoryBase(std::string desc = "") : Base<CRTP>(JsonType::object, std::move(desc)) {}
 
-  FactoryBase(std::string&& desc, FactoryPairList fs)
+  FactoryBase(std::string desc, FactoryPairList fs)
       : Base<CRTP>(JsonType::object, std::move(desc)), available_(std::move(fs)) {
     reset_schema();
   }
 
-  FactoryBase(std::string&& desc, FactoryMap&& fs)
+  FactoryBase(std::string desc, FactoryMap&& fs)
       : Base<CRTP>(JsonType::object, std::move(desc)), available_(std::move(fs)) {
     reset_schema();
   }
@@ -385,9 +385,9 @@ class Factory : public FactoryBase<T, Factory<T>> {
  public:  // Constructors
   using FactoryBase<T, Factory<T>>::FactoryBase;
 
-  Factory(Type* ptr, std::string&& desc) : FactoryBase<T, Factory<T>>(std::move(desc)), ptr_(ptr) {}
+  Factory(Type* ptr, std::string desc) : FactoryBase<T, Factory<T>>(std::move(desc)), ptr_(ptr) {}
 
-  Factory(Type* ptr, std::string&& desc, FactoryMap&& fs)
+  Factory(Type* ptr, std::string desc, FactoryMap&& fs)
       : FactoryBase<T, Factory<T>>(std::move(desc)), ptr_(ptr) {
     for (auto&& f : fs) {
       this->available_.insert(f);
@@ -395,7 +395,7 @@ class Factory : public FactoryBase<T, Factory<T>> {
     this->reset_schema();
   }
 
-  Factory(Type* ptr, std::string&& desc, FactoryPairList fs)
+  Factory(Type* ptr, std::string desc, FactoryPairList fs)
       : FactoryBase<T, Factory<T>>(std::move(desc)), ptr_(ptr) {
     for (auto&& f : fs) {
       this->available_.insert(f);

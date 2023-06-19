@@ -46,7 +46,7 @@ class Ignore : public Base<Ignore> {
   using Type = struct {};
 
   Ignore() : Base(JsonType::object, "ignored") {}
-  explicit Ignore(std::string&& desc, JsonType t = JsonType::object) : Base(t, std::move(desc)) {}
+  explicit Ignore(std::string desc, JsonType t = JsonType::object) : Base(t, std::move(desc)) {}
 
  public:  // Overrides
   Json json_schema() const override {
@@ -67,7 +67,7 @@ class Ignore : public Base<Ignore> {
   void deserialize_into(const Conf&, Type&) const {}
 };
 
-inline Ignore make_schema(std::string&& desc, JsonType t = JsonType::object) {
+inline Ignore make_schema(std::string desc, JsonType t = JsonType::object) {
   return Ignore(std::move(desc), t);
 }
 

@@ -41,16 +41,15 @@ class Duration : public Base<Duration<T, Period>> {
 
   template <typename X = T,
             std::enable_if_t<std::is_integral_v<X> && std::is_unsigned_v<X>, int> = 0>
-  Duration(Type* ptr, std::string&& desc)
+  Duration(Type* ptr, std::string desc)
       : Base<Duration<T, Period>>(JsonType::number_unsigned, std::move(desc)), ptr_(ptr) {}
 
-  template <typename X = T,
-            std::enable_if_t<std::is_integral_v<X> && std::is_signed_v<X>, int> = 0>
-  Duration(Type* ptr, std::string&& desc)
+  template <typename X = T, std::enable_if_t<std::is_integral_v<X> && std::is_signed_v<X>, int> = 0>
+  Duration(Type* ptr, std::string desc)
       : Base<Duration<T, Period>>(JsonType::number_integer, std::move(desc)), ptr_(ptr) {}
 
   template <typename X = T, std::enable_if_t<std::is_floating_point_v<X>, int> = 0>
-  Duration(Type* ptr, std::string&& desc)
+  Duration(Type* ptr, std::string desc)
       : Base<Duration<T, Period>>(JsonType::number_float, std::move(desc)), ptr_(ptr) {}
 
  public:  // Special
@@ -192,7 +191,7 @@ class Duration : public Base<Duration<T, Period>> {
 
 template <typename Rep, typename Period>
 inline Duration<Rep, Period> make_schema(std::chrono::duration<Rep, Period>* ptr,
-                                         std::string&& desc) {
+                                         std::string desc) {
   return Duration<Rep, Period>(ptr, std::move(desc));
 }
 

@@ -90,11 +90,11 @@ class PersistentConfable : public Confable {
   Conf conf_;
 };
 
-inline auto id_prototype(std::string&& desc = "") {
+inline auto id_prototype(std::string desc = "") {
   return schema::make_prototype<std::string>(std::move(desc)).c_identifier();
 }
 
-inline auto id_path_prototype(std::string&& desc = "") {
+inline auto id_path_prototype(std::string desc = "") {
   return schema::make_prototype<std::string>(std::move(desc))
       .pattern("^([a-zA-Z_][a-zA-Z0-9_]*/?)+$");
 }
@@ -742,7 +742,7 @@ class VehicleSchema : public fable::schema::Base<VehicleSchema> {
   using MakeFunc = ComponentSchema::MakeFunc;
   using TypeFactory = ComponentSchema::TypeFactory;
 
-  explicit VehicleSchema(std::string&& desc = "") : Base(std::move(desc)) {}
+  explicit VehicleSchema(std::string desc = "") : Base(std::move(desc)) {}
 
  public:  // Special
   bool has_factory(const std::string& name) const { return components_.has_factory(name); }

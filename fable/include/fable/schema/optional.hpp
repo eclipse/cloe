@@ -72,15 +72,17 @@ class Optional : public Base<Optional<T, P>> {
   using ValueType = typename Type::value_type;
   using PrototypeSchema = P;
 
-  Optional(Type* ptr, std::string&& desc);
-  Optional(Type* ptr, const PrototypeSchema& prototype, std::string&& desc)
-      : Base<Optional<T, P>>(prototype.type(), std::move(desc)), prototype_(prototype), ptr_(ptr) {
+  Optional(Type* ptr, std::string desc);
+  Optional(Type* ptr, PrototypeSchema prototype, std::string desc)
+      : Base<Optional<T, P>>(prototype.type(), std::move(desc))
+      , prototype_(std::move(prototype))
+      , ptr_(ptr) {
     prototype_.reset_ptr();
   }
 
 #if 0
   // This is defined in: fable/schema/xmagic.hpp
-  Optional(T* ptr, std::string&& desc)
+  Optional(T* ptr, std::string desc)
     : Optional<T, P>(ptr, make_prototype<typename T::value_type>(), std::move(desc)) {}
 #endif
 
@@ -149,8 +151,8 @@ class Optional : public Base<Optional<T, P>> {
 
 // Define make_schema only for std::optional and boost::optional.
 template <typename T, typename P, std::enable_if_t<is_optional_v<T>, bool> = true>
-inline Optional<T, P> make_schema(T* ptr, const P& prototype, std::string&& desc) {
-  return Optional<T, P>(ptr, prototype, std::move(desc));
+inline Optional<T, P> make_schema(T* ptr, P prototype, std::string desc) {
+  return Optional<T, P>(ptr, std::move(prototype), std::move(desc));
 }
 
 }  // namespace schema

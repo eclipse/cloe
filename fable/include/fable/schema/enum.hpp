@@ -40,7 +40,7 @@ class Enum : public Base<Enum<T>> {
  public:  // Types and Constructors
   using Type = T;
 
-  Enum(Type* ptr, std::string&& desc)
+  Enum(Type* ptr, std::string desc)
       : Base<Enum<T>>(JsonType::string, std::move(desc))
       , mapping_to_(enum_serialization<T>())
       , mapping_from_(enum_deserialization<T>())
@@ -107,7 +107,7 @@ class Enum : public Base<Enum<T>> {
 };
 
 template <typename T, std::enable_if_t<std::is_enum_v<T>, int> = 0>
-inline Enum<T> make_schema(T* ptr, std::string&& desc) {
+inline Enum<T> make_schema(T* ptr, std::string desc) {
   return Enum<T>(ptr, std::move(desc));
 }
 

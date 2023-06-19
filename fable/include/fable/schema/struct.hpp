@@ -70,9 +70,9 @@ using enable_if_property_list_t = std::enable_if_t<std::is_same_v<PropertyList<S
  */
 class Struct : public Base<Struct> {
  public:  // Constructors
-  explicit Struct(std::string&& desc = "") : Base(JsonType::object, std::move(desc)) {}
+  explicit Struct(std::string desc = "") : Base(JsonType::object, std::move(desc)) {}
 
-  Struct(std::string&& desc, PropertyList<Box> props) : Base(JsonType::object, std::move(desc)) {
+  Struct(std::string desc, PropertyList<Box> props) : Base(JsonType::object, std::move(desc)) {
     set_properties(props);
   }
 
@@ -103,7 +103,7 @@ class Struct : public Base<Struct> {
    * will internally call this->schema_impl(), which will lead to an
    * infinite recursion! Instead, call Base::schema_impl().
    */
-  Struct(std::string&& desc, const Box& base, PropertyList<Box> props)
+  Struct(std::string desc, const Box& base, PropertyList<Box> props)
       : Struct(*base.template as<Struct>()) {
     desc_ = std::move(desc);
     set_properties(props);
@@ -229,17 +229,17 @@ inline Struct make_schema(T&& props) {
 }
 
 template <typename T, typename = enable_if_property_list_t<T>>
-inline Struct make_schema(std::string&& desc, T&& props) {
+inline Struct make_schema(std::string desc, T&& props) {
   return Struct(std::move(desc), std::forward<T>(props));
 }
 
 template <typename T, typename = enable_if_property_list_t<T>>
-inline Struct make_schema(std::string&& desc, const Box& base, T&& props) {
+inline Struct make_schema(std::string desc, const Box& base, T&& props) {
   return Struct(std::move(desc), base, std::forward<T>(props));
 }
 
 template <typename T, typename = enable_if_property_list_t<T>>
-inline Struct make_schema(std::string&& desc, const Struct& base, T&& props) {
+inline Struct make_schema(std::string desc, const Struct& base, T&& props) {
   return Struct(std::move(desc), base, std::forward<T>(props));
 }
 

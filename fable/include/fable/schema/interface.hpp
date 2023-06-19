@@ -28,15 +28,12 @@
 #include <type_traits>  // for enable_if_t<>, is_base_of<>
 #include <utility>      // for move
 
-#include <fable/conf.hpp>   // for Conf
-#include <fable/error.hpp>  // for SchemaError
-#include <fable/json.hpp>   // for Json
+#include <fable/conf.hpp>       // for Conf
+#include <fable/error.hpp>      // for SchemaError
+#include <fable/fable_fwd.hpp>  // for Confable
+#include <fable/json.hpp>       // for Json
 
 namespace fable {
-
-// Forward declarations:
-class Confable;
-
 namespace schema {
 
 /**
@@ -129,7 +126,7 @@ class Interface {
   /**
    * Set human-readable description.
    */
-  virtual void set_description(const std::string& s) = 0;
+  virtual void set_description(std::string s) = 0;
 
   /**
    * Return a compact JSON description of the schema.
@@ -332,7 +329,7 @@ class Box : public Interface {
   std::string type_string() const override { return impl_->type_string(); }
   bool is_required() const override { return impl_->is_required(); }
   const std::string& description() const override { return impl_->description(); }
-  void set_description(const std::string& s) override { return impl_->set_description(s); }
+  void set_description(std::string s) override { return impl_->set_description(std::move(s)); }
   Json usage() const override { return impl_->usage(); }
   Json json_schema() const override { return impl_->json_schema(); };
   void validate(const Conf& c) const override { impl_->validate(c); }
@@ -358,9 +355,9 @@ template <typename CRTP>
 class Base : public Interface {
  public:
   Base() = default;
-  Base(JsonType t, std::string&& desc) : type_(t), desc_(std::move(desc)) {}
+  Base(JsonType t, std::string desc) : type_(t), desc_(std::move(desc)) {}
   explicit Base(JsonType t) : type_(t) {}
-  explicit Base(std::string&& desc) : desc_(std::move(desc)) {}
+  explicit Base(std::string desc) : desc_(std::move(desc)) {}
   virtual ~Base() = default;
 
   Interface* clone() const override { return new CRTP(static_cast<CRTP const&>(*this)); }
@@ -394,10 +391,9 @@ class Base : public Interface {
   }
 
   bool has_description() const { return !desc_.empty(); }
-  void set_description(const std::string& s) override { desc_ = s; }
-  void set_description(std::string&& s) { desc_ = std::move(s); }
+  void set_description(std::string s) override { desc_ = std::move(s); }
   const std::string& description() const override { return desc_; }
-  CRTP description(std::string&& desc) && {
+  CRTP description(std::string desc) && {
     desc_ = std::move(desc);
     return std::move(*dynamic_cast<CRTP*>(this));
   }
@@ -470,10 +466,10 @@ template <typename T>
 using enable_if_not_confable_t = std::enable_if_t<!std::is_base_of_v<Confable, T>>;
 
 template <typename T, std::enable_if_t<std::is_base_of_v<Confable, T>, int> = 0>
-auto make_prototype(std::string&& desc = "");
+auto make_prototype(std::string desc = "");
 
 template <typename T, std::enable_if_t<!std::is_base_of_v<Confable, T>, int> = 0>
-auto make_prototype(std::string&& desc = "");
+auto make_prototype(std::string desc = "");
 
 }  // namespace schema
 }  // namespace fable

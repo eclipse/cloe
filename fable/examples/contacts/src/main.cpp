@@ -83,7 +83,7 @@ struct Address : public fable::Confable {
   std::string postalCode;
 
   Address() = default;
-  Address(std::string&& street, std::string&& city, std::string&& state, std::string code) noexcept
+  Address(std::string street, std::string city, std::string state, std::string code) noexcept
       : streetAddress(std::move(street))
       , city(std::move(city))
       , state(std::move(state))
@@ -179,7 +179,7 @@ struct Contact : public fable::Confable {
 
   Contact() = default;
   Contact(
-      std::string&& first, std::string&& last, bool alive, boost::optional<uint8_t> age) noexcept
+      std::string first, std::string last, bool alive, boost::optional<uint8_t> age) noexcept
       : firstName(std::move(first)), lastName(std::move(last)), isAlive(alive), age(age) {}
 
   Contact with_address(Address&& addr) && {

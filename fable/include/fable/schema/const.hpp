@@ -39,17 +39,17 @@ class Const : public Base<Const<T, P>> {
   using Type = T;
   using PrototypeSchema = P;
 
-  Const(const Type& constant, std::string&& desc);
-  Const(const Type& constant, const PrototypeSchema& prototype, std::string&& desc)
+  Const(Type constant, std::string desc);
+  Const(Type constant, PrototypeSchema prototype, std::string desc)
       : Base<Const<T, P>>(prototype.type(), std::move(desc))
-      , prototype_(prototype)
-      , constant_(constant) {
+      , prototype_(std::move(prototype))
+      , constant_(std::move(constant)) {
     prototype_.reset_ptr();
   }
 
 #if 0
   // This is defined in: fable/schema/xmagic.hpp
-  Const(const T& constant, std::string&& desc)
+  Const(const T& constant, std::string desc)
       : Const(constant, make_prototype<T>(), std::move(desc)) {}
 #endif
 
@@ -98,16 +98,12 @@ class Const : public Base<Const<T, P>> {
 };
 
 template <typename T, typename P>
-Const<T, P> make_const_schema(const T& constant, const P& prototype, std::string&& desc) {
-  return Const<T, P>(constant, prototype, std::move(desc));
+Const<T, P> make_const_schema(T constant, P prototype, std::string desc) {
+  return Const<T, P>(std::move(constant), std::move(prototype), std::move(desc));
 }
 
-inline Const<std::string, String> make_const_str(const std::string& constant, std::string&& desc) {
-  return Const<std::string, String>(constant, std::move(desc));
-}
-
-inline Const<std::string, String> make_const_str(const char* constant, std::string&& desc) {
-  return Const<std::string, String>(constant, std::move(desc));
+inline Const<std::string, String> make_const_str(std::string constant, std::string desc) {
+  return Const<std::string, String>(std::move(constant), std::move(desc));
 }
 
 }  // namespace schema
