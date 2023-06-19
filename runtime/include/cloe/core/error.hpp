@@ -18,25 +18,27 @@
 /**
  * \file cloe/core/error.hpp
  * \see  cloe/core/error.cpp
- * \see  cloe/core.hpp
  */
 
 #pragma once
 
-#include <stdexcept>  // for exception
-#include <string>     // for string
+#include <stdexcept>    // for exception
+#include <string>       // for string
+#include <string_view>  // for string
 
-#include <cloe/core/logger.hpp>  // for fmt::format
+#include <fmt/format.h>  // for fmt::format
 
 namespace cloe {
 
+class Error;
+
 class Error : public std::exception {
  public:
-  explicit Error(const std::string& what) : err_(what) {}
-  explicit Error(const char* what) : err_(what) {}
+  Error(std::string_view what) : err_(what.data()) {}
 
   template <typename... Args>
-  explicit Error(const char* format, const Args&... args) : err_(fmt::format(format, args...)) {}
+  Error(std::string_view format, const Args&... args)
+      : err_(fmt::format(format, args...)) {}
 
   virtual ~Error() noexcept = default;
 
@@ -44,22 +46,22 @@ class Error : public std::exception {
 
   bool has_explanation() const { return !explanation_.empty(); }
 
-  void set_explanation(const std::string& explanation);
+  void set_explanation(std::string explanation);
 
   template <typename... Args>
-  void set_explanation(const char* format, const Args&... args) {
+  void set_explanation(std::string_view format, const Args&... args) {
     set_explanation(fmt::format(format, args...));
   }
 
   const std::string& explanation() const { return explanation_; }
 
-  Error explanation(const std::string& explanation) && {
-    set_explanation(explanation);
+  Error explanation(std::string explanation) && {
+    set_explanation(std::move(explanation));
     return std::move(*this);
   }
 
   template <typename... Args>
-  Error explanation(const char* format, const Args&... args) && {
+  Error explanation(std::string_view format, const Args&... args) && {
     set_explanation(fmt::format(format, args...));
     return std::move(*this);
   }
