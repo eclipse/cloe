@@ -45,13 +45,13 @@ BoxVec to_box_vec(const std::vector<Schema>& xs) {
 
 // Variant constructions:
 Schema::Schema(const std::vector<Schema>& xs) : impl_(new Variant(to_box_vec(xs))) {}
-Schema::Schema(std::string&& desc, const std::vector<Schema>& xs)
+Schema::Schema(std::string desc, const std::vector<Schema>& xs)
     : impl_(new Variant(std::move(desc), to_box_vec(xs))) {}
 Schema::Schema(schema::BoxList props) : impl_(new Variant(props)) {}
-Schema::Schema(std::string&& desc, schema::BoxList props)
+Schema::Schema(std::string desc, schema::BoxList props)
     : impl_(new Variant(std::move(desc), props)) {}
 Schema::Schema(schema::BoxVec&& props) : impl_(new Variant(std::move(props))) {}
-Schema::Schema(std::string&& desc, schema::BoxVec&& props)
+Schema::Schema(std::string desc, schema::BoxVec&& props)
     : impl_(new Variant(std::move(desc), std::move(props))) {}
 
 }  // namespace fable

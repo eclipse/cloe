@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_COMPONENT_STEERING_ACTUATOR_HPP_
-#define CLOE_COMPONENT_STEERING_ACTUATOR_HPP_
 
 #include <cloe/component/actuator.hpp>  // for Actuator
 #include <fable/json.hpp>               // for Json
@@ -34,13 +32,13 @@ struct SteeringRequest {
    */
   double steering_angle_front{0.0};
 
-  /** 
+  /**
    * Rear center wheel angle with regards to z-Axis in [radians].
    */
   double steering_angle_rear{0.0};
 
-  friend void to_json(Json& j, const SteeringRequest& s) {
-    j = Json{
+  friend void to_json(fable::Json& j, const SteeringRequest& s) {
+    j = fable::Json{
         {"steering_angle_front", s.steering_angle_front},
         {"steering_angle_rear", s.steering_angle_rear},
     };
@@ -55,5 +53,3 @@ class SteeringActuator : public Actuator<SteeringRequest> {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_COMPONENT_STEERING_ACTUATOR_HPP_

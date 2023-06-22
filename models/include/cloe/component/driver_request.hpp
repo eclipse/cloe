@@ -20,10 +20,11 @@
  */
 
 #pragma once
-#ifndef CLOE_COMPONENT_DRIVER_REQUEST_HPP_
-#define CLOE_COMPONENT_DRIVER_REQUEST_HPP_
 
-#include <cloe/component.hpp>  // for Component, Json
+#include <fable/json.hpp> // for Json
+#include <fable/utility/boost_optional.hpp>
+
+#include <cloe/component.hpp>  // for Component
 
 namespace cloe {
 
@@ -56,8 +57,8 @@ class DriverRequest : public Component {
   /**
    * Return sensor state as JSON.
    */
-  Json active_state() const override {
-    return Json{
+  fable::Json active_state() const override {
+    return fable::Json{
         {"acceleration", acceleration()},
         {"steering_angle", steering_angle()},
     };
@@ -98,5 +99,3 @@ class NopDriverRequest : public DriverRequest {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_COMPONENT_DRIVER_REQUEST_HPP_

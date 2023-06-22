@@ -20,15 +20,13 @@
  */
 
 #pragma once
-#ifndef CLOE_COMPONENT_LANE_SENSOR_HPP_
-#define CLOE_COMPONENT_LANE_SENSOR_HPP_
 
-#include <Eigen/Geometry>             // for Isometry3d
-#include <fable/json/with_eigen.hpp>  // for to_json
+#include <Eigen/Geometry>  // for Isometry3d
 
 #include <cloe/component.hpp>                // for Component
 #include <cloe/component/frustum.hpp>        // for Frustum
 #include <cloe/component/lane_boundary.hpp>  // for LaneBoundaries
+#include <fable/utility/eigen.hpp>           // for to_json
 
 namespace cloe {
 
@@ -53,8 +51,8 @@ class LaneBoundarySensor : public Component {
    */
   virtual const Eigen::Isometry3d& mount_pose() const = 0;
 
-  Json active_state() const override {
-    return Json{
+  fable::Json active_state() const override {
+    return fable::Json{
         {"mount_pose", this->mount_pose()},
         {"frustum", this->frustum()},
         {"sensed_lane_boundaries", sensed_lane_boundaries()},
@@ -77,5 +75,3 @@ class NopLaneSensor : public LaneBoundarySensor {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_COMPONENT_LANE_SENSOR_HPP_

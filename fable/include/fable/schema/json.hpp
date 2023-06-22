@@ -22,8 +22,6 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_JSON_HPP_
-#define FABLE_SCHEMA_JSON_HPP_
 
 #include <string>   // for string
 #include <utility>  // for move
@@ -50,7 +48,7 @@ class FromJson : public Base<FromJson<T>> {
  public:  // Types and Constructors
   using Type = T;
 
-  FromJson(Type* ptr, JsonType t, std::string&& desc)
+  FromJson(Type* ptr, JsonType t, std::string desc)
       : Base<FromJson<T>>(t, std::move(desc)), ptr_(ptr) {}
 
  public:  // Overrides
@@ -77,16 +75,20 @@ class FromJson : public Base<FromJson<T>> {
 
   void reset_ptr() override { ptr_ = nullptr; }
 
+  // TODO: Implement or explain why we don't need the following methods:
+  // - serialize
+  // - serialize_into
+  // - deserialize
+  // - deserialize_into
+
  private:
   Type* ptr_{nullptr};
 };
 
 template <typename T>
-inline FromJson<T> make_schema(T* ptr, JsonType t, std::string&& desc) {
+inline FromJson<T> make_schema(T* ptr, JsonType t, std::string desc) {
   return FromJson<T>(ptr, t, std::move(desc));
 }
 
 }  // namespace schema
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_JSON_HPP_

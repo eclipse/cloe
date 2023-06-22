@@ -16,20 +16,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
- * \file fable/json/with_eigen.hpp
+ * \file fable/utility/eigen.hpp
  * \see  fable/json.hpp
  *
  * This file contains specializations of `nlohmann::adl_serializer` for Eigen
- * types in order to provide serialization for third-party types.
+ * types in order to provide JSON serialization.
  */
 
 #pragma once
-#ifndef FABLE_JSON_WITH_EIGEN_HPP_
-#define FABLE_JSON_WITH_EIGEN_HPP_
 
-#include <nlohmann/json.hpp>
-
-#include <Eigen/Geometry>
+#include <Eigen/Geometry>     // for Vector3d, Quaterniond, Isometry3d
+#include <nlohmann/json.hpp>  // for adl_serializer<>, json
 
 namespace nlohmann {
 
@@ -87,5 +84,3 @@ struct adl_serializer<Eigen::Isometry3d> {
 };
 
 }  // namespace nlohmann
-
-#endif  // FABLE_JSON_WITH_EIGEN_HPP_

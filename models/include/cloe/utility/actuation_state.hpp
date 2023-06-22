@@ -21,14 +21,11 @@
  */
 
 #pragma once
-#ifndef CLOE_UTILITY_ACTUATION_STATE_HPP_
-#define CLOE_UTILITY_ACTUATION_STATE_HPP_
 
 #include <string>  // for string
 
-#include <boost/optional.hpp>  // for optional<>
-
-#include <fable/json.hpp>  // for Json
+#include <boost/optional.hpp>   // for optional<>
+#include <fable/fable_fwd.hpp>  // for Json
 
 #include <cloe/core.hpp>                     // for Duration
 #include <cloe/utility/actuation_level.hpp>  // for ActuationLevel
@@ -113,5 +110,3 @@ struct ActuationStatistics {
 
 }  // namespace utility
 }  // namespace cloe
-
-#endif  // CLOE_UTILITY_ACTUATION_STATE_HPP_

@@ -22,8 +22,6 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_ENUM_HPP_
-#define FABLE_SCHEMA_ENUM_HPP_
 
 #include <map>          // for map<>
 #include <string>       // for string
@@ -42,7 +40,7 @@ class Enum : public Base<Enum<T>> {
  public:  // Types and Constructors
   using Type = T;
 
-  Enum(Type* ptr, std::string&& desc)
+  Enum(Type* ptr, std::string desc)
       : Base<Enum<T>>(JsonType::string, std::move(desc))
       , mapping_to_(enum_serialization<T>())
       , mapping_from_(enum_deserialization<T>())
@@ -95,6 +93,10 @@ class Enum : public Base<Enum<T>> {
     }
   }
 
+  void serialize_into(Json& j, const Type& x) const { j = mapping_to_.at(x); }
+
+  void deserialize_into(const Conf& c, Type& x) const { x = deserialize(c); }
+
   void reset_ptr() override { ptr_ = nullptr; }
 
  private:
@@ -104,12 +106,10 @@ class Enum : public Base<Enum<T>> {
   Type* ptr_{nullptr};
 };
 
-template <typename T, std::enable_if_t<std::is_enum<T>::value, int> = 0>
-inline Enum<T> make_schema(T* ptr, std::string&& desc) {
+template <typename T, std::enable_if_t<std::is_enum_v<T>, int> = 0>
+inline Enum<T> make_schema(T* ptr, std::string desc) {
   return Enum<T>(ptr, std::move(desc));
 }
 
 }  // namespace schema
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_ENUM_HPP_

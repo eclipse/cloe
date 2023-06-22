@@ -64,13 +64,17 @@ class CloeRuntime(ConanFile):
 
     def build(self):
         cm = cmake.CMake(self)
-        cm.configure()
-        cm.build()
-        cm.test()
+        if self.should_configure:
+            cm.configure()
+        if self.should_build:
+            cm.build()
+        if self.should_test:
+            cm.test()
 
     def package(self):
         cm = cmake.CMake(self)
-        cm.install()
+        if self.should_install:
+            cm.install()
 
     def package_id(self):
         self.info.requires["boost"].full_package_mode()
@@ -84,9 +88,8 @@ class CloeRuntime(ConanFile):
 
         # Make sure we can find the libs and *.cmake files, both in editable
         # mode and in the normal package mode:
-        # TODO: Is this still necessarytools?
         if not self.in_local_cache:
-            self.cpp_info.builddirs.append("cmake")
+            self.cpp_info.builddirs.append(os.path.join(self.source_folder, "cmake"))
             self.cpp_info.libs = ["cloe-runtime"]
         else:
             self.cpp_info.builddirs.append(os.path.join("lib", "cmake", "cloe"))

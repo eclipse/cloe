@@ -113,8 +113,6 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_HPP_
-#define FABLE_SCHEMA_HPP_
 
 #include <chrono>       // for duration<>
 #include <map>          // for map<>
@@ -123,8 +121,6 @@
 #include <type_traits>  // for enable_if_t<>, is_arithmetic<>, is_enum<>, ...
 #include <utility>      // for move
 #include <vector>       // for vector<>
-
-#include <boost/optional.hpp>  // for optional<>
 
 #include <fable/schema/array.hpp>      // for Array<>
 #include <fable/schema/boolean.hpp>    // for Boolean
@@ -143,16 +139,16 @@
 #include <fable/schema/string.hpp>     // for String
 #include <fable/schema/struct.hpp>     // for Struct
 #include <fable/schema/variant.hpp>    // for Variant
+#include <fable/schema/vector.hpp>     // for Vector<>
 
 // It is important that this include comes after all the other ones,
 // so that it has access to ALL the previous definitions.
-#include <fable/schema/magic.hpp>  // for make_prototype, ...
+#include <fable/schema/xmagic.hpp>  // for make_prototype
 
 namespace fable {
 
 // Bring all make_* functions into the fable namespace.
 using schema::make_const_schema;
-using schema::make_const_str;
 using schema::make_prototype;
 using schema::make_schema;
 
@@ -183,28 +179,28 @@ class Schema : public schema::Interface {
   Schema& operator=(const Schema&) = default;
 
   // Struct
-  Schema(std::string&& desc, schema::PropertyList<> props)
+  Schema(std::string desc, schema::PropertyList<> props)
       : impl_(new schema::Struct(std::move(desc), props)) {}
 
   Schema(schema::PropertyList<> props) : Schema("", props) {}
 
-  Schema(std::string&& desc, const Schema& base, schema::PropertyList<> props)
+  Schema(std::string desc, const Schema& base, schema::PropertyList<> props)
       : impl_(new schema::Struct(std::move(desc), base, props)) {}
 
   Schema(const Schema& base, schema::PropertyList<> props) : Schema("", base, props) {}
 
   // Variant
   Schema(const std::vector<Schema>& xs);  // NOLINT(runtime/explicit)
-  Schema(std::string&& desc, const std::vector<Schema>& xs);
+  Schema(std::string desc, const std::vector<Schema>& xs);
 
   Schema(schema::BoxList props);  // NOLINT(runtime/explicit)
-  Schema(std::string&& desc, schema::BoxList props);
+  Schema(std::string desc, schema::BoxList props);
 
   Schema(schema::BoxVec&& props);  // NOLINT(runtime/explicit)
-  Schema(std::string&& desc, schema::BoxVec&& props);
+  Schema(std::string desc, schema::BoxVec&& props);
 
   // Interface
-  template <typename T, std::enable_if_t<std::is_base_of<schema::Interface, T>::value, int> = 0>
+  template <typename T, std::enable_if_t<std::is_base_of_v<schema::Interface, T>, int> = 0>
   Schema(const T& value) : impl_(value.clone()) {}                      // NOLINT(runtime/explicit)
   Schema(schema::Interface* i) : impl_(i) { assert(impl_); }            // NOLINT(runtime/explicit)
   Schema(std::shared_ptr<schema::Interface> i) : impl_(std::move(i)) {  // NOLINT(runtime/explicit)
@@ -213,19 +209,19 @@ class Schema : public schema::Interface {
 
   // Ignore
   Schema() : impl_(new schema::Ignore("")) {}
-  explicit Schema(std::string&& desc, JsonType t = JsonType::object)
+  explicit Schema(std::string desc, JsonType t = JsonType::object)
       : impl_(new schema::Ignore(std::move(desc), t)) {}
 
   // Primitives
   template <typename T>
-  Schema(T* ptr, std::string&& desc) : impl_(make_schema(ptr, std::move(desc)).clone()) {}
+  Schema(T* ptr, std::string desc) : impl_(make_schema(ptr, std::move(desc)).clone()) {}
   template <typename T>
-  Schema(T* ptr, const schema::Box& prototype, std::string&& desc)
+  Schema(T* ptr, const schema::Box& prototype, std::string desc)
       : impl_(make_schema(ptr, prototype, std::move(desc)).clone()) {}
 
   // FromJson
   template <typename T>
-  Schema(T* ptr, JsonType t, std::string&& desc)
+  Schema(T* ptr, JsonType t, std::string desc)
       : impl_(new schema::FromJson<T>(ptr, t, std::move(desc))) {}
 
  public:  // Special
@@ -256,9 +252,9 @@ class Schema : public schema::Interface {
   std::string type_string() const override { return impl_->type_string(); }
   bool is_required() const override { return impl_->is_required(); }
   const std::string& description() const override { return impl_->description(); }
-  void set_description(const std::string& s) override { return impl_->set_description(s); }
+  void set_description(std::string s) override { return impl_->set_description(std::move(s)); }
   Json usage() const override { return impl_->usage(); }
-  Json json_schema() const override { return impl_->json_schema(); };
+  Json json_schema() const override { return impl_->json_schema(); }
   void validate(const Conf& c) const override { impl_->validate(c); }
   void to_json(Json& j) const override { impl_->to_json(j); }
   void from_conf(const Conf& c) override { impl_->from_conf(c); }
@@ -269,5 +265,3 @@ class Schema : public schema::Interface {
 };
 
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_HPP_

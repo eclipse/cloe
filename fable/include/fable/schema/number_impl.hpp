@@ -25,8 +25,6 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_NUMBER_IMPL_HPP_
-#define FABLE_SCHEMA_NUMBER_IMPL_HPP_
 
 #include <initializer_list>  // for initializer_list<>
 #include <limits>            // for numeric_limits<>
@@ -109,7 +107,7 @@ Number<T> Number<T>::whitelist(std::initializer_list<T> xs) && {
 
 template <typename T>
 void Number<T>::insert_whitelist(T x) {
-  if (std::is_floating_point<T>::value) {
+  if (std::is_floating_point_v<T>) {
     throw std::logic_error("cannot whitelist floating-point numbers");
   }
   if (blacklist_.count(x)) {
@@ -134,7 +132,7 @@ Number<T> Number<T>::blacklist(std::initializer_list<T> xs) && {
 
 template <typename T>
 void Number<T>::insert_blacklist(T x) {
-  if (std::is_floating_point<T>::value) {
+  if (std::is_floating_point_v<T>) {
     throw std::logic_error("cannot blacklist floating-point numbers");
   }
   if (blacklist_.count(x)) {
@@ -151,7 +149,7 @@ Json Number<T>::json_schema() const {
       {exclusive_max_ ? "exclusiveMaximum" : "maximum", value_max_},
   };
 
-  if (!std::is_floating_point<T>::value) {
+  if (!std::is_floating_point_v<T>) {
     auto write_list = [&j](auto name, auto xlist) {
       if (!xlist.empty()) {
         std::vector<T> xs;
@@ -212,6 +210,12 @@ template <typename T>
 T Number<T>::deserialize(const Conf& c) const { return c.get<T>(); }
 
 template <typename T>
+void Number<T>::serialize_into(Json& j, const T& x) const { j = x; }
+
+template <typename T>
+void Number<T>::deserialize_into(const Conf& c, T& x) const { x = c.get<T>(); }
+
+template <typename T>
 void Number<T>::reset_ptr() { ptr_ = nullptr; }
 
 /**
@@ -223,7 +227,7 @@ void Number<T>::check_bounds(const Conf& c) const {
   auto v = c.get<B>();
 
   // Check whitelist and blacklist first.
-  if (!std::is_floating_point<T>::value) {
+  if (!std::is_floating_point_v<T>) {
     if (whitelist_.count(v)) {
       return;
     }
@@ -265,5 +269,3 @@ void Number<T>::check_bounds(const Conf& c) const {
 
 }  // namespace schema
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_NUMBER_IMPL_HPP_

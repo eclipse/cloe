@@ -20,12 +20,11 @@
  */
 
 #pragma once
-#ifndef CLOE_COMPONENT_ACTUATOR_HPP_
-#define CLOE_COMPONENT_ACTUATOR_HPP_
 
 #include <boost/optional.hpp>  // for optional
 #include <cloe/component.hpp>  // for Component
 #include <fable/json.hpp>      // for Json
+#include <fable/utility/boost_optional.hpp>
 
 namespace cloe {
 
@@ -39,7 +38,7 @@ class Actuator : public Component {
   virtual bool is_set() { return static_cast<bool>(target_); }
   virtual T get() { return *target_; }
 
-  Json active_state() const override { return Json{{"target", target_}}; }
+  fable::Json active_state() const override { return fable::Json{{"target", target_}}; }
 
   Duration process(const Sync& sync) override {
     auto t = Component::process(sync);
@@ -57,5 +56,3 @@ class Actuator : public Component {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_COMPONENT_ACTUATOR_HPP_

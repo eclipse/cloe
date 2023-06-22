@@ -44,8 +44,6 @@
  */
 
 #pragma once
-#ifndef CLOE_PLUGIN_HPP_
-#define CLOE_PLUGIN_HPP_
 
 #include <type_traits>  // for is_base_of, conditional<>, false_type
 
@@ -178,5 +176,3 @@ struct PluginManifest {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_PLUGIN_HPP_

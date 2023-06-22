@@ -23,8 +23,6 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_DURATION_HPP_
-#define FABLE_SCHEMA_DURATION_HPP_
 
 #include <chrono>   // for duration<>
 #include <limits>   // for numeric_limits<>
@@ -42,17 +40,16 @@ class Duration : public Base<Duration<T, Period>> {
   using Type = std::chrono::duration<T, Period>;
 
   template <typename X = T,
-            std::enable_if_t<std::is_integral<X>::value && std::is_unsigned<X>::value, int> = 0>
-  Duration(Type* ptr, std::string&& desc)
+            std::enable_if_t<std::is_integral_v<X> && std::is_unsigned_v<X>, int> = 0>
+  Duration(Type* ptr, std::string desc)
       : Base<Duration<T, Period>>(JsonType::number_unsigned, std::move(desc)), ptr_(ptr) {}
 
-  template <typename X = T,
-            std::enable_if_t<std::is_integral<X>::value && std::is_signed<X>::value, int> = 0>
-  Duration(Type* ptr, std::string&& desc)
+  template <typename X = T, std::enable_if_t<std::is_integral_v<X> && std::is_signed_v<X>, int> = 0>
+  Duration(Type* ptr, std::string desc)
       : Base<Duration<T, Period>>(JsonType::number_integer, std::move(desc)), ptr_(ptr) {}
 
-  template <typename X = T, std::enable_if_t<std::is_floating_point<X>::value, int> = 0>
-  Duration(Type* ptr, std::string&& desc)
+  template <typename X = T, std::enable_if_t<std::is_floating_point_v<X>, int> = 0>
+  Duration(Type* ptr, std::string desc)
       : Base<Duration<T, Period>>(JsonType::number_float, std::move(desc)), ptr_(ptr) {}
 
  public:  // Special
@@ -140,6 +137,10 @@ class Duration : public Base<Duration<T, Period>> {
 
   Type deserialize(const Conf& c) const { return Type(c.get<T>()); }
 
+  void serialize_into(Json& j, const Type& x) const { j = x.count(); }
+
+  void deserialize_into(const Conf& c, Type& x) const { x = deserialize(c); }
+
   void reset_ptr() override { ptr_ = nullptr; }
 
  private:
@@ -190,11 +191,9 @@ class Duration : public Base<Duration<T, Period>> {
 
 template <typename Rep, typename Period>
 inline Duration<Rep, Period> make_schema(std::chrono::duration<Rep, Period>* ptr,
-                                         std::string&& desc) {
+                                         std::string desc) {
   return Duration<Rep, Period>(ptr, std::move(desc));
 }
 
 }  // namespace schema
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_DURATION_HPP_

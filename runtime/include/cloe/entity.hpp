@@ -21,12 +21,11 @@
  */
 
 #pragma once
-#ifndef CLOE_ENTITY_HPP_
-#define CLOE_ENTITY_HPP_
 
 #include <string>  // for string
 
-#include <cloe/core.hpp>  // for Json, Error, Logger
+#include <cloe/core.hpp>  // for Error, Logger
+#include <fable/json.hpp> // for Json
 
 namespace cloe {
 
@@ -35,8 +34,8 @@ namespace cloe {
  */
 class InvalidNameError : public Error {
  public:
-  explicit InvalidNameError(const std::string& name)
-      : Error("name is invalid: " + name), name_(name) {}
+  explicit InvalidNameError(std::string name)
+      : Error("name is invalid: " + name), name_(std::move(name)) {}
   virtual ~InvalidNameError() noexcept = default;
 
   const std::string& name() const { return name_; }
@@ -50,14 +49,14 @@ class InvalidNameError : public Error {
  */
 class Entity {
  public:
-  explicit Entity(const std::string& name) {
-    set_name(name);
+  explicit Entity(std::string name) {
+    set_name(std::move(name));
     set_description("");
   }
 
-  Entity(const std::string& name, const std::string& desc) {
-    set_name(name);
-    set_description(desc);
+  Entity(std::string name, std::string desc) {
+    set_name(std::move(name));
+    set_description(std::move(desc));
   }
 
   virtual ~Entity() noexcept = default;
@@ -65,7 +64,7 @@ class Entity {
   /**
    * Return the name of the Entity.
    */
-  std::string name() const { return name_; }
+  const std::string& name() const { return name_; }
 
   /**
    * Set the name of the Entity.
@@ -81,16 +80,19 @@ class Entity {
    *   start
    *   _/strange_but_0k
    */
-  void set_name(const std::string& name);
+  void set_name(std::string name);
 
   /**
    * Return the optional description of the Entity.
    *
    * If there is no description, the empty string is returned.
    */
-  std::string description() const { return desc_; }
+  const std::string& description() const { return desc_; }
 
-  void set_description(const std::string& desc) { desc_ = desc; }
+  /**
+   * Set the free-form description of the entity.
+   */
+  void set_description(std::string desc) { desc_ = std::move(desc); }
 
  protected:
   /**
@@ -101,11 +103,11 @@ class Entity {
   // Note: moving the definition from the inline into this declaration here
   // will result in cloe/trigger.hpp not compiling because:
   //
-  //   no matching function for call to 'to_json(Json, const Entity&)'
+  //   no matching function for call to 'to_json(fable::Json, const Entity&)'
   //
   // I have no idea why it works in many other instances, but not here. If you,
   // my dear reader, know why, please open a pull request!
-  friend void to_json(Json& j, const Entity& e);
+  friend void to_json(fable::Json& j, const Entity& e);
 
  protected:
   std::string name_;
@@ -115,7 +117,7 @@ class Entity {
 /**
  * Return JSON representation of an Entity.
  */
-inline void to_json(Json& j, const Entity& e) {
+inline void to_json(fable::Json& j, const Entity& e) {
   j["name"] = e.name();
   if (!e.desc_.empty()) {
     j["description"] = e.description();
@@ -123,5 +125,3 @@ inline void to_json(Json& j, const Entity& e) {
 }
 
 }  // namespace cloe
-
-#endif  // CLOE_ENTITY_HPP_

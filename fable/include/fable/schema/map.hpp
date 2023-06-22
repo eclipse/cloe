@@ -22,18 +22,14 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_MAP_HPP_
-#define FABLE_SCHEMA_MAP_HPP_
 
-#include <limits>   // for numeric_limits<>
-#include <map>      // for map<>
-#include <memory>   // for shared_ptr<>
-#include <regex>    // for regex, regex_match
-#include <string>   // for string
-#include <utility>  // for move
-#include <vector>   // for vector<>
-
-#include <boost/optional.hpp>  // for optional<>
+#include <limits>    // for numeric_limits<>
+#include <map>       // for map<>
+#include <optional>  // for optional<>
+#include <regex>     // for regex, regex_match
+#include <string>    // for string
+#include <utility>   // for move
+#include <vector>    // for vector<>
 
 #include <fable/schema/interface.hpp>  // for Base<>
 
@@ -54,21 +50,19 @@ class Map : public Base<Map<T, P>> {
   using Type = std::map<std::string, T>;
   using PrototypeSchema = P;
 
-  Map(Type* ptr, std::string&& desc);
-  Map(Type* ptr, const PrototypeSchema& prototype)
-      : Base<Map<T, P>>(JsonType::object), prototype_(prototype), ptr_(ptr) {
-    prototype_.reset_ptr();
-  }
-  Map(Type* ptr, const PrototypeSchema& prototype, std::string&& desc)
-      : Base<Map<T, P>>(JsonType::object, std::move(desc)), prototype_(prototype), ptr_(ptr) {
+  Map(Type* ptr, std::string desc) : Map(ptr, make_prototype<T>(), std::move(desc)) {}
+
+  Map(Type* ptr, PrototypeSchema prototype)
+      : Base<Map<T, P>>(JsonType::object), prototype_(std::move(prototype)), ptr_(ptr) {
     prototype_.reset_ptr();
   }
 
-#if 0
-  // This is defined in: fable/schema/magic.hpp
-  Map(Type* ptr, std::string&& desc)
-      : Map(ptr, make_prototype<T>(), std::move(desc)) {}
-#endif
+  Map(Type* ptr, PrototypeSchema prototype, std::string desc)
+      : Base<Map<T, P>>(JsonType::object, std::move(desc))
+      , prototype_(std::move(prototype))
+      , ptr_(ptr) {
+    prototype_.reset_ptr();
+  }
 
  public:  // Special
   bool unique_properties() const { return unique_properties_; }
@@ -128,7 +122,7 @@ class Map : public Base<Map<T, P>> {
       c.assert_has(k);
     }
 
-    boost::optional<std::regex> pattern;
+    std::optional<std::regex> pattern;
     if (!pattern_.empty()) {
       *pattern = std::regex(pattern_);
     }
@@ -157,21 +151,29 @@ class Map : public Base<Map<T, P>> {
     }
   }
 
-  Json serialize(const Type& xm) const {
+  Json serialize(const Type& x) const {
     Json j;
-    for (const auto& kv : xm) {
-      j[kv.first] = prototype_.serialize(kv.second);
-    }
+    serialize_into(j, x);
     return j;
   }
 
   Type deserialize(const Conf& c) const {
     Type tmp;
+    deserialize_into(c, tmp);
+    return tmp;
+  }
+
+  void serialize_into(Json& j, const Type& x) const {
+    for (const auto& kv : x) {
+      j[kv.first] = prototype_.serialize(kv.second);
+    }
+  }
+
+  void deserialize_into(const Conf& c, Type& x) const {
     for (auto& i : c->items()) {
       const auto key = i.key();
-      tmp.insert(std::make_pair(key, deserialize_item(c, key)));
+      x.insert(std::make_pair(key, deserialize_item(c, key)));
     }
-    return tmp;
   }
 
   T deserialize_item(const Conf& c, const std::string& key) const {
@@ -191,11 +193,14 @@ class Map : public Base<Map<T, P>> {
 };
 
 template <typename T, typename P>
-Map<T, P> make_schema(std::map<std::string, T>* ptr, const P& prototype, std::string&& desc) {
-  return Map<T, P>(ptr, prototype, std::move(desc));
+Map<T, P> make_schema(std::map<std::string, T>* ptr, P prototype, std::string desc) {
+  return Map<T, P>(ptr, std::move(prototype), std::move(desc));
+}
+
+template <typename T>
+Map<T, decltype(make_prototype<T>())> make_schema(std::map<std::string, T>* ptr, std::string desc) {
+  return Map<T, decltype(make_prototype<T>())>(ptr, std::move(desc));
 }
 
 }  // namespace schema
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_MAP_HPP_

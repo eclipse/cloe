@@ -49,23 +49,15 @@
  */
 
 #pragma once
-#ifndef FABLE_CONF_HPP_
-#define FABLE_CONF_HPP_
 
 #include <functional>  // for function<>
 #include <string>      // for string
 #include <vector>      // for vector<>
+#include <filesystem>  // for path
 
 #include <fmt/format.h>  // for fmt::format
 
 #include <fable/json.hpp>  // for Json
-
-// Forward declaration:
-namespace boost {
-namespace filesystem {
-class path;
-}  // namespace filesystem
-}  // namespace boost
 
 namespace fable {
 
@@ -325,7 +317,7 @@ class Conf {
    * - If the path is relative and file is not stdin, return relative to
    *   the file.
    */
-  boost::filesystem::path resolve_file(const boost::filesystem::path& filename) const;
+  std::filesystem::path resolve_file(const std::filesystem::path& filename) const;
   std::string resolve_file(const std::string& filename) const;
 
   template <typename... Args>
@@ -348,5 +340,3 @@ class Conf {
 };
 
 }  // namespace fable
-
-#endif  // FABLE_CONF_HPP_

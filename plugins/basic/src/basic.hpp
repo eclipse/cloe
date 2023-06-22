@@ -28,6 +28,8 @@
 
 #pragma once
 
+#include <string>
+
 #include <cloe/controller.hpp>  // for Controller, ControllerFactory, ...
 #include <cloe/models.hpp>      // for CloeComponent
 

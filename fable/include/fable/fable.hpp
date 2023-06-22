@@ -24,15 +24,13 @@
  */
 
 #pragma once
-#ifndef FABLE_FABLE_HPP_
-#define FABLE_FABLE_HPP_
 
+#include <fable/fable_fwd.hpp>
 #include <fable/conf.hpp>
 #include <fable/confable.hpp>
 #include <fable/enum.hpp>
 #include <fable/error.hpp>
 #include <fable/json.hpp>
-#include <fable/json/with_std.hpp>
+#include <fable/utility/memory.hpp>
+#include <fable/utility/optional.hpp>
 #include <fable/schema.hpp>
-
-#endif  // FABLE_FABLE_HPP_

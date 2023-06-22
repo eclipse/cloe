@@ -21,13 +21,13 @@
  */
 
 #pragma once
-#ifndef CLOE_UTILITY_COMMAND_HPP_
-#define CLOE_UTILITY_COMMAND_HPP_
 
 #include <string>  // for string
 #include <vector>  // for vector<>
 
-#include <boost/filesystem/path.hpp>  // for path
+#include <boost/filesystem/path.hpp>    // for path
+#include <fable/schema.hpp>             // for Schema, Struct, Variant
+#include <fable/schema/boost_path.hpp>  // for make_schema, Path
 
 #include <cloe/core.hpp>  // for Confable, Schema
 
@@ -182,5 +182,3 @@ ENUM_SERIALIZATION(Command::Verbosity, ({
 // clang-format on
 
 }  // namespace cloe
-
-#endif  // CLOE_UTILITY_COMMAND_HPP_

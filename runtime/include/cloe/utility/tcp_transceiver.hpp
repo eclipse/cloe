@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_UTILITY_TCP_TRANSCEIVER_HPP_
-#define CLOE_UTILITY_TCP_TRANSCEIVER_HPP_
 
 #include <chrono>   // for duration<>
 #include <memory>   // for unique_ptr<>
@@ -271,5 +269,3 @@ auto create_or_null_with(const TcpTransceiverFullConfiguration& c)
 
 }  // namespace utility
 }  // namespace cloe
-
-#endif  // CLOE_UTILITY_TCP_TRANSCEIVER_HPP_

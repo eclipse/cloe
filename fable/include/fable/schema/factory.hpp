@@ -21,8 +21,6 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_FACTORY_HPP_
-#define FABLE_SCHEMA_FACTORY_HPP_
 
 #include <functional>   // for function<>
 #include <limits>       // for numeric_limits<>
@@ -80,14 +78,14 @@ class FactoryBase : public Base<CRTP> {
    *
    * \see add_factory()
    */
-  explicit FactoryBase(std::string&& desc = "") : Base<CRTP>(JsonType::object, std::move(desc)) {}
+  explicit FactoryBase(std::string desc = "") : Base<CRTP>(JsonType::object, std::move(desc)) {}
 
-  FactoryBase(std::string&& desc, FactoryPairList fs)
+  FactoryBase(std::string desc, FactoryPairList fs)
       : Base<CRTP>(JsonType::object, std::move(desc)), available_(std::move(fs)) {
     reset_schema();
   }
 
-  FactoryBase(std::string&& desc, FactoryMap&& fs)
+  FactoryBase(std::string desc, FactoryMap&& fs)
       : Base<CRTP>(JsonType::object, std::move(desc)), available_(std::move(fs)) {
     reset_schema();
   }
@@ -231,8 +229,8 @@ class FactoryBase : public Base<CRTP> {
    * Most types inheriting from `Confable` will fulfill these requirements.
    */
   template <typename F,
-            std::enable_if_t<(std::is_default_constructible<F>::value &&
-                              std::is_convertible<std::unique_ptr<F>, T>::value),
+            std::enable_if_t<(std::is_default_constructible_v<F> &&
+                              std::is_convertible_v<std::unique_ptr<F>, T>),
                              int> = 0>
   void add_default_factory(const std::string& key) {
     add_factory(key, make_prototype<F>().get_confable_schema(), [](const Conf& c) -> T {
@@ -294,6 +292,10 @@ class FactoryBase : public Base<CRTP> {
 
   Json serialize(const Type& x) const { return x; }
 
+  void serialize_into(Json& j, const Type& x) const { j = serialize(x); }
+
+  void deserialize_into(const Conf& c, Type& x) const { x = deserialize(c); }
+
   void from_conf(const Conf& c) override {
     throw std::logic_error("FactoryBase::from_conf() should not be used");
   }
@@ -320,7 +322,7 @@ class FactoryBase : public Base<CRTP> {
     out.reserve(available_.size());
     for (auto& kv : available_) {
       Struct base{
-          {factory_key_, make_const_str(kv.first, "name of factory").require()},
+          {factory_key_, make_const_schema(kv.first, "name of factory").require()},
       };
       if (args_key_ == "") {
         base.set_properties_from(kv.second.schema);
@@ -383,9 +385,9 @@ class Factory : public FactoryBase<T, Factory<T>> {
  public:  // Constructors
   using FactoryBase<T, Factory<T>>::FactoryBase;
 
-  Factory(Type* ptr, std::string&& desc) : FactoryBase<T, Factory<T>>(std::move(desc)), ptr_(ptr) {}
+  Factory(Type* ptr, std::string desc) : FactoryBase<T, Factory<T>>(std::move(desc)), ptr_(ptr) {}
 
-  Factory(Type* ptr, std::string&& desc, FactoryMap&& fs)
+  Factory(Type* ptr, std::string desc, FactoryMap&& fs)
       : FactoryBase<T, Factory<T>>(std::move(desc)), ptr_(ptr) {
     for (auto&& f : fs) {
       this->available_.insert(f);
@@ -393,7 +395,7 @@ class Factory : public FactoryBase<T, Factory<T>> {
     this->reset_schema();
   }
 
-  Factory(Type* ptr, std::string&& desc, FactoryPairList fs)
+  Factory(Type* ptr, std::string desc, FactoryPairList fs)
       : FactoryBase<T, Factory<T>>(std::move(desc)), ptr_(ptr) {
     for (auto&& f : fs) {
       this->available_.insert(f);
@@ -420,5 +422,3 @@ class Factory : public FactoryBase<T, Factory<T>> {
 
 }  // namespace schema
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_FACTORY_HPP_

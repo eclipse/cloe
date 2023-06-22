@@ -25,17 +25,17 @@
  */
 
 #pragma once
-#ifndef CLOE_TRIGGER_HPP_
-#define CLOE_TRIGGER_HPP_
 
 #include <memory>   // for unique_ptr<>, shared_ptr<>
 #include <string>   // for string
 #include <utility>  // for move
 #include <vector>   // for vector<>
 
-#include <cloe/core.hpp>    // for Schema, Json, Duration, Error
-#include <cloe/entity.hpp>  // for Entity
-#include <fable/enum.hpp>   // for ENUM_SERIALIZATION
+#include <cloe/core.hpp>     // for Duration, Error
+#include <cloe/entity.hpp>   // for Entity
+#include <fable/enum.hpp>    // for ENUM_SERIALIZATION
+#include <fable/json.hpp>    // for Json
+#include <fable/schema.hpp>  // for Schema
 
 namespace cloe {
 
@@ -90,7 +90,7 @@ struct InlineSchema {
    * Construct an implicit inline schema if enabled is true, i.e., one where
    * only the name itself is sufficient.
    *
-   * If possible, it is recommended to use InlineSchema(std::string&&) instead.
+   * If possible, it is recommended to use InlineSchema(std::string) instead.
    * This constructor is primarily useful when you want to explicitly disable
    * an inline schema.
    */
@@ -99,14 +99,14 @@ struct InlineSchema {
   /**
    * Construct an implicit inline schema with the given description.
    */
-  explicit InlineSchema(std::string&& desc) : required_(false), desc_(std::move(desc)) {}
+  explicit InlineSchema(std::string desc) : required_(false), desc_(std::move(desc)) {}
 
   /**
    * Construct an inline schema that takes a particular primitive type.
    *
    * The type may not be null, object, or array.
    */
-  InlineSchema(std::string&& desc, JsonType type, bool required = true);
+  InlineSchema(std::string desc, fable::JsonType type, bool required = true);
 
   /**
    * Construct an inline schema that takes a string with the given format.
@@ -131,8 +131,8 @@ struct InlineSchema {
    * ambiguity but should be used sparingly (for now, as usage is often
    * directly read from JSON).
    */
-  InlineSchema(std::string&& desc, std::string&& format, bool required = true)
-      : type_(JsonType::string)
+  InlineSchema(std::string desc, std::string format, bool required = true)
+      : type_(fable::JsonType::string)
       , required_(required)
       , usage_(std::move(format))
       , desc_(std::move(desc)) {}
@@ -145,10 +145,10 @@ struct InlineSchema {
   /**
    * Return the argument type of the inline schema.
    *
-   * If the type is JsonType::null, then the schema takes no arguments,
+   * If the type is fable::JsonType::null, then the schema takes no arguments,
    * as is the case for many events, such as "start" or "stop".
    */
-  JsonType type() const { return type_; }
+  fable::JsonType type() const { return type_; }
 
   /**
    * Return whether the inline format can be used for this trigger.
@@ -156,7 +156,7 @@ struct InlineSchema {
    * The inline format is considered disabled when the argument type is null
    * and yet required. This cannot after all be a useful call to make.
    */
-  bool is_enabled() const { return !(required_ && type_ == JsonType::null); }
+  bool is_enabled() const { return !(required_ && type_ == fable::JsonType::null); }
 
   /**
    * Return whether the single argument to the trigger is required.
@@ -194,7 +194,7 @@ struct InlineSchema {
   std::string usage(const std::string& name) const;
 
  private:
-  JsonType type_{JsonType::null};
+  fable::JsonType type_{JsonType::null};
   bool required_{true};
   std::string usage_{};
   std::string desc_{};
@@ -221,63 +221,53 @@ struct TriggerSchema {
    *      "name": "stop"
    *    }
    */
-  TriggerSchema(const std::string& name, const std::string& desc)
-      : name_(name), schema_(std::string(desc)), inline_(true) {}
+  TriggerSchema(std::string name, std::string desc)
+      : name_(std::move(name)), schema_(std::move(desc)), inline_(true) {}
 
   /**
    * Construct a TriggerSchema that describes a trigger with parameters
    * but no inline format.
    */
-  TriggerSchema(const std::string& name, const std::string& desc,
-                fable::schema::PropertyList<> props)
-      : name_(name), schema_(std::string(desc), props), inline_(false) {}
+  TriggerSchema(std::string name, std::string desc, fable::schema::PropertyList<> props)
+      : name_(std::move(name)), schema_(std::move(desc), std::move(props)), inline_(false) {}
 
   /**
    * Construct a TriggerSchema that describes a trigger with the given Schema
    * but no inline format.
    */
-  TriggerSchema(const std::string& name, const std::string& desc, Schema&& s)
-      : name_(name), schema_(std::move(s)), inline_(false) {
-    schema_.set_description(desc);
+  TriggerSchema(std::string name, std::string desc, Schema s)
+      : name_(std::move(name)), schema_(std::move(s)), inline_(false) {
+    schema_.set_description(std::move(desc));
   }
 
   /**
    * Construct a TriggerSchema that describes a trigger with parameters
    * and a specified inline format.
    */
-  TriggerSchema(const std::string& name, const std::string& desc, InlineSchema&& usage,
+  TriggerSchema(std::string name, std::string desc, InlineSchema usage,
                 fable::schema::PropertyList<> props)
-      : name_(name), schema_(std::string(desc), props), inline_(std::move(usage)) {}
+      : name_(std::move(name))
+      , schema_(std::move(desc), std::move(props))
+      , inline_(std::move(usage)) {}
 
   /**
    * Construct a TriggerSchema that describes a trigger with the given Schema
    * and a specified inline format.
    */
-  TriggerSchema(const std::string& name, const std::string& desc, InlineSchema&& usage,
-                Schema&& init)
-      : name_(name), schema_(std::move(init)), inline_(std::move(usage)) {
-    schema_.set_description(desc);
-  }
-
-  /**
-   * Construct a TriggerSchema that describes a trigger with the given Schema
-   * and a specified inline format.
-   */
-  TriggerSchema(const std::string& name, const std::string& desc, InlineSchema&& usage,
-                const Schema& init)
-      : name_(name), schema_(init), inline_(std::move(usage)) {
-    schema_.set_description(desc);
+  TriggerSchema(std::string name, std::string desc, InlineSchema usage, Schema init)
+      : name_(std::move(name)), schema_(std::move(init)), inline_(std::move(usage)) {
+    schema_.set_description(std::move(desc));
   }
 
   const std::string& name() const { return name_; }
   const std::string& description() const { return schema_.description(); }
   std::string usage_inline() const { return inline_.usage(name_); }
-  Json usage() const { return schema_.usage(); }
-  Json json_schema() const;
+  fable::Json usage() const { return schema_.usage(); }
+  fable::Json json_schema() const;
 
  private:
   std::string name_;
-  Schema schema_;
+  fable::Schema schema_;
   InlineSchema inline_;
 };
 
@@ -313,7 +303,7 @@ class TriggerFactory : public Entity {
   /**
    * Return factory usage.
    */
-  virtual Json json_schema() const { return this->schema().json_schema(); }
+  virtual fable::Json json_schema() const { return this->schema().json_schema(); }
 
   /**
    * Create a new T based on the content of the input Conf.
@@ -345,7 +335,8 @@ class TriggerFactory : public Entity {
       };
       return this->make(c);
     } else {
-      throw TriggerInvalid(Conf{Json{s}}, "cannot create " + this->name() + " from '" + s + "'");
+      throw TriggerInvalid(fable::Conf{fable::Json{s}},
+                           "cannot create " + this->name() + " from '" + s + "'");
     }
   }
 };
@@ -423,7 +414,7 @@ class Trigger {
   bool is_sticky() const { return sticky_; }
   void set_sticky(bool value = true);
 
-  friend void to_json(Json& j, const Trigger& t);
+  friend void to_json(fable::Json& j, const Trigger& t);
 
  private:
   std::string label_;
@@ -474,7 +465,7 @@ class TriggerRegistrar {
  * through the Registrar interface.
  *
  * The primary identifying interface of an Event is through it's constructor,
- * where it receives its name, together with the `to_json(Json&)` method, where
+ * where it receives its name, together with the `to_json(fable::Json&)` method, where
  * any further state is represented. This allows a new identical Event to be
  * created.
  *
@@ -500,8 +491,8 @@ class Event : public Entity {
    * Describe the event state so that the same event can be re-created through
    * it's JSON representation with the corresponding EventFactory.
    */
-  virtual void to_json(Json&) const = 0;
-  friend void to_json(Json& j, const Event& e);
+  virtual void to_json(fable::Json&) const = 0;
+  friend void to_json(fable::Json& j, const Event& e);
 
  protected:
   Logger logger() const { return logger::get("cloe/event/" + name()); }
@@ -556,8 +547,8 @@ class Callback {
   /**
    * Return JSON representation of all contained triggers.
    */
-  virtual void to_json(Json& j) const = 0;
-  friend void to_json(Json& j, const Callback& c) { c.to_json(j); }
+  virtual void to_json(fable::Json& j) const = 0;
+  friend void to_json(fable::Json& j, const Callback& c) { c.to_json(j); }
 
  protected:
   /**
@@ -589,7 +580,7 @@ class AliasCallback : public Callback {
   /**
    * JSON output is zero.
    */
-  void to_json(Json&) const override {}
+  void to_json(fable::Json&) const override {}
 
  private:
   std::shared_ptr<Callback> owner_;
@@ -603,7 +594,7 @@ class AliasCallback : public Callback {
  * through the Registrar interface.
  *
  * The primary identifying interface of an Action is through it's constructor,
- * where it receives its name, together with the `to_json(Json&)` method, where
+ * where it receives its name, together with the `to_json(fable::Json&)` method, where
  * any further state is represented. This allows a new identical Action to be
  * created.
  *
@@ -648,8 +639,8 @@ class Action : public Entity {
    * Describe the action state so that the same action can be re-created
    * through it's JSON representation with the corresponding ActionFactory.
    */
-  virtual void to_json(Json& j) const = 0;
-  friend void to_json(Json& j, const Action& a);
+  virtual void to_json(fable::Json& j) const = 0;
+  friend void to_json(fable::Json& j, const Action& a);
 
  protected:
   Logger logger() const { return logger::get("cloe/action/" + name()); }
@@ -664,4 +655,3 @@ using ActionFactory = TriggerFactory<Action>;
 using ActionFactoryPtr = std::unique_ptr<ActionFactory>;
 
 }  // namespace cloe
-#endif  // CLOE_TRIGGER_HPP_

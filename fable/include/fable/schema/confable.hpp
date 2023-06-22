@@ -23,35 +23,30 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_CONFABLE_HPP_
-#define FABLE_SCHEMA_CONFABLE_HPP_
 
 #include <memory>   // for shared_ptr<>
 #include <string>   // for string
 #include <utility>  // for move
 
+#include <fable/fable_fwd.hpp>         // for Confable
 #include <fable/schema/interface.hpp>  // for Interface
 
 namespace fable {
-
-// Forward declarations:
-class Confable;
-
 namespace schema {
 
-template <typename T, std::enable_if_t<std::is_base_of<Confable, T>::value, int> = 0>
+template <typename T, std::enable_if_t<std::is_base_of_v<Confable, T>, int> = 0>
 class FromConfable : public Base<FromConfable<T>> {
  public:  // Types and Constructors
   using Type = T;
 
-  explicit FromConfable(std::string&& desc = "") {
+  explicit FromConfable(std::string desc = "") {
     schema_ = Type().schema();
     schema_.reset_ptr();
     this->type_ = schema_.type();
     this->desc_ = std::move(desc);
   }
 
-  FromConfable(Type* ptr, std::string&& desc)
+  FromConfable(Type* ptr, std::string desc)
       : Base<FromConfable<Type>>(ptr->schema().type(), std::move(desc))
       , schema_(ptr->schema())
       , ptr_(ptr) {
@@ -95,6 +90,10 @@ class FromConfable : public Base<FromConfable<T>> {
     return tmp;
   }
 
+  void serialize_into(Json& j, const Type& x) const { x.to_json(j); }
+
+  void deserialize_into(const Conf& c, Type& x) const { x.from_conf(c); }
+
   void reset_ptr() override { ptr_ = nullptr; }
 
  private:
@@ -103,12 +102,10 @@ class FromConfable : public Base<FromConfable<T>> {
 };
 
 template <typename T>
-FromConfable<T> make_schema(T* ptr, std::string&& desc) {
+FromConfable<T> make_schema(T* ptr, std::string desc) {
   assert(ptr != nullptr);
   return FromConfable<T>(ptr, std::move(desc));
 }
 
 }  // namespace schema
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_CONFABLE_HPP_

@@ -22,23 +22,50 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_PATH_HPP_
-#define FABLE_SCHEMA_PATH_HPP_
 
-#include <limits>   // for numeric_limits<>
-#include <string>   // for string
-#include <utility>  // for move
+#include <filesystem>  // for path
+#include <limits>      // for numeric_limits<>
+#include <string>      // for string
+#include <utility>     // for move
 
-#include <boost/filesystem/path.hpp>  // for path
-
+#include <fable/fable_fwd.hpp>         // for Environment
 #include <fable/schema/interface.hpp>  // for Base<>
+#include <fable/utility/path.hpp>      // for adl_serializer<>
 
 namespace fable {
-
-// Forward declarations:
-class Environment;  // from <fable/environment.hpp>
-
 namespace schema {
+
+/**
+ * Helper type trait class to use with std::enable_if and friends.
+ *
+ * The value `is_path<T>::value` is true if T is one of:
+ * - std::filesystem::path
+ * - boost::filesystem::path, if boost_path.hpp is included
+ *
+ * \see fable/schema/boost_path.hpp
+ */
+template <typename T>
+struct is_path : std::false_type {};
+
+template <typename T>
+inline constexpr bool is_path_v = is_path<T>::value;
+
+template <>
+struct is_path<std::filesystem::path> : std::true_type {};
+
+/**
+ * State represents valid states a path can be in relative to the filesystem.
+ */
+enum class PathState {
+  Any,         /// any valid path
+  Absent,      /// path does not exist
+  Exists,      /// path exists
+  Executable,  /// path exists in search path or locally and has executable permission
+  FileExists,  /// path exists and is a file
+  DirExists,   /// path exists and is a directory
+  NotFile,     /// path does not exist or is a directory
+  NotDir,      /// path does not exist or is a file
+};
 
 /**
  * Path de-/serializes a string that represents a filesystem path.
@@ -54,26 +81,21 @@ namespace schema {
  *
  * The Path schema type allows the user to specify these properties and will
  * validate these during deserialization.
+ *
+ * Path is a template class that supports both:
+ * - std::filesystem::path
+ * - boost::filesystem::path, if boost_path.hpp is included
  */
-class Path : public Base<Path> {
+template <typename T>
+class Path : public Base<Path<T>> {
+  static_assert(is_path_v<T>);
+
  public:  // Types and Constructors
-  using Type = boost::filesystem::path;
+  using Type = T;
+  using State = PathState;
 
-  /**
-   * State represents valid states a path can be in relative to the filesystem.
-   */
-  enum class State {
-    Any,         /// any valid path
-    Absent,      /// path does not exist
-    Exists,      /// path exists
-    Executable,  /// path exists in search path or locally and has executable permission
-    FileExists,  /// path exists and is a file
-    DirExists,   /// path exists and is a directory
-    NotFile,     /// path does not exist or is a directory
-    NotDir,      /// path does not exist or is a file
-  };
-
-  Path(Type* ptr, std::string&& desc) : Base(JsonType::string, std::move(desc)), ptr_(ptr) {}
+  Path(Type* ptr, std::string desc)
+      : Base<Path<T>>(JsonType::string, std::move(desc)), ptr_(ptr) {}
 
  public:  // Special
   /**
@@ -197,6 +219,10 @@ class Path : public Base<Path> {
 
   Type deserialize(const Conf& c) const;
 
+  void serialize_into(Json& j, const Type& x) const { j = serialize(x); }
+
+  void deserialize_into(const Conf& c, Type& x) const { x = deserialize(c); }
+
   void reset_ptr() override { ptr_ = nullptr; }
 
  private:
@@ -215,21 +241,10 @@ class Path : public Base<Path> {
   Type* ptr_{nullptr};
 };
 
-inline Path make_schema(boost::filesystem::path* ptr, std::string&& desc) {
+template <typename T, std::enable_if_t<is_path_v<T>, bool> = true>
+inline Path<T> make_schema(T* ptr, std::string desc) {
   return Path(ptr, std::move(desc));
 }
 
 }  // namespace schema
 }  // namespace fable
-
-namespace nlohmann {
-
-template <>
-struct adl_serializer<boost::filesystem::path> {
-  static void to_json(json& j, const boost::filesystem::path& p) { j = p.native(); }
-  static void from_json(const json& j, boost::filesystem::path& p) { p = j.get<std::string>(); }
-};
-
-}  // namespace nlohmann
-
-#endif  // FABLE_SCHEMA_PATH_HPP_

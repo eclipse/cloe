@@ -23,8 +23,6 @@
  */
 
 #pragma once
-#ifndef CLOE_COMPONENT_UTILITY_EGO_SENSOR_CANON_HPP_
-#define CLOE_COMPONENT_UTILITY_EGO_SENSOR_CANON_HPP_
 
 #include <math.h>  // for fabs
 #include <memory>  // for shared_ptr<>
@@ -133,5 +131,3 @@ std::shared_ptr<Object> closest_forward(const Objects objects);
 
 }  // namespace utility
 }  // namespace cloe
-
-#endif  // CLOE_COMPONENT_UTILITY_EGO_SENSOR_CANON_HPP_

@@ -22,15 +22,10 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_PASSTHRU_HPP_
-#define FABLE_SCHEMA_PASSTHRU_HPP_
 
 #include <string>   // for string
 #include <utility>  // for move
 
-#include <boost/optional.hpp>  // for optional<>
-
-#include <fable/json/with_boost.hpp>   // for to_json, from_json
 #include <fable/schema/ignore.hpp>     // for Ignore
 #include <fable/schema/interface.hpp>  // for Base<>, Box
 
@@ -50,10 +45,12 @@ class Passthru : public Base<Passthru<P>> {
   using Type = Conf;
   using PrototypeSchema = P;
 
-  Passthru(Type* ptr, std::string&& desc)
+  Passthru(Type* ptr, std::string desc)
       : Passthru(ptr, PrototypeSchema(nullptr, ""), std::move(desc)) {}
-  Passthru(Type* ptr, const PrototypeSchema& prototype, std::string&& desc)
-      : Base<Passthru<P>>(prototype.type(), std::move(desc)), prototype_(prototype), ptr_(ptr) {
+  Passthru(Type* ptr, PrototypeSchema prototype, std::string desc)
+      : Base<Passthru<P>>(prototype.type(), std::move(desc))
+      , prototype_(std::move(prototype))
+      , ptr_(ptr) {
     prototype_.reset_ptr();
   }
 
@@ -87,6 +84,10 @@ class Passthru : public Base<Passthru<P>> {
 
   Type deserialize(const Conf& c) const { return c; }
 
+  void serialize_into(Json& j, const Type& x) const { j = serialize(x); }
+
+  void deserialize_into(const Conf& c, Type& x) const { x = deserialize(c); }
+
   void reset_ptr() override { ptr_ = nullptr; }
 
  private:
@@ -94,16 +95,14 @@ class Passthru : public Base<Passthru<P>> {
   Type* ptr_{nullptr};
 };
 
-inline Passthru<Ignore> make_schema(Conf* ptr, std::string&& desc) {
+inline Passthru<Ignore> make_schema(Conf* ptr, std::string desc) {
   return Passthru<Ignore>(ptr, Ignore(), std::move(desc));
 }
 
 template <typename P>
-Passthru<P> make_schema(Conf* ptr, const P& prototype, std::string&& desc) {
-  return Passthru<P>(ptr, prototype, std::move(desc));
+Passthru<P> make_schema(Conf* ptr, P prototype, std::string desc) {
+  return Passthru<P>(ptr, std::move(prototype), std::move(desc));
 }
 
 }  // namespace schema
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_PASSTHRU_HPP_

@@ -26,13 +26,9 @@
  */
 
 #pragma once
-#ifndef CLOE_UTILITY_CONSTEXPR_HPP_
-#define CLOE_UTILITY_CONSTEXPR_HPP_
 
 #ifdef NDEBUG
 #define CONSTEXPR constexpr
 #else
 #define CONSTEXPR
 #endif
-
-#endif  // CLOE_UTILITY_CONSTEXPR_HPP_

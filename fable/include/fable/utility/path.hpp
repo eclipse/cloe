@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Robert Bosch GmbH
+ * Copyright 2023 Robert Bosch GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
- * \file fable/json/with_boost.hpp
- * \see  fable/json.hpp
+ * \file fable/utility/path.hpp
+ * \see  fable/utility/path.cpp
  *
- * This file contains specializations of `nlohmann::adl_serializer` for boost
- * types in order to provide serialization for third-party types.
- */
-
-#pragma once
-#ifndef FABLE_JSON_WITH_BOOST_HPP_
-#define FABLE_JSON_WITH_BOOST_HPP_
-
-#include <nlohmann/json.hpp>
-
-#include <boost/optional.hpp>
-
-/*
  * In order to provide serialization for third-party types, we need to either
  * use their namespace or provide a specialization in that of nlohmann. It is
  * illegal to define anything in the std namespace, so we are left no choice in
@@ -39,27 +26,28 @@
  *
  * See: https://github.com/nlohmann/json
  */
+
+#pragma once
+
+#include <filesystem>  // for path
+#include <optional>    // for optional<>
+
+#include <nlohmann/json_fwd.hpp>  // for adl_serializer<>, json
+
+namespace fable {
+
+bool is_executable(const std::filesystem::path& path);
+
+std::optional<std::filesystem::path> search_path(const std::filesystem::path& executable);
+
+}  // namespace fable
+
 namespace nlohmann {
 
-template <typename T>
-struct adl_serializer<boost::optional<T>> {
-  static void to_json(json& j, const boost::optional<T>& opt) {
-    if (opt) {
-      j = *opt;
-    } else {
-      j = nullptr;
-    }
-  }
-
-  static void from_json(const json& j, boost::optional<T>& opt) {
-    if (j.type() == json::value_t::null) {
-      opt.reset();
-    } else {
-      *opt = j.get<T>();
-    }
-  }
+template <>
+struct adl_serializer<std::filesystem::path> {
+  static void to_json(json& j, const std::filesystem::path& p);
+  static void from_json(const json& j, std::filesystem::path& p);
 };
 
 }  // namespace nlohmann
-
-#endif  // FABLE_JSON_WITH_BOOST_HPP_

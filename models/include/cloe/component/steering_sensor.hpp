@@ -20,10 +20,9 @@
  */
 
 #pragma once
-#ifndef CLOE_COMPONENT_STEERING_SENSOR_HPP_
-#define CLOE_COMPONENT_STEERING_SENSOR_HPP_
 
-#include <cloe/component.hpp>  // for Component, Json
+#include <cloe/component.hpp>  // for Component
+#include <fable/json.hpp>      // for Json
 
 namespace cloe {
 
@@ -41,8 +40,8 @@ class SteeringSensor : public Component {
   /**
    * Return sensor state as JSON.
    */
-  Json active_state() const override {
-    return Json{
+  fable::Json active_state() const override {
+    return fable::Json{
         {"curvature", curvature()},
     };
   }
@@ -65,5 +64,3 @@ class NopSteeringSensor : public SteeringSensor {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_COMPONENT_STEERING_SENSOR_HPP_

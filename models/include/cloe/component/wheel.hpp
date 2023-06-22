@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_COMPONENT_WHEEL_HPP_
-#define CLOE_COMPONENT_WHEEL_HPP_
 
 #include <fable/json.hpp>  // for to_json
 
@@ -37,8 +35,8 @@ struct Wheel {
   /// Compression of the spring in [m].
   double spring_compression{0.0};
 
-  friend void to_json(Json& j, const Wheel& w) {
-    j = Json{
+  friend void to_json(fable::Json& j, const Wheel& w) {
+    j = fable::Json{
         {"rotation", w.rotation},
         {"velocity", w.velocity},
         {"spring_compression", w.spring_compression},
@@ -47,5 +45,3 @@ struct Wheel {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_COMPONENT_WHEEL_HPP_

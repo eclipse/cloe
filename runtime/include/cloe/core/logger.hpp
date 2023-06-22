@@ -32,8 +32,6 @@
  */
 
 #pragma once
-#ifndef CLOE_CORE_LOGGER_HPP_
-#define CLOE_CORE_LOGGER_HPP_
 
 #include <functional>  // for function<>
 #include <memory>      // for shared_ptr<>
@@ -200,5 +198,3 @@ std::string to_string(LogLevel l);
 
 }  // namespace logger
 }  // namespace cloe
-
-#endif  // CLOE_CORE_LOGGER_HPP_

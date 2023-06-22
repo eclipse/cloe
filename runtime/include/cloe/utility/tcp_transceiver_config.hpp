@@ -21,8 +21,6 @@
  */
 
 #pragma once
-#ifndef CLOE_UTILITY_TCP_TRANSCEIVER_CONFIG_HPP_
-#define CLOE_UTILITY_TCP_TRANSCEIVER_CONFIG_HPP_
 
 #include <chrono>   // for duration
 #include <string>   // for string
@@ -83,9 +81,7 @@ struct TcpTransceiverConfiguration : public Confable {
  */
 struct TcpTransceiverFullConfiguration : public TcpTransceiverConfiguration {
   TcpTransceiverFullConfiguration() = default;
-  TcpTransceiverFullConfiguration(const std::string& host, uint16_t port)
-      : host(host), port(port) {}
-  TcpTransceiverFullConfiguration(std::string&& host, uint16_t port)
+  TcpTransceiverFullConfiguration(std::string host, uint16_t port)
       : host(std::move(host)), port(port) {}
 
   /**
@@ -117,5 +113,3 @@ struct TcpTransceiverFullConfiguration : public TcpTransceiverConfiguration {
 
 }  // namespace utility
 }  // namespace cloe
-
-#endif  // CLOE_UTILITY_TCP_TRANSCEIVER_CONFIG_HPP_

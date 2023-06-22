@@ -68,9 +68,10 @@
 #include <CLI/CLI.hpp>         // for CLI::App
 #include <boost/optional.hpp>  // for boost::optional<>
 
-#include <fable/confable.hpp>  // for fable::{Confable, CONFABLE_SCHEMA}
-#include <fable/schema.hpp>    // for fable::{Schema, String}
-#include <fable/utility.hpp>   // for fable::{read_conf}
+#include <fable/confable.hpp>               // for fable::{Confable, CONFABLE_SCHEMA}
+#include <fable/schema.hpp>                 // for fable::{Schema, String}
+#include <fable/schema/boost_optional.hpp>  // for fable::{Optional, make_schema}
+#include <fable/utility.hpp>                // for fable::{read_conf}
 
 // All structs that are used directly with fable for serialization and
 // deserialization need to inherit from fable::Confable and override the
@@ -82,7 +83,7 @@ struct Address : public fable::Confable {
   std::string postalCode;
 
   Address() = default;
-  Address(std::string&& street, std::string&& city, std::string&& state, std::string code) noexcept
+  Address(std::string street, std::string city, std::string state, std::string code) noexcept
       : streetAddress(std::move(street))
       , city(std::move(city))
       , state(std::move(state))
@@ -178,7 +179,7 @@ struct Contact : public fable::Confable {
 
   Contact() = default;
   Contact(
-      std::string&& first, std::string&& last, bool alive, boost::optional<uint8_t> age) noexcept
+      std::string first, std::string last, bool alive, boost::optional<uint8_t> age) noexcept
       : firstName(std::move(first)), lastName(std::move(last)), isAlive(alive), age(age) {}
 
   Contact with_address(Address&& addr) && {

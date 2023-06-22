@@ -307,7 +307,7 @@ class VtdVehicleFactory {
 
   void set_task_control(std::shared_ptr<TaskControl> tc) { task_control_ = tc; }
 
-  std::shared_ptr<VtdVehicle> create_or_throw(ScpTransceiver& tx, int id, std::string&& name,
+  std::shared_ptr<VtdVehicle> create_or_throw(ScpTransceiver& tx, int id, const std::string& name,
                                               cloe::AbortFlag& sig) {
     assert(task_control_);
     assert(sensor_port_ != 0);
@@ -329,7 +329,7 @@ class VtdVehicleFactory {
 
     // Put it all together in form of a vehicle.
     std::shared_ptr<VtdVehicle> veh =
-        std::make_shared<VtdVehicle>(id, std::move(name), std::move(rdb_client), task_control_);
+        std::make_shared<VtdVehicle>(id, name, std::move(rdb_client), task_control_);
 
     // Create and register additional configured sensors
     if (vehicles_.count(name)) {

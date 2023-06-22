@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_TRIGGER_NIL_EVENT_HPP_
-#define CLOE_TRIGGER_NIL_EVENT_HPP_
 
 #include <memory>  // for unique_ptr<>, make_unique<>
 #include <string>  // for string
@@ -81,5 +79,3 @@
   };                                                                                    \
                                                                                         \
   using _X_CALLBACK(xName) = ::cloe::DirectCallback<xName>;
-
-#endif  // CLOE_TRIGGER_NIL_EVENT_HPP_

@@ -22,8 +22,6 @@
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_CUSTOM_HPP_
-#define FABLE_SCHEMA_CUSTOM_HPP_
 
 #include <functional>  // for function<>
 
@@ -64,7 +62,7 @@ class CustomDeserializer : public schema::Interface {
   std::string type_string() const override { return impl_->type_string(); }
   bool is_required() const override { return impl_->is_required(); }
   const std::string& description() const override { return impl_->description(); }
-  void set_description(const std::string& s) override { return impl_->set_description(s); }
+  void set_description(std::string s) override { return impl_->set_description(std::move(s)); }
   Json usage() const override { return impl_->usage(); }
   Json json_schema() const override { return impl_->json_schema(); };
   void validate(const Conf& c) const override { impl_->validate(c); }
@@ -86,6 +84,12 @@ class CustomDeserializer : public schema::Interface {
 
   friend void to_json(Json& j, const CustomDeserializer& b) { b.impl_->to_json(j); }
 
+  // TODO: Implement or explain why we don't need the following methods:
+  // - serialize
+  // - serialize_into
+  // - deserialize
+  // - deserialize_into
+
  private:
   std::shared_ptr<schema::Interface> impl_{nullptr};
   std::function<void(CustomDeserializer*, const Conf&)> from_conf_fn_{};
@@ -93,5 +97,3 @@ class CustomDeserializer : public schema::Interface {
 
 }  // namespace schema
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_CUSTOM_HPP_

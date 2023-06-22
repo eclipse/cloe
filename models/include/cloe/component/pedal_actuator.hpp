@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_COMPONENT_PEDAL_ACTUATOR_HPP_
-#define CLOE_COMPONENT_PEDAL_ACTUATOR_HPP_
 
 #include <cloe/component/actuator.hpp>  // for Actuator
 #include <fable/json.hpp>               // for Json
@@ -29,22 +27,22 @@
 namespace cloe {
 
 struct PedalRequest {
-  /* 
+  /*
    * Requested status of the gas pedal with no unit.
    *
    * The range goes from 0 (unpressed) to 1 (fully pressed).
    */
   double gas_pedal_position{0.0};
 
-  /* 
+  /*
    * Requested status of the brake pedal with no unit.
    *
    * The range goes from 0 (unpressed) to 1 (fully pressed).
    */
   double brake_pedal_position{0.0};
 
-  friend void to_json(Json& j, const PedalRequest& p) {
-    j = Json{
+  friend void to_json(fable::Json& j, const PedalRequest& p) {
+    j = fable::Json{
         {"gas_pedal_position", p.gas_pedal_position},
         {"brake_pedal_position", p.brake_pedal_position},
     };
@@ -59,5 +57,3 @@ class PedalActuator : public Actuator<PedalRequest> {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_COMPONENT_PEDAL_ACTUATOR_HPP_

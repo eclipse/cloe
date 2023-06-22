@@ -23,13 +23,12 @@
  */
 
 #pragma once
-#ifndef CLOE_COMPONENT_LATLONG_ACTUATOR_HPP_
-#define CLOE_COMPONENT_LATLONG_ACTUATOR_HPP_
 
-#include <boost/optional.hpp>         // for optional<>
-#include <fable/json/with_boost.hpp>  // for to_json
+#include <boost/optional.hpp>                // for optional<>
+#include <fable/json.hpp>                    // for Json
+#include <fable/utility/boost_optional.hpp>  // for to_json
 
-#include <cloe/component.hpp>                // for Component, Json
+#include <cloe/component.hpp>                // for Component
 #include <cloe/component/actuator.hpp>       // for Actuator
 #include <cloe/utility/actuation_level.hpp>  // for ActuationLevel
 
@@ -88,8 +87,8 @@ class LatLongActuator : public Component {
    * Currently, the API is unstable, because we don't have access to any real
    * data.
    */
-  Json active_state() const override {
-    return Json{
+  fable::Json active_state() const override {
+    return fable::Json{
         {"target_acceleration", target_acceleration_},
         {"target_steering_angle", target_steering_angle_},
         {"actuation_label", level_.to_human_cstr()},
@@ -132,5 +131,3 @@ class LatActuator : public Actuator<double> {
 };
 
 }  // namespace cloe
-
-#endif  // CLOE_COMPONENT_LATLONG_ACTUATOR_HPP_

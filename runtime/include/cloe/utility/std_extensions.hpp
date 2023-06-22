@@ -23,8 +23,6 @@
  */
 
 #pragma once
-#ifndef CLOE_UTILITY_STD_EXTENSIONS_HPP_
-#define CLOE_UTILITY_STD_EXTENSIONS_HPP_
 
 #include <map>     // for map<>
 #include <string>  // for string
@@ -49,5 +47,3 @@ std::vector<std::string> map_keys(const std::map<std::string, T>& m) {
 
 }  // namespace utility
 }  // namespace cloe
-
-#endif

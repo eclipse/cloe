@@ -17,14 +17,11 @@
  */
 /**
  * \file fable/schema/const.hpp
- * \see  fable/schema/magic.hpp
  * \see  fable/schema/const_test.cpp
  * \see  fable/schema_test.cpp
  */
 
 #pragma once
-#ifndef FABLE_SCHEMA_CONST_HPP_
-#define FABLE_SCHEMA_CONST_HPP_
 
 #include <string>   // for string
 #include <utility>  // for move
@@ -41,19 +38,15 @@ class Const : public Base<Const<T, P>> {
   using Type = T;
   using PrototypeSchema = P;
 
-  Const(const Type& constant, std::string&& desc);
-  Const(const Type& constant, const PrototypeSchema& prototype, std::string&& desc)
+  Const(Type constant, std::string desc)
+      : Const(std::move(constant), make_prototype<Type>(), std::move(desc)) {}
+
+  Const(Type constant, PrototypeSchema prototype, std::string desc)
       : Base<Const<T, P>>(prototype.type(), std::move(desc))
-      , prototype_(prototype)
-      , constant_(constant) {
+      , prototype_(std::move(prototype))
+      , constant_(std::move(constant)) {
     prototype_.reset_ptr();
   }
-
-#if 0
-  // This is defined in: fable/schema/magic.hpp
-  Const(const T& constant, std::string&& desc)
-      : Const(constant, make_prototype<T>(), std::move(desc)) {}
-#endif
 
  public:  // Overrides
   Json json_schema() const override {
@@ -83,6 +76,13 @@ class Const : public Base<Const<T, P>> {
     return constant_;
   }
 
+  void serialize_into(Json& j, const Type& x) const { prototype_.serialize_into(j, x); }
+
+  void deserialize_into(const Conf& c, Type& x) const {
+    validate(c);
+    x = constant_;
+  }
+
   void reset_ptr() override {}
 
  private:
@@ -91,19 +91,14 @@ class Const : public Base<Const<T, P>> {
 };
 
 template <typename T, typename P>
-Const<T, P> make_const_schema(const T& constant, const P& prototype, std::string&& desc) {
-  return Const<T, P>(constant, prototype, std::move(desc));
+Const<T, P> make_const_schema(T constant, P prototype, std::string desc) {
+  return Const<T, P>(std::move(constant), std::move(prototype), std::move(desc));
 }
 
-inline Const<std::string, String> make_const_str(const std::string& constant, std::string&& desc) {
-  return Const<std::string, String>(constant, std::move(desc));
-}
-
-inline Const<std::string, String> make_const_str(const char* constant, std::string&& desc) {
-  return Const<std::string, String>(constant, std::move(desc));
+template <typename T>
+Const<T, decltype(make_prototype<T>())> make_const_schema(T constant, std::string desc) {
+  return Const<T, decltype(make_prototype<T>())>(std::move(constant), std::move(desc));
 }
 
 }  // namespace schema
 }  // namespace fable
-
-#endif  // FABLE_SCHEMA_CONST_HPP_

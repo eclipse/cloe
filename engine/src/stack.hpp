@@ -30,8 +30,12 @@
 #include <utility>  // for move
 #include <vector>   // for vector<>
 
-#include <boost/filesystem/path.hpp>  // for path
-#include <boost/optional.hpp>         // for optional<>
+#include <boost/filesystem/path.hpp>        // for path
+#include <boost/optional.hpp>               // for optional<>
+#include <fable/schema/boost_optional.hpp>  // for Optional<>
+#include <fable/schema/boost_path.hpp>      // for Path
+#include <fable/schema/custom.hpp>          // for CustomDeserializer
+#include <fable/schema/factory.hpp>         // for Factory
 
 #include <cloe/component.hpp>        // for ComponentFactory
 #include <cloe/controller.hpp>       // for ControllerFactory
@@ -39,8 +43,6 @@
 #include <cloe/simulator.hpp>        // for SimulatorFactory
 #include <cloe/trigger.hpp>          // for Source
 #include <cloe/utility/command.hpp>  // for Command
-#include <fable/schema/custom.hpp>   // for CustomDeserializer
-#include <fable/schema/factory.hpp>  // for Factory
 
 #include "plugin.hpp"  // for Plugin
 
@@ -49,7 +51,8 @@
 #endif
 
 #ifndef CLOE_STACK_SUPPORTED_VERSIONS
-#define CLOE_STACK_SUPPORTED_VERSIONS {"4", "4.0", "4.1"}
+#define CLOE_STACK_SUPPORTED_VERSIONS \
+  { "4", "4.0", "4.1" }
 #endif
 
 #ifndef CLOE_XDG_SUFFIX
@@ -87,11 +90,11 @@ class PersistentConfable : public Confable {
   Conf conf_;
 };
 
-inline auto id_prototype(std::string&& desc = "") {
+inline auto id_prototype(std::string desc = "") {
   return schema::make_prototype<std::string>(std::move(desc)).c_identifier();
 }
 
-inline auto id_path_prototype(std::string&& desc = "") {
+inline auto id_path_prototype(std::string desc = "") {
   return schema::make_prototype<std::string>(std::move(desc))
       .pattern("^([a-zA-Z_][a-zA-Z0-9_]*/?)+$");
 }
@@ -104,7 +107,7 @@ inline auto id_path_prototype(std::string&& desc = "") {
  */
 using IncludeConf = boost::filesystem::path;
 using IncludeSchema = decltype(schema::make_schema(static_cast<IncludeConf*>(nullptr), ""));
-using IncludesSchema = schema::Array<IncludeConf, IncludeSchema>;
+using IncludesSchema = schema::Vector<IncludeConf, IncludeSchema>;
 
 // --------------------------------------------------------------------------------------------- //
 
@@ -518,7 +521,7 @@ struct SimulatorConf : public Confable {
   CONFABLE_SCHEMA(SimulatorConf) {
     using namespace schema;  // NOLINT(build/namespaces)
     return Struct{
-        {"binding", make_const_str(binding, "name of simulator binding").require()},
+        {"binding", make_const_schema(binding, "name of simulator binding").require()},
         {"name", make_schema(&name, id_prototype(), "identifier override for binding")},
         {"args", make_schema(&args, factory->schema(), "factory-specific arguments")},
     };
@@ -552,7 +555,7 @@ struct ControllerConf : public Confable {
     // clang-format off
     using namespace schema;  // NOLINT(build/namespaces)
     return Struct{
-        {"binding", make_const_str(binding, "name of controller binding").require()},
+        {"binding", make_const_schema(binding, "name of controller binding").require()},
         {"name", make_schema(&name, id_prototype(), "identifier override for binding")},
         {"vehicle", make_schema(&vehicle, "vehicle controller is assigned to").c_identifier().require()},
         {"args", make_schema(&args, factory->schema(), "factory-specific arguments")},
@@ -636,7 +639,7 @@ struct ComponentConf : public Confable {
     // clang-format off
     using namespace schema;  // NOLINT(build/namespaces)
     return Struct{
-        {"binding", make_const_str(binding, "name of binding").require()},
+        {"binding", make_const_schema(binding, "name of binding").require()},
         {"name", make_schema(&name, id_prototype(), "globally unique identifier for component")},
         {"from", Variant{
              make_schema(&from, "component inputs for binding"),
@@ -739,7 +742,7 @@ class VehicleSchema : public fable::schema::Base<VehicleSchema> {
   using MakeFunc = ComponentSchema::MakeFunc;
   using TypeFactory = ComponentSchema::TypeFactory;
 
-  explicit VehicleSchema(std::string&& desc = "") : Base(std::move(desc)) {}
+  explicit VehicleSchema(std::string desc = "") : Base(std::move(desc)) {}
 
  public:  // Special
   bool has_factory(const std::string& name) const { return components_.has_factory(name); }

@@ -23,8 +23,6 @@
  */
 
 #pragma once
-#ifndef FABLE_JSON_HPP_
-#define FABLE_JSON_HPP_
 
 #include <string>  // for string
 
@@ -67,7 +65,7 @@ using Json = nlohmann::json;
  * This makes it easier to talk/write about operations that deal with
  * JSON pointers.
  */
-using JsonPointer = Json::json_pointer;
+using JsonPointer = nlohmann::json_pointer<std::string>;
 
 /**
  * The JsonType type maps to nlohmann::json::value_t.
@@ -75,7 +73,7 @@ using JsonPointer = Json::json_pointer;
  * This makes it easier to talk/write about operations that deal on the
  * underlying type that is stored in a Json value.
  */
-using JsonType = Json::value_t;
+using JsonType = nlohmann::detail::value_t;
 
 /**
  * Return a string representation of a JSON type.
@@ -102,11 +100,9 @@ std::string to_string(JsonType);
  * See the documentation on each of these global variables for more details.
  */
 template <typename InputType>
-inline Json parse_json(InputType&& input) {
+Json parse_json(InputType&& input) {
   return Json::parse(std::forward<InputType>(input), nullptr, NLOHMANN_JSON_USE_EXCEPTIONS,
                      NLOHMANN_JSON_ALLOW_COMMENTS);
 }
 
 }  // namespace fable
-
-#endif  // FABLE_JSON_HPP_

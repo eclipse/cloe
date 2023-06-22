@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_UTILITY_MAYBE_OWN_HPP_
-#define CLOE_UTILITY_MAYBE_OWN_HPP_
 
 #include <memory>
 
@@ -63,5 +61,3 @@ using maybe_own = std::unique_ptr<T, Deleter<T>>;
 
 }  // namespace utility
 }  // namespace cloe
-
-#endif  // CLOE_UTILITY_MAYBE_OWN_HPP_

@@ -21,8 +21,6 @@
  */
 
 #pragma once
-#ifndef CLOE_UTILITY_STATISTICS_HPP_
-#define CLOE_UTILITY_STATISTICS_HPP_
 
 #include <cmath>   // for sqrt
 #include <map>     // for map<>
@@ -227,5 +225,3 @@ class Accumulator {
 
 }  // namespace utility
 }  // namespace cloe
-
-#endif  // CLOE_UTILITY_STATISTICS_HPP_

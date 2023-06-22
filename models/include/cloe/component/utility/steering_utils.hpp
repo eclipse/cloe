@@ -20,8 +20,6 @@
  */
 
 #pragma once
-#ifndef CLOE_COMPONENT_UTILITY_STEERING_UTILS_HPP_
-#define CLOE_COMPONENT_UTILITY_STEERING_UTILS_HPP_
 
 namespace cloe {
 namespace utility {
@@ -54,5 +52,3 @@ double calculate_wheel_angle(const Geometry& geometry, WheelId wheel_id, double 
 
 }  // namespace utility
 }  // namespace cloe
-
-#endif  // CLOE_COMPONENT_UTILITY_STEERING_UTILS_HPP_

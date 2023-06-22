@@ -120,7 +120,7 @@ struct MinimatorConfiguration : public cloe::Confable {
     //     fable::schema::Struct{
     //        {
     //          "vehicles",
-    //          fable::schema::Array<std::string, fable::schema::String>(
+    //          fable::schema::Vector<std::string, fable::schema::String>(
     //            &vehicles,
     //            "list of vehicle names to make available"
     //          )

@@ -20,12 +20,10 @@
  */
 
 #pragma once
-#ifndef CLOE_STD_MODELS_HPP_
-#define CLOE_STD_MODELS_HPP_
 
 #include <string>  // for string
 
-#include <cloe/core.hpp>  // for ENUM_SERIALIZATION
+#include <fable/enum.hpp>  // for ENUM_SERIALIZATION
 
 namespace cloe {
 
@@ -103,5 +101,3 @@ ENUM_SERIALIZATION(CloeComponent, ({
 inline std::string to_string(CloeComponent c) { return enum_serialization(c).at(c); }
 
 }  // namespace cloe
-
-#endif  // CLOE_STD_MODELS_HPP_

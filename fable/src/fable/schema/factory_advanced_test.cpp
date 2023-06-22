@@ -26,7 +26,7 @@
 #include <string>   // for string
 #include <utility>  // for move
 
-#include <fable/json/with_std.hpp>   // for to_json
+#include <fable/utility/memory.hpp>  // for adl_serializer<>
 #include <fable/schema.hpp>          // for Confable, Schema
 #include <fable/schema/factory.hpp>  // for Factory
 #include <fable/utility/gtest.hpp>   // for assert_validate
@@ -119,7 +119,7 @@ class Random {
 
 class DistributionFactory : public fable::schema::Factory<DistributionPtr> {
  public:
-  DistributionFactory(DistributionPtr* ptr, std::string&& desc)
+  DistributionFactory(DistributionPtr* ptr, std::string desc)
       : fable::schema::Factory<DistributionPtr>(ptr, std::move(desc)) {
     this->set_factory_key("binding");
     this->set_args_key("");

@@ -21,8 +21,6 @@
  */
 
 #pragma once
-#ifndef CLOE_CONF_ACTION_HPP_
-#define CLOE_CONF_ACTION_HPP_
 
 #include <memory>   // for unique_ptr<>
 #include <string>   // for string
@@ -76,5 +74,3 @@ class ConfigureFactory : public ActionFactory {
 
 }  // namespace actions
 }  // namespace cloe
-
-#endif  // CLOE_CONF_ACTION_HPP_
