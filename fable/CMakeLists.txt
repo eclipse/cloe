@@ -52,6 +52,7 @@ target_link_libraries(fable
   PUBLIC
     fmt::fmt
     nlohmann_json::nlohmann_json
+    stdc++fs
 )
 
 option(FABLE_ALLOW_COMMENTS "Allow comments when parsing JSON?" ON)
