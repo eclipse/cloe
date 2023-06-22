@@ -36,6 +36,7 @@ class CloeEngine(ConanFile):
     no_copy_source = True
     exports_sources = [
         "src/*",
+        "lua/*",
         "webui/*",
         "CMakeLists.txt",
     ]
@@ -52,6 +53,7 @@ class CloeEngine(ConanFile):
         self.requires(f"cloe-runtime/{self.version}@cloe/develop")
         self.requires(f"cloe-models/{self.version}@cloe/develop")
         self.requires("cli11/2.3.2", private=True)
+        self.requires("sol2/3.3.0")
         if self.options.server:
             self.requires(f"cloe-oak/{self.version}@cloe/develop", private=True)
         self.requires("boost/[>=1.65.1]")
@@ -100,7 +102,12 @@ class CloeEngine(ConanFile):
             self.cpp_info.system_libs.append("dl")
         if self.in_local_cache:
             bindir = os.path.join(self.package_folder, "bin")
+            luadir = os.path.join(self.package_folder, "lib/cloe/lua")
         else:
-            bindir = os.path.join(self.build_folder, str(self.settings.build_type), "bin")
+            bindir = os.path.join(self.build_folder, "bin")
+            luadir = os.path.join(self.source_folder, "lua")
+
         self.output.info(f"Appending PATH environment variable: {bindir}")
-        self.env_info.PATH.append(bindir)
+        self.runenv_info.prepend_path("PATH", bindir)
+        self.output.info(f"Appending CLOE_LUA_PATH environment variable: {luadir}")
+        self.runenv_info.prepend_path("CLOE_LUA_PATH", luadir)

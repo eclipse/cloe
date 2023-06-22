@@ -45,29 +45,7 @@
 #include <cloe/utility/command.hpp>  // for Command
 
 #include "plugin.hpp"  // for Plugin
-
-#ifndef CLOE_STACK_VERSION
-#define CLOE_STACK_VERSION "4.1"
-#endif
-
-#ifndef CLOE_STACK_SUPPORTED_VERSIONS
-#define CLOE_STACK_SUPPORTED_VERSIONS \
-  { "4", "4.0", "4.1" }
-#endif
-
-#ifndef CLOE_XDG_SUFFIX
-#define CLOE_XDG_SUFFIX "cloe"
-#endif
-
-#ifndef CLOE_CONFIG_HOME
-#define CLOE_CONFIG_HOME "${XDG_CONFIG_HOME-${HOME}/.config}/" CLOE_XDG_SUFFIX
-#endif
-
-#ifndef CLOE_DATA_HOME
-#define CLOE_DATA_HOME "${XDG_DATA_HOME-${HOME}/.local/share}/" CLOE_XDG_SUFFIX
-#endif
-
-#define CLOE_SIMULATION_UUID_VAR "CLOE_SIMULATION_UUID"
+#include "config.hpp"
 
 namespace cloe {
 
@@ -888,6 +866,10 @@ class StackIncompleteError : public Error {
 
 using ConfReader = std::function<Conf(const std::string&)>;
 
+/**
+ * Stack represents the entire configuration of the engine and the simulation
+ * to be run.
+ */
 class Stack : public Confable {
  private:  // Constants (1)
   std::vector<std::string> reserved_ids_;
@@ -948,6 +930,8 @@ class Stack : public Confable {
     assert(fn != nullptr);
     conf_reader_func_ = fn;
   }
+
+  void merge_stackfile(const std::string& filepath);
 
   /**
    * Try to load and register one or more plugins based on the PluginConf.

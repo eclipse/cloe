@@ -16,8 +16,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
- * \file main_stack.hpp
- * \see  main_stack.cpp
+ * \file stack_factory.hpp
+ * \see  stack_factory.cpp
+ *
+ * This file provides methods for creating `Stack` objects.
+ *
+ * These can be configured through the environment and the CLI by way of
+ * `StackOptions`. Only one `Stack` object is created in an execution,
+ * all further stackfiles are merged into the first `Stack` object.
+ * While this is the current behavior, it is not guaranteed;
+ * `Stack` is not a singleton.
  */
 
 #pragma once
@@ -27,16 +35,21 @@
 #include <string>    // for string
 #include <vector>    // for vector<>
 
-#include <boost/optional.hpp>  // for optional<>
-
 #include <fable/environment.hpp>  // for Environment
-#include "stack.hpp"         // for Stack
 
 namespace cloe {
 
-// See main.cpp for descriptions of flags.
+class Stack;
+
+/**
+ * StackOptions contains the configuration required to create new `Stack` objects.
+ *
+ * These are provided via the command line and the environment.
+ *
+ * \see main.cpp for description of flags
+ */
 struct StackOptions {
-  boost::optional<std::ostream&> error = std::cerr;
+  std::ostream* error = &std::cerr;
   std::shared_ptr<fable::Environment> environment;
 
   // Flags:
@@ -52,12 +65,24 @@ struct StackOptions {
   bool secure_mode = false;
 };
 
+/**
+ * Create a new empty default Stack from `StackOptions`.
+ */
 Stack new_stack(const StackOptions& opt);
 
+/**
+ * Create a new Stack from the stackfile provided, respecting `StackOptions`.
+ */
 Stack new_stack(const StackOptions& opt, const std::string& filepath);
 
+/**
+ * Create a new Stack by merging all stackfiles provided, respecting `StackOptions`.
+ */
 Stack new_stack(const StackOptions& opt, const std::vector<std::string>& filepaths);
 
+/**
+ * Merge the provided stackfile into the existing `Stack`, respecting `StackOptions`.
+ */
 void merge_stack(const StackOptions& opt, Stack& s, const std::string& filepath);
 
 }  // namespace cloe

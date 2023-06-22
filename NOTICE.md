@@ -46,6 +46,18 @@ The following third-party libraries are included in the Cloe repository:
   - Website: https://jothepro.github.io/doxygen-awesome-css
   - Source: docs/_vendor/doxygen-awesome
 
+- Inspect.lua
+  - License: MIT
+  - License-Source: https://raw.githubusercontent.com/kikito/inspect.lua/master/MIT-LICENSE.txt
+  - Website: https://github.com/kikito/inspect.lua
+  - Source: engine/lua/cloe/inspect.lua
+
+- Linenoise
+  - License: BSD2
+  - License-Source: https://raw.githubusercontent.com/antirez/linenoise/master/LICENSE
+  - Website: https://github.com/antirez/linenoise
+  - Source: engine/vendor/linenoise
+
 The following third-party libraries are used by this project (these are usually
 installed with the help of Conan):
 

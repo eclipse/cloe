@@ -15,43 +15,31 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-/**
- * \file main.cpp
- * \see  main_check.hpp
- * \see  main_dump.hpp
- * \see  main_run.hpp
- * \see  main_usage.hpp
- * \see  main_version.hpp
- */
 
 #include <iostream>  // for cerr
 #include <string>    // for string
+#include <utility>   // for swap
 
 #include <CLI/CLI.hpp>
 
-#include "main_check.hpp"
-#include "main_dump.hpp"
-#include "main_run.hpp"
-#include "main_stack.hpp"
-#include "main_usage.hpp"
-#include "main_version.hpp"
+#include <cloe/core/logger.hpp>
 
-#ifndef CLOE_CONTACT_EMAIL
-#define CLOE_CONTACT_EMAIL "cloe-dev@eclipse.org"
-#endif
+#include "main_commands.hpp"
+#include "config.hpp"
 
 int main(int argc, char** argv) {
   CLI::App app("Cloe " CLOE_ENGINE_VERSION);
+  app.option_defaults()->always_capture_default();
 
   // Version Command:
-  engine::VersionOptions version_options;
+  engine::VersionOptions version_options{};
   auto version = app.add_subcommand("version", "Show program version information.");
   version->add_flag("-j,--json", version_options.output_json,
                     "Output version information as JSON data");
   version->add_option("-J,--json-indent", version_options.json_indent, "JSON indentation level");
 
   // Usage Command:
-  engine::UsageOptions usage_options;
+  engine::UsageOptions usage_options{};
   std::string usage_key_or_path;
   auto usage = app.add_subcommand("usage", "Show schema or plugin usage information.");
   usage->add_flag("-j,--json", usage_options.output_json, "Output global/plugin JSON schema");
@@ -59,25 +47,24 @@ int main(int argc, char** argv) {
   usage->add_option("files", usage_key_or_path, "Plugin name, key or path to show schema of");
 
   // Dump Command:
-  engine::DumpOptions dump_options;
+  engine::DumpOptions dump_options{};
   std::vector<std::string> dump_files;
   auto dump = app.add_subcommand("dump", "Dump configuration of (merged) stack files.");
   dump->add_option("-J,--json-indent", dump_options.json_indent, "JSON indentation level");
   dump->add_option("files", dump_files, "Files to read into the stack");
 
   // Check Command:
-  engine::CheckOptions check_options;
+  engine::CheckOptions check_options{};
   std::vector<std::string> check_files;
   auto check = app.add_subcommand("check", "Validate stack file configurations.");
-  check->add_flag("-d,--distinct", check_options.distinct, "Validate each file distinctly");
   check->add_flag("-s,--summarize", check_options.summarize, "Summarize results");
   check->add_flag("-j,--json", check_options.output_json, "Output results as JSON data");
   check->add_option("-J,--json-indent", check_options.json_indent, "JSON indentation level");
   check->add_option("files", check_files, "Files to check");
 
   // Run Command:
-  engine::RunOptions run_options;
-  std::vector<std::string> run_files;
+  engine::RunOptions run_options{};
+  std::vector<std::string> run_files{};
   auto run = app.add_subcommand("run", "Run a simulation with (merged) stack files.");
   run->add_option("-J,--json-indent", run_options.json_indent, "JSON indentation level");
   run->add_option("-u,--uuid", run_options.uuid, "Override simulation UUID")
@@ -96,6 +83,15 @@ int main(int argc, char** argv) {
   // One of the above subcommands must be used.
   app.require_subcommand();
 
+  // Shell Command:
+  engine::ShellOptions shell_options{};
+  std::vector<std::string> shell_files{};
+  auto shell = app.add_subcommand("shell", "Start a Lua shell.");
+  shell->add_flag("-i,--interactive,!--no-interactive", shell_options.interactive,
+                    "Drop into interactive mode (default)");
+  shell->add_option("-c,--command", shell_options.commands, "Lua to run after running files");
+  shell->add_option("files", shell_files, "Lua files to run before starting the shell");
+
   // Global Options:
   std::string log_level = "warn";
   app.set_help_all_flag("-H,--help-all", "Print all help messages and exit");
@@ -104,10 +100,10 @@ int main(int argc, char** argv) {
       ->envname("CLOE_LOG_LEVEL");
 
   // Stack Options:
-  cloe::StackOptions stack_options;
+  cloe::StackOptions stack_options{};
   stack_options.environment.reset(new fable::Environment());
   app.add_option("-p,--plugin-path", stack_options.plugin_paths,
-                 "Scan additional directory for plugins");
+                 "Scan additional directory for plugins (Env:CLOE_PLUGIN_PATH)");
   app.add_option("-i,--ignore", stack_options.ignore_sections,
                  "Ignore sections by JSON pointer syntax");
   app.add_flag("--no-builtin-plugins", stack_options.no_builtin_plugins,
@@ -122,11 +118,18 @@ int main(int argc, char** argv) {
   app.add_flag("--interpolate-undefined", stack_options.interpolate_undefined,
                "Interpolate undefined variables with empty strings");
 
+  cloe::LuaOptions lua_options{};
+  lua_options.environment = stack_options.environment;
+  app.add_option("--lua-path", lua_options.lua_paths,
+                 "Scan directory for lua files when loading modules (Env:CLOE_LUA_PATH)");
+  app.add_flag("--no-system-lua", lua_options.no_system_lua, "Disable default Lua system paths");
+
   // The --strict flag here is useful for all our smoketests, since this is the
   // combination of flags we use for maximum reproducibility / isolation.
   // Note: This option also affects / overwrites options for the run subcommand!
-  app.add_flag("-t,--strict,!--no-strict", stack_options.strict_mode,
-               "Forces flags: --no-system-plugins --no-system-confs --require-success")
+  app.add_flag(
+         "-t,--strict,!--no-strict", stack_options.strict_mode,
+         "Forces flags: --no-system-plugins --no-system-confs --no-system-lua --require-success")
       ->envname("CLOE_STRICT_MODE");
   app.add_flag("-s,--secure,!--no-secure", stack_options.secure_mode,
                "Forces flags: --strict --no-hooks --no-interpolate")
@@ -150,21 +153,26 @@ int main(int argc, char** argv) {
   }
 
   // Setup stack, applying strict/secure mode if necessary, and provide launch command.
-  if (stack_options.secure_mode) {
-    stack_options.strict_mode = true;
-    stack_options.no_hooks = true;
-    stack_options.interpolate_vars = false;
+  {
+    if (stack_options.secure_mode) {
+      stack_options.strict_mode = true;
+      stack_options.no_hooks = true;
+      stack_options.interpolate_vars = false;
+    }
+    if (stack_options.strict_mode) {
+      stack_options.no_system_plugins = true;
+      stack_options.no_system_confs = true;
+      lua_options.no_system_lua = true;
+      run_options.require_success = true;
+    }
+    stack_options.environment->prefer_external(false);
+    stack_options.environment->allow_undefined(stack_options.interpolate_undefined);
+    stack_options.environment->insert(CLOE_SIMULATION_UUID_VAR, "${" CLOE_SIMULATION_UUID_VAR "}");
   }
-  if (stack_options.strict_mode) {
-    stack_options.no_system_plugins = true;
-    stack_options.no_system_confs = true;
-    run_options.require_success = true;
-  }
-  stack_options.environment->prefer_external(false);
-  stack_options.environment->allow_undefined(stack_options.interpolate_undefined);
-  stack_options.environment->insert(CLOE_SIMULATION_UUID_VAR, "${" CLOE_SIMULATION_UUID_VAR "}");
-  auto with_stack_options = [&](auto& opt) -> decltype(opt) {
-    opt.stack_options = stack_options;
+
+  auto with_global_options = [&](auto& opt) -> decltype(opt) {
+    std::swap(opt.stack_options, stack_options);
+    std::swap(opt.lua_options, lua_options);
     return opt;
   };
 
@@ -173,18 +181,16 @@ int main(int argc, char** argv) {
   try {
     if (*version) {
       return engine::version(version_options);
-    }
-    if (*usage) {
-      return engine::usage(with_stack_options(usage_options), usage_key_or_path);
-    }
-    if (*dump) {
-      return engine::dump(with_stack_options(dump_options), dump_files);
-    }
-    if (*check) {
-      return engine::check(with_stack_options(check_options), check_files);
-    }
-    if (*run) {
-      return engine::run(with_stack_options(run_options), run_files);
+    } else if (*usage) {
+      return engine::usage(with_global_options(usage_options), usage_key_or_path);
+    } else if (*dump) {
+      return engine::dump(with_global_options(dump_options), dump_files);
+    } else if (*check) {
+      return engine::check(with_global_options(check_options), check_files);
+    } else if (*run) {
+      return engine::run(with_global_options(run_options), run_files);
+    } else if (*shell) {
+      return engine::shell(with_global_options(shell_options), shell_files);
     }
   } catch (std::exception& e) {
     bool is_logic_error = false;

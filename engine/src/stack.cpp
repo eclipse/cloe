@@ -141,7 +141,8 @@ Stack::Stack()
     , engine_schema(&engine, "engine configuration")
     , include_schema(&include, include_prototype(), "include configurations")
     , plugins_schema(&plugins, "plugin configuration")
-    , conf_reader_func_(default_conf_reader) {}
+    , conf_reader_func_(default_conf_reader) {
+}
 
 Stack::Stack(const Stack& other)
     : Confable(other)
@@ -232,6 +233,18 @@ void Stack::reset_schema() {
   plugins_schema = PluginsSchema(&plugins, "plugin configuration").extend(true);
   Confable::reset_schema();
   // clang-format on
+}
+
+void Stack::merge_stackfile(const std::string& filepath) {
+      this->logger()->info("Include conf: {}", filepath);
+      Conf config;
+      try {
+        config = this->conf_reader_func_(filepath);
+      } catch (std::exception& e) {
+        this->logger()->error("Error including conf {}: {}", filepath, e.what());
+        throw;
+      }
+      from_conf(config);
 }
 
 void Stack::apply_plugin_conf(const PluginConf& c) {
