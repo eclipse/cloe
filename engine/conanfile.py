@@ -38,6 +38,7 @@ class CloeEngine(ConanFile):
         "src/*",
         "lua/*",
         "webui/*",
+        "vendor/*",
         "CMakeLists.txt",
     ]
 
