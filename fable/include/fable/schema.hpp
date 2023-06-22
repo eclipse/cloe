@@ -122,6 +122,7 @@
 #include <utility>      // for move
 #include <vector>       // for vector<>
 
+#include <fable/fable_fwd.hpp>
 #include <fable/schema/array.hpp>      // for Array<>
 #include <fable/schema/boolean.hpp>    // for Boolean
 #include <fable/schema/confable.hpp>   // for FromConfable

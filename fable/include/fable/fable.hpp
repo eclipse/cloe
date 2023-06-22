@@ -32,5 +32,4 @@
 #include <fable/error.hpp>
 #include <fable/json.hpp>
 #include <fable/utility/memory.hpp>
-#include <fable/utility/optional.hpp>
 #include <fable/schema.hpp>
