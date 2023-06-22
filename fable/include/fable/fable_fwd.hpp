@@ -19,6 +19,11 @@
  * \file fable/fable_fwd.hpp
  */
 
+#if __cplusplus < 201703L
+#error "the fable library requires a minimum standard of C++17"
+#include <force_compiler_to_stop_here>
+#endif
+
 #include <string>
 
 #include <nlohmann/detail/value_t.hpp>

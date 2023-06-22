@@ -27,6 +27,7 @@
 #include <type_traits>  // for enable_if_t<>, is_enum<>
 #include <utility>      // for make_pair, move
 
+#include <fable/fable_fwd.hpp>
 #include <fable/json.hpp>
 
 /**

@@ -25,6 +25,7 @@
 
 #include <gtest/gtest.h>  // for ASSERT_THROW, ASSERT_EQ
 
+#include <fable/fable_fwd.hpp>
 #include <fable/conf.hpp>      // for Conf, Json
 #include <fable/confable.hpp>  // for Confable
 #include <fable/schema.hpp>    // for Schema

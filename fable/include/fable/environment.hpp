@@ -29,6 +29,8 @@
 #include <utility>  // for pair<>, move, make_pair
 #include <optional> // for optional<>
 
+#include <fable/fable_fwd.hpp>
+
 namespace fable {
 
 class Environment {

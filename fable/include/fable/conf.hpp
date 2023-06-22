@@ -57,6 +57,7 @@
 
 #include <fmt/format.h>  // for fmt::format
 
+#include <fable/fable_fwd.hpp>
 #include <fable/json.hpp>  // for Json
 
 namespace fable {

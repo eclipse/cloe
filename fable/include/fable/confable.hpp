@@ -25,6 +25,7 @@
 
 #include <memory>  // for unique_ptr<>
 
+#include <fable/fable_fwd.hpp>
 #include <fable/json.hpp>    // for Json
 #include <fable/conf.hpp>    // for Conf
 

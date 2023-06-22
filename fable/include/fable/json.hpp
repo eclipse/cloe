@@ -28,6 +28,8 @@
 
 #include <nlohmann/json.hpp>  // for Json
 
+#include <fable/fable_fwd.hpp>
+
 namespace fable {
 
 /**
