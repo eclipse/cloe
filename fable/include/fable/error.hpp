@@ -27,6 +27,7 @@
 #include <fmt/format.h>  // for format
 
 #include <fable/conf.hpp>  // for Conf
+#include <fable/fable_fwd.hpp>
 #include <fable/json.hpp>  // for Json
 
 namespace fable {
