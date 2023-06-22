@@ -37,7 +37,7 @@ TEST(duration, parse_duration) {
     {"250 us", Duration(250'000)},
     {"0.5s", Duration(500'000'000)},
     {"1.5 s", Duration(1'500'000'000)},
-    {"0.2 s", Duration(0'200'000'000)},
+    {"0.2 s", Duration(200'000'000)},
   };
   for (auto& test : valid) {
     auto expect = cloe::to_string(test.second);
