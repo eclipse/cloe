@@ -187,6 +187,81 @@ TEST(fable_schema_struct, additional_prototype_schema) {
 
 // ------------------------------------------------------------------------- //
 
+namespace thirdparty {
+
+// Assume this is a struct we don't want to or cannot change.
+// If we are okay, using `make_schema` instead of `Schema(&pod)`, then
+// we can support this too.
+struct PlainOldDatatype {
+  int n = 5;
+  std::string s = "default";
+};
+
+}  // namespace
+
+namespace fable {
+namespace schema {
+
+// This could also be defined in the namespace of thirdparty, but the
+// implmentation would need to have a `using fable::schema::make_schema;` statement.
+fable::Schema make_schema(thirdparty::PlainOldDatatype* ptr, std::string desc) {
+  return Struct{
+      {"n", make_schema(ptr ? &ptr->n : nullptr, "integer")},
+      {"s", make_schema(ptr ? &ptr->s : nullptr, "string")},
+  };
+}
+
+}  // namespace schema
+}  // namespace fable
+
+namespace {
+
+struct CompositeType : public fable::Confable {
+  thirdparty::PlainOldDatatype pod;
+
+  CONFABLE_SCHEMA(CompositeType) {
+    using namespace fable::schema;
+    return Struct{{"pod", make_schema(&pod, "pod")}};
+  }
+};
+
+}  // namespace
+
+TEST(fable_schema_struct, thirdparty_pod) {
+  CompositeType tmp;
+  fable::assert_schema_eq(tmp, R"({
+    "additionalProperties": false,
+    "properties": {
+      "pod": {
+        "additionalProperties": false,
+        "properties": {
+          "n": {
+            "description": "integer",
+            "maximum": 2147483647,
+            "minimum": -2147483648,
+            "type": "integer"
+          },
+          "s": {
+            "description": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "type": "object"
+  })");
+
+  fable::assert_from_eq_to(tmp, R"({
+    "pod": {
+      "s": "the answer",
+      "n": 42
+    }
+  })");
+}
+
+// ------------------------------------------------------------------------- //
+
 namespace {
 
 struct StructBase : public fable::Confable {
