@@ -35,13 +35,48 @@
 namespace fable {
 namespace schema {
 
+/**
+ * Helper type trait class to use with std::enable_if and friends.
+ *
+ * The value `is_vector<T>::value` is true if T is `std::vector`.
+ * You can also add support for custom data-types by defining
+ * a template specialization:
+ *
+ *    namespace fable {
+ *    namespace schema {
+ *      template <typename T, typename Allocator>
+ *      struct is_vector<CustomVector<T, Allocator>> : std::true_type {}
+ *    }
+ *    }
+ *
+ * The specific template arguments may vary, of course.
+ * The vector should support the following interface:
+ *
+ *  - typename T::value_type
+ *  - size_t T::size()
+ *  - T::reserve(size_t)
+ *  - T::clear()
+ *  - T::emplace_back(T::value_type&&)
+ */
+template <typename T>
+struct is_vector : std::false_type {};
+
+template <typename T>
+inline constexpr bool is_vector_v = is_vector<T>::value;
+
+template <typename T>
+struct is_vector<std::vector<T>> : std::true_type {};
+
 template <typename T, typename P>
 class Vector : public Base<Vector<T, P>> {
+  static_assert(is_vector_v<T>);
+
  public:  // Types and Constructors
-  using Type = std::vector<T>;
+  using Type = T;
+  using ValueType = typename Type::value_type;
   using PrototypeSchema = P;
 
-  Vector(Type* ptr, std::string desc) : Vector(ptr, make_prototype<T>(), std::move(desc)) {}
+  Vector(Type* ptr, std::string desc) : Vector(ptr, make_prototype<typename T::value_type>(), std::move(desc)) {}
 
   Vector(Type* ptr, PrototypeSchema prototype)
       : Base<Vector<T, P>>(JsonType::array), prototype_(std::move(prototype)), ptr_(ptr) {}
@@ -169,7 +204,7 @@ class Vector : public Base<Vector<T, P>> {
  private:
   void fill(Type& vec, const Conf& c) const {
     for (const auto& x : c.to_array()) {
-      T inst = prototype_.deserialize(x);
+      ValueType inst = prototype_.deserialize(x);
       vec.emplace_back(std::move(inst));
     }
   }
@@ -182,14 +217,14 @@ class Vector : public Base<Vector<T, P>> {
   Type* ptr_{nullptr};
 };
 
-template <typename T, typename P>
-Vector<T, P> make_schema(std::vector<T>* ptr, P prototype, std::string desc) {
+template <typename T, typename P, std::enable_if_t<is_vector_v<T>, bool> = true>
+Vector<T, P> make_schema(T* ptr, P prototype, std::string desc) {
   return Vector<T, P>(ptr, std::move(prototype), std::move(desc));
 }
 
-template <typename T>
-Vector<T, decltype(make_prototype<T>())> make_schema(std::vector<T>* ptr, std::string desc) {
-  return Vector<T, decltype(make_prototype<T>())>(ptr, std::move(desc));
+template <typename T, std::enable_if_t<is_vector_v<T>, bool> = true>
+Vector<T, decltype(make_prototype<typename T::value_type>())> make_schema(T* ptr, std::string desc) {
+  return Vector<T, decltype(make_prototype<typename T::value_type>())>(ptr, std::move(desc));
 }
 
 }  // namespace schema

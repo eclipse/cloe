@@ -64,7 +64,7 @@ TEST(fable_schema_enum, struct_enum) {
 TEST(fable_schema_enum, vector_enum_ok) {
   using namespace fable::schema;  // NOLINT(build/namespaces)
   std::vector<LogLevel> xs;
-  Vector<LogLevel, Enum<LogLevel>> s{&xs, ""};
+  Vector<decltype(xs), Enum<LogLevel>> s{&xs, ""};
 
   fable::assert_to_json(s, "[]");
   fable::assert_from_eq_to(s, R"([
@@ -77,7 +77,7 @@ TEST(fable_schema_enum, vector_enum_ok) {
 TEST(fable_schema_enum, vector_struct_enum) {
   using namespace fable::schema;  // NOLINT(build/namespaces)
   std::vector<LoggerStruct> xs;
-  Vector<LoggerStruct, FromConfable<LoggerStruct>> s{&xs, ""};
+  Vector<decltype(xs), FromConfable<LoggerStruct>> s{&xs, ""};
 
   fable::assert_to_json(s, "[]");
   fable::assert_from_eq_to(s, R"([
