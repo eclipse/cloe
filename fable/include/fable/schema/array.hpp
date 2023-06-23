@@ -36,20 +36,54 @@
 namespace fable {
 namespace schema {
 
-template <typename T, size_t N, typename P>
-class Array : public Base<Array<T, N, P>> {
+/**
+ * Helper type trait class to use with std::enable_if and friends.
+ *
+ * The value `is_array<T>::value` is true if T is `std::array`.
+ * You can also add support for custom data-types by defining
+ * a template specialization:
+ *
+ *    namespace fable {
+ *    namespace schema {
+ *      template <typename T, size_t N>
+ *      struct is_array<CustomArray<T, N>> : std::true_type {}
+ *    }
+ *    }
+ *
+ * The specific template arguments may vary, of course.
+ * The array should support the following interface:
+ *
+ *  - typename T::value_type
+ *  - typename T::size_type
+ *  - static constexpr T::size_type T::size()
+ *  - T::value_type& T::operator[]
+ */
+template <typename T>
+struct is_array : std::false_type {};
+
+template <typename T>
+inline constexpr bool is_array_v = is_array<T>::value;
+
+template <typename T, size_t N>
+struct is_array<std::array<T, N>> : std::true_type {};
+
+template <typename T, typename P>
+class Array : public Base<Array<T, P>> {
+  static_assert(is_array_v<T>);
+
  public:  // Types and Constructors
-  using Type = std::array<T, N>;
+  using Type = T;
+  using ValueType = typename Type::value_type;
   using PrototypeSchema = P;
 
   Array(Type* ptr, std::string desc)
-      : Array<T, N, P>(ptr, make_prototype<T>(), std::move(desc)) {}
+      : Array<T, P>(ptr, make_prototype<typename T::value_type>(), std::move(desc)) {}
 
   Array(Type* ptr, PrototypeSchema prototype)
-      : Base<Array<T, N, P>>(), prototype_(std::move(prototype)), ptr_(ptr) {}
+      : Base<Array<T, P>>(), prototype_(std::move(prototype)), ptr_(ptr) {}
 
   Array(Type* ptr, PrototypeSchema prototype, std::string desc)
-      : Base<Array<T, N, P>>(std::move(desc)), prototype_(std::move(prototype)), ptr_(ptr) {}
+      : Base<Array<T, P>>(std::move(desc)), prototype_(std::move(prototype)), ptr_(ptr) {}
 
  public:  // Specials
   /**
@@ -71,7 +105,7 @@ class Array : public Base<Array<T, N, P>> {
   /**
    * Set whether deserialization should require_all the underlying array.
    */
-  Array<T, N, P> require_all(bool value) && {
+  Array<T, P> require_all(bool value) && {
     this->set_require_all(value);
     return std::move(*this);
   }
@@ -170,8 +204,8 @@ class Array : public Base<Array<T, N, P>> {
     return Json::object({
         {"type", "array"},
         {"items", prototype_.json_schema()},
-        {"minItems", N},
-        {"maxItems", N},
+        {"minItems", size()},
+        {"maxItems", size()},
     });
   }
 
@@ -201,8 +235,8 @@ class Array : public Base<Array<T, N, P>> {
    */
   void validate_array(const Conf& c) const {
     assert(c->type() == JsonType::array);
-    if (c->size() != N) {
-      this->throw_error(c, "require exactly {} items in array, got {}", N, c->size());
+    if (c->size() != size()) {
+      this->throw_error(c, "require exactly {} items in array, got {}", size(), c->size());
     }
     for (const auto& x : c.to_array()) {
       prototype_.validate(x);
@@ -258,8 +292,8 @@ class Array : public Base<Array<T, N, P>> {
       }
     }
     size_t idx = std::stoul(s);
-    if (idx >= N) {
-      this->throw_error(c, "out-of-range index key in object, require < {}, got '{}'", N, s);
+    if (idx >= size()) {
+      this->throw_error(c, "out-of-range index key in object, require < {}, got '{}'", size(), s);
     }
     return idx;
   }
@@ -280,26 +314,30 @@ class Array : public Base<Array<T, N, P>> {
   void deserialize_from_array(Type& array, const Conf& c) const {
     auto src = c.to_array();
     size_t n = src.size();
-    assert(n == N);
+    assert(n == size());
     for (size_t i = 0; i < n; i++) {
       array[i] = prototype_.deserialize(src[i]);
     }
   }
 
+  static constexpr size_t size() {
+    return Type{}.size();
+  }
+
  private:
   bool option_require_all_{false};
   PrototypeSchema prototype_{};
-  Type* ptr_{nullptr};
+  Type* ptr_{nullptr}; // non-owning, nullptr ok
 };
 
-template <typename T, typename P, size_t N>
-Array<T, N, P> make_schema(std::array<T, N>* ptr, P prototype, std::string desc) {
-  return Array<T, N, P>(ptr, std::move(prototype), std::move(desc));
+template <typename T, typename P, std::enable_if_t<is_array_v<T>, bool> = true>
+Array<T, P> make_schema(T* ptr, P prototype, std::string desc) {
+  return Array<T, P>(ptr, std::move(prototype), std::move(desc));
 }
 
-template <typename T, size_t N>
-Array<T, N, decltype(make_prototype<T>())> make_schema(std::array<T, N>* ptr, std::string desc) {
-  return Array<T, N, decltype(make_prototype<T>())>(ptr, std::move(desc));
+template <typename T, std::enable_if_t<is_array_v<T>, bool> = true>
+Array<T, decltype(make_prototype<typename T::value_type>())> make_schema(T* ptr, std::string desc) {
+  return Array<T, decltype(make_prototype<typename T::value_type>())>(ptr, std::move(desc));
 }
 
 }  // namespace schema
