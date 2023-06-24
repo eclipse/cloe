@@ -52,13 +52,49 @@
 #include <regex>
 #include <stdexcept>
 #include <string_view>
+#include <typeindex>
 #include <vector>
 
 #include <fmt/format.h>
 
+#include <sol/sol.hpp>
+
 namespace cloe {
 
 namespace databroker {
+
+namespace detail {
+
+/**
+  * Detects the presence of the to_lua function (based on ADL)
+  */
+template <typename T, typename = void>
+struct has_to_lua : std::false_type {};
+/**
+  * Detects the presence of the to_lua function (based on ADL)
+  */
+template <typename T>
+struct has_to_lua<T, std::void_t<decltype(to_lua(std::declval<sol::state&>(), std::declval<T*>()))>>
+    : std::true_type {};
+/**
+  * Detects the presence of the to_lua function (based on ADL)
+  */
+template <typename T>
+constexpr bool has_to_lua_v = has_to_lua<T>::value;
+
+/**
+  * Invokes to_lua procedure, if detecting its presence
+  */
+template <typename T>
+void to_lua(sol::state& lua) {
+  if constexpr (has_to_lua_v<T>) {
+    to_lua(lua, static_cast<T*>(nullptr));
+  } else {
+    // nop
+  }
+}
+
+}  // namespace detail
 
 /**
  * Maps a predicate to type T or type int.
@@ -168,6 +204,13 @@ constexpr void assert_static_type() {
                 "Explanation/Reasoning:\n"
                 "- references & void are fundamentally incompatible");
 }
+
+using SignalPtr = std::shared_ptr<Signal>;
+
+/**
+  * Function which integrates a specific datum into the Lua-VM
+  */
+using lua_signal_adapter_t = std::function<void(const SignalPtr&, sol::state&, std::string_view)>;
 
 template <typename T>
 using Container = BasicContainer<databroker::compatible_base_t<T>>;
@@ -312,8 +355,6 @@ template <typename T, typename U>
 constexpr bool operator>=(const T& lhs, const BasicContainer<U>& rhs) {
   return lhs >= *rhs;
 }
-
-using SignalPtr = std::shared_ptr<Signal>;
 
 /**
  * Signal-Descriptor
@@ -765,6 +806,8 @@ class DataBroker {
 
  private:
   SignalContainer signals_{};
+  std::unordered_map<std::type_index, std::function<void()>> declarations_{};
+  std::unordered_map<std::type_index, lua_signal_adapter_t> bindings_{};
 
  public:
   DataBroker() = default;
@@ -773,6 +816,87 @@ class DataBroker {
   ~DataBroker() = default;
   DataBroker& operator=(const DataBroker&) = delete;
   DataBroker& operator=(DataBroker&&) = delete;
+
+ private:
+  sol::state* lua_{nullptr};
+
+  /**
+  * \brief: Declares a DataType to Lua (if not yet done)
+  * \note: The function can be used independent of a bound Lua instance
+  */
+  template <typename T>
+  void declare() {
+    assert_static_type<T>();
+    using compatible_type = databroker::compatible_base_t<T>;
+    // Check whether this type was already processed
+    std::type_index type = std::type_index(typeid(compatible_type));
+
+    auto iter = declarations_.find(type);
+    if (iter == declarations_.end()) {
+      // Create a function which declares this type to the Lua-VM
+      std::function<void()> declarator = [this, type]() {
+        // Check whether this type was already processed
+        auto iter = bindings_.find(type);
+        if (iter == bindings_.end()) {
+          // if the type is not yet bound store a binding function in bindings_
+          ::cloe::databroker::detail::to_lua<T>(*lua_);
+          lua_signal_adapter_t adapter = [](const SignalPtr& signal, sol::state& state,
+                                            std::string_view lua_name) {
+            signal->subscribe<T>([](const T&) {});
+            state[lua_name] = &signal->value<T>();
+          };
+          // Store binding function
+          bindings_.emplace(type, std::move(adapter));
+        }
+      };
+      // Store declaration function
+      declarations_.emplace(type, std::move(declarator));
+    }
+  }
+
+ public:
+  /**
+    * Binds the Lua state to the databroker
+    * \param lua Lua-VM instance
+    */
+  void bind(sol::state* lua) {
+    if (lua_ == lua) {
+      // nop
+      return;
+    }
+    lua_ = lua;
+    // If a new lua instance is bound, declare all known datatypes to it
+    if (lua != nullptr) {
+      for (auto iter : declarations_) {
+        std::function<void()>& declarator = iter.second;
+        if (declarator) {
+          declarator();
+        }
+      }
+    }
+  }
+  /**
+    * \brief: Binds a signal to the Lua-VM
+    * \param signal_name Name of the signal
+    * \param lua_name Name of the table/variable used in Lua
+    */
+  void bind(std::string_view signal_name, std::string_view lua_name) {
+    if (lua_ == nullptr) {
+      throw new std::logic_error(
+          "DataBroker: Binding a signal to Lua must not happen, before binding the Lua context.");
+    }
+
+    SignalPtr signal = this->signal(signal_name);
+    std::type_index type = std::type_index(*signal->type());
+
+    auto iter = bindings_.find(type);
+    if (iter == bindings_.end()) {
+      throw std::runtime_error(
+          "DataBroker: <internal logic error>: Lua type binding not implemented");
+    }
+    const lua_signal_adapter_t& adapter = iter->second;
+    adapter(signal, (*lua_), lua_name);
+  }
 
  public:
   /**
@@ -876,6 +1000,8 @@ class DataBroker {
     assert_static_type<T>();
     using compatible_type = databroker::compatible_base_t<T>;
 
+    declare<compatible_type>();
+
     SignalPtr signal = Signal::make<compatible_type>();
     alias(signal, new_name);
     return signal;
@@ -893,11 +1019,12 @@ class DataBroker {
     assert_static_type<T>();
     using compatible_type = databroker::compatible_base_t<T>;
 
+    declare<compatible_type>();
+
     SignalPtr signal = declare<compatible_type>(new_name);
     Container<compatible_type> container = signal->create_container<compatible_type>();
     return container;
   }
-
   /**
    * Return the signal with the given name.
    *
