@@ -503,3 +503,45 @@ TEST(databroker, test_api_type_error_compiler_messages) {
 
   // STEP 3: Rebuild
 }
+
+struct CustomData {
+  int a;
+  double b;
+  std::string c;
+};
+
+// void to_json(json &j, const person &p) {
+//   j = json{{"name", p.name}, {"address", p.address}, {"age", p.age}};
+// }
+
+//void to_lua(const CustomData * /* value */) {
+void to_lua(sol::state &lua, CustomData * /* value */) {
+  sol::usertype<CustomData> usertype_table = lua.new_usertype<CustomData>("CustomData");
+  usertype_table["a"] = &CustomData::a;
+  usertype_table["b"] = &CustomData::b;
+  usertype_table["c"] = &CustomData::c;
+}
+
+TEST(databroker, to_lua) {
+  //         Test Scenario: negative-test
+  // Test Case Description: Get the setter-function of a signal by using the wrong datatype
+  //            Test Steps: 1) Implement a signal
+  //                        2) Get the setter-function of the signal by using the wrong datatype
+  //          Prerequisite: -
+  //             Test Data: -
+  //       Expected Result: 2) std::logic_error
+  DataBroker db;
+  // 1) Implement a signal
+  auto gamma = db.implement<CustomData>("gamma");
+
+  sol::state lua;
+  db.bind(&lua);
+  db.bind("gamma", "gamma");
+
+  const auto &code = R"(
+    gamma.b = 1.154431
+	)";
+  lua.script(code);
+
+  EXPECT_EQ(gamma.value().b, 1.154431);
+}

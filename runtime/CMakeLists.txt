@@ -22,6 +22,7 @@ if(NOT TARGET pantor::inja)
     add_library(pantor::inja ALIAS inja::inja)
 endif()
 find_package(incbin REQUIRED)
+find_package(sol2 REQUIRED)
 
 file(GLOB ${target}_PUBLIC_HEADERS "include/**/*.hpp")
 add_library(${target} SHARED
@@ -72,6 +73,7 @@ target_link_libraries(${target}
     Boost::system
     fable::fable
     spdlog::spdlog
+    sol2::sol2
   INTERFACE
     pantor::inja
     incbin::incbin
@@ -101,11 +103,21 @@ if(BUILD_TESTING)
         CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
     )
+    target_compile_options(test-cloe
+        PUBLIC
+        -g
+        -O0
+    )
+    target_compile_definitions(test-cloe
+        PUBLIC
+            SOL_ALL_SAFETIES_ON=1
+    )
     target_link_libraries(test-cloe
       PRIVATE
         GTest::gtest
         GTest::gtest_main
         Boost::boost
+        sol2::sol2
         ${target}
     )
     gtest_add_tests(TARGET test-cloe)
