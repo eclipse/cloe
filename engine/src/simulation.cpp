@@ -84,15 +84,18 @@
 
 #include <boost/filesystem.hpp>  // for is_directory, is_regular_file, ...
 
+#include <cloe/controller.hpp>                // for Controller
 #include <cloe/core/abort.hpp>                // for AsyncAbort
 #include <cloe/registrar.hpp>                 // for DirectCallback
+#include <cloe/simulator.hpp>                 // for Simulator
 #include <cloe/trigger/example_actions.hpp>   // for CommandFactory, BundleFactory, ...
 #include <cloe/trigger/set_action.hpp>        // for DEFINE_SET_STATE_ACTION, SetDataActionFactory
 #include <cloe/utility/resource_handler.hpp>  // for INCLUDE_RESOURCE, RESOURCE_HANDLER
+#include <cloe/vehicle.hpp>                   // for Vehicle
 #include <fable/utility.hpp>                  // for pretty_print
 
-#include "lua_action.hpp"  // for LuaAction,
-#include "lua_api.hpp"     // for to_json(json, sol::object)
+#include "lua_action.hpp"             // for LuaAction,
+#include "lua_api.hpp"                // for to_json(json, sol::object)
 #include "simulation_context.hpp"     // for SimulationContext
 #include "utility/command.hpp"        // for CommandFactory
 #include "utility/state_machine.hpp"  // for State, StateMachine
@@ -1220,9 +1223,9 @@ SimulationResult Simulation::run() {
   // Input:
   SimulationContext ctx{sol::state_view(lua_)};
   ctx.server = make_server(config_.server);
-  ctx.coordinator.reset(new Coordinator{});
-  ctx.registrar.reset(new Registrar{ctx.server->server_registrar(), ctx.coordinator});
-  ctx.commander.reset(new CommandExecuter{logger()});
+  ctx.coordinator = std::make_unique<Coordinator>(ctx.lua);
+  ctx.registrar = std::make_unique<Registrar>(ctx.server->server_registrar(), ctx.coordinator.get(), ctx.db.get());
+  ctx.commander = std::make_unique<CommandExecuter>(logger());
   ctx.sync = SimulationSync(config_.simulation.model_step_width);
   ctx.config = config_;
   ctx.uuid = uuid_;

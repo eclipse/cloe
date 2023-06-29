@@ -2,7 +2,7 @@
 -- all to have a simulation. You can simple schedule some tasks.
 local cloe = require("cloe")
 
-cloe.log("info", "Hello world!");
+cloe.load_stackfile("config_nop_smoketest.json")
 
 cloe.schedule {
     on = "loop",
@@ -19,13 +19,4 @@ cloe.schedule {
     run = function(sync)
         cloe.log("info", "Current time is %s", sync:time())
     end
-}
-
--- If you configure this to terminate at for example, 60 seconds,
--- you may notice that we don't even achieve realtime. This is
--- because of the server. See the next test file.
-local seconds = 1
-cloe.schedule {
-    on = "time=" .. seconds,
-    run = "succeed"
 }

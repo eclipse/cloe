@@ -11,9 +11,6 @@ include(GNUInstallDirs)
 include(cmake/TargetLinting.cmake)
 
 # Library -------------------------------------------------------------
-set(target cloe-runtime)
-set(alias cloe::runtime)
-
 find_package(fable REQUIRED)
 find_package(Boost COMPONENTS headers filesystem iostreams system REQUIRED)
 find_package(spdlog REQUIRED)
@@ -24,8 +21,8 @@ endif()
 find_package(incbin REQUIRED)
 find_package(sol2 REQUIRED)
 
-file(GLOB ${target}_PUBLIC_HEADERS "include/**/*.hpp")
-add_library(${target} SHARED
+file(GLOB cloe-runtime_PUBLIC_HEADERS "include/**/*.hpp")
+add_library(cloe-runtime SHARED
     # find src -type f -name "*.cpp" \! -name "*_test.cpp"
     src/cloe/core/error.cpp
     src/cloe/core/duration.cpp
@@ -49,23 +46,23 @@ add_library(${target} SHARED
     src/cloe/data_broker.cpp
 
     # For IDE integration
-    ${${target}_PUBLIC_HEADERS}
+    ${cloe-runtime_PUBLIC_HEADERS}
 )
-add_library(${alias} ALIAS ${target})
-set_target_properties(${target} PROPERTIES
+add_library(cloe::runtime ALIAS cloe-runtime)
+set_target_properties(cloe-runtime PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
     VERSION ${CLOE_VERSION}
 )
-set_target_linting(${target})
+set_target_linting(cloe-runtime)
 configure_file(src/cloe/version.hpp.in include/cloe/version.hpp @ONLY)
-target_include_directories(${target}
+target_include_directories(cloe-runtime
   PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
-target_link_libraries(${target}
+target_link_libraries(cloe-runtime
   PUBLIC
     Boost::headers
     Boost::filesystem
@@ -78,11 +75,12 @@ target_link_libraries(${target}
     pantor::inja
     incbin::incbin
 )
-target_compile_definitions(${target}
+target_compile_definitions(cloe-runtime
   PRIVATE
     PROJECT_SOURCE_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}\"
   PUBLIC
     _USE_MATH_DEFINES=1
+    SOL_ALL_SAFETIES_ON=1
 )
 
 # Testing -------------------------------------------------------------
@@ -118,13 +116,13 @@ if(BUILD_TESTING)
         GTest::gtest_main
         Boost::boost
         sol2::sol2
-        ${target}
+        cloe-runtime
     )
     gtest_add_tests(TARGET test-cloe)
 endif()
 
 # Installation --------------------------------------------------------
-install(TARGETS ${target}
+install(TARGETS cloe-runtime
     LIBRARY
         DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE
