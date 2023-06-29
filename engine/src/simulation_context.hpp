@@ -33,6 +33,7 @@
 #include <sol/state_view.hpp>  // for state_view
 
 #include <cloe/cloe_fwd.hpp>            // for Simulator, Controller, Registrar, Vehicle, Duration
+#include <cloe/data_broker.hpp>         // for DataBroker
 #include <cloe/sync.hpp>                // for Sync
 #include <cloe/trigger/nil_event.hpp>   // for DEFINE_NIL_EVENT
 #include <cloe/utility/statistics.hpp>  // for Accumulator
@@ -201,6 +202,7 @@ struct SimulationContext {
   sol::state_view lua;
 
   // Setup
+  std::unique_ptr<cloe::DataBroker> db;
   std::unique_ptr<Server> server;
   std::shared_ptr<Coordinator> coordinator;
   std::shared_ptr<Registrar> registrar;
