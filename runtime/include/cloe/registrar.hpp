@@ -26,6 +26,7 @@
 #include <string>   // for string
 #include <utility>  // for move
 
+#include <sol/table.hpp>
 #include <cloe/handler.hpp>  // for Handler
 #include <cloe/trigger.hpp>  // for ActionFactory, EventFactory, Callback, ...
 #include <fable/json.hpp>    // for Json
@@ -193,6 +194,11 @@ class Registrar {
    * \see  cloe/trigger.hpp
    */
   virtual void register_event(std::unique_ptr<EventFactory>&& f, std::shared_ptr<Callback> c) = 0;
+
+  /**
+   * Provide a Lua table for registration of functions and variables.
+   */
+  virtual sol::table register_lua_table() = 0;
 
   /**
    * Register an EventFactory and return a DirectCallback for storage of

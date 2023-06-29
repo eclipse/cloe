@@ -30,6 +30,9 @@
 #include <string>  // for string
 #include <vector>  // for vector<>
 
+#include <sol/state_view.hpp>  // for state_view
+#include <sol/table.hpp>       // for table
+
 #include <cloe/trigger.hpp>  // for Trigger, Action, Event, ...
 
 // Forward declaration:
@@ -99,7 +102,7 @@ struct HistoryTrigger {
  */
 class Coordinator {
  public:
-  Coordinator();
+  Coordinator(sol::state_view lua);
 
   const std::vector<HistoryTrigger>& history() const { return history_; }
 
@@ -107,6 +110,8 @@ class Coordinator {
 
   void register_event(const std::string& key, cloe::EventFactoryPtr&& ef,
                       std::shared_ptr<cloe::Callback> storage);
+
+  sol::table register_lua_table(const std::string& key);
 
   std::shared_ptr<cloe::TriggerRegistrar> trigger_registrar(cloe::Source s);
 
@@ -138,6 +143,7 @@ class Coordinator {
   // Factories:
   std::map<std::string, cloe::ActionFactoryPtr> actions_;
   std::map<std::string, cloe::EventFactoryPtr> events_;
+  sol::state_view lua_;
 
   // Execution:
   std::shared_ptr<cloe::TriggerRegistrar> executer_registrar_;

@@ -50,7 +50,10 @@ void to_json(Json& j, const HistoryTrigger& t) {
   j["at"] = t.when;
 }
 
-Coordinator::Coordinator() : executer_registrar_(trigger_registrar(Source::TRIGGER)) {}
+Coordinator::Coordinator(sol::state_view lua)
+    : lua_(lua), executer_registrar_(trigger_registrar(Source::TRIGGER)) {
+  lua_["cloe"]["plugins"] = lua_.create_table();
+}
 
 class TriggerRegistrar : public cloe::TriggerRegistrar {
  public:
@@ -166,6 +169,12 @@ void Coordinator::register_event(const std::string& key, EventFactoryPtr&& ef,
   storage_[key] = storage;
   storage->set_executer(
       std::bind(&Coordinator::execute_trigger, this, std::placeholders::_1, std::placeholders::_2));
+}
+
+sol::table Coordinator::register_lua_table(const std::string& field) {
+  auto tbl = lua_.create_table();
+  lua_["cloe"]["plugins"][field] = tbl;
+  return tbl;
 }
 
 void Coordinator::execute_trigger(TriggerPtr&& t, const Sync& sync) {
