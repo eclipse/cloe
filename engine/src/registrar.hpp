@@ -33,15 +33,14 @@ namespace engine {
 
 class Registrar : public cloe::Registrar {
  public:
-  Registrar(std::unique_ptr<ServerRegistrar> r, std::shared_ptr<Coordinator> c)
-      : server_registrar_(std::move(r))
-      , coordinator_(std::move(c)) {}
+  Registrar(std::unique_ptr<ServerRegistrar> r, Coordinator* c, cloe::DataBroker* db)
+      : server_registrar_(std::move(r)), coordinator_(c), data_broker_(db) {}
 
   Registrar(const Registrar& ar,
             const std::string& trigger_prefix,
             const std::string& static_prefix,
             const std::string& api_prefix)
-      : coordinator_(ar.coordinator_) {
+      : coordinator_(ar.coordinator_), data_broker_(ar.data_broker_) {
     if (trigger_prefix.empty()) {
       trigger_prefix_ = ar.trigger_prefix_;
     } else {
@@ -108,9 +107,15 @@ class Registrar : public cloe::Registrar {
     return coordinator_->register_lua_table(trigger_prefix_);
   }
 
+  cloe::DataBroker& data_broker() const override {
+    assert(data_broker_ != nullptr);
+    return *data_broker_;
+  }
+
  private:
   std::unique_ptr<ServerRegistrar> server_registrar_;
-  std::shared_ptr<Coordinator> coordinator_;
+  Coordinator* coordinator_;       // non-owning
+  cloe::DataBroker* data_broker_;  // non-owning
   std::string trigger_prefix_;
 };
 

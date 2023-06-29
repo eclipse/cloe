@@ -33,7 +33,8 @@
 #include <sol/state_view.hpp>  // for state_view
 #include <sol/table.hpp>       // for table
 
-#include <cloe/trigger.hpp>  // for Trigger, Action, Event, ...
+#include <cloe/cloe_fwd.hpp>  // for DataBroker
+#include <cloe/trigger.hpp>   // for Trigger, Action, Event, ...
 
 // Forward declaration:
 namespace cloe {
@@ -113,6 +114,8 @@ class Coordinator {
 
   sol::table register_lua_table(const std::string& key);
 
+  cloe::DataBroker* data_broker() const { return db_; }
+
   std::shared_ptr<cloe::TriggerRegistrar> trigger_registrar(cloe::Source s);
 
   void enroll(cloe::Registrar& r);
@@ -144,6 +147,7 @@ class Coordinator {
   std::map<std::string, cloe::ActionFactoryPtr> actions_;
   std::map<std::string, cloe::EventFactoryPtr> events_;
   sol::state_view lua_;
+  cloe::DataBroker* db_;  // non-owning
 
   // Execution:
   std::shared_ptr<cloe::TriggerRegistrar> executer_registrar_;
