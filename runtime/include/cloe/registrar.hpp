@@ -27,6 +27,7 @@
 #include <utility>  // for move
 
 #include <sol/table.hpp>
+#include <cloe/cloe_fwd.hpp> // for DataBroker
 #include <cloe/handler.hpp>  // for Handler
 #include <cloe/trigger.hpp>  // for ActionFactory, EventFactory, Callback, ...
 #include <fable/json.hpp>    // for Json
@@ -166,6 +167,8 @@ class Registrar {
    * Register an ActionFactory.
    */
   virtual void register_action(std::unique_ptr<ActionFactory>&&) = 0;
+
+  virtual DataBroker& data_broker() const = 0;
 
   /**
    * Construct and register an ActionFactory.

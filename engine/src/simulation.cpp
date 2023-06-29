@@ -84,6 +84,7 @@
 
 #include <boost/filesystem.hpp>  // for is_directory, is_regular_file, ...
 
+#include <cloe/data_broker.hpp>
 #include <cloe/controller.hpp>                // for Controller
 #include <cloe/core/abort.hpp>                // for AsyncAbort
 #include <cloe/registrar.hpp>                 // for DirectCallback
@@ -1222,6 +1223,7 @@ Simulation::Simulation(cloe::Stack&& config, sol::state&& lua, const std::string
 SimulationResult Simulation::run() {
   // Input:
   SimulationContext ctx{sol::state_view(lua_)};
+  ctx.db = std::make_unique<cloe::DataBroker>();
   ctx.server = make_server(config_.server);
   ctx.coordinator = std::make_unique<Coordinator>(ctx.lua);
   ctx.registrar = std::make_unique<Registrar>(ctx.server->server_registrar(), ctx.coordinator.get(), ctx.db.get());
