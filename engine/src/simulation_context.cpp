@@ -15,11 +15,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-/**
- * \file simulation_context.cpp
- */
 
 #include "simulation_context.hpp"
+
+#include <cloe/vehicle.hpp>
+#include <cloe/controller.hpp>
+#include <cloe/simulator.hpp>
 
 namespace engine {
 
