@@ -238,6 +238,7 @@ struct SimulationContext {
 
  public:
   std::string version() const;
+  cloe::Logger logger() const { return cloe::logger::get("cloe"); }
 
   std::shared_ptr<cloe::Registrar> simulation_registrar();
 

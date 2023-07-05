@@ -66,7 +66,7 @@ cloe.schedule_test {
         "blabla_stupid_long_m_asdf_asdM_1_2__signal_signal_duplicate5",
         "blabla_stupid_long_m_asdf_asdM_1_2__signal_signal_duplicate6",
     },
-    run = function(z)
+    run = function(z, sync)
         local hmi = cloe.plugins.basic.hmi
 
         hmi.enable = false

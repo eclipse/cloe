@@ -36,11 +36,6 @@
 #include <cloe/cloe_fwd.hpp>   // for DataBroker
 #include <cloe/trigger.hpp>    // for Trigger, Action, Event, ...
 
-// Forward declaration:
-namespace cloe {
-class Registrar;
-}
-
 namespace engine {
 
 // Forward declarations:
@@ -128,13 +123,22 @@ class Coordinator {
    */
   cloe::Duration process(const cloe::Sync&);
 
+  size_t process_pending_lua_triggers(const cloe::Sync& sync);
+  size_t process_pending_web_triggers(const cloe::Sync& sync);
+
+  void insert_trigger_from_lua(const cloe::Sync& sync, const sol::object& obj);
+  void execute_action_from_lua(const cloe::Sync& sync, const sol::object& obj);
+
  protected:
+  cloe::ActionPtr make_action(const sol::object& lua) const;
   cloe::ActionPtr make_action(const cloe::Conf& c) const;
   cloe::EventPtr make_event(const cloe::Conf& c) const;
   cloe::TriggerPtr make_trigger(cloe::Source s, const cloe::Conf& c) const;
+  cloe::TriggerPtr make_trigger(const sol::table& tbl) const;
   void queue_trigger(cloe::Source s, const cloe::Conf& c) { queue_trigger(make_trigger(s, c)); }
-  void queue_trigger(cloe::TriggerPtr&& t);
-  cloe::CallbackResult execute_trigger(cloe::TriggerPtr&& t, const cloe::Sync& s);
+  void queue_trigger(cloe::TriggerPtr&& tp);
+  void store_trigger(cloe::TriggerPtr&& tp, const cloe::Sync& sync);
+  cloe::CallbackResult execute_trigger(cloe::TriggerPtr&& tp, const cloe::Sync& sync);
 
   // for access to protected methods
   friend TriggerRegistrar;
@@ -162,5 +166,7 @@ class Coordinator {
   // History:
   std::vector<HistoryTrigger> history_;
 };
+
+void register_usertype_coordinator(sol::table& lua, const cloe::Sync& sync);
 
 }  // namespace engine
