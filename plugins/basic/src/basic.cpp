@@ -22,13 +22,13 @@
 
 #include "basic.hpp"
 
-#include <chrono>    // for duration<>
-#include <memory>    // for shared_ptr<>, unique_ptr<>
-#include <optional>  // for optional
-#include <string>    // for string
-#include <tuple>     // for tie
-#include <utility>   // for pair, make_pair
-#include <vector>    // for vector<>
+#include <chrono>            // for duration<>
+#include <memory>            // for shared_ptr<>, unique_ptr<>
+#include <optional>          // for optional
+#include <string>            // for string
+#include <tuple>             // for tie
+#include <utility>           // for pair, make_pair
+#include <vector>            // for vector<>
 
 #include <fable/schema.hpp>  // for Schema
 #include <sol/reference.hpp>
@@ -38,6 +38,7 @@
 #include <cloe/component/object_sensor.hpp>             // for ObjectSensor
 #include <cloe/component/utility/ego_sensor_canon.hpp>  // for EgoSensor, EgoSensorCanon
 #include <cloe/controller.hpp>                          // for Controller, Json, etc.
+#include <cloe/data_broker.hpp>                         // for DataBroker
 #include <cloe/handler.hpp>                             // for ToJson, FromConf
 #include <cloe/models.hpp>                              // for CloeComponent
 #include <cloe/plugin.hpp>                              // for EXPORT_CLOE_PLUGIN
@@ -47,7 +48,7 @@
 #include <cloe/utility/resource_handler.hpp>            // for INCLUDE_RESOURCE
 #include <cloe/vehicle.hpp>                             // for Vehicle
 
-#include "hmi_contact.hpp"  // for PushButton, Switch
+#include "hmi_contact.hpp"                              // for PushButton, Switch
 
 INCLUDE_RESOURCE(controller_ui, PROJECT_SOURCE_DIR "/ui/dyn_controller_ui.json");
 
@@ -396,6 +397,33 @@ class BasicController : public Controller {
   }
 
   void enroll(Registrar& r) override {
+    auto& db = r.data_broker();
+    auto acc_signal = db.declare<cloe::controller::basic::AccConfiguration>("basic-controller.acc");
+    acc_signal->set_getter<cloe::controller::basic::AccConfiguration>(
+        [this]() -> const cloe::controller::basic::AccConfiguration& { return this->acc_.config; });
+    acc_signal->set_setter<cloe::controller::basic::AccConfiguration>(
+        [this](const cloe::controller::basic::AccConfiguration& value) {
+          this->acc_.config = value;
+        });
+
+    auto aeb_signal = db.declare<cloe::controller::basic::AebConfiguration>("basic-controller.aeb");
+    aeb_signal->set_getter<cloe::controller::basic::AebConfiguration>(
+        [this]() -> const cloe::controller::basic::AebConfiguration& { return this->aeb_.config; });
+    aeb_signal->set_setter<cloe::controller::basic::AebConfiguration>(
+        [this](const cloe::controller::basic::AebConfiguration& value) {
+          this->aeb_.config = value;
+        });
+
+    auto lka_signal = db.declare<cloe::controller::basic::LkaConfiguration>("basic-controller.lka");
+    lka_signal->set_getter<cloe::controller::basic::LkaConfiguration>(
+        [this]() -> const cloe::controller::basic::LkaConfiguration& { return this->lka_.config; });
+    lka_signal->set_setter<cloe::controller::basic::LkaConfiguration>(
+        [this](const cloe::controller::basic::LkaConfiguration& value) {
+          this->lka_.config = value;
+        });
+
+    //    db.declare<std::string>("basic-controller.driver_request");
+
     auto lua = r.register_lua_table();
 
     {
