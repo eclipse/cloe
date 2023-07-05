@@ -22,7 +22,12 @@
 -- This prevents us from overwriting the fields that cloe-engine sets.
 local cloe = assert(cloe)
 
+--- Namespace that contains state relevant to a simulation.
+cloe.state = cloe.state or {}
+
 require("cloe.util")
+require("cloe.schedule")
+require("cloe.report")
 
 --- @alias FeatureId string
 
@@ -64,49 +69,6 @@ end
 function cloe.log(level, fmt, ...)
     local msg = string.format(fmt, ...)
     cloe.api.log(level, "lua", msg)
-end
-
---- Schedule
-function cloe.schedule(spec)
-    cloe.validate({ spec = { spec, "table" }})
-    cloe.validate({
-        on = { spec.on, {"string", "table"} },
-        run = { spec.run, {"string", "table", "function"} },
-        priority = { spec.priority, "number", true },
-        pin = { spec.pin, "boolean", true },    -- sticky
-        desc = { spec.desc, "string", true },   -- label
-    })
-    local event = spec.on
-    local action = spec.run
-    local action_source = nil
-    if type(action) == "function" then
-        local debinfo = debug.getinfo(action)
-        action_source = string.format("%s:%s-%s", debinfo.short_src, debinfo.linedefined, debinfo.lastlinedefined)
-    end
-    local pin =  spec.pin or false
-    local priority = spec.priority or 100
-
-    cloe.scheduler.insert({
-        label = spec.desc,
-        event = event,
-        action = action,
-        action_source = action_source,
-        sticky = pin,
-        priority = priority,
-    })
-end
-
-cloe.scheduler = cloe.scheduler or {}
-
-cloe.state.scheduler_pending = cloe.state.scheduler_pending or {}
-
-function cloe.scheduler.pending()
-    return cloe.state.scheduler_pending or {}
-end
-
-function cloe.scheduler.insert(spec)
-    cloe.state.scheduler_pending = cloe.state.scheduler_pending or {}
-    table.insert(cloe.state.scheduler_pending, spec)
 end
 
 --- Return a human-readable representation of Lua objects.

@@ -83,7 +83,7 @@ cloe.schedule_test {
     desc = "Make sure we can enable and disable Basic ACC",
 
     -- @field enabled? boolean|fun():boolean = true
-    enabled = true,
+    enable = true,
 
     -- @type string|string[]|fun():boolean
     on = "start",

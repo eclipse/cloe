@@ -31,9 +31,6 @@
 #include <cloe/trigger.hpp>  // for Action, ActionFactory, ...
 
 namespace engine {
-
-cloe::TriggerPtr make_trigger_from_lua(cloe::TriggerRegistrar& r, const sol::table& lua);
-
 namespace actions {
 
 class LuaFunction : public cloe::Action {

@@ -1177,7 +1177,8 @@
               "network",
               "model",
               "trigger",
-              "instance"
+              "instance",
+              "lua"
             ],
             "type": "string"
           },
