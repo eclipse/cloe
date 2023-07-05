@@ -20,37 +20,6 @@ local cloe = cloe or {}
 
 --- @alias PluginSpec table|string
 
---- @class TestSpec
---- @field id string
---- @field name? string
---- @field desc? string
---- @field enabled? boolean|fun():boolean
---- @field on? string|string[]|fun():boolean
---- @field run fun(TestFixture):boolean
---- @field reset? boolean
---- @field report? function
-
---- @class TestFixture
---- @field id string
---- @field name? string
---- @field desc? string
---- @field assert fun(...)
---- @field print fun(...)
---- @field succeed fun(...)
---- @field fail fun(...)
---- @field abort fun(...)
-
---- @alias ScheduleId integer
---- @alias ScheduleGroup string
-
---- @class ScheduleSpec
---- @field on string
---- @field priority? integer
---- @field run function
---- @field group? ScheduleGroup
---- @field sticky? boolean
---- @field enabled? boolean|fun():boolean
-
 --- Try to load plugin, returns nil if fail, otherwise plugin object.
 ---
 --- @param opts (PluginSpec)
@@ -127,25 +96,6 @@ end
 --- @return nil
 cloe.schedule_agent = function(opts)
     return nil
-end
-
---- @return ScheduleId|nil
-cloe.schedule = function(opts)
-    cloe.scheduler.insert(opts)
-end
-
---- @param test (TestSpec)
-cloe.schedule_test = function(test)
-    if test.enabled then
-        if type(test.enabled) == "function" then
-            if not test.enabled() then
-                return false
-            end
-        end
-    end
-    cloe.schedule({
-        enabled = false
-    })
 end
 
 cloe.config = {

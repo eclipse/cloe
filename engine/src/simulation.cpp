@@ -75,18 +75,18 @@
 
 #include "simulation.hpp"
 
-#include <cstdint>                            // for uint64_t
-#include <fstream>                            // for ofstream
-#include <future>                             // for future<>, async
-#include <sstream>                            // for stringstream
-#include <string>                             // for string
-#include <thread>                             // for sleep_for
+#include <cstdint>  // for uint64_t
+#include <fstream>  // for ofstream
+#include <future>   // for future<>, async
+#include <sstream>  // for stringstream
+#include <string>   // for string
+#include <thread>   // for sleep_for
 
-#include <boost/filesystem.hpp>               // for is_directory, is_regular_file, ...
+#include <boost/filesystem.hpp>  // for is_directory, is_regular_file, ...
 
 #include <cloe/controller.hpp>                // for Controller
 #include <cloe/core/abort.hpp>                // for AsyncAbort
-#include <cloe/data_broker.hpp>
+#include <cloe/data_broker.hpp>               // for DataBroker
 #include <cloe/registrar.hpp>                 // for DirectCallback
 #include <cloe/simulator.hpp>                 // for Simulator
 #include <cloe/trigger/example_actions.hpp>   // for CommandFactory, BundleFactory, ...
@@ -95,12 +95,13 @@
 #include <cloe/vehicle.hpp>                   // for Vehicle
 #include <fable/utility.hpp>                  // for pretty_print
 
-#include "lua_action.hpp"                     // for LuaAction,
-#include "lua_api.hpp"                        // for to_json(json, sol::object)
-#include "simulation_context.hpp"             // for SimulationContext
-#include "utility/command.hpp"                // for CommandFactory
-#include "utility/state_machine.hpp"          // for State, StateMachine
-#include "utility/time_event.hpp"  // for TimeCallback, NextCallback, NextEvent, TimeEvent
+#include "coordinator.hpp"            // for register_usertype_coordinator
+#include "lua_action.hpp"             // for LuaAction,
+#include "lua_api.hpp"                // for to_json(json, sol::object)
+#include "simulation_context.hpp"     // for SimulationContext
+#include "utility/command.hpp"        // for CommandFactory
+#include "utility/state_machine.hpp"  // for State, StateMachine
+#include "utility/time_event.hpp"     // for TimeCallback, NextCallback, NextEvent, TimeEvent
 
 // PROJECT_SOURCE_DIR is normally exported by CMake during build, but it's not
 // available for the linters, so we define a dummy value here for that case.
@@ -257,7 +258,7 @@ class SimulationMachine
   }
 
 #define DEFINE_STATE(Id, S) DEFINE_STATE_STRUCT(SimulationMachine, SimulationContext, Id, S)
- private:
+ public:
   DEFINE_STATE(CONNECT, Connect);
   DEFINE_STATE(START, Start);
   DEFINE_STATE(STEP_BEGIN, StepBegin);
@@ -285,12 +286,8 @@ DEFINE_SET_STATE_ACTION(Stop, "stop", "stop simulation with neither success nor 
 DEFINE_SET_STATE_ACTION(Succeed, "succeed", "stop simulation with success", SimulationMachine, { ptr_->succeed(); })
 DEFINE_SET_STATE_ACTION(Fail, "fail", "stop simulation with failure", SimulationMachine, { ptr_->fail(); })
 DEFINE_SET_STATE_ACTION(Reset, "reset", "attempt to reset simulation", SimulationMachine, { ptr_->reset(); })
-
-DEFINE_SET_STATE_ACTION(KeepAlive, "keep_alive", "keep simulation alive after termination",
-                        SimulationContext, { ptr_->config.engine.keep_alive = true; })
-
-DEFINE_SET_STATE_ACTION(ResetStatistics, "reset_statistics", "reset simulation statistics",
-                        SimulationStatistics, { ptr_->reset(); })
+DEFINE_SET_STATE_ACTION(KeepAlive, "keep_alive", "keep simulation alive after termination", SimulationContext, { ptr_->config.engine.keep_alive = true; })
+DEFINE_SET_STATE_ACTION(ResetStatistics, "reset_statistics", "reset simulation statistics", SimulationStatistics, { ptr_->reset(); })
 
 DEFINE_SET_DATA_ACTION(RealtimeFactor, "realtime_factor", "modify the simulation speed", SimulationSync, "factor", double,
                         {
@@ -339,9 +336,10 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
     }
   }
 
-  {
-      // 3. Initialize Lua
-
+  {  // 3. Initialize Lua
+    auto cloe_tbl = sol::object(ctx.lua["cloe"]).as<sol::table>();
+    register_usertype_coordinator(cloe_tbl, ctx.sync);
+    cloe_tbl["state"]["scheduler"] = std::ref(*ctx.coordinator);
   }
 
   {  // 4. Enroll endpoints and triggers for the server
@@ -735,45 +733,36 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
 
 // START --------------------------------------------------------------------------------------- //
 
+size_t insert_triggers_from_config(SimulationContext& ctx) {
+  auto r = ctx.coordinator->trigger_registrar(cloe::Source::FILESYSTEM);
+  size_t count = 0;
+  for (const auto& c : ctx.config.triggers) {
+    if (!ctx.config.engine.triggers_ignore_source && source_is_transient(c.source)) {
+      continue;
+    }
+    try {
+      r->insert_trigger(c.conf());
+      count++;
+    } catch (cloe::SchemaError& e) {
+      ctx.logger()->error("Error inserting trigger: {}", e.what());
+      std::stringstream s;
+      fable::pretty_print(e, s);
+      ctx.logger()->error("> Message:\n    {}", s.str());
+      throw cloe::ConcludedError(e);
+    } catch (cloe::TriggerError& e) {
+      ctx.logger()->error("Error inserting trigger ({}): {}", e.what(), c.to_json().dump());
+      throw cloe::ConcludedError(e);
+    }
+  }
+  return count;
+}
+
 StateId SimulationMachine::Start::impl(SimulationContext& ctx) {
   logger()->info("Starting simulation...");
 
   // Begin execution progress
   ctx.progress.exec_begin();
 
-  // Insert triggers from the config
-  {
-    auto r = ctx.coordinator->trigger_registrar(cloe::Source::FILESYSTEM);
-    for (const auto& c : ctx.config.triggers) {
-      if (!ctx.config.engine.triggers_ignore_source && source_is_transient(c.source)) {
-        continue;
-      }
-      try {
-        r->insert_trigger(c.conf());
-      } catch (cloe::SchemaError& e) {
-        logger()->error("Error inserting trigger: {}", e.what());
-        std::stringstream s;
-        fable::pretty_print(e, s);
-        logger()->error("> Message:\n    {}", s.str());
-        return ABORT;
-      } catch (cloe::TriggerError& e) {
-        logger()->error("Error inserting trigger ({}): {}", e.what(), c.to_json().dump());
-        return ABORT;
-      }
-    }
-  }
-
-  // Insert triggers from lua
-  {
-    auto r = ctx.coordinator->trigger_registrar(cloe::Source::LUA);
-    sol::object obj = ctx.lua["cloe"]["state"]["scheduler_pending"];
-    for (auto& kv : obj.as<sol::table>()) {
-      auto trigger = make_trigger_from_lua(*r, kv.second);
-      logger()->debug("Inserting trigger from Lua: {}", cloe::Json(*trigger).dump(2));
-      r->insert_trigger(std::move(trigger));
-    }
-    ctx.lua["cloe"]["state"]["scheduler_pending"] = ctx.lua.create_table();
-  }
   {
     // Bind lua state_view to databroker
     auto* dbPtr = ctx.coordinator->data_broker();
@@ -984,6 +973,8 @@ StateId SimulationMachine::Start::impl(SimulationContext& ctx) {
   }
 
   // Process initial trigger list
+  insert_triggers_from_config(ctx);
+  ctx.coordinator->process_pending_lua_triggers(ctx.sync);
   ctx.coordinator->process(ctx.sync);
   ctx.callback_start->trigger(ctx.sync);
 
@@ -1037,7 +1028,7 @@ StateId SimulationMachine::StepBegin::impl(SimulationContext& ctx) {
   //
   ctx.server->refresh_buffer();
 
-  // Run time-based triggers
+  // Run cycle- and time-based triggers
   ctx.callback_loop->trigger(ctx.sync);
   ctx.callback_time->trigger(ctx.sync);
 
@@ -1047,7 +1038,7 @@ StateId SimulationMachine::StepBegin::impl(SimulationContext& ctx) {
       logger()->info("The {} {} is no longer operational.", type, m.name());
       return false;  // abort loop
     }
-    return true;     // next model
+    return true;  // next model
   });
   return (all_operational ? STEP_SIMULATORS : STOP);
 }

@@ -17,6 +17,13 @@ cloe.schedule {
     on = "loop",
     pin = true,
     run = function(sync)
-        cloe.log("info", "Current time is %s", sync:time())
+        if sync:time():s() % 1 == 0.0 then
+            -- Print this every second
+            cloe.log("info", "Current time is %s", sync:time())
+        end
+        if sync:time():s() > 30 then
+            -- Unpin
+            return false
+        end
     end
 }
