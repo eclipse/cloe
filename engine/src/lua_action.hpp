@@ -46,13 +46,16 @@ class LuaFunction : public cloe::Action {
 
   void operator()(const cloe::Sync& sync, cloe::TriggerRegistrar&) override {
     logger()->trace("Running lua function.");
-    func_(std::ref(sync));
+    auto result = func_(std::ref(sync));
+    if(!result.valid()) {
+      throw cloe::Error("error executing Lua function: {}", sol::error{result}.what());
+    }
   }
 
   void to_json(cloe::Json& j) const override { j = cloe::Json{}; }
 
  private:
-  sol::function func_;
+  sol::protected_function func_;
 };
 
 class Lua : public cloe::Action {
