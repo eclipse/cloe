@@ -74,7 +74,8 @@ struct has_to_lua : std::false_type {};
   * Detects the presence of the to_lua function (based on ADL)
   */
 template <typename T>
-struct has_to_lua<T, std::void_t<decltype(to_lua(std::declval<sol::state&>(), std::declval<T*>()))>>
+struct has_to_lua<
+    T, std::void_t<decltype(to_lua(std::declval<sol::state_view&>(), std::declval<T*>()))>>
     : std::true_type {};
 /**
   * Detects the presence of the to_lua function (based on ADL)
@@ -86,7 +87,7 @@ constexpr bool has_to_lua_v = has_to_lua<T>::value;
   * Invokes to_lua procedure, if detecting its presence
   */
 template <typename T>
-void to_lua(sol::state& lua) {
+void to_lua(sol::state_view& lua) {
   if constexpr (has_to_lua_v<T>) {
     to_lua(lua, static_cast<T*>(nullptr));
   } else {
@@ -210,7 +211,8 @@ using SignalPtr = std::shared_ptr<Signal>;
 /**
   * Function which integrates a specific datum into the Lua-VM
   */
-using lua_signal_adapter_t = std::function<void(const SignalPtr&, sol::state&, std::string_view)>;
+using lua_signal_adapter_t =
+    std::function<void(const SignalPtr&, sol::state_view&, std::string_view)>;
 
 template <typename T>
 using Container = BasicContainer<databroker::compatible_base_t<T>>;
@@ -241,16 +243,20 @@ class BasicContainer {
     update_accessor_functions(this);
   }
   BasicContainer(const BasicContainer&) = delete;
-  BasicContainer(BasicContainer<value_type>&& source)
-      : value_(std::move(source.value_))
-      , on_value_changed_(std::move(source.on_value_changed_))
-      , signal_(std::move(source.signal_)) {
-    update_accessor_functions(this);
-  }
+  BasicContainer(BasicContainer<value_type>&& source) { *this = std::move(source); }
 
   ~BasicContainer() { update_accessor_functions(nullptr); }
   BasicContainer& operator=(const BasicContainer&) = delete;
-  BasicContainer& operator=(BasicContainer&&) = default;
+  BasicContainer& operator=(BasicContainer&& rhs) {
+    value_ = std::move(rhs.value_);
+    on_value_changed_ = std::move(rhs.on_value_changed_);
+    signal_ = std::move(rhs.signal_);
+    update_accessor_functions(this);
+
+    rhs.signal_ = nullptr;
+
+    return *this;
+  }
   BasicContainer& operator=(databroker::signal_type_cref_t<T> value) {
     value_ = value;
     if (on_value_changed_) {
@@ -818,7 +824,7 @@ class DataBroker {
   DataBroker& operator=(DataBroker&&) = delete;
 
  private:
-  sol::state* lua_{nullptr};
+  sol::state_view* lua_{nullptr};
 
   /**
   * \brief: Declares a DataType to Lua (if not yet done)
@@ -840,7 +846,7 @@ class DataBroker {
         if (iter == bindings_.end()) {
           // if the type is not yet bound store a binding function in bindings_
           ::cloe::databroker::detail::to_lua<T>(*lua_);
-          lua_signal_adapter_t adapter = [](const SignalPtr& signal, sol::state& state,
+          lua_signal_adapter_t adapter = [](const SignalPtr& signal, sol::state_view& state,
                                             std::string_view lua_name) {
             signal->subscribe<T>([](const T&) {});
             state[lua_name] = &signal->value<T>();
@@ -859,7 +865,7 @@ class DataBroker {
     * Binds the Lua state to the databroker
     * \param lua Lua-VM instance
     */
-  void bind(sol::state* lua) {
+  void bind(sol::state_view* lua) {
     if (lua_ == lua) {
       // nop
       return;
@@ -883,7 +889,8 @@ class DataBroker {
   void bind(std::string_view signal_name, std::string_view lua_name) {
     if (lua_ == nullptr) {
       throw new std::logic_error(
-          "DataBroker: Binding a signal to Lua must not happen, before binding the Lua context.");
+          "DataBroker: Binding a signal to Lua must not happen, before binding the Lua "
+          "context.");
     }
 
     SignalPtr signal = this->signal(signal_name);

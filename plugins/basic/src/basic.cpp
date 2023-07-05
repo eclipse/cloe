@@ -38,6 +38,7 @@
 #include <cloe/component/object_sensor.hpp>             // for ObjectSensor
 #include <cloe/component/utility/ego_sensor_canon.hpp>  // for EgoSensor, EgoSensorCanon
 #include <cloe/controller.hpp>                          // for Controller, Json, etc.
+#include <cloe/data_broker.hpp>                         // for DataBroker
 #include <cloe/handler.hpp>                             // for ToJson, FromConf
 #include <cloe/models.hpp>                              // for CloeComponent
 #include <cloe/plugin.hpp>                              // for EXPORT_CLOE_PLUGIN
@@ -396,6 +397,47 @@ class BasicController : public Controller {
   }
 
   void enroll(Registrar& r) override {
+    auto& db = r.data_broker();
+    if (this->veh_) {
+      auto& vehicle = this->veh_->name();
+      {
+        std::string name1 = fmt::format("vehicles.{}.{}.acc", vehicle, name());
+        auto acc_signal = db.declare<cloe::controller::basic::AccConfiguration>(name1);
+        acc_signal->set_getter<cloe::controller::basic::AccConfiguration>(
+            [this]() -> const cloe::controller::basic::AccConfiguration& {
+              return this->acc_.config;
+            });
+        acc_signal->set_setter<cloe::controller::basic::AccConfiguration>(
+            [this](const cloe::controller::basic::AccConfiguration& value) {
+              this->acc_.config = value;
+            });
+      }
+      {
+        std::string name1 = fmt::format("vehicles.{}.{}.aeb", vehicle, name());
+        auto aeb_signal = db.declare<cloe::controller::basic::AebConfiguration>(name1);
+        aeb_signal->set_getter<cloe::controller::basic::AebConfiguration>(
+            [this]() -> const cloe::controller::basic::AebConfiguration& {
+              return this->aeb_.config;
+            });
+        aeb_signal->set_setter<cloe::controller::basic::AebConfiguration>(
+            [this](const cloe::controller::basic::AebConfiguration& value) {
+              this->aeb_.config = value;
+            });
+      }
+      {
+        std::string name1 = fmt::format("vehicles.{}.{}.lka", vehicle, name());
+        auto lka_signal = db.declare<cloe::controller::basic::LkaConfiguration>(name1);
+        lka_signal->set_getter<cloe::controller::basic::LkaConfiguration>(
+            [this]() -> const cloe::controller::basic::LkaConfiguration& {
+              return this->lka_.config;
+            });
+        lka_signal->set_setter<cloe::controller::basic::LkaConfiguration>(
+            [this](const cloe::controller::basic::LkaConfiguration& value) {
+              this->lka_.config = value;
+            });
+      }
+    }
+
     auto lua = r.register_lua_table();
 
     {

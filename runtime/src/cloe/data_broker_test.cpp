@@ -510,13 +510,8 @@ struct CustomData {
   std::string c;
 };
 
-// void to_json(json &j, const person &p) {
-//   j = json{{"name", p.name}, {"address", p.address}, {"age", p.age}};
-// }
-
-//void to_lua(const CustomData * /* value */) {
-void to_lua(sol::state &lua, CustomData * /* value */) {
-  sol::usertype<CustomData> usertype_table = lua.new_usertype<CustomData>("CustomData");
+void to_lua(sol::state_view &view, CustomData * /* value */) {
+  sol::usertype<CustomData> usertype_table = view.new_usertype<CustomData>("CustomData");
   usertype_table["a"] = &CustomData::a;
   usertype_table["b"] = &CustomData::b;
   usertype_table["c"] = &CustomData::c;
@@ -534,14 +529,15 @@ TEST(databroker, to_lua) {
   // 1) Implement a signal
   auto gamma = db.implement<CustomData>("gamma");
 
-  sol::state lua;
-  db.bind(&lua);
+  sol::state state;
+  sol::state_view view(state);
+  db.bind(&view);
   db.bind("gamma", "gamma");
 
   const auto &code = R"(
     gamma.b = 1.154431
 	)";
-  lua.script(code);
+  state.script(code);
 
   EXPECT_EQ(gamma.value().b, 1.154431);
 }

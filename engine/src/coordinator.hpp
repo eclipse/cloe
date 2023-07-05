@@ -22,19 +22,19 @@
 
 #pragma once
 
-#include <list>    // for list<>
-#include <map>     // for map<>
-#include <memory>  // for unique_ptr<>, shared_ptr<>
-#include <mutex>   // for mutex
-#include <queue>   // for queue<>
-#include <string>  // for string
-#include <vector>  // for vector<>
+#include <list>                // for list<>
+#include <map>                 // for map<>
+#include <memory>              // for unique_ptr<>, shared_ptr<>
+#include <mutex>               // for mutex
+#include <queue>               // for queue<>
+#include <string>              // for string
+#include <vector>              // for vector<>
 
 #include <sol/state_view.hpp>  // for state_view
 #include <sol/table.hpp>       // for table
 
-#include <cloe/cloe_fwd.hpp>  // for DataBroker
-#include <cloe/trigger.hpp>   // for Trigger, Action, Event, ...
+#include <cloe/cloe_fwd.hpp>   // for DataBroker
+#include <cloe/trigger.hpp>    // for Trigger, Action, Event, ...
 
 // Forward declaration:
 namespace cloe {
@@ -103,7 +103,7 @@ struct HistoryTrigger {
  */
 class Coordinator {
  public:
-  Coordinator(sol::state_view lua);
+  Coordinator(sol::state_view lua, cloe::DataBroker* db);
 
   const std::vector<HistoryTrigger>& history() const { return history_; }
 

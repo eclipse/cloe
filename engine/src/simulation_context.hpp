@@ -22,15 +22,15 @@
 
 #pragma once
 
-#include <cstdint>     // for uint64_t
-#include <functional>  // for function<>
-#include <map>         // for map<>
-#include <memory>      // for unique_ptr<>, shared_ptr<>
-#include <optional>    // for optional<>
-#include <string>      // for string
-#include <vector>      // for vector<>
+#include <cstdint>                      // for uint64_t
+#include <functional>                   // for function<>
+#include <map>                          // for map<>
+#include <memory>                       // for unique_ptr<>, shared_ptr<>
+#include <optional>                     // for optional<>
+#include <string>                       // for string
+#include <vector>                       // for vector<>
 
-#include <sol/state_view.hpp>  // for state_view
+#include <sol/state_view.hpp>           // for state_view
 
 #include <cloe/cloe_fwd.hpp>            // for Simulator, Controller, Registrar, Vehicle, Duration
 #include <cloe/data_broker.hpp>         // for DataBroker
@@ -39,13 +39,13 @@
 #include <cloe/utility/statistics.hpp>  // for Accumulator
 #include <cloe/utility/timer.hpp>       // for DurationTimer
 
-#include "coordinator.hpp"          // for Coordinator
-#include "registrar.hpp"            // for Registrar
-#include "server.hpp"               // for Server
-#include "simulation_progress.hpp"  // for SimulationProgress
-#include "stack.hpp"                // for Stack
-#include "utility/command.hpp"      // for CommandExecuter
-#include "utility/time_event.hpp"   // for TimeCallback
+#include "coordinator.hpp"              // for Coordinator
+#include "registrar.hpp"                // for Registrar
+#include "server.hpp"                   // for Server
+#include "simulation_progress.hpp"      // for SimulationProgress
+#include "stack.hpp"                    // for Stack
+#include "utility/command.hpp"          // for CommandExecuter
+#include "utility/time_event.hpp"       // for TimeCallback
 
 namespace engine {
 

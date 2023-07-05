@@ -22,12 +22,12 @@
 
 #include "coordinator.hpp"
 
-#include <functional>  // for bind
-#include <memory>      // for unique_ptr<>, shared_ptr<>
-#include <mutex>       // for unique_lock<>
-#include <string>      // for string
-#include <utility>     // for move
-#include <vector>      // for vector<>
+#include <functional>          // for bind
+#include <memory>              // for unique_ptr<>, shared_ptr<>
+#include <mutex>               // for unique_lock<>
+#include <string>              // for string
+#include <utility>             // for move
+#include <vector>              // for vector<>
 
 #include <cloe/core.hpp>       // for Json, Duration, Logger
 #include <cloe/handler.hpp>    // for HandlerType, Request
@@ -50,8 +50,8 @@ void to_json(Json& j, const HistoryTrigger& t) {
   j["at"] = t.when;
 }
 
-Coordinator::Coordinator(sol::state_view lua)
-    : lua_(lua), executer_registrar_(trigger_registrar(Source::TRIGGER)) {
+Coordinator::Coordinator(sol::state_view lua, cloe::DataBroker* db)
+    : lua_(lua), executer_registrar_(trigger_registrar(Source::TRIGGER)), db_(db) {
   lua_["cloe"]["plugins"] = lua_.create_table();
 }
 
