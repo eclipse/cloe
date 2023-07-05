@@ -155,7 +155,11 @@ sol::state new_lua(const LuaOptions& opt, Stack& s) {
 
 void merge_lua(sol::state_view& lua, const std::string& filepath) {
   logger::get("cloe")->debug("Load script {}", filepath);
-  lua_safe_script_file(lua, std::filesystem::path(filepath));
+  auto result = lua_safe_script_file(lua, std::filesystem::path(filepath));
+  if (!result.valid()) {
+    sol::error err = result;
+    throw err;
+  }
 }
 
 }  // namespace cloe
