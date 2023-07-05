@@ -75,18 +75,18 @@
 
 #include "simulation.hpp"
 
-#include <cstdint>  // for uint64_t
-#include <fstream>  // for ofstream
-#include <future>   // for future<>, async
-#include <sstream>  // for stringstream
-#include <string>   // for string
-#include <thread>   // for sleep_for
+#include <cstdint>                            // for uint64_t
+#include <fstream>                            // for ofstream
+#include <future>                             // for future<>, async
+#include <sstream>                            // for stringstream
+#include <string>                             // for string
+#include <thread>                             // for sleep_for
 
-#include <boost/filesystem.hpp>  // for is_directory, is_regular_file, ...
+#include <boost/filesystem.hpp>               // for is_directory, is_regular_file, ...
 
-#include <cloe/data_broker.hpp>
 #include <cloe/controller.hpp>                // for Controller
 #include <cloe/core/abort.hpp>                // for AsyncAbort
+#include <cloe/data_broker.hpp>
 #include <cloe/registrar.hpp>                 // for DirectCallback
 #include <cloe/simulator.hpp>                 // for Simulator
 #include <cloe/trigger/example_actions.hpp>   // for CommandFactory, BundleFactory, ...
@@ -95,12 +95,12 @@
 #include <cloe/vehicle.hpp>                   // for Vehicle
 #include <fable/utility.hpp>                  // for pretty_print
 
-#include "lua_action.hpp"             // for LuaAction,
-#include "lua_api.hpp"                // for to_json(json, sol::object)
-#include "simulation_context.hpp"     // for SimulationContext
-#include "utility/command.hpp"        // for CommandFactory
-#include "utility/state_machine.hpp"  // for State, StateMachine
-#include "utility/time_event.hpp"     // for TimeCallback, NextCallback, NextEvent, TimeEvent
+#include "lua_action.hpp"                     // for LuaAction,
+#include "lua_api.hpp"                        // for to_json(json, sol::object)
+#include "simulation_context.hpp"             // for SimulationContext
+#include "utility/command.hpp"                // for CommandFactory
+#include "utility/state_machine.hpp"          // for State, StateMachine
+#include "utility/time_event.hpp"  // for TimeCallback, NextCallback, NextEvent, TimeEvent
 
 // PROJECT_SOURCE_DIR is normally exported by CMake during build, but it's not
 // available for the linters, so we define a dummy value here for that case.
@@ -774,6 +774,214 @@ StateId SimulationMachine::Start::impl(SimulationContext& ctx) {
     }
     ctx.lua["cloe"]["state"]["scheduler_pending"] = ctx.lua.create_table();
   }
+  {
+    // Bind lua state_view to databroker
+    auto* dbPtr = ctx.coordinator->data_broker();
+    if (!dbPtr) {
+      throw std::logic_error("Coordinator did not provide a DataBroker instance");
+    }
+    auto& db = *dbPtr;
+    db.bind(&ctx.lua);
+    // Alias signals via lua
+    {
+      bool aliasing_failure = false;
+      // Read cloe.alias_signals
+      sol::object value = ctx.lua["cloe"]["alias_signals"];
+      auto type = value.get_type();
+      switch (type) {
+        // cloe.alias_signals: expected is a list (i.e. table) of 2-tuple each strings
+        case sol::type::table: {
+          sol::table alias_signals = value.as<sol::table>();
+          auto tbl_size = std::distance(alias_signals.begin(), alias_signals.end());
+          //for (auto& kv : alias_signals)
+          for (int i = 0; i < tbl_size; i++) {
+            //sol::object value = kv.second;
+            sol::object value = ctx.lua["cloe"]["alias_signals"][i + 1];
+            sol::type type = value.get_type();
+            switch (type) {
+              // cloe.alias_signals[i]: expected is a 2-tuple (i.e. table) each strings
+              case sol::type::table: {
+                sol::table alias_tuple = value.as<sol::table>();
+                auto tbl_size = std::distance(alias_tuple.begin(), alias_tuple.end());
+                if (tbl_size != 2) {
+                  // clang-format off
+                  logger()->error(
+                      "One or more entries in 'cloe.alias_signals' does not consist out of a 2-tuple. "
+                      "Expected are entries in this format { \"regex\" , \"short-name\" }"
+                      );
+                  // clang-format on
+                  aliasing_failure = true;
+                  continue;
+                }
+
+                sol::object value;
+                sol::type type;
+                std::string old_name;
+                std::string alias_name;
+                value = alias_tuple[1];
+                type = value.get_type();
+                if (sol::type::string != type) {
+                  // clang-format off
+                  logger()->error(
+                      "One or more parts in a tuple in 'cloe.alias_signals' has an unexpected datatype '{}'. "
+                      "Expected are entries in this format { \"regex\" , \"short-name\" }",
+                      static_cast<int>(type));
+                  // clang-format on
+                  aliasing_failure = true;
+                } else {
+                  old_name = value.as<std::string>();
+                }
+
+                value = alias_tuple[2];
+                type = value.get_type();
+                if (sol::type::string != type) {
+                  // clang-format off
+                  logger()->error(
+                      "One or more parts in a tuple in 'cloe.alias_signals' has an unexpected datatype '{}'. "
+                      "Expected are entries in this format { \"regex\" , \"short-name\" }",
+                      static_cast<int>(type));
+                  // clang-format on
+                  aliasing_failure = true;
+                } else {
+                  alias_name = value.as<std::string>();
+                }
+                try {
+                  db.alias(old_name, alias_name);
+                  // clang-format off
+                  logger()->info(
+                      "Aliasing signal '{}' as '{}'.",
+                      old_name, alias_name);
+                  // clang-format on
+                } catch (const std::logic_error& ex) {
+                  // clang-format off
+                  logger()->error(
+                      "Aliasing signal specifier '{}' as '{}' failed with this error: {}",
+                      old_name, alias_name, ex.what());
+                  // clang-format on
+                  aliasing_failure = true;
+                } catch (...) {
+                  // clang-format off
+                  logger()->error(
+                      "Aliasing signal specifier '{}' as '{}' failed.",
+                      old_name, alias_name);
+                  // clang-format on
+                  aliasing_failure = true;
+                }
+              } break;
+              // cloe.alias_signals[i]: is not a table
+              default: {
+                // clang-format off
+                logger()->error(
+                    "One or more entries in 'cloe.alias_signals' has an unexpected datatype '{}'. "
+                    "Expected are entries in this format { \"regex\" , \"short-name\" }",
+                    static_cast<int>(type));
+                // clang-format on
+                aliasing_failure = true;
+              } break;
+            }
+          }
+
+        } break;
+        case sol::type::none:
+        case sol::type::lua_nil: {
+          // not defined -> nop
+        } break;
+        default: {
+          // clang-format off
+          logger()->error(
+              "Expected symbol 'cloe.alias_signals' has unexpected datatype '{}'. "
+              "Expected is a list of 2-tuples in this format { \"regex\" , \"short-name\" }",
+              static_cast<int>(type));
+          // clang-format on
+          aliasing_failure = true;
+        } break;
+      }
+      if (aliasing_failure) {
+        throw cloe::ModelError("Aliasing signals failed with above error. Aborting.");
+      }
+    }
+    // Inject requested signals into lua
+    {
+      auto& signals = db.signals();
+      bool binding_failure = false;
+      // Read cloe.require_signals
+      sol::object value = ctx.lua["cloe"]["require_signals"];
+      auto type = value.get_type();
+      switch (type) {
+        // cloe.require_signals expected is a list (i.e. table) of strings
+        case sol::type::table: {
+          sol::table require_signals = value.as<sol::table>();
+          auto tbl_size = std::distance(require_signals.begin(), require_signals.end());
+
+          for (int i = 0; i < tbl_size; i++) {
+            sol::object value = ctx.lua["cloe"]["require_signals"][i + 1];
+
+            sol::type type = value.get_type();
+            if (type != sol::type::string) {
+              // clang-format off
+              logger()->warn(
+                  "One entry of cloe.require_signals has a wrong data type: '{}'. "
+                  "Expected is a list of strings.",
+                  static_cast<int>(type));
+              // clang-format on
+              binding_failure = true;
+              continue;
+            }
+            std::string signal_name = value.as<std::string>();
+
+            // bind signal 'signal_name' to lua
+            auto iter = db[signal_name];
+            if (iter != signals.end()) {
+              try {
+                db.bind(signal_name, signal_name);
+                // clang-format off
+                  logger()->info(
+                      "Binding signal '{}' as '{}'.",
+                      signal_name, signal_name);
+                // clang-format on
+              } catch (const std::logic_error& ex) {
+                // clang-format off
+                logger()->error(
+                    "Binding signal '{}' failed with error: {}",
+                    signal_name, ex.what()
+                    );
+                // clang-format on
+              }
+            } else {
+              // clang-format off
+              logger()->warn(
+                  "Requested signal '{}' does not exist in DataBroker.",
+                  signal_name
+                  );
+              // clang-format on
+              binding_failure = true;
+            }
+          }
+        } break;
+        case sol::type::none:
+        case sol::type::lua_nil: {
+          // clang-format off
+          logger()->warn(
+              "Expected symbol 'cloe.require_signals' appears to be undefined. "
+              "Expected is a list of string."
+              );
+          // clang-format on
+        } break;
+        default: {
+          // clang-format off
+          logger()->error(
+              "Expected symbol 'cloe.require_signals' has unexpected datatype '{}'. "
+              "Expected is a list of string.",
+              static_cast<int>(type));
+          // clang-format on
+          binding_failure = true;
+        } break;
+      }
+      if (binding_failure) {
+        throw cloe::ModelError("Binding signals to Lua failed with above error. Aborting.");
+      }
+    }
+  }
 
   // Process initial trigger list
   ctx.coordinator->process(ctx.sync);
@@ -839,7 +1047,7 @@ StateId SimulationMachine::StepBegin::impl(SimulationContext& ctx) {
       logger()->info("The {} {} is no longer operational.", type, m.name());
       return false;  // abort loop
     }
-    return true;  // next model
+    return true;     // next model
   });
   return (all_operational ? STEP_SIMULATORS : STOP);
 }
@@ -1225,8 +1433,9 @@ SimulationResult Simulation::run() {
   SimulationContext ctx{sol::state_view(lua_)};
   ctx.db = std::make_unique<cloe::DataBroker>();
   ctx.server = make_server(config_.server);
-  ctx.coordinator = std::make_unique<Coordinator>(ctx.lua);
-  ctx.registrar = std::make_unique<Registrar>(ctx.server->server_registrar(), ctx.coordinator.get(), ctx.db.get());
+  ctx.coordinator = std::make_unique<Coordinator>(ctx.lua, ctx.db.get());
+  ctx.registrar = std::make_unique<Registrar>(ctx.server->server_registrar(), ctx.coordinator.get(),
+                                              ctx.db.get());
   ctx.commander = std::make_unique<CommandExecuter>(logger());
   ctx.sync = SimulationSync(config_.simulation.model_step_width);
   ctx.config = config_;
