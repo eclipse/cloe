@@ -86,7 +86,7 @@ class Command : public cloe::Action {
     return std::make_unique<Command>(name(), command_, executer_);
   }
 
-  void operator()(const cloe::Sync&, cloe::TriggerRegistrar&) override;
+  cloe::CallbackResult operator()(const cloe::Sync&, cloe::TriggerRegistrar&) override;
 
  protected:
   void to_json(cloe::Json& j) const override;

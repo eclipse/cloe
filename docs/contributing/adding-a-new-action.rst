@@ -39,8 +39,9 @@ Then we come to the source for the ``Log`` action:
      Log(const std::string& name, LogLevel level, const std::string& msg)
          : Action(name), level_(level), msg_(msg) {}
      ActionPtr clone() const override { return std::make_unique<Log>(name(), level_, msg_); }
-     void operator()(const Sync&, TriggerRegistrar&) override {
+     CallbackResult operator()(const Sync&, TriggerRegistrar&) override {
        logger()->log(level_, msg_.c_str());
+       return CallbackResult::Ok;
      }
      bool is_significant() const override { return false; }
 

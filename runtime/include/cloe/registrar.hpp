@@ -57,7 +57,10 @@ class DirectCallback : public Callback {
       auto& condition = dynamic_cast<E&>((*it)->event());
       if (condition(sync, args...)) {
         if ((*it)->is_sticky()) {
-          this->execute((*it)->clone(), sync);
+          auto result = this->execute((*it)->clone(), sync);
+          if (result == CallbackResult::Unpin) {
+            it = triggers_.erase(it);
+          }
         } else {
           // Remove from trigger list and advance.
           this->execute(std::move(*it), sync);

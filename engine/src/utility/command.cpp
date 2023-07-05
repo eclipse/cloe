@@ -127,7 +127,7 @@ void CommandExecuter::wait_all() {
 
 namespace actions {
 
-void Command::operator()(const cloe::Sync&, cloe::TriggerRegistrar&) { executer_->run(command_); }
+cloe::CallbackResult Command::operator()(const cloe::Sync&, cloe::TriggerRegistrar&) { executer_->run(command_); return cloe::CallbackResult::Ok; }
 
 void Command::to_json(cloe::Json& j) const { command_.to_json(j); }
 
