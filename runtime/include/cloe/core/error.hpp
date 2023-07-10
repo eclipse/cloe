@@ -37,8 +37,8 @@ class Error : public std::exception {
   Error(std::string_view what) : err_(what.data()) {}
 
   template <typename... Args>
-  Error(std::string_view format, const Args&... args)
-      : err_(fmt::format(format, args...)) {}
+  Error(std::string_view format, Args&&... args)
+      : err_(fmt::format(format, std::forward<Args>(args)...)) {}
 
   virtual ~Error() noexcept = default;
 
@@ -49,8 +49,8 @@ class Error : public std::exception {
   void set_explanation(std::string explanation);
 
   template <typename... Args>
-  void set_explanation(std::string_view format, const Args&... args) {
-    set_explanation(fmt::format(format, args...));
+  void set_explanation(std::string_view format, Args&&... args) {
+    set_explanation(fmt::format(format, std::forward<Args>(args)...));
   }
 
   const std::string& explanation() const { return explanation_; }
@@ -61,8 +61,8 @@ class Error : public std::exception {
   }
 
   template <typename... Args>
-  Error explanation(std::string_view format, const Args&... args) && {
-    set_explanation(fmt::format(format, args...));
+  Error explanation(std::string_view format, Args&&... args) && {
+    set_explanation(fmt::format(format, std::forward<Args>(args)...));
     return std::move(*this);
   }
 
