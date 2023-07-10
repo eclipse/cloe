@@ -24,6 +24,7 @@
 #pragma once
 
 #include <memory>       // for shared_ptr<>
+#include <optional>     // for optional<>
 #include <string>       // for string
 #include <type_traits>  // for enable_if_t<>, is_base_of<>
 #include <utility>      // for move
@@ -183,28 +184,61 @@ class Interface {
   virtual Json json_schema() const = 0;
 
   /**
-   * Validate the input JSON configuration.
+   * Validate the input JSON configuration for correctness.
+   *
+   * - This method should only set `error` if there is an error.
+   *   This method should not reset `error` if there is no error.
+   *   Therefore, the content of `error` is only valid if the method returns false.
+   *   This allows you to chain validates and check at the end if there was an error.
+   * - This method should not throw if there is a schema error!
+   *
+   * \param c JSON to check
+   * \param error reference to store error if occurred
+   * \return true if valid
+   */
+  virtual bool validate(const Conf& c, std::optional<SchemaError>& error) const = 0;
+
+  /**
+   * Validate the input JSON configuration or throw an error.
    *
    * If you don't have a Conf but would like to validate a Json type,
    * then construct a Conf on the fly:
    *
-   *     s.validate(Conf{j});
+   *     s.validate_or_throw(Conf{j});
    *
-   * This function is not provided inline to prevent incorrect use.
+   * This overload is not provided inline to prevent incorrect use.
+   *
+   * \param c JSON to check
    */
-  virtual void validate(const Conf& c) const = 0;
+  virtual void validate_or_throw(const Conf& c) const final {
+    if (auto err = fail(c); err) {
+      throw std::move(*err);
+    }
+  }
+
+  /**
+   * Return input JSON configuration schema error, if any.
+   *
+   * If you don't have a Conf but would like to validate a Json type,
+   * then construct a Conf on the fly:
+   *
+   *     s.fail(Conf{j});
+   *
+   * This overload is not provided inline to prevent incorrect use.
+   *
+   * \param c JSON to check
+   * \return error if invalid
+   */
+  [[nodiscard]] virtual std::optional<SchemaError> fail(const Conf& c) const final {
+    std::optional<SchemaError> err;
+    validate(c, err);
+    return err;
+  }
 
   /**
    * Return whether the input JSON is valid.
    */
-  virtual bool is_valid(const Conf& c) const {
-    try {
-      validate(c);
-    } catch (...) {
-      return false;
-    }
-    return true;
-  }
+  [[nodiscard]] virtual bool is_valid(const Conf& c) const final { return !fail(c); }
 
   /**
    * Return the current value of the destination.
@@ -332,7 +366,9 @@ class Box : public Interface {
   void set_description(std::string s) override { return impl_->set_description(std::move(s)); }
   Json usage() const override { return impl_->usage(); }
   Json json_schema() const override { return impl_->json_schema(); };
-  void validate(const Conf& c) const override { impl_->validate(c); }
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
+    return impl_->validate(c, err);
+  }
   void to_json(Json& j) const override { impl_->to_json(j); }
   void from_conf(const Conf& c) override { impl_->from_conf(c); }
   void reset_ptr() override { impl_->reset_ptr(); }
@@ -402,31 +438,52 @@ class Base : public Interface {
   /**
    * Validate whether `c` is of the correct type.
    *
-   * This method is provided for an implementation to call in its `validate()`
+   * This method is provided for an implementation to call in its `fail()`
    * implementation. It is not called automatically.
    */
-  void validate_type(const Conf& c) const {
+  bool validate_type(const Conf& c, std::optional<SchemaError>& err) const {
     if (c->type() != type_) {
       if (c->type() == JsonType::number_unsigned && type_ == JsonType::number_integer) {
-        return;
+        return true;
       }
 
-      throw SchemaError{c, this->json_schema(), "require type {}, got {}", type_string(),
-                        to_string(c->type())};
+      return this->set_error(err, c, "require type {}, got {}", type_string(), to_string(c->type()));
     }
+    return true;
   }
 
   template <typename... Args>
-  [[noreturn]] void throw_error(const Conf& c, const char* format, Args... args) const {
-    throw SchemaError{c, this->json_schema(), format, args...};
+  [[nodiscard]] SchemaError error(const Conf& c, std::string_view format, Args&&... args) const {
+    return SchemaError{c, this->json_schema(), format, std::forward<Args>(args)...};
   }
 
-  [[noreturn]] void throw_error(const ConfError& e) const {
-    throw SchemaError{e, this->json_schema()};
+  [[nodiscard]] SchemaError error(const ConfError& e) const {
+    return SchemaError{e, this->json_schema()};
   }
 
-  [[noreturn]] void throw_wrong_type(const Conf& c) const {
-    throw_error(error::WrongType(c, type_));
+  [[nodiscard]] SchemaError wrong_type(const Conf& c) const {
+    return error(error::WrongType(c, type_));
+  }
+
+  template <typename... Args>
+  bool set_error(std::optional<SchemaError>& err, const Conf& c, std::string_view format, Args&&... args) const {
+    err.emplace(this->error(c, format, std::forward<Args>(args)...));
+    return false;
+  }
+
+  bool set_error(std::optional<SchemaError>& err, const ConfError& e) const {
+    err.emplace(this->error(e));
+    return false;
+  }
+
+  bool set_error(std::optional<SchemaError>& err, SchemaError&& e) const {
+    err.emplace(std::move(e));
+    return false;
+  }
+
+  bool set_wrong_type(std::optional<SchemaError>& err, const Conf& c) const {
+    err.emplace(this->wrong_type(c));
+    return false;
   }
 
   void augment_schema(Json& j) const {

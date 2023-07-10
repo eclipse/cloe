@@ -60,7 +60,7 @@ class FromJson : public Base<FromJson<T>> {
     return j;
   }
 
-  void validate(const Conf& c) const override { this->validate_type(c); }
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override { return this->validate_type(c, err); }
 
   using Interface::to_json;
   void to_json(Json& j) const override {

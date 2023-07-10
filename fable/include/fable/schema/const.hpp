@@ -57,29 +57,30 @@ class Const : public Base<Const<T, P>> {
     return j;
   }
 
-  void validate(const Conf& c) const override {
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
     Type tmp = prototype_.deserialize(c);
     if (tmp != constant_) {
-      this->throw_error(c, "expected const value {}, got {}", constant_, tmp);
+      return this->set_error(err, c, "expected const value {}, got {}", constant_, tmp);
     }
+    return true;
   }
 
   using Interface::to_json;
   void to_json(Json& j) const override { j = serialize(constant_); }
 
-  void from_conf(const Conf& c) override { validate(c); }
+  void from_conf(const Conf& c) override { this->validate_or_throw(c); }
 
   Json serialize(const Type& x) const { return prototype_.serialize(x); }
 
   Type deserialize(const Conf& c) const {
-    validate(c);
+    this->validate_or_throw(c);
     return constant_;
   }
 
   void serialize_into(Json& j, const Type& x) const { prototype_.serialize_into(j, x); }
 
   void deserialize_into(const Conf& c, Type& x) const {
-    validate(c);
+    this->validate_or_throw(c);
     x = constant_;
   }
 

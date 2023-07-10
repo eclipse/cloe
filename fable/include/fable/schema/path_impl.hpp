@@ -87,67 +87,79 @@ Json Path<T>::json_schema() const {
 }
 
 template <typename T>
-void Path<T>::validate(const Conf& c) const {
-  this->validate_type(c);
+bool Path<T>::validate(const Conf& c, std::optional<SchemaError>& err) const {
+  if (!this->validate_type(c, err)) {
+    return false;
+  }
 
   auto src = c.get<std::string>();
   if (interpolate_) {
+    // XXX: Fix throw here
     src = interpolate_vars(src, env_);
   }
   if (src.size() < min_length_) {
-    this->throw_error(c, "expect minimum path length of {}, got {}", min_length_, src.size());
+    return this->set_error(err, c, "expect minimum path length of {}, got {}", min_length_,
+                           src.size());
   }
   if (src.size() > max_length_) {
-    this->throw_error(c, "expect maximum path length of {}, got {}", max_length_, src.size());
+    return this->set_error(err, c, "expect maximum path length of {}, got {}", max_length_,
+                           src.size());
   }
   if (!pattern_.empty() && !std::regex_match(src, std::regex(pattern_))) {
-    this->throw_error(c, "expect path to match regex '{}': {}", pattern_, src);
+    return this->set_error(err, c, "expect path to match regex '{}': {}", pattern_, src);
   }
 
   Type p{src};
   if (req_abs_ && !p.is_absolute()) {
-    this->throw_error(c, "expect path to be absolute: {}", src);
+    return this->set_error(err, c, "expect path to be absolute: {}", src);
   }
   if (resolve_) {
-    p = resolve_path(c, p);
+    try {
+      p = resolve_path(c, p);
+    } catch (SchemaError& e) {
+      err.emplace(std::move(e));
+      return false;
+    }
   }
 
   switch (req_state_) {
     case State::Absent:
       if (detail::exists(p)) {
-        this->throw_error(c, detail::path_state_cstr(req_state_));
+        return this->set_error(err, c, detail::path_state_cstr(req_state_));
       }
       break;
     case State::Exists:
       if (!detail::exists(p)) {
-        this->throw_error(c, detail::path_state_cstr(req_state_));
+        return this->set_error(err, c, detail::path_state_cstr(req_state_));
       }
       break;
     case State::Executable:
       // fallthrough
     case State::FileExists:
       if (!detail::is_regular_file(p)) {
-        this->throw_error(c, detail::path_state_cstr(req_state_));
+        return this->set_error(err, c, detail::path_state_cstr(req_state_));
       }
       break;
     case State::DirExists:
       if (!detail::is_directory(p)) {
-        this->throw_error(c, detail::path_state_cstr(req_state_));
+        return this->set_error(err, c, detail::path_state_cstr(req_state_));
       }
       break;
     case State::NotFile:
       if (detail::is_regular_file(p) || detail::is_other(p)) {
-        this->throw_error(c, detail::path_state_cstr(req_state_));
+        return this->set_error(err, c, detail::path_state_cstr(req_state_));
       }
       break;
     case State::NotDir:
       if (detail::is_directory(p)) {
-        this->throw_error(c, detail::path_state_cstr(req_state_));
+        return this->set_error(err, c, detail::path_state_cstr(req_state_));
       }
       break;
     default:
       break;
   }
+
+  return true;
 }
 
 template <typename T>
@@ -175,7 +187,7 @@ typename Path<T>::Type Path<T>::resolve_path(const Conf& c, const Path<T>::Type&
   if (req_state_ == State::Executable && filepath_str.find("/") == std::string::npos) {
     auto result = detail::search_path(filepath);
     if (!result) {
-      this->throw_error(c, "expect executable to exist: {}", filepath.native());
+      throw this->error(c, "expect executable to exist: {}", filepath.native());
     }
     return *result;
   } else {

@@ -79,7 +79,7 @@ class Number : public Base<Number<T>> {
 
  public:  // Overrides
   Json json_schema() const override;
-  void validate(const Conf& c) const override;
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override;
   using Interface::to_json;
   void to_json(Json& j) const override;
   void from_conf(const Conf& c) override;
@@ -91,7 +91,7 @@ class Number : public Base<Number<T>> {
 
  private:
   template <typename B>
-  void check_bounds(const Conf& c) const;
+  bool validate_bounds(const Conf& c, std::optional<SchemaError>& err) const;
 
  private:
   bool exclusive_min_{false};

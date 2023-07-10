@@ -90,7 +90,7 @@ inline void assert_schema_eq(const Confable& x, const char expect[]) {
 
 inline void assert_validate(const Schema& s, const Conf& input) {
   try {
-    s.validate(input);
+    s.validate_or_throw(input);
   } catch (SchemaError& e) {
     pretty_print(e, std::cerr);
     throw;
@@ -110,11 +110,11 @@ inline void assert_validate(const Confable& x, const char json_input[]) {
 }
 
 inline void assert_invalidate(const Schema& s, const Conf& input) {
-  ASSERT_THROW(s.validate(input), SchemaError);
+  ASSERT_THROW(s.validate_or_throw(input), SchemaError);
 }
 
 inline void assert_invalidate(const Schema& s, const char json_input[]) {
-  ASSERT_THROW(s.validate(Conf{parse_json(json_input)}), SchemaError);
+  ASSERT_THROW(s.validate_or_throw(Conf{parse_json(json_input)}), SchemaError);
 }
 
 inline void assert_invalidate(const Confable& x, const Conf& input) {

@@ -61,10 +61,19 @@ Schema& Confable::schema() {
 
 const Schema& Confable::schema() const { return const_cast<Confable*>(this)->schema(); }
 
-void Confable::validate(const Conf& c) const { schema().validate(c); }
+void Confable::validate_or_throw(const Conf& c) const {
+  std::optional<SchemaError> err;
+  if (!validate(c, err)) {
+    throw std::move(*err);
+  }
+}
+
+bool Confable::validate(const Conf& c, std::optional<SchemaError>& err) const {
+  return schema().validate(c, err);
+}
 
 void Confable::from_conf(const Conf& c) {
-  validate(c);
+  validate_or_throw(c);
   schema().from_conf(c);
   reset_schema();
 }
@@ -79,4 +88,4 @@ Json Confable::to_json() const {
 
 Schema Confable::schema_impl() { return schema::Struct(); }
 
-}
+}  // namespace fable

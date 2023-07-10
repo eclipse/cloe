@@ -68,7 +68,9 @@ Number<T> Number<T>::exclusive_maximum(T value) && {
 }
 
 template <typename T>
-std::pair<T, T> Number<T>::bounds() const { return std::make_pair(value_min_, value_max_); }
+std::pair<T, T> Number<T>::bounds() const {
+  return std::make_pair(value_min_, value_max_);
+}
 
 template <typename T>
 Number<T> Number<T>::bounds(T min, T max) && {
@@ -169,25 +171,20 @@ Json Number<T>::json_schema() const {
 }
 
 template <typename T>
-void Number<T>::validate(const Conf& c) const {
+bool Number<T>::validate(const Conf& c, std::optional<SchemaError>& err) const {
   switch (c->type()) {
-    case JsonType::number_unsigned: {
-      check_bounds<uint64_t>(c);
-      break;
-    }
-    case JsonType::number_integer: {
-      check_bounds<int64_t>(c);
-      break;
-    }
-    case JsonType::number_float: {
+    case JsonType::number_unsigned:
+      return validate_bounds<uint64_t>(c, err);
+    case JsonType::number_integer:
+      return validate_bounds<int64_t>(c, err);
+    case JsonType::number_float:
       if (this->type() != JsonType::number_float) {
-        this->throw_wrong_type(c);
+        return this->set_wrong_type(err, c);
+      } else {
+        return validate_bounds<double>(c, err);
       }
-      check_bounds<double>(c);
-      break;
-    }
     default:
-      this->throw_wrong_type(c);
+      return this->set_wrong_type(err, c);
   }
 }
 
@@ -204,35 +201,45 @@ void Number<T>::from_conf(const Conf& c) {
 }
 
 template <typename T>
-Json Number<T>::serialize(const T& x) const { return x; }
+Json Number<T>::serialize(const T& x) const {
+  return x;
+}
 
 template <typename T>
-T Number<T>::deserialize(const Conf& c) const { return c.get<T>(); }
+T Number<T>::deserialize(const Conf& c) const {
+  return c.get<T>();
+}
 
 template <typename T>
-void Number<T>::serialize_into(Json& j, const T& x) const { j = x; }
+void Number<T>::serialize_into(Json& j, const T& x) const {
+  j = x;
+}
 
 template <typename T>
-void Number<T>::deserialize_into(const Conf& c, T& x) const { x = c.get<T>(); }
+void Number<T>::deserialize_into(const Conf& c, T& x) const {
+  x = c.get<T>();
+}
 
 template <typename T>
-void Number<T>::reset_ptr() { ptr_ = nullptr; }
+void Number<T>::reset_ptr() {
+  ptr_ = nullptr;
+}
 
 /**
  * Check that the min and max bounds are held by c.
  */
 template <typename T>
 template <typename B>
-void Number<T>::check_bounds(const Conf& c) const {
+bool Number<T>::validate_bounds(const Conf& c, std::optional<SchemaError>& err) const {
   auto v = c.get<B>();
 
   // Check whitelist and blacklist first.
   if (!std::is_floating_point_v<T>) {
     if (whitelist_.count(v)) {
-      return;
+      return true;
     }
     if (blacklist_.count(v)) {
-      this->throw_error(c, "unexpected blacklisted value {}", v);
+      return this->set_error(err, c, "unexpected blacklisted value {}", v);
     }
   }
 
@@ -243,28 +250,30 @@ void Number<T>::check_bounds(const Conf& c) const {
     // any comparison.
   } else if (exclusive_min_) {
     if (v <= static_cast<B>(value_min_)) {
-      this->throw_error(c, "expected exclusive minimum of {}, got {}", value_min_, v);
+      return this->set_error(err, c, "expected exclusive minimum of {}, got {}", value_min_, v);
     }
   } else {
     if (v < static_cast<B>(value_min_)) {
-      this->throw_error(c, "expected minimum of {}, got {}", value_min_, v);
+      return this->set_error(err, c, "expected minimum of {}, got {}", value_min_, v);
     }
   }
 
   if (!std::numeric_limits<B>::is_signed && value_max_ < 0) {
     // If B is unsigned, but our maximum value is somewhere below 0, then v
     // will by definition always be out-of-bounds.
-    this->throw_error(c, "expected {}maximum of {}, got {}", (exclusive_max_ ? "exclusive " : ""),
-                      value_max_, v);
+    return this->set_error(err, c, "expected {}maximum of {}, got {}",
+                           (exclusive_max_ ? "exclusive " : ""), value_max_, v);
   } else if (exclusive_max_) {
     if (v >= static_cast<B>(value_max_)) {
-      this->throw_error(c, "expected exclusive maximum of {}, got {}", value_max_, v);
+      return this->set_error(err, c, "expected exclusive maximum of {}, got {}", value_max_, v);
     }
   } else {
     if (v > static_cast<B>(value_max_)) {
-      this->throw_error(c, "expected maximum of {}, got {}", value_max_, v);
+      return this->set_error(err, c, "expected maximum of {}, got {}", value_max_, v);
     }
   }
+
+  return true;
 }
 
 }  // namespace schema

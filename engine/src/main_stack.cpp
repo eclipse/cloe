@@ -69,7 +69,7 @@ void merge_stack(const StackOptions& opt, Stack& s, const std::string& filepath)
     }
 
     s.from_conf(c);
-    s.validate();
+    s.validate_self();
   };
 
   if (!opt.error) {
