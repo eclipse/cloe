@@ -240,7 +240,7 @@ class String : public Base<String> {
 
  public:  // Overrides
   Json json_schema() const override;
-  void validate(const Conf& c) const override;
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override;
   using Interface::to_json;
   void to_json(Json& j) const override;
   void from_conf(const Conf& c) override;

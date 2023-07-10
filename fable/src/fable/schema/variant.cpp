@@ -102,28 +102,39 @@ Json Variant::json_schema() const {
   return j;
 }
 
-size_t Variant::validate_index(const Conf& c) const {
+std::optional<size_t> Variant::validate_index(const Conf& c,
+                                              std::optional<SchemaError>& err) const {
   std::vector<size_t> matches;
   std::vector<SchemaError> errors;
   for (size_t i = 0; i < schemas_.size(); ++i) {
-    try {
-      schemas_[i].validate(c);
-      matches.emplace_back(i);
-    } catch (SchemaError& e) {
-      errors.emplace_back(e);
-    } catch (ConfError& e) {
-      errors.emplace_back(SchemaError{e, schemas_[i].json_schema()});
+    std::optional<SchemaError> tmp;
+    if (schemas_[i].validate(c, tmp)) {
+      matches.push_back(i);
+    } else {
+      errors.emplace_back(std::move(*tmp));
     }
   }
 
   if (matches.size() == 0) {
-    throw SchemaError{c, json_schema(), Json{{"errors", errors}},
-                      "input does not match any variants"};
+    err.emplace(SchemaError{c, json_schema(), Json{{"errors", errors}},
+                            "input does not match any variants"});
+    return {};
   } else if (matches.size() > 1 && unique_match_) {
-    throw SchemaError{c, json_schema(), Json{{"matches", matches}},
-                      "input matches more than one variant"};
+    err.emplace(SchemaError{c, json_schema(), Json{{"matches", matches}},
+                            "input matches more than one variant"});
+    return {};
   } else {
     return matches[0];
+  }
+}
+
+size_t Variant::variant_index(const Conf& c) const {
+  std::optional<SchemaError> err;
+  auto index = validate_index(c, err);
+  if (index) {
+    return *index;
+  } else {
+    throw std::move(*err);
   }
 }
 
