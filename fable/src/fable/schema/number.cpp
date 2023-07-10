@@ -33,14 +33,15 @@ namespace fable {
 namespace schema {
 
 template class Number<char>;
+template class Number<signed char>;
 template class Number<unsigned char>;
-template class Number<short>;
+template class Number<signed short>;
 template class Number<unsigned short>;
-template class Number<int>;
+template class Number<signed int>;
 template class Number<unsigned int>;
-template class Number<long int>;
+template class Number<signed long int>;
 template class Number<unsigned long int>;
-template class Number<long long int>;
+template class Number<signed long long int>;
 template class Number<unsigned long long int>;
 template class Number<float>;
 template class Number<double>;
