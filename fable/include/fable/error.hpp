@@ -42,7 +42,8 @@ class Error : public std::exception {
   explicit Error(const char* what) : err_(what) {}
 
   template <typename... Args>
-  explicit Error(const char* format, const Args&... args) : err_(fmt::format(format, args...)) {}
+  explicit Error(std::string_view format, Args&&... args)
+      : err_(fmt::format(format, std::forward<Args>(args)...)) {}
 
   virtual ~Error() noexcept = default;
 
