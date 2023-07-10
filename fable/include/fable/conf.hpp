@@ -321,8 +321,8 @@ class Conf {
   std::string resolve_file(const std::string& filename) const;
 
   template <typename... Args>
-  [[noreturn]] void throw_error(const char* msg, const Args&... args) const {
-    throw_error(fmt::format(msg, args...));
+  [[noreturn]] void throw_error(std::string_view format, Args&&... args) const {
+    throw_error(fmt::format(format, std::forward<Args>(args)...));
   }
   [[noreturn]] void throw_error(const std::string& msg) const;
   [[noreturn]] void throw_unexpected(const std::string& key, const std::string& msg = "") const;
