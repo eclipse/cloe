@@ -178,13 +178,17 @@ struct LoggingConf : public Confable {
     };
   }
 
-  void validate(const Conf& c) const override {
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
     const auto& s = this->schema();
-    s.validate(c);
-    if (!c.has("pattern") && !c.has("level")) {
-      throw SchemaError(c, s.json_schema(),
-                        "require at least one of 'pattern' or 'level' properties");
+    if (!s.validate(c, err)) {
+      return false;
     }
+    if (!c.has("pattern") && !c.has("level")) {
+      err.emplace(SchemaError(c, s.json_schema(),
+                              "require at least one of 'pattern' or 'level' properties"));
+      return false;
+    }
+    return true;
   }
 };
 
@@ -756,9 +760,9 @@ class VehicleSchema : public fable::schema::Base<VehicleSchema> {
     return v.schema().json_schema();
   }
 
-  void validate(const Conf& c) const override {
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
     VehicleConf v{components_};
-    v.schema().validate(c);
+    return v.schema().validate(c, err);
   }
 
   Json serialize(const Type& x) const { return x.to_json(); }
@@ -1018,7 +1022,7 @@ class Stack : public Confable {
    * consistency and correctness (but not necessarily completeness, except for
    * any references made) of the entire configuration.
    */
-  void validate() const;
+  void validate_self() const;
 
   /**
    * Return true if this configuration would be valid.
@@ -1081,13 +1085,14 @@ class Stack : public Confable {
   /**
    * Validate a configuration.
    *
-   * This cannot normally be done with `schema().validate(c)`, because plugins
+   * This cannot normally be done with `schema().validate()`, because plugins
    * needed to be loaded in order to validate sections of the schema. This
    * requires partial application of the schema.
    *
-   * This should be equivalent to from_conf() followed by validate().
+   * This should be equivalent to from_conf() followed by validate_self().
    */
-  void validate(const Conf& c) const override;
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override;
+  void validate_or_throw(const Conf& c) const override;
 
   void to_json(Json& j) const override;
   void from_conf(const Conf& c) override { from_conf(c, 0); }

@@ -63,11 +63,11 @@ class FromConfable : public Base<FromConfable<T>> {
     return j;
   }
 
-  void validate(const Conf& c) const override {
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
     if (ptr_ == nullptr) {
-      schema_.validate(c);
+      return schema_.validate(c, err);
     } else {
-      ptr_->validate(c);
+      return ptr_->validate(c, err);
     }
   }
 

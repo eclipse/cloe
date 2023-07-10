@@ -254,14 +254,14 @@ class FactoryBase : public Base<CRTP> {
     return j;
   }
 
-  void validate(const Conf& c) const override {
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
     assert(schema_ != nullptr);
     auto factory = c.get<std::string>(factory_key_);
     if (!available_.count(factory)) {
-      this->throw_error(c, "unknown factory: {}", factory);
+      return this->set_error(err, c, "unknown factory: {}", factory);
     }
 
-    schema_->validate(c);
+    return schema_->validate(c, err);
   }
 
   Type make(const Conf& c) const { return deserialize(c); }
@@ -270,7 +270,7 @@ class FactoryBase : public Base<CRTP> {
     assert(schema_ != nullptr);
     auto factory = c.get<std::string>(factory_key_);
     if (!available_.count(factory)) {
-      this->throw_error(c, "unknown factory: {}", factory);
+      throw this->error(c, "unknown factory: {}", factory);
     }
 
     Conf args;

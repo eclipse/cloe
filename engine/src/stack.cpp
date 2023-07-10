@@ -604,25 +604,40 @@ void Stack::from_conf(const Conf& _conf, size_t depth) {
   }
 
   // Apply everything else.
-  this->schema().validate(c);
+  this->schema().validate_or_throw(c);
   this->schema().from_conf(c);
   this->reset_schema();
 }
 
-void Stack::validate(const Conf& c) const {
-  Stack copy(*this);
-  copy.from_conf(c);
-  copy.validate();
-}
-
-void Stack::validate() const {
+void Stack::validate_self() const {
   check_consistency();
   check_defaults();
 }
 
+void Stack::validate_or_throw(const Conf& c) const {
+  Stack copy(*this);
+  copy.from_conf(c);
+  copy.validate_self();
+}
+
+bool Stack::validate(const Conf &c, std::optional<SchemaError> &err) const {
+  Stack copy(*this);
+  try {
+    copy.from_conf(c);
+    copy.validate_self();
+  } catch (fable::SchemaError& e) {
+    err.emplace(e);
+    return false;
+  } catch (Error& e) {
+    err.emplace(SchemaError(c, schema().json_schema(), "{}", e.what()));
+    return false;
+  }
+  return true;
+}
+
 bool Stack::is_valid() const {
   try {
-    validate();
+    validate_self();
     return true;
   } catch (...) {
     // TODO(ben): Replace ... with specific error classes
