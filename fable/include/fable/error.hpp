@@ -59,9 +59,10 @@ class ConfError : public Error {
 
   ConfError(const Conf& c, const std::string& msg) : Error(msg), data_(c) {}
   ConfError(const Conf& c, const char* msg) : Error(msg), data_(c) {}
+
   template <typename... Args>
-  ConfError(const Conf& c, const char* format, const Args&... args)
-      : Error(format, args...), data_(c) {}
+  ConfError(const Conf& c, std::string_view format, Args&&... args)
+      : Error(format, std::forward<Args>(args)...), data_(c) {}
 
   std::string file() const { return data_.file(); }
   std::string root() const { return data_.root(); }
@@ -122,19 +123,49 @@ class SchemaError : public ConfError {
  public:  // Constructors
   virtual ~SchemaError() noexcept = default;
 
+  /**
+   * Construct SchemaError with a ConfError.
+   *
+   * \param c ConfError
+   * \param s Schema used for validation
+   */
   SchemaError(const ConfError& c, const Json& s) : ConfError(c), schema_(s) {}
 
+  /**
+   * Construct SchemaError with a ConfError.
+   *
+   * \param c ConfError
+   * \param s Schema used for validation
+   * \param ctx Extra contextual data as JSON
+   */
   SchemaError(const ConfError& c, const Json& s, const Json& ctx)
       : ConfError(c), schema_(s), context_(ctx) {}
 
+  /**
+   * Construct SchemaError.
+   *
+   * \param c Input Conf where error occurred
+   * \param s Schema used for validation
+   * \param format Message format string for fmt::format
+   * \param args Arguments to message format
+   */
   template <typename... Args>
-  SchemaError(const Conf& c, const Json& s, const char* format, const Args&... args)
-      : ConfError(c, format, args...), schema_(s) {}
+  SchemaError(const Conf& c, const Json& s, std::string_view format, Args&&... args)
+      : ConfError(c, format, std::forward<Args>(args)...), schema_(s) {}
 
+  /**
+   * Construct SchemaError.
+   *
+   * \param c Input Conf where error occurred
+   * \param s Schema used for validation
+   * \param ctx Extra contextual data as JSON
+   * \param format Message format string for fmt::format
+   * \param args Arguments to message format
+   */
   template <typename... Args>
-  SchemaError(const Conf& c, const Json& s, const Json& ctx, const char* format,
-              const Args&... args)
-      : ConfError(c, format, args...), schema_(s), context_(ctx) {}
+  SchemaError(const Conf& c, const Json& s, const Json& ctx, std::string_view format,
+              Args&&... args)
+      : ConfError(c, format, std::forward<Args>(args)...), schema_(s), context_(ctx) {}
 
  public:  // Special
   const Json& schema() const { return schema_; }
