@@ -105,18 +105,24 @@ class Vector : public Base<Vector<T, P>> {
     return j;
   }
 
-  void validate(const Conf& c) const override {
-    this->validate_type(c);
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
+    if (!this->validate_type(c, err)) {
+      return false;
+    }
     if (c->size() < min_items_) {
-      this->throw_error(c, "require at least {} items in array, got {}", min_items_, c->size());
+      return this->set_error(err, c, "require at least {} items in array, got {}", min_items_,
+                             c->size());
     }
     if (c->size() > max_items_) {
-      this->throw_error(c, "expect at most {} items in array, got {}", max_items_, c->size());
+      return this->set_error(err, c, "expect at most {} items in array, got {}", max_items_,
+                             c->size());
     }
-
     for (const auto& x : c.to_array()) {
-      prototype_.validate(x);
+      if (!prototype_.validate(x, err)) {
+        return false;
+      }
     }
+    return true;
   }
 
   using Interface::to_json;

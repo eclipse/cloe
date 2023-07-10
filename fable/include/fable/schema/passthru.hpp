@@ -63,10 +63,10 @@ class Passthru : public Base<Passthru<P>> {
     return j;
   }
 
-  void validate(const Conf& c) const override {
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
     // Let the prototype do all the validation, since Passthru doesn't have
     // enough information to do a correct validation.
-    prototype_.validate(c);
+    return prototype_.validate(c, err);
   }
 
   using Interface::to_json;

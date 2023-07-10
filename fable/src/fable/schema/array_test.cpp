@@ -67,7 +67,7 @@ TEST(fable_schema_array, vec3d_from_json) {
   }
 
   for (auto& input : invalid_inputs) {
-    ASSERT_THROW(sma.validate(input), fable::SchemaError);
+    ASSERT_THROW(sma.validate_or_throw(input), fable::SchemaError);
   }
 }
 
@@ -132,7 +132,7 @@ TEST(fable_schema_array, bitset_from_conf) {
   };
 
   for (auto& input : invalid_inputs) {
-    ASSERT_THROW(sma.validate(input), fable::SchemaError);
+    ASSERT_THROW(sma.validate_or_throw(input), fable::SchemaError);
   }
 }
 

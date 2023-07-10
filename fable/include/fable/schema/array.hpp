@@ -96,19 +96,23 @@ class Array : public Base<Array<T, N, P>> {
     return j;
   }
 
-  void validate(const Conf& c) const override {
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
     if (option_require_all_) {
-      this->validate_type(c);
-      this->validate_array(c);
-      return;
+      if (!this->validate_type(c, err)) {
+        return false;
+      }
+      if (!this->validate_array(c, err)) {
+        return false;
+      }
+      return true;
     }
 
     if (c->type() == JsonType::array) {
-      this->validate_array(c);
+      return this->validate_array(c, err);
     } else if (c->type() == JsonType::object) {
-      this->validate_object(c);
+      return this->validate_object(c, err);
     } else {
-      this->throw_wrong_type(c);
+      return this->set_wrong_type(err, c);
     }
   }
 
@@ -159,7 +163,7 @@ class Array : public Base<Array<T, N, P>> {
     } else if (c->type() == JsonType::object) {
       this->deserialize_from_object(v, c);
     } else {
-      this->throw_wrong_type(c);
+      throw this->wrong_type(c);
     }
   }
 
@@ -199,14 +203,17 @@ class Array : public Base<Array<T, N, P>> {
    * That is, all elements in the array must be set, no less and
    * no more.
    */
-  void validate_array(const Conf& c) const {
+  bool validate_array(const Conf& c, std::optional<SchemaError>& err) const {
     assert(c->type() == JsonType::array);
     if (c->size() != N) {
-      this->throw_error(c, "require exactly {} items in array, got {}", N, c->size());
+      return this->set_error(err, c, "require exactly {} items in array, got {}", N, c->size());
     }
     for (const auto& x : c.to_array()) {
-      prototype_.validate(x);
+      if (!prototype_.validate(x, err)) {
+        return false;
+      }
     }
+    return true;
   }
 
   /**
@@ -223,13 +230,16 @@ class Array : public Base<Array<T, N, P>> {
    * less than the size N of the array. Otherwise an error is thrown.
    * More than one index can be set at once.
    */
-  void validate_object(const Conf& c) const {
+  bool validate_object(const Conf& c, std::optional<SchemaError>& err) const {
     assert(c->type() == JsonType::object);
     for (const auto& kv : c->items()) {
       const auto& key = kv.key();
       this->parse_index(c, key);
-      prototype_.validate(c.at(key));
+      if (prototype_.validate(c.at(key), err)) {
+        return false;
+      }
     }
+    return true;
   }
 
   /**
@@ -248,25 +258,25 @@ class Array : public Base<Array<T, N, P>> {
     // We'd like to just be able to use std::stoul, but unfortunately
     // the standard library seems to think strings like "234x" are ok.
     if (s.empty()) {
-      this->throw_error(c, "invalid index key in object, require integer, got ''");
+      throw this->error(c, "invalid index key in object, require integer, got ''");
     } else if (s.size() > 1 && s[0] == '0') {
-      this->throw_error(c, "invalid index key in object, require base-10 value, got '{}'", s);
+      throw this->error(c, "invalid index key in object, require base-10 value, got '{}'", s);
     }
     for (char ch : s) {
       if (ch < '0' || ch > '9') {
-        this->throw_error(c, "invalid index key in object, require integer, got '{}'", s);
+        throw this->error(c, "invalid index key in object, require integer, got '{}'", s);
       }
     }
     size_t idx = std::stoul(s);
     if (idx >= N) {
-      this->throw_error(c, "out-of-range index key in object, require < {}, got '{}'", N, s);
+      throw this->error(c, "out-of-range index key in object, require < {}, got '{}'", N, s);
     }
     return idx;
   }
 
-  [[noreturn]] void throw_wrong_type(const Conf& c) const {
+  [[nodiscard]] SchemaError wrong_type(const Conf& c) const {
     std::string got = to_string(c->type());
-    this->throw_error(c, "property must have type array or object, got {}", got);
+    return this->error(c, "property must have type array or object, got {}", got);
   }
 
   void deserialize_from_object(Type& array, const Conf& c) const {

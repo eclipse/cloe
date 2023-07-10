@@ -100,12 +100,14 @@ class Optional : public Base<Optional<T, P>> {
     return j;
   }
 
-  void validate(const Conf& c) const override {
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
     if (c->type() == JsonType::null) {
-      return;
+      return true;
     }
-    this->validate_type(c);
-    prototype_.validate(c);
+    if (!this->validate_type(c, err)) {
+      return false;
+    }
+    return prototype_.validate(c, err);
   }
 
   using Interface::to_json;

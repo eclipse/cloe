@@ -64,11 +64,12 @@ class Enum : public Base<Enum<T>> {
     return j;
   }
 
-  void validate(const Conf& c) const override {
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
     std::string s = c.get<std::string>();
     if (mapping_from_.count(s) == 0) {
-      this->throw_error(c, "invalid value for enum: {}", s);
+      return this->set_error(err, c, "invalid value for enum: {}", s);
     }
+    return true;
   }
 
   using Interface::to_json;
@@ -89,7 +90,7 @@ class Enum : public Base<Enum<T>> {
     try {
       return mapping_from_.at(s);
     } catch (std::out_of_range& e) {
-      this->throw_error(c, "invalid value for enum: {}", s);
+      throw this->error(c, "invalid value for enum: {}", s);
     }
   }
 

@@ -55,7 +55,7 @@ class Ignore : public Base<Ignore> {
     return j;
   }
 
-  void validate(const Conf&) const override {}
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override { return true; }
   using Interface::to_json;
   void to_json(Json& j) const override { j = nullptr; }
   void from_conf(const Conf&) override {}

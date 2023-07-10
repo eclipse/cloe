@@ -79,14 +79,32 @@ class Confable {
   /**
    * Validate a Conf without applying it.
    *
+   * By default, this uses the validate_or_throw() method on schema(). If you want to
+   * guarantee anything extending beyond what's possible with schema, you can
+   * do that here.
+   *
+   * This method should NOT call from_conf without also overriding from_conf
+   * to prevent infinite recursion.
+   */
+  virtual void validate_or_throw(const Conf& c) const;
+
+  /**
+   * Validate a Conf without applying it and without throwing.
+   *
    * By default, this uses the validate() method on schema(). If you want to
    * guarantee anything extending beyond what's possible with schema, you can
    * do that here.
    *
-   * This methodshould NOT call from_conf without also overriding from_conf
+   * This method should NOT call from_conf without also overriding from_conf
    * to prevent infinite recursion.
+   *
+   * This method should not reset err unless the method returns false.
+   *
+   * \param c JSON to validate
+   * \param err reference to store error in
+   * \return true if validate successful
    */
-  virtual void validate(const Conf& c) const;
+  virtual bool validate(const Conf& c, std::optional<SchemaError>& err) const;
 
   /**
    * Deserialize a Confable from a Conf.

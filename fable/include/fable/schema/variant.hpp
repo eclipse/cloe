@@ -103,10 +103,12 @@ class Variant : public Interface {
  public:  // Overrides
   using Interface::to_json;
   Json json_schema() const override;
-  void validate(const Conf& c) const override { validate_index(c); }
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
+    return validate_index(c, err).has_value();
+  }
   void to_json(Json& j) const override { schemas_[0].to_json(j); }
   void from_conf(const Conf& c) override {
-    auto index = validate_index(c);
+    auto index = variant_index(c);
     schemas_[index].from_conf(c);
   }
 
@@ -119,7 +121,8 @@ class Variant : public Interface {
   void reset_ptr() override;
 
  private:
-  size_t validate_index(const Conf& c) const;
+  std::optional<size_t> validate_index(const Conf& c, std::optional<SchemaError>& err) const;
+  size_t variant_index(const Conf& c) const;
 
  private:
   std::string desc_{};

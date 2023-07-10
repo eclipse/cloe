@@ -203,7 +203,7 @@ class Struct : public Base<Struct> {
   using Interface::to_json;
   Json usage() const override;
   Json json_schema() const override;
-  void validate(const Conf& c) const override;
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override;
   void to_json(Json& j) const override;
   void from_conf(const Conf& c) override;
 

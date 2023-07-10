@@ -109,29 +109,44 @@ class Map : public Base<Map<T, P>> {
     return j;
   }
 
-  void validate(const Conf& c) const override {
-    this->validate_type(c);
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
+    if (!this->validate_type(c, err)) {
+      return false;
+    }
+
     if (c->size() < min_properties_) {
-      this->throw_error(c, "expect at least {} properties, got {}", max_properties_, c->size());
+      return this->set_error(err, c, "expect at least {} properties, got {}", max_properties_, c->size());
     }
     assert(required_.size() <= max_properties_);
     if (c->size() > max_properties_) {
-      this->throw_error(c, "expect at most {} properties, got {}", max_properties_, c->size());
+      return this->set_error(err, c, "expect at most {} properties, got {}", max_properties_, c->size());
     }
+
     for (auto& k : required_) {
-      c.assert_has(k);
+      if (!c.has(k)) {
+        return this->set_error(err, c, "missing property: {}", k);
+      }
     }
 
     std::optional<std::regex> pattern;
     if (!pattern_.empty()) {
-      *pattern = std::regex(pattern_);
-    }
-    for (const auto& kv : c->items()) {
-      prototype_.validate(c.at(kv.key()));
-      if (pattern && !std::regex_match(kv.key(), *pattern)) {
-        this->throw_error(c, "expect property name to match regex '{}': {}", pattern_, kv.key());
+      try {
+        *pattern = std::regex(pattern_);
+      } catch (std::regex_error& e) {
+        // NOTE: This is actually a programmer error, and we should probably catch
+        // it at the point where the pattern is set.
+        return this->set_error(err, c, "invalid regex '{}': {}", pattern_, e.what());
       }
     }
+    for (const auto& kv : c->items()) {
+      if (!prototype_.validate(c.at(kv.key()), err)) {
+        return false;
+      }
+      if (pattern && !std::regex_match(kv.key(), *pattern)) {
+        return this->set_error(err, c, "expect property name to match regex '{}': {}", pattern_, kv.key());
+      }
+    }
+    return true;
   }
 
   using Interface::to_json;
@@ -145,7 +160,7 @@ class Map : public Base<Map<T, P>> {
     for (auto& i : c->items()) {
       const auto key = i.key();
       if (unique_properties_ && ptr_->count(key)) {
-        this->throw_error(c, "key {} has already been defined", key);
+        throw this->error(c, "key {} has already been defined", key);
       }
       ptr_->insert(std::make_pair(key, deserialize_item(c, key)));
     }

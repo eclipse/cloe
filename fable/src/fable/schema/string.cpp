@@ -104,27 +104,35 @@ Json String::json_schema() const {
   return j;
 }
 
-void String::validate(const Conf& c) const {
-  this->validate_type(c);
+bool String::validate(const Conf& c, std::optional<SchemaError>& err) const {
+  if (!this->validate_type(c, err)) {
+    return false;
+  }
 
   auto src = c.get<std::string>();
   if (interpolate_) {
-    src = interpolate_vars(src, env_);
+    try {
+      src = interpolate_vars(src, env_);
+    } catch (std::exception& e) {
+      return this->set_error(err, c, "error interpolating variables: {}", e.what());
+    }
   }
   if (src.size() < min_length_) {
-    this->throw_error(c, "expect minimum string length of {}, got {}", min_length_, src.size());
+    return this->set_error(err, c, "expect minimum string length of {}, got {}", min_length_, src.size());
   }
   if (src.size() > max_length_) {
-    this->throw_error(c, "expect maximum string length of {}, got {}", max_length_, src.size());
+    return this->set_error(err, c, "expect maximum string length of {}, got {}", max_length_, src.size());
   }
   if (!pattern_.empty() && !std::regex_match(src, std::regex(pattern_))) {
-    this->throw_error(c, "expect string to match regex '{}': {}", pattern_, src);
+    return this->set_error(err, c, "expect string to match regex '{}': {}", pattern_, src);
   }
   if (!enum_.empty()) {
     if (std::find(enum_.begin(), enum_.end(), src) == enum_.end()) {
-      this->throw_error(c, "expect string to match one of {}, got {}", Json{enum_}.dump(), src);
+      return this->set_error(err, c, "expect string to match one of {}, got {}", Json{enum_}.dump(), src);
     }
   }
+
+  return true;
 }  // namespace schema
 
 void String::reset_ptr() { ptr_ = nullptr; }

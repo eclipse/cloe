@@ -256,7 +256,7 @@ class Schema : public schema::Interface {
   void set_description(std::string s) override { return impl_->set_description(std::move(s)); }
   Json usage() const override { return impl_->usage(); }
   Json json_schema() const override { return impl_->json_schema(); }
-  void validate(const Conf& c) const override { impl_->validate(c); }
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override { return impl_->validate(c, err); }
   void to_json(Json& j) const override { impl_->to_json(j); }
   void from_conf(const Conf& c) override { impl_->from_conf(c); }
   void reset_ptr() override { impl_->reset_ptr(); }

@@ -29,17 +29,19 @@ namespace fable {
 namespace schema {
 
 Boolean::Boolean(Boolean::Type* ptr, std::string desc)
-  : Base(JsonType::boolean, std::move(desc)), ptr_(ptr) {}
+    : Base(JsonType::boolean, std::move(desc)), ptr_(ptr) {}
 
-  Json Boolean::json_schema() const {
-    Json j{
-        {"type", "boolean"},
-    };
-    this->augment_schema(j);
-    return j;
-  }
+Json Boolean::json_schema() const {
+  Json j{
+      {"type", "boolean"},
+  };
+  this->augment_schema(j);
+  return j;
+}
 
-void Boolean::validate(const Conf& c) const { this->validate_type(c); }
+bool Boolean::validate(const Conf& c, std::optional<SchemaError>& err) const {
+  return this->validate_type(c, err);
+}
 
 void Boolean::to_json(Json& j) const {
   assert(ptr_ != nullptr);
