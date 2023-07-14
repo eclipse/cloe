@@ -175,9 +175,11 @@ struct schema_type {
 class Schema : public schema::Interface {
  public:
   // Operators
+  ~Schema() noexcept override = default;
   Schema(const Schema&) = default;
   Schema(Schema&&) = default;
   Schema& operator=(const Schema&) = default;
+  Schema& operator=(Schema&&) = default;
 
   // Struct
   Schema(std::string desc, schema::PropertyList<> props)
@@ -202,11 +204,9 @@ class Schema : public schema::Interface {
 
   // Interface
   template <typename T, std::enable_if_t<std::is_base_of_v<schema::Interface, T>, int> = 0>
-  Schema(const T& value) : impl_(value.clone()) {}                      // NOLINT(runtime/explicit)
-  Schema(schema::Interface* i) : impl_(i) { assert(impl_); }            // NOLINT(runtime/explicit)
-  Schema(std::shared_ptr<schema::Interface> i) : impl_(std::move(i)) {  // NOLINT(runtime/explicit)
-    assert(impl_);
-  }
+  Schema(const T& value) : impl_(value.clone()) {}
+  Schema(std::unique_ptr<schema::Interface> ptr) : impl_(std::move(ptr)) { assert(impl_); }
+  Schema(std::shared_ptr<schema::Interface> ptr) : impl_(std::move(ptr)) { assert(impl_); }
 
   // Ignore
   Schema() : impl_(new schema::Ignore("")) {}
@@ -231,35 +231,37 @@ class Schema : public schema::Interface {
     return std::move(*this);
   }
 
-  Json json_schema_qualified() const {
+  [[nodiscard]] Json json_schema_qualified() const {
     Json j = impl_->json_schema();
     j["$schema"] = "http://json-schema.org/draft-07/schema#";
     return j;
   }
 
-  Json json_schema_qualified(const std::string& id) const {
+  [[nodiscard]] Json json_schema_qualified(const std::string& id) const {
     Json j = json_schema_qualified();
     j["$id"] = id;
     return j;
   }
 
-  friend void to_json(Json& j, const Schema& s) { s.impl_->to_json(j); }
-
  public:  // Overrides
   using Interface::to_json;
   operator schema::Box() const { return schema::Box{impl_}; }
-  Interface* clone() const override { return impl_->clone(); }
-  JsonType type() const override { return impl_->type(); }
-  std::string type_string() const override { return impl_->type_string(); }
-  bool is_required() const override { return impl_->is_required(); }
-  const std::string& description() const override { return impl_->description(); }
+  [[nodiscard]] std::unique_ptr<Interface> clone() const override { return impl_->clone(); }
+  [[nodiscard]] JsonType type() const override { return impl_->type(); }
+  [[nodiscard]] std::string type_string() const override { return impl_->type_string(); }
+  [[nodiscard]] bool is_required() const override { return impl_->is_required(); }
+  [[nodiscard]] const std::string& description() const override { return impl_->description(); }
   void set_description(std::string s) override { return impl_->set_description(std::move(s)); }
-  Json usage() const override { return impl_->usage(); }
-  Json json_schema() const override { return impl_->json_schema(); }
-  bool validate(const Conf& c, std::optional<SchemaError>& err) const override { return impl_->validate(c, err); }
+  [[nodiscard]] Json usage() const override { return impl_->usage(); }
+  [[nodiscard]] Json json_schema() const override { return impl_->json_schema(); }
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
+    return impl_->validate(c, err);
+  }
   void to_json(Json& j) const override { impl_->to_json(j); }
   void from_conf(const Conf& c) override { impl_->from_conf(c); }
   void reset_ptr() override { impl_->reset_ptr(); }
+
+  friend void to_json(Json& j, const Schema& s) { s.impl_->to_json(j); }
 
  private:
   std::shared_ptr<schema::Interface> impl_{nullptr};

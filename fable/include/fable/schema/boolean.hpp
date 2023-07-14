@@ -28,8 +28,7 @@
 
 #include <fable/schema/interface.hpp>  // for Base<>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 class Boolean : public Base<Boolean> {
  public:  // Types and Constructors
@@ -38,13 +37,13 @@ class Boolean : public Base<Boolean> {
   Boolean(Type* ptr, std::string desc);
 
  public:  // Overrides
-  Json json_schema() const override;
+  [[nodiscard]] Json json_schema() const override;
   bool validate(const Conf& c, std::optional<SchemaError>& err) const override;
   using Interface::to_json;
   void to_json(Json& j) const override;
   void from_conf(const Conf& c) override;
-  Json serialize(const Type& x) const;
-  Type deserialize(const Conf& c) const;
+  [[nodiscard]] Json serialize(const Type& x) const;
+  [[nodiscard]] Type deserialize(const Conf& c) const;
   void serialize_into(Json& j, const Type& x) const;
   void deserialize_into(const Conf& c, Type& x) const;
   void reset_ptr() override;
@@ -53,7 +52,6 @@ class Boolean : public Base<Boolean> {
   Type* ptr_{nullptr};
 };
 
-inline Boolean make_schema(bool* ptr, std::string desc) { return Boolean(ptr, std::move(desc)); }
+inline Boolean make_schema(bool* ptr, std::string desc) { return {ptr, std::move(desc)}; }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

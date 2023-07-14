@@ -33,8 +33,7 @@
 #include <fable/json.hpp>              // for Json
 #include <fable/schema/interface.hpp>  // for Base<>, Box
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 template <typename T, size_t N, typename P>
 class Array : public Base<Array<T, N, P>> {
@@ -52,13 +51,12 @@ class Array : public Base<Array<T, N, P>> {
       : Base<Array<T, N, P>>(std::move(desc)), prototype_(std::move(prototype)), ptr_(ptr) {}
 
  public:  // Specials
-  /**
-   * Return whether deserialization must set all fields, in which case
+  /** Return whether deserialization must set all fields, in which case
    * only the array syntax is supported.
    *
    * By default, this is false.
    */
-  bool require_all() const { return option_require_all_; }
+  [[nodiscard]] bool require_all() const { return option_require_all_; }
 
   /**
    * Set whether deserialization should require_all the underlying array.
@@ -77,9 +75,9 @@ class Array : public Base<Array<T, N, P>> {
   }
 
  public:  // Overrides
-  std::string type_string() const override { return "array of " + prototype_.type_string(); }
+  [[nodiscard]] std::string type_string() const override { return "array of " + prototype_.type_string(); }
 
-  Json json_schema() const override {
+  [[nodiscard]] Json json_schema() const override {
     Json j;
     if (option_require_all_) {
       j = this->json_schema_array();
@@ -98,6 +96,7 @@ class Array : public Base<Array<T, N, P>> {
 
   bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
     if (option_require_all_) {
+      // Only support array input that sets all indices.
       if (!this->validate_type(c, err)) {
         return false;
       }
@@ -107,11 +106,13 @@ class Array : public Base<Array<T, N, P>> {
       return true;
     }
 
-    if (c->type() == JsonType::array) {
+    // If not require-all, then we can also support object notation.
+    switch (c->type()) {
+    case JsonType::array:
       return this->validate_array(c, err);
-    } else if (c->type() == JsonType::object) {
+    case JsonType::object:
       return this->validate_object(c, err);
-    } else {
+    default:
       return this->set_wrong_type(err, c);
     }
   }
@@ -129,7 +130,7 @@ class Array : public Base<Array<T, N, P>> {
     this->deserialize_into(c, *ptr_);
   }
 
-  Json serialize(const Type& xs) const {
+  [[nodiscard]] Json serialize(const Type& xs) const {
     Json j = Json::array();
     serialize_into(j, xs);
     return j;
@@ -151,7 +152,7 @@ class Array : public Base<Array<T, N, P>> {
    * Because it's not pre-existing, we can't guarantee that it will be
    * initialized and therefore only support setting the full array.
    */
-  Type deserialize(const Conf& c) const {
+  [[nodiscard]] Type deserialize(const Conf& c) const {
     Type array;
     this->deserialize_into(c, array);
     return array;
@@ -170,7 +171,7 @@ class Array : public Base<Array<T, N, P>> {
   void reset_ptr() override { ptr_ = nullptr; }
 
  private:
-  Json json_schema_array() const {
+  [[nodiscard]] Json json_schema_array() const {
     return Json::object({
         {"type", "array"},
         {"items", prototype_.json_schema()},
@@ -179,7 +180,7 @@ class Array : public Base<Array<T, N, P>> {
     });
   }
 
-  Json json_schema_object() const {
+  [[nodiscard]] Json json_schema_object() const {
     return Json::object({
         {"type", "object"},
         {"additionalProperties", false},
@@ -234,7 +235,11 @@ class Array : public Base<Array<T, N, P>> {
     assert(c->type() == JsonType::object);
     for (const auto& kv : c->items()) {
       const auto& key = kv.key();
-      this->parse_index(c, key);
+      try {
+        std::ignore = this->parse_index(key);
+      } catch (std::exception& e) {
+        return this->set_error(err, c, e.what());
+      }
       if (prototype_.validate(c.at(key), err)) {
         return false;
       }
@@ -254,24 +259,33 @@ class Array : public Base<Array<T, N, P>> {
    * In the future, we may support indexing from the back of an array.
    * In that case, we can implement it in this method.
    */
-  size_t parse_index(const Conf& c, const std::string& s) const {
+  [[nodiscard]] size_t parse_index(const std::string& s) const {
     // We'd like to just be able to use std::stoul, but unfortunately
     // the standard library seems to think strings like "234x" are ok.
     if (s.empty()) {
-      throw this->error(c, "invalid index key in object, require integer, got ''");
-    } else if (s.size() > 1 && s[0] == '0') {
-      throw this->error(c, "invalid index key in object, require base-10 value, got '{}'", s);
+      throw std::invalid_argument("invalid index key in object, require integer, got ''");
+    }
+    if (s.size() > 1 && s[0] == '0') {
+      throw std::invalid_argument(fmt::format("invalid index key in object, require base-10 value, got '{}'", s));
     }
     for (char ch : s) {
       if (ch < '0' || ch > '9') {
-        throw this->error(c, "invalid index key in object, require integer, got '{}'", s);
+        throw std::invalid_argument(fmt::format("invalid index key in object, require integer, got '{}'", s));
       }
     }
     size_t idx = std::stoul(s);
     if (idx >= N) {
-      throw this->error(c, "out-of-range index key in object, require < {}, got '{}'", N, s);
+      throw std::invalid_argument(fmt::format("out-of-range index key in object, require < {}, got '{}'", N, s));
     }
     return idx;
+  }
+
+  [[nodiscard]] size_t parse_index(const Conf& c, const std::string& s) const {
+    try {
+      return parse_index(s);
+    } catch (std::exception& e) {
+      throw this->error(c, e.what());
+    }
   }
 
   [[nodiscard]] SchemaError wrong_type(const Conf& c) const {
@@ -312,5 +326,4 @@ Array<T, N, decltype(make_prototype<T>())> make_schema(std::array<T, N>* ptr, st
   return Array<T, N, decltype(make_prototype<T>())>(ptr, std::move(desc));
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

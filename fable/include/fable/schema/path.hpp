@@ -32,8 +32,7 @@
 #include <fable/schema/interface.hpp>  // for Base<>
 #include <fable/utility/path.hpp>      // for adl_serializer<>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 /**
  * Helper type trait class to use with std::enable_if and friends.
@@ -101,7 +100,7 @@ class Path : public Base<Path<T>> {
   /**
    * Return the required state of the path in the filesystem.
    */
-  State state() const { return req_state_; }
+  [[nodiscard]] State state() const { return req_state_; }
 
   /**
    * Set the required state of the path in the filesystem.
@@ -138,7 +137,7 @@ class Path : public Base<Path<T>> {
    *
    * By default this is true.
    */
-  bool resolve() const { return resolve_; }
+  [[nodiscard]] bool resolve() const { return resolve_; }
 
   /**
    * Set whether the configuration file location should be used to resolve the
@@ -158,42 +157,42 @@ class Path : public Base<Path<T>> {
   }
   void set_resolve(bool value) { resolve_ = value; }
 
-  bool normalize() const { return normalize_; }
+  [[nodiscard]] bool normalize() const { return normalize_; }
   Path normalize(bool value) && {
     normalize_ = value;
     return std::move(*this);
   }
   void set_normalize(bool value) { normalize_ = value; }
 
-  bool interpolate() const { return interpolate_; }
+  [[nodiscard]] bool interpolate() const { return interpolate_; }
   void set_interpolate(bool value) { interpolate_ = value; }
   Path interpolate(bool value) && {
     interpolate_ = value;
     return std::move(*this);
   }
 
-  Environment* environment() const { return env_; }
+  [[nodiscard]] Environment* environment() const { return env_; }
   void set_environment(Environment* env) { env_ = env; }
   Path environment(Environment* env) && {
     env_ = env;
     return std::move(*this);
   }
 
-  size_t min_length() const { return min_length_; }
+  [[nodiscard]] size_t min_length() const { return min_length_; }
   void set_min_length(size_t value) { min_length_ = value; }
   Path min_length(size_t value) && {
     min_length_ = value;
     return std::move(*this);
   }
 
-  size_t max_length() const { return max_length_; }
+  [[nodiscard]] size_t max_length() const { return max_length_; }
   void set_max_length(size_t value) { max_length_ = value; }
   Path max_length(size_t value) && {
     max_length_ = value;
     return std::move(*this);
   }
 
-  const std::string& pattern() const { return pattern_; }
+  [[nodiscard]] const std::string& pattern() const { return pattern_; }
   void set_pattern(const std::string& value) { pattern_ = value; }
   Path pattern(const std::string& value) && {
     pattern_ = value;
@@ -201,7 +200,7 @@ class Path : public Base<Path<T>> {
   }
 
  public:  // Overrides
-  Json json_schema() const override;
+  [[nodiscard]] Json json_schema() const override;
   bool validate(const Conf& c, std::optional<SchemaError>& err) const override;
 
   using Interface::to_json;
@@ -215,9 +214,9 @@ class Path : public Base<Path<T>> {
     *ptr_ = deserialize(c);
   }
 
-  Json serialize(const Type& x) const { return x.native(); }
+  [[nodiscard]] Json serialize(const Type& x) const { return x.native(); }
 
-  Type deserialize(const Conf& c) const;
+  [[nodiscard]] Type deserialize(const Conf& c) const;
 
   void serialize_into(Json& j, const Type& x) const { j = serialize(x); }
 
@@ -226,7 +225,7 @@ class Path : public Base<Path<T>> {
   void reset_ptr() override { ptr_ = nullptr; }
 
  private:
-  Type resolve_path(const Conf&, const Type&) const;
+  [[nodiscard]] Type resolve_path(const Conf&, const Type&) const;
 
  private:
   State req_state_{State::Any};
@@ -246,5 +245,4 @@ inline Path<T> make_schema(T* ptr, std::string desc) {
   return Path(ptr, std::move(desc));
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

@@ -32,8 +32,7 @@
 #include <fable/enum.hpp>
 #include <fable/schema/interface.hpp>  // for Base<>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 template <typename T>
 class Enum : public Base<Enum<T>> {
@@ -52,10 +51,10 @@ class Enum : public Base<Enum<T>> {
   }
 
  public:  // Special
-  const std::vector<std::string>& keys() const { return keys_; }
+  [[nodiscard]] const std::vector<std::string>& keys() const { return keys_; }
 
  public:  // Overrides
-  Json json_schema() const override {
+  [[nodiscard]] Json json_schema() const override {
     Json j{
         {"type", this->type_string()},
         {"enum", keys_},
@@ -65,7 +64,7 @@ class Enum : public Base<Enum<T>> {
   }
 
   bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
-    std::string s = c.get<std::string>();
+    auto s = c.get<std::string>();
     if (mapping_from_.count(s) == 0) {
       return this->set_error(err, c, "invalid value for enum: {}", s);
     }
@@ -101,8 +100,8 @@ class Enum : public Base<Enum<T>> {
   void reset_ptr() override { ptr_ = nullptr; }
 
  private:
-  const std::map<T, std::string>& mapping_to_;
-  const std::map<std::string, T>& mapping_from_;
+  const std::map<T, std::string>& mapping_to_;    // NOLINT: type-specific global ref
+  const std::map<std::string, T>& mapping_from_;  // NOLINT: type-specific global ref
   std::vector<std::string> keys_;
   Type* ptr_{nullptr};
 };
@@ -112,5 +111,4 @@ inline Enum<T> make_schema(T* ptr, std::string desc) {
   return Enum<T>(ptr, std::move(desc));
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

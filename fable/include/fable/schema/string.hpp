@@ -33,16 +33,15 @@
 #include <fable/fable_fwd.hpp>         // for Environment
 #include <fable/schema/interface.hpp>  // for Base<>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 /**
- * \macro FABLE_REGEX_C_PATTERN specifies the regex for the
+ * FABLE_REGEX_C_PATTERN specifies the regex for the
  * String::c_identifier() method.
  *
  * Overriding it will not have any effect.
  */
-#define FABLE_REGEX_C_IDENTIFIER "^[a-zA-Z_][a-zA-Z0-9_]*$"
+constexpr auto FABLE_REGEX_C_IDENTIFIER = "^[a-zA-Z_][a-zA-Z0-9_]*$";
 
 /**
  * String de-/serializes a string.
@@ -79,7 +78,7 @@ class String : public Base<String> {
    *
    * \return minimum string length in bytes
    */
-  size_t min_length() const;
+  [[nodiscard]] size_t min_length() const;
 
   /**
    * Set the minimum string length in bytes.
@@ -101,7 +100,7 @@ class String : public Base<String> {
    *
    * \return maximum string length in bytes
    */
-  size_t max_length() const;
+  [[nodiscard]] size_t max_length() const;
 
   /**
    * Set the maximum string length in bytes.
@@ -123,7 +122,7 @@ class String : public Base<String> {
    *
    * \return regex pattern
    */
-  const std::string& pattern() const;
+  [[nodiscard]] const std::string& pattern() const;
 
   /**
    * Set the string regular expression pattern.
@@ -153,7 +152,7 @@ class String : public Base<String> {
    *
    * \return true if enabled
    */
-  bool interpolate() const;
+  [[nodiscard]] bool interpolate() const;
 
   /**
    * \copydoc String::set_interpolate(bool)
@@ -189,7 +188,7 @@ class String : public Base<String> {
    *
    * \return environment
    */
-  Environment* environment() const;
+  [[nodiscard]] Environment* environment() const;
 
   /**
    * Set the Environment used for variable interpolation.
@@ -215,7 +214,7 @@ class String : public Base<String> {
    *
    * \return valid values
    */
-  const std::vector<std::string>& enum_of() const;
+  [[nodiscard]] const std::vector<std::string>& enum_of() const;
 
   /**
    * Set the valid values for the string.
@@ -239,13 +238,13 @@ class String : public Base<String> {
   void set_enum_of(std::vector<std::string>&& init);
 
  public:  // Overrides
-  Json json_schema() const override;
+  [[nodiscard]] Json json_schema() const override;
   bool validate(const Conf& c, std::optional<SchemaError>& err) const override;
   using Interface::to_json;
   void to_json(Json& j) const override;
   void from_conf(const Conf& c) override;
-  Json serialize(const Type& x) const;
-  Type deserialize(const Conf& c) const;
+  [[nodiscard]] Json serialize(const Type& x) const;
+  [[nodiscard]] Type deserialize(const Conf& c) const;
   void serialize_into(Json& j, const Type& x) const { j = serialize(x); }
   void deserialize_into(const Conf& c, Type& x) const { x = deserialize(c); }
   void reset_ptr() override;
@@ -261,8 +260,7 @@ class String : public Base<String> {
 };
 
 inline String make_schema(std::string* ptr, std::string desc) {
-  return String(ptr, std::move(desc));
+  return {ptr, std::move(desc)};
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

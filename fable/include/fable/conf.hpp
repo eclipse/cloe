@@ -50,28 +50,37 @@
 
 #pragma once
 
+#include <filesystem>  // for path
 #include <functional>  // for function<>
 #include <string>      // for string
+#include <utility>     // for move
 #include <vector>      // for vector<>
-#include <filesystem>  // for path
 
 #include <fmt/format.h>  // for fmt::format
 
-#include <fable/fable_fwd.hpp>
-#include <fable/json.hpp>  // for Json
+#include <fable/fable_fwd.hpp>  // for ConfError
+#include <fable/json.hpp>       // for Json
 
 namespace fable {
 
-class ConfError;
-
+/**
+ * Conf wraps a JSON with context that allows for more user-friendly errors.
+ *
+ * In general, a Conf wraps JSON content that comes from the filesystem and
+ * is used for configuration purposes. Even if a class requires only a subset
+ * of the JSON, Conf maintains the connection to the original file, which
+ * allows errors to be returned that refer to the file and location.
+ *
+ * Conf is best used together with the Confable and Schema types.
+ */
 class Conf {
  public:
   Conf() = default;
-  explicit Conf(const Json& data) : data_(data) {}
-  explicit Conf(const std::string& file);
-  Conf(const Json& data, const std::string& file) : file_(file), data_(data) {}
-  Conf(const Json& data, const std::string& file, const std::string& root)
-      : file_(file), root_(root), data_(data) {}
+  explicit Conf(Json data) : data_(std::move(data)) {}
+  explicit Conf(std::string file);
+  Conf(Json data, std::string file) : file_(std::move(file)), data_(std::move(data)) {}
+  Conf(Json data, std::string file, std::string root)
+      : file_(std::move(file)), root_(std::move(root)), data_(std::move(data)) {}
 
   /**
    * Return whether this configuration was read from a file.
@@ -82,17 +91,17 @@ class Conf {
    *   c) network
    * - This method should not throw.
    */
-  bool is_from_file() const { return !file_.empty(); }
+  [[nodiscard]] bool is_from_file() const { return !file_.empty(); }
 
   /**
    * Return the file associated with this configuration.
    */
-  const std::string& file() const { return file_; }
+  [[nodiscard]] const std::string& file() const { return file_; }
 
   /**
    * Return whether this configuration is empty.
    */
-  bool is_empty() const { return data_.is_null(); }
+  [[nodiscard]] bool is_empty() const { return data_.is_null(); }
 
   /**
    * Return a reference to the JSON.
@@ -113,25 +122,25 @@ class Conf {
   /**
    * Return the root of the current JSON as a JSON pointer.
    */
-  std::string root() const { return (root_.empty() ? "/" : root_); }
+  [[nodiscard]] std::string root() const { return (root_.empty() ? "/" : root_); }
 
   /**
    * Return whether the key is present in the configuration.
    *
    * - This method should not throw.
    */
-  bool has(const std::string& key) const { return data_.count(key) != 0; }
-  bool has(const JsonPointer& key) const;
-  bool has_pointer(const std::string& key) const { return has(JsonPointer(key)); }
+  [[nodiscard]] bool has(const std::string& key) const { return data_.count(key) != 0; }
+  [[nodiscard]] bool has(const JsonPointer& key) const;
+  [[nodiscard]] bool has_pointer(const std::string& key) const { return has(JsonPointer(key)); }
 
   /**
    * Return a new Conf basing off the JSON pointer.
    *
    * - Throws a ConfError if the key cannot be found.
    */
-  Conf at(const std::string& key) const;
-  Conf at(const JsonPointer& key) const;
-  Conf at_pointer(const std::string& key) const { return at(JsonPointer(key)); }
+  [[nodiscard]] Conf at(const std::string& key) const;
+  [[nodiscard]] Conf at(const JsonPointer& key) const;
+  [[nodiscard]] Conf at_pointer(const std::string& key) const { return at(JsonPointer(key)); }
 
   /**
    * Erase a key from the Conf if it exists and return the number of elements
@@ -146,7 +155,7 @@ class Conf {
    *
    * - Throws a ConfError if the object is not an array.
    */
-  std::vector<Conf> to_array() const;
+  [[nodiscard]] std::vector<Conf> to_array() const;
 
   /**
    * Return a value of type T.
@@ -154,7 +163,7 @@ class Conf {
    * - Throws a ConfError if the key is of the wrong type.
    */
   template <typename T>
-  T get() const {
+  [[nodiscard]] T get() const {
     try {
       return data_.get<T>();
     } catch (nlohmann::detail::type_error&) {
@@ -168,7 +177,7 @@ class Conf {
    * - Throws a ConfError if the key cannot be found or is wrong type.
    */
   template <typename T>
-  T get(const std::string& key) const {
+  [[nodiscard]] T get(const std::string& key) const {
     try {
       return data_.at(key).get<T>();
     } catch (nlohmann::detail::out_of_range&) {
@@ -179,7 +188,7 @@ class Conf {
   }
 
   template <typename T>
-  T get(const JsonPointer& key) const {
+  [[nodiscard]] T get(const JsonPointer& key) const {
     try {
       return data_.at(key).get<T>();
     } catch (nlohmann::detail::out_of_range&) {
@@ -190,7 +199,7 @@ class Conf {
   }
 
   template <typename T>
-  T get_pointer(const std::string& key) const {
+  [[nodiscard]] T get_pointer(const std::string& key) const {
     return get<T>(JsonPointer(key));
   }
 
@@ -199,7 +208,7 @@ class Conf {
    * key cannot be found.
    */
   template <typename T>
-  T get_or(const std::string& key, T def) const {
+  [[nodiscard]] T get_or(const std::string& key, T def) const {
     if (!data_.count(key)) {
       return def;
     }
@@ -211,7 +220,7 @@ class Conf {
   }
 
   template <typename T>
-  T get_or(const JsonPointer& key, T def) const {
+  [[nodiscard]] T get_or(const JsonPointer& key, T def) const {
     try {
       return data_.at(key).get<T>();
     } catch (nlohmann::detail::out_of_range&) {
@@ -222,7 +231,7 @@ class Conf {
   }
 
   template <typename T>
-  T get_pointer_or(const std::string& key, T def) const {
+  [[nodiscard]] T get_pointer_or(const std::string& key, T def) const {
     return get_or(key, def);
   }
 
@@ -259,16 +268,16 @@ class Conf {
    * - Throws a ConfError if the value is of the wrong type.
    */
   template <typename T>
-  void try_from(const std::string& key, T* val) const {
+  void try_from(const std::string& key, T& val) const {
     if (data_.count(key)) {
-      *val = get<T>(key);
+      val = get<T>(key);
     }
   }
 
   template <typename T>
-  void try_from(const JsonPointer& key, T* val) const {
+  void try_from(const JsonPointer& key, T& val) const {
     try {
-      *val = data_.at(key).get<T>();
+      val = data_.at(key).get<T>();
     } catch (nlohmann::detail::out_of_range& e) {
       return;
     } catch (nlohmann::detail::type_error& e) {
@@ -277,7 +286,7 @@ class Conf {
   }
 
   template <typename T>
-  void try_from_pointer(const std::string& key, T* val) const {
+  void try_from_pointer(const std::string& key, T& val) const {
     try_from(JsonPointer(key), val);
   }
 
@@ -318,8 +327,8 @@ class Conf {
    * - If the path is relative and file is not stdin, return relative to
    *   the file.
    */
-  std::filesystem::path resolve_file(const std::filesystem::path& filename) const;
-  std::string resolve_file(const std::string& filename) const;
+  [[nodiscard]] std::filesystem::path resolve_file(const std::filesystem::path& filename) const;
+  [[nodiscard]] std::string resolve_file(const std::string& filename) const;
 
   template <typename... Args>
   [[noreturn]] void throw_error(std::string_view format, Args&&... args) const {

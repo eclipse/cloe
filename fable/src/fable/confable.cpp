@@ -28,11 +28,7 @@
 
 namespace fable {
 
-Confable::Confable() noexcept {};
-
-Confable::Confable(const Confable&) noexcept : schema_(nullptr) {}
-
-Confable::Confable(Confable&&) noexcept : schema_(nullptr) {}
+Confable::Confable(const Confable& /*unused*/) noexcept : schema_(nullptr) {}
 
 Confable& Confable::operator=(const Confable& other) noexcept {
   if (this != &other) {
@@ -48,22 +44,21 @@ Confable& Confable::operator=(Confable&& other) noexcept {
   return *this;
 }
 
-Confable::~Confable() noexcept {};
-
-void Confable::reset_schema() { schema_.reset(); }
-
 Schema& Confable::schema() {
   if (!schema_) {
     schema_ = std::make_unique<Schema>(schema_impl());
   }
-  return *schema_.get();
+  return *schema_;
 }
+
+void Confable::reset_schema() { schema_.reset(); }
 
 const Schema& Confable::schema() const { return const_cast<Confable*>(this)->schema(); }
 
 void Confable::validate_or_throw(const Conf& c) const {
   std::optional<SchemaError> err;
   if (!validate(c, err)) {
+    assert(err);
     throw std::move(*err);
   }
 }
@@ -89,3 +84,12 @@ Json Confable::to_json() const {
 Schema Confable::schema_impl() { return schema::Struct(); }
 
 }  // namespace fable
+
+namespace nlohmann {
+
+void adl_serializer<fable::Confable>::to_json(json& j, const fable::Confable& c) { c.to_json(j); }
+void adl_serializer<fable::Confable>::from_json(const json& j, fable::Confable& c) {
+  c.from_conf(fable::Conf{j});
+}
+
+}  // namespace nlohmann

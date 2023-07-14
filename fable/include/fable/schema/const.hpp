@@ -29,8 +29,7 @@
 #include <fable/schema/interface.hpp>  // for Base<>, Box
 #include <fable/schema/string.hpp>     // for String
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 template <typename T, typename P>
 class Const : public Base<Const<T, P>> {
@@ -49,7 +48,7 @@ class Const : public Base<Const<T, P>> {
   }
 
  public:  // Overrides
-  Json json_schema() const override {
+  [[nodiscard]] Json json_schema() const override {
     Json j{
         {"const", constant_},
     };
@@ -70,9 +69,9 @@ class Const : public Base<Const<T, P>> {
 
   void from_conf(const Conf& c) override { this->validate_or_throw(c); }
 
-  Json serialize(const Type& x) const { return prototype_.serialize(x); }
+  [[nodiscard]] Json serialize(const Type& x) const { return prototype_.serialize(x); }
 
-  Type deserialize(const Conf& c) const {
+  [[nodiscard]] Type deserialize(const Conf& c) const {
     this->validate_or_throw(c);
     return constant_;
   }
@@ -88,7 +87,7 @@ class Const : public Base<Const<T, P>> {
 
  private:
   PrototypeSchema prototype_;
-  const Type constant_;
+  Type constant_;
 };
 
 template <typename T, typename P>
@@ -101,5 +100,4 @@ Const<T, decltype(make_prototype<T>())> make_const_schema(T constant, std::strin
   return Const<T, decltype(make_prototype<T>())>(std::move(constant), std::move(desc));
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

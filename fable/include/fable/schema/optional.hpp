@@ -32,8 +32,7 @@
 #include <fable/schema/interface.hpp>  // for Base<>, Box
 #include <fable/utility/optional.hpp>  // for adl_serializer<>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 /**
  * Helper type trait class to use with std::enable_if and friends.
@@ -83,10 +82,10 @@ class Optional : public Base<Optional<T, P>> {
   }
 
  public:  // Overrides
-  std::string type_string() const override { return prototype_.type_string() + "?"; }
-  bool is_variant() const override { return true; }
+  [[nodiscard]] std::string type_string() const override { return prototype_.type_string() + "?"; }
+  [[nodiscard]] bool is_variant() const override { return true; }
 
-  Json json_schema() const override {
+  [[nodiscard]] Json json_schema() const override {
     Json j{{
         "oneOf",
         {
@@ -121,15 +120,14 @@ class Optional : public Base<Optional<T, P>> {
     *ptr_ = deserialize(c);
   }
 
-  Json serialize(const Type& x) const {
-    if (x) {
-      return prototype_.serialize(x.value());
-    } else {
+  [[nodiscard]] Json serialize(const Type& x) const {
+    if (!x) {
       return nullptr;
     }
+    return prototype_.serialize(x.value());
   }
 
-  Type deserialize(const Conf& c) const {
+  [[nodiscard]] Type deserialize(const Conf& c) const {
     if (c->type() == JsonType::null) {
       return Type{};
     }
@@ -159,5 +157,4 @@ Optional<T, decltype(make_prototype<typename T::value_type>())> make_schema(T* p
   return Optional<T, decltype(make_prototype<typename T::value_type>())>(ptr, std::move(desc));
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

@@ -35,22 +35,13 @@
 
 #pragma once
 
-#include <map>      // for map<>
-#include <string>   // for string
-#include <utility>  // for move
-#include <vector>   // for vector<>
-#include <array>    // for array<>
+#include <type_traits>  // for enable_if_t, is_base_of_v
 
-#include <fable/fable_fwd.hpp>        // for Confable
-#include <fable/schema/array.hpp>     // for Array<>
-#include <fable/schema/confable.hpp>  // for FromConfable<>
-#include <fable/schema/const.hpp>     // for Const<>
-#include <fable/schema/map.hpp>       // for Map<>
-#include <fable/schema/optional.hpp>  // for Optional<>
-#include <fable/schema/vector.hpp>    // for Vector<>
+#include <fable/fable_fwd.hpp>         // for Confable
+#include <fable/schema/confable.hpp>   // for FromConfable<>
+#include <fable/schema/interface.hpp>  // for make_prototype
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 template <typename T, std::enable_if_t<std::is_base_of_v<Confable, T>, int>>
 auto make_prototype(std::string desc) {
@@ -62,5 +53,4 @@ auto make_prototype(std::string desc) {
   return make_schema(static_cast<T*>(nullptr), std::move(desc));
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

@@ -23,12 +23,13 @@
 
 #include <stdexcept>  // for exception
 #include <string>     // for string
+#include <utility>    // for move
 
 #include <fmt/format.h>  // for format
 
-#include <fable/conf.hpp>  // for Conf
+#include <fable/conf.hpp>
 #include <fable/fable_fwd.hpp>
-#include <fable/json.hpp>  // for Json
+#include <fable/json.hpp>
 
 namespace fable {
 
@@ -37,149 +38,142 @@ class ConfError;
 class SchemaError;
 
 class Error : public std::exception {
+  std::string message_;
+
  public:
-  explicit Error(const std::string& what) : err_(what) {}
-  explicit Error(const char* what) : err_(what) {}
+  Error() = delete;
+  Error(const Error&) = default;
+  Error(Error&&) = default;
+  Error& operator=(const Error&) = default;
+  Error& operator=(Error &&) = default;
+  ~Error() noexcept override = default;
+
+  Error(std::string what) : message_(std::move(what)) {}
 
   template <typename... Args>
   explicit Error(std::string_view format, Args&&... args)
-      : err_(fmt::format(format, std::forward<Args>(args)...)) {}
+      : message_(fmt::format(format, std::forward<Args>(args)...)) {}
 
-  virtual ~Error() noexcept = default;
-
-  const char* what() const noexcept override { return err_.what(); }
-
- private:
-  std::runtime_error err_;
+  [[nodiscard]] const char* what() const noexcept override { return message_.c_str(); }
 };
 
 class ConfError : public Error {
-  const Conf data_;
+  Conf data_;
 
  public:
-  virtual ~ConfError() noexcept = default;
+  ConfError() = delete;
+  ConfError(const ConfError&) = default;
+  ConfError(ConfError&&) = default;
+  ConfError& operator=(const ConfError&) = default;
+  ConfError& operator=(ConfError &&) = default;
+  ~ConfError() noexcept override = default;
 
-  ConfError(const Conf& c, const std::string& msg) : Error(msg), data_(c) {}
-  ConfError(const Conf& c, const char* msg) : Error(msg), data_(c) {}
+  ConfError(Conf conf, const std::string& msg) : Error(msg), data_(std::move(conf)) {}
+  ConfError(Conf conf, const char* msg) : Error(msg), data_(std::move(conf)) {}
 
   template <typename... Args>
-  ConfError(const Conf& c, std::string_view format, Args&&... args)
-      : Error(format, std::forward<Args>(args)...), data_(c) {}
+  ConfError(Conf conf, std::string_view format, Args&&... args)
+      : Error(format, std::forward<Args>(args)...), data_(std::move(conf)) {}
 
-  std::string file() const { return data_.file(); }
-  std::string root() const { return data_.root(); }
-  const Conf& conf() const { return data_; }
-  const Json& data() const { return *data_; }
+  [[nodiscard]] std::string file() const noexcept { return data_.file(); }
+  [[nodiscard]] std::string root() const noexcept { return data_.root(); }
+  [[nodiscard]] const Conf& conf() const noexcept { return data_; }
+  [[nodiscard]] const Json& data() const noexcept { return *data_; }
 
-  virtual std::string message() const {
+  [[nodiscard]] virtual std::string message() const {
     return fmt::format("{}:{}: {}", file(), root(), this->what());
   }
 
   friend SchemaError;
-  friend void to_json(Json& j, const ConfError& e) {
-    j = Json{
-        {"error", e.what()}, {"file", e.file()},       {"root", e.root()},
-        {"data", e.data()},  {"message", e.message()},
+  friend void to_json(Json& jref, const ConfError& err) {
+    jref = Json{
+        {"error", err.what()}, {"file", err.file()},       {"root", err.root()},
+        {"data", err.data()},  {"message", err.message()},
     };
   }
 };
 
 namespace error {
 
-inline ConfError MissingProperty(const Conf& c, const std::string& key) {
-  return ConfError{c, "required property missing: {}", key};
+inline ConfError MissingProperty(const Conf& conf, const std::string& key) {
+  return ConfError{conf, "required property missing: {}", key};
 }
 
-inline ConfError UnexpectedProperty(const Conf& c, const std::string& key) {
-  return ConfError{c, "unexpected property present: {}", key};
+inline ConfError UnexpectedProperty(const Conf& conf, const std::string& key) {
+  return ConfError{conf, "unexpected property present: {}", key};
 }
 
-inline ConfError WrongType(const Conf& c, JsonType t) {
-  std::string want = to_string(t);
-  std::string got = to_string(c->type());
-  return ConfError{c, "property must have type {}, got {}", want, got};
+inline ConfError WrongType(const Conf& conf, JsonType type) {
+  std::string want = to_string(type);
+  std::string got = to_string(conf->type());
+  return ConfError{conf, "property must have type {}, got {}", want, got};
 }
 
-inline ConfError WrongType(const Conf& c, const std::string& key, JsonType t) {
-  std::string want = to_string(t);
-  std::string got = to_string((*c)[key].type());
-  return ConfError{c, "property must have type {}, got {}", want, got};
+inline ConfError WrongType(const Conf& conf, const std::string& key, JsonType type) {
+  std::string want = to_string(type);
+  std::string got = to_string((*conf)[key].type());
+  return ConfError{conf, "property must have type {}, got {}", want, got};
 }
 
-inline ConfError WrongType(const Conf& c, const std::string& key) {
-  std::string got = to_string((*c)[key].type());
-  return ConfError{c, "property has wrong type {}", got};
+inline ConfError WrongType(const Conf& conf, const std::string& key) {
+  std::string got = to_string((*conf)[key].type());
+  return ConfError{conf, "property has wrong type {}", got};
 }
 
-inline ConfError WrongType(const Conf& c) {
-  std::string got = to_string(c->type());
-  return ConfError{c, "property has wrong type {}", got};
+inline ConfError WrongType(const Conf& conf) {
+  std::string got = to_string(conf->type());
+  return ConfError{conf, "property has wrong type {}", got};
 }
 
 }  // namespace error
 
 class SchemaError : public ConfError {
-  const Json schema_;
-  const Json context_;
+  Json schema_;
+  Json context_;
 
  public:  // Constructors
-  virtual ~SchemaError() noexcept = default;
+  SchemaError() = delete;
+  SchemaError(const SchemaError&) = default;
+  SchemaError(SchemaError&&) = default;
+  SchemaError& operator=(const SchemaError&) = default;
+  SchemaError& operator=(SchemaError &&) = default;
+  ~SchemaError() noexcept override = default;
 
   /**
    * Construct SchemaError with a ConfError.
    *
-   * \param c ConfError
-   * \param s Schema used for validation
+   * \param err ConfError
+   * \param schema Schema used for validation
    */
-  SchemaError(const ConfError& c, const Json& s) : ConfError(c), schema_(s) {}
-
-  /**
-   * Construct SchemaError with a ConfError.
-   *
-   * \param c ConfError
-   * \param s Schema used for validation
-   * \param ctx Extra contextual data as JSON
-   */
-  SchemaError(const ConfError& c, const Json& s, const Json& ctx)
-      : ConfError(c), schema_(s), context_(ctx) {}
+  SchemaError(const ConfError& err, Json schema) : ConfError(err), schema_(std::move(schema)) {}
 
   /**
    * Construct SchemaError.
    *
-   * \param c Input Conf where error occurred
-   * \param s Schema used for validation
+   * \param conf Input Conf where error occurred
+   * \param schema Schema used for validation
    * \param format Message format string for fmt::format
    * \param args Arguments to message format
    */
   template <typename... Args>
-  SchemaError(const Conf& c, const Json& s, std::string_view format, Args&&... args)
-      : ConfError(c, format, std::forward<Args>(args)...), schema_(s) {}
+  SchemaError(const Conf& conf, Json schema, std::string_view format, Args&&... args)
+      : ConfError(conf, format, std::forward<Args>(args)...), schema_(std::move(schema)) {}
 
-  /**
-   * Construct SchemaError.
-   *
-   * \param c Input Conf where error occurred
-   * \param s Schema used for validation
-   * \param ctx Extra contextual data as JSON
-   * \param format Message format string for fmt::format
-   * \param args Arguments to message format
-   */
-  template <typename... Args>
-  SchemaError(const Conf& c, const Json& s, const Json& ctx, std::string_view format,
-              Args&&... args)
-      : ConfError(c, format, std::forward<Args>(args)...), schema_(s), context_(ctx) {}
+  [[nodiscard]] const Json& schema() const { return schema_; }
+  [[nodiscard]] const Json& context() const { return context_; }
 
- public:  // Special
-  const Json& schema() const { return schema_; }
-  const Json& context() const { return context_; }
+  SchemaError& with_context(Json ctx) {
+    context_ = std::move(ctx);
+    return *this;
+  }
 
-  friend void to_json(Json& j, const SchemaError& e) {
-    j = Json{
-        {"error", e.what()}, {"file", e.file()},       {"root", e.root()},
-        {"data", e.data()},  {"message", e.message()}, {"schema", e.schema_},
+  friend void to_json(Json& json, const SchemaError& err) {
+    json = Json{
+        {"error", err.what()}, {"file", err.file()},       {"root", err.root()},
+        {"data", err.data()},  {"message", err.message()}, {"schema", err.schema_},
     };
-    if (!e.context_.empty()) {
-      j["context"] = e.context_;
+    if (!err.context_.empty()) {
+      json["context"] = err.context_;
     }
   }
 };

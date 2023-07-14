@@ -28,8 +28,7 @@
 
 #include <fable/schema/interface.hpp>  // for Base<>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 /**
  * Ignore always validates true and does not deserialize or serialize types.
@@ -49,27 +48,26 @@ class Ignore : public Base<Ignore> {
   explicit Ignore(std::string desc, JsonType t = JsonType::object) : Base(t, std::move(desc)) {}
 
  public:  // Overrides
-  Json json_schema() const override {
+  [[nodiscard]] Json json_schema() const override {
     Json j = Json::object({});
     this->augment_schema(j);
     return j;
   }
 
-  bool validate(const Conf& c, std::optional<SchemaError>& err) const override { return true; }
+  bool validate(const Conf& /*unused*/, std::optional<SchemaError>& /*unused*/) const override { return true; }
   using Interface::to_json;
   void to_json(Json& j) const override { j = nullptr; }
-  void from_conf(const Conf&) override {}
+  void from_conf(const Conf& /*unused*/) override {}
   void reset_ptr() override {}
 
-  Json serialize(const Type&) const { return nullptr; }
-  Type deserialize(const Conf&) const { return {}; }
-  void serialize_into(Json&, const Type&) const {}
-  void deserialize_into(const Conf&, Type&) const {}
+  [[nodiscard]] Json serialize(const Type& /*unused*/) const { return nullptr; }
+  [[nodiscard]] Type deserialize(const Conf& /*unused*/) const { return {}; }
+  void serialize_into(Json& /*unused*/, const Type& /*unused*/) const {}
+  void deserialize_into(const Conf& /*unused*/, Type& /*unused*/) const {}
 };
 
 inline Ignore make_schema(std::string desc, JsonType t = JsonType::object) {
   return Ignore(std::move(desc), t);
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

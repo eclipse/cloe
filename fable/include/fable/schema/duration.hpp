@@ -31,8 +31,7 @@
 
 #include <fable/schema/interface.hpp>  // for Base<>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 template <typename T, typename Period>
 class Duration : public Base<Duration<T, Period>> {
@@ -53,8 +52,8 @@ class Duration : public Base<Duration<T, Period>> {
       : Base<Duration<T, Period>>(JsonType::number_float, std::move(desc)), ptr_(ptr) {}
 
  public:  // Special
-  T minimum() const { return value_min_; }
-  bool exclusive_minimum() const { return exclusive_min_; }
+  [[nodiscard]] T minimum() const { return value_min_; }
+  [[nodiscard]] bool exclusive_minimum() const { return exclusive_min_; }
   Duration<T, Period> minimum(T value) && {
     value_min_ = value;
     exclusive_min_ = false;
@@ -66,8 +65,8 @@ class Duration : public Base<Duration<T, Period>> {
     return std::move(*this);
   }
 
-  T maximum() const { return value_max_; }
-  bool exclusive_maximum() const { return exclusive_max_; }
+  [[nodiscard]] T maximum() const { return value_max_; }
+  [[nodiscard]] bool exclusive_maximum() const { return exclusive_max_; }
   Duration<T, Period> maximum(T value) && {
     value_max_ = value;
     exclusive_max_ = false;
@@ -79,7 +78,7 @@ class Duration : public Base<Duration<T, Period>> {
     return std::move(*this);
   }
 
-  std::pair<T, T> bounds() const { return std::make_pair(value_min_, value_max_); }
+  [[nodiscard]] std::pair<T, T> bounds() const { return std::make_pair(value_min_, value_max_); }
   Duration<T, Period> bounds(T min, T max) && {
     exclusive_min_ = false;
     value_min_ = min;
@@ -89,7 +88,7 @@ class Duration : public Base<Duration<T, Period>> {
   }
 
  public:  // Overrides
-  Json json_schema() const override {
+  [[nodiscard]] Json json_schema() const override {
     Json j{
         {"type", this->type_string()},
         {exclusive_min_ ? "exclusiveMinimum" : "minimum", value_min_},
@@ -127,9 +126,9 @@ class Duration : public Base<Duration<T, Period>> {
     *ptr_ = deserialize(c);
   }
 
-  Json serialize(const Type& x) const { return x.count(); }
+  [[nodiscard]] Json serialize(const Type& x) const { return x.count(); }
 
-  Type deserialize(const Conf& c) const { return Type(c.get<T>()); }
+  [[nodiscard]] Type deserialize(const Conf& c) const { return Type(c.get<T>()); }
 
   void serialize_into(Json& j, const Type& x) const { j = x.count(); }
 
@@ -191,5 +190,4 @@ inline Duration<Rep, Period> make_schema(std::chrono::duration<Rep, Period>* ptr
   return Duration<Rep, Period>(ptr, std::move(desc));
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

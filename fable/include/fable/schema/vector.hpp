@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
- * \file fable/schema/array.hpp
+ * \file fable/schema/vector.hpp
  * \see  fable/schema.hpp
  * \see  fable/schema_test.cpp
  */
@@ -24,16 +24,13 @@
 #pragma once
 
 #include <limits>       // for numeric_limits<>
-#include <memory>       // for shared_ptr<>
 #include <string>       // for string
-#include <type_traits>  // for enable_if_t<>, is_convertible<>
 #include <utility>      // for move
 #include <vector>       // for vector<>
 
 #include <fable/schema/interface.hpp>  // for Base<>, Box
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 template <typename T, typename P>
 class Vector : public Base<Vector<T, P>> {
@@ -58,7 +55,7 @@ class Vector : public Base<Vector<T, P>> {
    *
    * By default, this is false.
    */
-  bool extend() const { return option_extend_; }
+  [[nodiscard]] bool extend() const { return option_extend_; }
 
   /**
    * Set whether deserialization should extend the underlying array.
@@ -73,14 +70,14 @@ class Vector : public Base<Vector<T, P>> {
     return std::move(*this);
   }
 
-  size_t min_items() const { return min_items_; }
+  [[nodiscard]] size_t min_items() const { return min_items_; }
   void set_min_items(size_t value) { min_items_ = value; }
   Vector<T, P> min_items(size_t value) && {
     min_items_ = value;
     return std::move(*this);
   }
 
-  size_t max_items() const { return max_items_; }
+  [[nodiscard]] size_t max_items() const { return max_items_; }
   void set_max_items(size_t value) { max_items_ = value; }
   Vector<T, P> max_items(size_t value) && {
     max_items_ = value;
@@ -88,9 +85,9 @@ class Vector : public Base<Vector<T, P>> {
   }
 
  public:  // Overrides
-  std::string type_string() const override { return "array of " + prototype_.type_string(); }
+  [[nodiscard]] std::string type_string() const override { return "array of " + prototype_.type_string(); }
 
-  Json json_schema() const override {
+  [[nodiscard]] Json json_schema() const override {
     Json j{
         {"type", "array"},
         {"items", prototype_.json_schema()},
@@ -140,13 +137,13 @@ class Vector : public Base<Vector<T, P>> {
     deserialize_into(c, *ptr_);
   }
 
-  Json serialize(const Type& xs) const {
+  [[nodiscard]] Json serialize(const Type& xs) const {
     Json j = Json::array();
     serialize_into(j, xs);
     return j;
   }
 
-  Type deserialize(const Conf& c) const {
+  [[nodiscard]] Type deserialize(const Conf& c) const {
     Type vec;
     vec.reserve(c->size());
     fill(vec, c);
@@ -198,5 +195,4 @@ Vector<T, decltype(make_prototype<T>())> make_schema(std::vector<T>* ptr, std::s
   return Vector<T, decltype(make_prototype<T>())>(ptr, std::move(desc));
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

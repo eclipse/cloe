@@ -31,19 +31,17 @@
 #include <fable/fable_fwd.hpp>         // for Confable
 #include <fable/schema/interface.hpp>  // for Interface
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 template <typename T, std::enable_if_t<std::is_base_of_v<Confable, T>, int> = 0>
 class FromConfable : public Base<FromConfable<T>> {
  public:  // Types and Constructors
   using Type = T;
 
-  explicit FromConfable(std::string desc = "") {
-    schema_ = Type().schema();
-    schema_.reset_ptr();
+  explicit FromConfable(std::string desc = "")
+      : Base<FromConfable<T>>(std::move(desc)), schema_(Type().schema()) {
+    schema_.reset_ptr(); // type was temporary
     this->type_ = schema_.type();
-    this->desc_ = std::move(desc);
   }
 
   FromConfable(Type* ptr, std::string desc)
@@ -54,10 +52,10 @@ class FromConfable : public Base<FromConfable<T>> {
   }
 
  public:  // Special
-  Box get_confable_schema() const { return schema_.clone(); }
+  [[nodiscard]] Box get_confable_schema() const { return schema_.clone(); }
 
  public:  // Overrides
-  Json json_schema() const override {
+  [[nodiscard]] Json json_schema() const override {
     Json j = schema_.json_schema();
     this->augment_schema(j);
     return j;
@@ -66,9 +64,8 @@ class FromConfable : public Base<FromConfable<T>> {
   bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
     if (ptr_ == nullptr) {
       return schema_.validate(c, err);
-    } else {
-      return ptr_->validate(c, err);
     }
+    return ptr_->validate(c, err);
   }
 
   using Interface::to_json;
@@ -82,9 +79,9 @@ class FromConfable : public Base<FromConfable<T>> {
     ptr_->from_conf(c);
   }
 
-  Json serialize(const Type& x) const { return x.to_json(); }
+  [[nodiscard]] Json serialize(const Type& x) const { return x.to_json(); }
 
-  Type deserialize(const Conf& c) const {
+  [[nodiscard]] Type deserialize(const Conf& c) const {
     Type tmp;
     tmp.from_conf(c);
     return tmp;
@@ -107,5 +104,4 @@ FromConfable<T> make_schema(T* ptr, std::string desc) {
   return FromConfable<T>(ptr, std::move(desc));
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

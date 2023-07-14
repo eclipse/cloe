@@ -29,8 +29,7 @@
 #include <fable/schema/ignore.hpp>     // for Ignore
 #include <fable/schema/interface.hpp>  // for Base<>, Box
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 /**
  * Passthru stores JSON data and optionally validates it.
@@ -55,9 +54,9 @@ class Passthru : public Base<Passthru<P>> {
   }
 
  public:  // Overrides
-  std::string type_string() const override { return prototype_.type_string(); }
+  [[nodiscard]] std::string type_string() const override { return prototype_.type_string(); }
 
-  Json json_schema() const override {
+  [[nodiscard]] Json json_schema() const override {
     Json j = prototype_.json_schema();
     this->augment_schema(j);
     return j;
@@ -80,9 +79,9 @@ class Passthru : public Base<Passthru<P>> {
     *ptr_ = deserialize(c);
   }
 
-  Json serialize(const Type& x) const { return *x; }
+  [[nodiscard]] Json serialize(const Type& x) const { return *x; }
 
-  Type deserialize(const Conf& c) const { return c; }
+  [[nodiscard]] Type deserialize(const Conf& c) const { return c; }
 
   void serialize_into(Json& j, const Type& x) const { j = serialize(x); }
 
@@ -96,13 +95,12 @@ class Passthru : public Base<Passthru<P>> {
 };
 
 inline Passthru<Ignore> make_schema(Conf* ptr, std::string desc) {
-  return Passthru<Ignore>(ptr, Ignore(), std::move(desc));
+  return {ptr, Ignore(), std::move(desc)};
 }
 
 template <typename P>
 Passthru<P> make_schema(Conf* ptr, P prototype, std::string desc) {
-  return Passthru<P>(ptr, std::move(prototype), std::move(desc));
+  return {ptr, std::move(prototype), std::move(desc)};
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

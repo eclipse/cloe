@@ -32,8 +32,7 @@
 
 #include <fable/schema/interface.hpp>  // for Base<>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 /**
  * PropertyList is mainly used in constructors to enable the use of initializer
@@ -185,7 +184,7 @@ class Struct : public Base<Struct> {
   template <typename S, typename = enable_if_schema_t<S>>
   void set_additional_properties(const S& s) {
     additional_properties_ = true;
-    additional_prototype_.reset(s.clone());
+    additional_prototype_ = s.clone();
     additional_prototype_->reset_ptr();
   }
 
@@ -195,23 +194,28 @@ class Struct : public Base<Struct> {
     return std::move(*this);
   }
 
-  bool additional_properties() const { return additional_properties_; }
+  [[nodiscard]] bool additional_properties() const { return additional_properties_; }
 
   void reset_ptr() override;
 
  public:  // Overrides
   using Interface::to_json;
-  Json usage() const override;
-  Json json_schema() const override;
+  [[nodiscard]] Json usage() const override;
+  [[nodiscard]] Json json_schema() const override;
   bool validate(const Conf& c, std::optional<SchemaError>& err) const override;
   void to_json(Json& j) const override;
   void from_conf(const Conf& c) override;
 
-  // TODO: Implement or explain why we don't need the following methods:
-  // - serialize
-  // - serialize_into
-  // - deserialize
-  // - deserialize_into
+  // NOTE: The following methods cannot be implemented because
+  // Struct does not have an associated type:
+  //
+  //     Json serialize(const Type&) const;
+  //     void serialize_into(Json&, const Type&) const;
+  //     Type deserialize(const Conf&) const;
+  //     void deserialize_into(const Conf&, Type&) const;
+  //
+  // This means that `Struct` cannot be used as a prototype schema
+  // directly, for example with `optional`. Use `Confable` instead.
 
  private:
   void set_properties(const std::map<std::string, Box>& props);
@@ -243,5 +247,4 @@ inline Struct make_schema(std::string desc, const Struct& base, T&& props) {
   return Struct(std::move(desc), base, std::forward<T>(props));
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

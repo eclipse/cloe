@@ -33,8 +33,7 @@
 
 #include <fable/schema/interface.hpp>  // for Base<>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 /**
  * Map maintains a key-value mapping where the list of keys is unknown and
@@ -65,13 +64,13 @@ class Map : public Base<Map<T, P>> {
   }
 
  public:  // Special
-  bool unique_properties() const { return unique_properties_; }
+  [[nodiscard]] bool unique_properties() const { return unique_properties_; }
   Map<T, P> unique_properties(bool value) && {
     unique_properties_ = value;
     return std::move(*this);
   }
 
-  const std::vector<std::string>& required() const { return required_; }
+  [[nodiscard]] const std::vector<std::string>& required() const { return required_; }
   Map<T, P> require_properties(const std::vector<std::string>& values) && {
     required_ = values;
     return std::move(*this);
@@ -81,14 +80,14 @@ class Map : public Base<Map<T, P>> {
     return std::move(*this);
   }
 
-  const std::string& pattern() const { return pattern_; }
+  [[nodiscard]] const std::string& pattern() const { return pattern_; }
   Map<T, P> pattern(const std::string& value) && {
     pattern_ = value;
     return std::move(*this);
   }
 
  public:  // Overrides
-  Json json_schema() const override {
+  [[nodiscard]] Json json_schema() const override {
     Json j{
         {"type", "object"},
         {"additionalProperties", prototype_.json_schema()},
@@ -122,7 +121,7 @@ class Map : public Base<Map<T, P>> {
       return this->set_error(err, c, "expect at most {} properties, got {}", max_properties_, c->size());
     }
 
-    for (auto& k : required_) {
+    for (const auto& k : required_) {
       if (!c.has(k)) {
         return this->set_error(err, c, "missing property: {}", k);
       }
@@ -157,8 +156,8 @@ class Map : public Base<Map<T, P>> {
 
   void from_conf(const Conf& c) override {
     assert(ptr_ != nullptr);
-    for (auto& i : c->items()) {
-      const auto key = i.key();
+    for (const auto& i : c->items()) {
+      const auto& key = i.key();
       if (unique_properties_ && ptr_->count(key)) {
         throw this->error(c, "key {} has already been defined", key);
       }
@@ -166,13 +165,13 @@ class Map : public Base<Map<T, P>> {
     }
   }
 
-  Json serialize(const Type& x) const {
+  [[nodiscard]] Json serialize(const Type& x) const {
     Json j;
     serialize_into(j, x);
     return j;
   }
 
-  Type deserialize(const Conf& c) const {
+  [[nodiscard]] Type deserialize(const Conf& c) const {
     Type tmp;
     deserialize_into(c, tmp);
     return tmp;
@@ -185,8 +184,8 @@ class Map : public Base<Map<T, P>> {
   }
 
   void deserialize_into(const Conf& c, Type& x) const {
-    for (auto& i : c->items()) {
-      const auto key = i.key();
+    for (const auto& i : c->items()) {
+      const auto& key = i.key();
       x.insert(std::make_pair(key, deserialize_item(c, key)));
     }
   }
@@ -217,5 +216,4 @@ Map<T, decltype(make_prototype<T>())> make_schema(std::map<std::string, T>* ptr,
   return Map<T, decltype(make_prototype<T>())>(ptr, std::move(desc));
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema
