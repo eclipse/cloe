@@ -33,8 +33,7 @@
 #include <fable/environment.hpp>     // for interpolate_vars
 #include <fable/utility/string.hpp>  // for split_string
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 namespace detail {
 
@@ -184,7 +183,7 @@ typename Path<T>::Type Path<T>::resolve_path(const Conf& c, const Path<T>::Type&
 
   // Only resolve executables if the path is not a basename, otherwise we
   // let the search_path do the resolving.
-  if (req_state_ == State::Executable && filepath_str.find("/") == std::string::npos) {
+  if (req_state_ == State::Executable && filepath_str.find('/') == std::string::npos) {
     auto result = detail::search_path(filepath);
     if (!result) {
       throw this->error(c, "expect executable to exist: {}", filepath.native());
@@ -195,5 +194,4 @@ typename Path<T>::Type Path<T>::resolve_path(const Conf& c, const Path<T>::Type&
   }
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

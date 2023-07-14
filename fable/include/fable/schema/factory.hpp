@@ -37,8 +37,7 @@
 #include <fable/schema/struct.hpp>     // for Struct
 #include <fable/schema/variant.hpp>    // for Variant
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 /**
  * FactoryBase is the base class for Factory and FactoryPointerless.
@@ -58,11 +57,17 @@ class FactoryBase : public Base<CRTP> {
  public:  // Types
   using Type = T;
   using MakeFunc = std::function<T(const Conf& c)>;
-  struct TypeFactory {
-    TypeFactory(const Box& s, MakeFunc f) : schema(s), func(f) { schema.reset_ptr(); }
 
-    Box schema;
-    MakeFunc func;
+  /**
+   * TypeFactory is basically a pair with names for better readability.
+   */
+  struct TypeFactory {
+    TypeFactory(Box s, MakeFunc f) : schema(std::move(s)), func(std::move(f)) {
+      schema.reset_ptr();
+    }
+
+    Box schema;     // NOLINT
+    MakeFunc func;  // NOLINT
   };
 
   using TransformFunc = std::function<Box(Struct&&)>;
@@ -70,6 +75,38 @@ class FactoryBase : public Base<CRTP> {
   using FactoryPairList = std::initializer_list<std::pair<std::string, TypeFactory>>;
 
  public:  // Constructors
+  ~FactoryBase() noexcept override = default;
+
+ protected:
+  FactoryBase(const FactoryBase& other)
+      : Base<CRTP>(other)
+      , transform_func_(other.transform_func_)
+      , available_(other.available_)
+      , factory_key_(other.factory_key_)
+      , args_key_(other.args_key_)
+      , args_subset_(other.args_subset_) {
+    reset_schema();
+  }
+
+  FactoryBase& operator=(const FactoryBase& other) {
+    if (&other == this) {
+      return *this;
+    }
+    Base<CRTP>::operator=(other);
+    transform_func_ = other.transform_func_;
+    available_ = other.available_;
+    factory_key_ = other.factory_key_;
+    args_key_ = other.args_key_;
+    args_subset_ = other.args_subset_;
+    reset_schema();
+    return *this;
+  }
+
+  FactoryBase(FactoryBase&&) noexcept = default;
+
+  FactoryBase& operator=(FactoryBase&&) noexcept = default;
+
+ public:
   /**
    * Construct an empty factory.
    *
@@ -138,7 +175,7 @@ class FactoryBase : public Base<CRTP> {
    * Common choices could be: factory, type, binding.
    */
   void set_factory_key(const std::string& keyword) {
-    assert(keyword != "");
+    assert(!keyword.empty());
     factory_key_ = keyword;
     reset_schema();
   }
@@ -177,17 +214,19 @@ class FactoryBase : public Base<CRTP> {
    *
    * The default behavior is the identity function.
    */
-  void set_transform_schema(TransformFunc f) { transform_func_ = f; }
+  void set_transform_schema(TransformFunc f) { transform_func_ = std::move(f); }
 
   /**
    * Return the schema and factory function associated with the given key.
    */
-  const TypeFactory& get_factory(const std::string& key) const { return available_.at(key); }
+  [[nodiscard]] const TypeFactory& get_factory(const std::string& key) const {
+    return available_.at(key);
+  }
 
   /**
    * Return whether a factory with the given key is available.
    */
-  bool has_factory(const std::string& key) const { return available_.count(key); }
+  [[nodiscard]] bool has_factory(const std::string& key) const { return available_.count(key); }
 
   /**
    * Add a factory with the given key, schema, and function, provided it
@@ -197,7 +236,7 @@ class FactoryBase : public Base<CRTP> {
    */
   bool add_factory(const std::string& key, Box&& s, MakeFunc f) {
     if (!available_.count(key)) {
-      available_.insert(std::make_pair(key, TypeFactory{std::move(s), f}));
+      available_.insert(std::make_pair(key, TypeFactory{std::move(s), std::move(f)}));
       reset_schema();
       return true;
     }
@@ -211,7 +250,7 @@ class FactoryBase : public Base<CRTP> {
     if (!available_.count(key)) {
       available_.erase(key);
     }
-    available_.insert(std::make_pair(key, TypeFactory{std::move(s), f}));
+    available_.insert(std::make_pair(key, TypeFactory{std::move(s), std::move(f)}));
     reset_schema();
   }
 
@@ -241,7 +280,7 @@ class FactoryBase : public Base<CRTP> {
   }
 
  public:  // Overrides
-  Json json_schema() const override {
+  [[nodiscard]] Json json_schema() const override {
     Json j;
     if (available_.empty()) {
       j["not"] = Json{
@@ -264,9 +303,9 @@ class FactoryBase : public Base<CRTP> {
     return schema_->validate(c, err);
   }
 
-  Type make(const Conf& c) const { return deserialize(c); }
+  [[nodiscard]] Type make(const Conf& c) const { return deserialize(c); }
 
-  Type deserialize(const Conf& c) const {
+  [[nodiscard]] Type deserialize(const Conf& c) const {
     assert(schema_ != nullptr);
     auto factory = c.get<std::string>(factory_key_);
     if (!available_.count(factory)) {
@@ -275,7 +314,7 @@ class FactoryBase : public Base<CRTP> {
 
     Conf args;
     if (args_subset_) {
-      if (args_key_ != "") {
+      if (!args_key_.empty()) {
         if (c.has(args_key_)) {
           args = c.at(args_key_);
         }
@@ -290,18 +329,18 @@ class FactoryBase : public Base<CRTP> {
     return available_.at(factory).func(args);
   }
 
-  Json serialize(const Type& x) const { return x; }
+  [[nodiscard]] Json serialize(const Type& x) const { return x; }
 
   void serialize_into(Json& j, const Type& x) const { j = serialize(x); }
 
   void deserialize_into(const Conf& c, Type& x) const { x = deserialize(c); }
 
-  void from_conf(const Conf& c) override {
+  void from_conf(const Conf& /* unused */) override {
     throw std::logic_error("FactoryBase::from_conf() should not be used");
   }
 
   using Interface::to_json;
-  void to_json(Json& j) const override {
+  void to_json(Json& /* unused */) const override {
     throw std::logic_error("FactoryBase::to_json() should not be used");
   }
 
@@ -314,17 +353,17 @@ class FactoryBase : public Base<CRTP> {
     if (available_.size() == 0) {
       return;
     }
-    schema_.reset(new Variant(factory_schemas()));
+    schema_ = std::make_unique<Variant>(factory_schemas());
   }
 
-  std::vector<Box> factory_schemas() const {
+  [[nodiscard]] std::vector<Box> factory_schemas() const {
     std::vector<Box> out;
     out.reserve(available_.size());
     for (auto& kv : available_) {
       Struct base{
           {factory_key_, make_const_schema(kv.first, "name of factory").require()},
       };
-      if (args_key_ == "") {
+      if (args_key_.empty()) {
         base.set_properties_from(kv.second.schema);
       } else {
         base.set_property(args_key_, kv.second.schema.clone());
@@ -340,7 +379,7 @@ class FactoryBase : public Base<CRTP> {
     return out;
   }
 
-  std::vector<Json> factory_json_schemas() const {
+  [[nodiscard]] std::vector<Json> factory_json_schemas() const {
     auto schemas = factory_schemas();
     std::vector<Json> out;
     out.reserve(schemas.size());
@@ -351,7 +390,7 @@ class FactoryBase : public Base<CRTP> {
   }
 
  protected:
-  std::shared_ptr<Variant> schema_;
+  std::unique_ptr<Variant> schema_;
   TransformFunc transform_func_;
   FactoryMap available_;
   std::string factory_key_{"factory"};
@@ -364,7 +403,16 @@ class FactoryBase : public Base<CRTP> {
  * instance but is only usable through it's make() method.
  */
 template <typename T>
-class FactoryPointerless : public FactoryBase<T, FactoryPointerless<T>> {};
+class FactoryPointerless : public FactoryBase<T, FactoryPointerless<T>> {
+ public:
+  using FactoryBase<T, FactoryPointerless<T>>::FactoryBase;
+  FactoryPointerless() = default;
+  FactoryPointerless(const FactoryPointerless<T>& other) = default;
+  FactoryPointerless(FactoryPointerless<T>&& other) noexcept = default;
+  FactoryPointerless<T>& operator=(const FactoryPointerless<T>& other) = default;
+  FactoryPointerless<T>& operator=(FactoryPointerless<T>&& other) noexcept = default;
+  ~FactoryPointerless() override = default;
+};
 
 /**
  * Factory is a factory schema that extends FactoryPointerless in that it
@@ -384,6 +432,11 @@ class Factory : public FactoryBase<T, Factory<T>> {
 
  public:  // Constructors
   using FactoryBase<T, Factory<T>>::FactoryBase;
+  Factory(const Factory<T>& other) = default;
+  Factory(Factory<T>&& other) noexcept = default;
+  Factory<T>& operator=(const Factory<T>& other) = default;
+  Factory<T>& operator=(Factory<T>&& other) noexcept = default;
+  ~Factory() override = default;
 
   Factory(Type* ptr, std::string desc) : FactoryBase<T, Factory<T>>(std::move(desc)), ptr_(ptr) {}
 
@@ -420,5 +473,4 @@ class Factory : public FactoryBase<T, Factory<T>> {
   Type* ptr_{nullptr};
 };
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

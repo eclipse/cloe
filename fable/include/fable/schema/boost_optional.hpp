@@ -27,11 +27,9 @@
 #include <fable/schema/optional.hpp>         // for is_optional<>
 #include <fable/utility/boost_optional.hpp>  // for adl_serializer<>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 template <typename X>
 struct is_optional<boost::optional<X>> : std::true_type {};
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

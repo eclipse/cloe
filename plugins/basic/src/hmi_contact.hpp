@@ -194,7 +194,7 @@ class ContactMap : public Confable {
 
   void from_conf(const Conf& c) override {
     for (auto& elem : buttons_) {
-      c.try_from(elem.first, &elem.second.state);
+      c.try_from(elem.first, elem.second.state);
     }
   }
 

@@ -29,8 +29,7 @@
 
 #include <fable/environment.hpp>  // for interpolate_vars
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 size_t String::min_length() const { return min_length_; }
 void String::set_min_length(size_t value) { min_length_ = value; }
@@ -154,5 +153,4 @@ void String::from_conf(const Conf& c) {
   *ptr_ = deserialize(c);
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

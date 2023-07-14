@@ -36,8 +36,7 @@
 
 #include <fable/schema/number.hpp>  // for Number<>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 template <typename T>
 Number<T> Number<T>::minimum(T value) && {
@@ -276,5 +275,4 @@ bool Number<T>::validate_bounds(const Conf& c, std::optional<SchemaError>& err) 
   return true;
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

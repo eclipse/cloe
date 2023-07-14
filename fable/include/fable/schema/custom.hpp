@@ -27,8 +27,7 @@
 
 #include <fable/schema/interface.hpp>  // for Interface, Box
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 /**
  * The CustomDeserializer allows the user to replace the deserialization of a
@@ -41,31 +40,38 @@ namespace schema {
 class CustomDeserializer : public schema::Interface {
  public:  // Constructors
   CustomDeserializer(Box&& s) : impl_(std::move(s).reset_pointer().get()) {}
-  CustomDeserializer(Box&& s, std::function<void(CustomDeserializer*, const Conf&)> f)
-      : impl_(std::move(s).reset_pointer().get()), from_conf_fn_(f) {}
+  CustomDeserializer(Box&& s, std::function<void(CustomDeserializer*, const Conf&)> deserialize_fn)
+      : impl_(std::move(s).reset_pointer().get()), from_conf_fn_(std::move(deserialize_fn)) {}
 
  public:  // Special
-  operator Box() const { return Box{this->clone()}; }
+  [[nodiscard]] operator Box() const { return Box{this->clone()}; }
 
-  void set_from_conf(std::function<void(CustomDeserializer*, const Conf&)> f) { from_conf_fn_ = f; }
+  void set_from_conf(std::function<void(CustomDeserializer*, const Conf&)> deserialize_fn) {
+    from_conf_fn_ = std::move(deserialize_fn);
+  }
 
-  CustomDeserializer with_from_conf(std::function<void(CustomDeserializer*, const Conf&)> f) && {
-    set_from_conf(f);
+  CustomDeserializer with_from_conf(
+      std::function<void(CustomDeserializer*, const Conf&)> deserialize_fn) && {
+    set_from_conf(std::move(deserialize_fn));
     return std::move(*this);
   }
 
  public:  // Overrides
-  Interface* clone() const override { return new CustomDeserializer(*this); }
+  [[nodiscard]] std::unique_ptr<Interface> clone() const override {
+    return std::make_unique<CustomDeserializer>(*this);
+  }
 
   using Interface::to_json;
-  JsonType type() const override { return impl_->type(); }
-  std::string type_string() const override { return impl_->type_string(); }
-  bool is_required() const override { return impl_->is_required(); }
-  const std::string& description() const override { return impl_->description(); }
+  [[nodiscard]] JsonType type() const override { return impl_->type(); }
+  [[nodiscard]] std::string type_string() const override { return impl_->type_string(); }
+  [[nodiscard]] bool is_required() const override { return impl_->is_required(); }
+  [[nodiscard]] const std::string& description() const override { return impl_->description(); }
   void set_description(std::string s) override { return impl_->set_description(std::move(s)); }
-  Json usage() const override { return impl_->usage(); }
-  Json json_schema() const override { return impl_->json_schema(); };
-  bool validate(const Conf& c, std::optional<SchemaError>& err) const override { return impl_->validate(c, err); }
+  [[nodiscard]] Json usage() const override { return impl_->usage(); }
+  [[nodiscard]] Json json_schema() const override { return impl_->json_schema(); };
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
+    return impl_->validate(c, err);
+  }
   void to_json(Json& j) const override { impl_->to_json(j); }
 
   void from_conf(const Conf& c) override {
@@ -84,16 +90,20 @@ class CustomDeserializer : public schema::Interface {
 
   friend void to_json(Json& j, const CustomDeserializer& b) { b.impl_->to_json(j); }
 
-  // TODO: Implement or explain why we don't need the following methods:
-  // - serialize
-  // - serialize_into
-  // - deserialize
-  // - deserialize_into
+  // NOTE: The following methods cannot be implemented because
+  // CustomDeserializer does not have an associated type:
+  //
+  //     Json serialize(const Type&) const;
+  //     void serialize_into(Json&, const Type&) const;
+  //     Type deserialize(const Conf&) const;
+  //     void deserialize_into(const Conf&, Type&) const;
+  //
+  // This means that `CustomDeserializer` cannot be used as a prototype schema
+  // directly, for example with `optional`. Use `Confable` instead.
 
  private:
   std::shared_ptr<schema::Interface> impl_{nullptr};
   std::function<void(CustomDeserializer*, const Conf&)> from_conf_fn_{};
 };
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

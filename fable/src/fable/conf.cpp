@@ -34,15 +34,15 @@
 
 namespace fable {
 
-Conf::Conf(const std::string& file) : file_(file) {
+Conf::Conf(std::string file) : file_(std::move(file)) {
   std::ifstream ifs(file_);
   if (ifs.fail()) {
-    throw Error("could not open file {}: {}", file, strerror(errno));
+    throw Error("could not open file {}: {}", file_, strerror(errno));
   }
   try {
     data_ = parse_json(ifs);
   } catch (std::exception& e) {
-    throw Error("unable to parse file {}: {}", file, e.what());
+    throw Error("unable to parse file {}: {}", file_, e.what());
   }
 }
 
@@ -73,12 +73,12 @@ Conf Conf::at(const JsonPointer& key) const {
 
 size_t Conf::erase(const std::string& key) { return data_.erase(key); }
 
+// NOLINTNEXTLINE(misc-no-recursion)
 size_t Conf::erase(const JsonPointer& key) {
-  auto n = 0;
+  std::size_t n = 0;
   try {
     Json& parent = data_.at(key.parent_pointer());
-    // The const_cast is necessary because of a bug in the nlohmann::json_pointer type.
-    n = parent.erase(const_cast<JsonPointer&>(key).back());
+    n = parent.erase(key.back());
     if (parent.empty()) {
       n += erase(key.parent_pointer());
     }
@@ -172,9 +172,8 @@ std::string Conf::resolve_file(const std::string& filepath) const {
 [[noreturn]] void Conf::throw_unexpected(const std::string& key, const std::string& msg) const {
   if (msg.empty()) {
     throw error::UnexpectedProperty(*this, key);
-  } else {
-    throw ConfError{*this, msg};
   }
+  throw ConfError{*this, msg};
 }
 
 [[noreturn]] void Conf::throw_missing(const std::string& key) const {
@@ -184,9 +183,8 @@ std::string Conf::resolve_file(const std::string& filepath) const {
 [[noreturn]] void Conf::throw_wrong_type(const std::string& key) const {
   if (key.empty()) {
     throw error::WrongType(*this);
-  } else {
-    throw error::WrongType(*this, key);
   }
+  throw error::WrongType(*this, key);
 }
 
 [[noreturn]] void Conf::throw_wrong_type(const std::string& key, JsonType type) const {

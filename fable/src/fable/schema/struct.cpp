@@ -26,8 +26,7 @@
 #include <string>     // for string
 #include <utility>    // for move, make_pair
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 void Struct::set_property(const std::string& key, Box&& s) {
   auto it = std::find(properties_required_.begin(), properties_required_.end(), key);
@@ -44,19 +43,19 @@ void Struct::set_property(const std::string& key, Box&& s) {
 }
 
 void Struct::set_properties(PropertyList<Box> props) {
-  for (auto& p : props) {
+  for (const auto& p : props) {
     set_property(p.first, p.second.clone());
   }
 }
 
 void Struct::set_properties(const std::map<std::string, Box>& props) {
-  for (auto& p : props) {
+  for (const auto& p : props) {
     set_property(p.first, p.second.clone());
   }
 }
 
 void Struct::set_require(std::initializer_list<std::string> init) {
-  for (auto& p : init) {
+  for (const auto& p : init) {
     if (std::find(properties_required_.cbegin(), properties_required_.cend(), p) ==
         properties_required_.cend()) {
       properties_required_.push_back(p);
@@ -120,8 +119,8 @@ bool Struct::validate(const Conf& c, std::optional<SchemaError>& err) const {
     }
   }
   for (const auto& kv : c->items()) {
-    auto key = kv.key();
-    if (properties_.count(key)) {
+    const auto& key = kv.key();
+    if (properties_.count(key) != 0) {
       if (!properties_.at(key).validate(c.at(key), err)) {
         return false;
       }
@@ -146,8 +145,8 @@ void Struct::from_conf(const Conf& c) {
       c.assert_has(k);
     }
     for (const auto& kv : c->items()) {
-      auto key = kv.key();
-      if (properties_.count(key)) {
+      const auto& key = kv.key();
+      if (properties_.count(key) != 0) {
         properties_[key].from_conf(c.at(key));
       } else if (additional_prototype_ != nullptr) {
         additional_prototype_->validate_or_throw(c.at(key));
@@ -181,5 +180,4 @@ void Struct::reset_ptr() {
   }
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

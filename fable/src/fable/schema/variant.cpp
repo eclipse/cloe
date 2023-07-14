@@ -31,8 +31,7 @@
 
 #include <fable/error.hpp>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 Variant::Variant(std::string desc, std::vector<Box>&& vec)
     : desc_(std::move(desc)), schemas_(std::move(vec)) {
@@ -75,7 +74,7 @@ Variant::Variant(std::string desc, std::vector<Box>&& vec)
 }
 
 Json Variant::usage() const {
-  auto required = required_ ? "!" : "";
+  const char* required = required_ ? "!" : "";
   if (desc_.empty()) {
     return type_string() + required;
   } else {
@@ -102,30 +101,31 @@ Json Variant::json_schema() const {
   return j;
 }
 
-std::optional<size_t> Variant::validate_index(const Conf& c,
+std::optional<size_t> Variant::validate_index(const Conf& conf,
                                               std::optional<SchemaError>& err) const {
   std::vector<size_t> matches;
   std::vector<SchemaError> errors;
   for (size_t i = 0; i < schemas_.size(); ++i) {
     std::optional<SchemaError> tmp;
-    if (schemas_[i].validate(c, tmp)) {
+    if (schemas_[i].validate(conf, tmp)) {
       matches.push_back(i);
     } else {
+      assert(tmp);
       errors.emplace_back(std::move(*tmp));
     }
   }
 
-  if (matches.size() == 0) {
-    err.emplace(SchemaError{c, json_schema(), Json{{"errors", errors}},
-                            "input does not match any variants"});
+  if (matches.empty()) {
+    err = SchemaError{conf, json_schema(), "input does not match any variants"}.with_context(
+        Json{{"errors", errors}});
     return {};
-  } else if (matches.size() > 1 && unique_match_) {
-    err.emplace(SchemaError{c, json_schema(), Json{{"matches", matches}},
-                            "input matches more than one variant"});
-    return {};
-  } else {
-    return matches[0];
   }
+  if (matches.size() > 1 && unique_match_) {
+    err = SchemaError{conf, json_schema(), "input matches more than one variant"}.with_context(
+            Json{{"matches", matches}});
+    return {};
+  }
+  return matches[0];
 }
 
 size_t Variant::variant_index(const Conf& c) const {
@@ -134,6 +134,7 @@ size_t Variant::variant_index(const Conf& c) const {
   if (index) {
     return *index;
   } else {
+    assert(err);
     throw std::move(*err);
   }
 }
@@ -144,5 +145,4 @@ void Variant::reset_ptr() {
   }
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

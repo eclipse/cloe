@@ -24,8 +24,7 @@
 #include <fable/schema/path_impl.hpp>
 #include <fable/utility/path.hpp>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 namespace detail {
 
@@ -86,5 +85,4 @@ std::optional<std::filesystem::path> search_path(const std::filesystem::path& ex
 
 template class Path<std::filesystem::path>;
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema
