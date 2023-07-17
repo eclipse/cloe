@@ -66,6 +66,7 @@ class CloeEngine(ConanFile):
 
     def layout(self):
         cmake.cmake_layout(self)
+        self.cpp.build.bindirs = ["bin"]
 
     def generate(self):
         tc = cmake.CMakeToolchain(self)
