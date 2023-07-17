@@ -6,7 +6,7 @@
 
 [tool.poetry]
 name = "cloe-launch"
-version = "0.20.0"
+version = "0.22.0"
 description = "Launch cloe-engine with Conan profiles."
 license = "Apache-2.0"
 authors = [

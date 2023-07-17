@@ -12,7 +12,7 @@ readme = ""
 setup(
     long_description=readme,
     name="cloe-launch",
-    version="0.20.0",
+    version="0.22.0",
     description="Launch cloe-engine with Conan profiles.",
     python_requires="==3.*,>=3.6.0",
     author="Robert Bosch GmbH",

@@ -20,8 +20,8 @@ Commands:
 import logging
 import os
 import sys
+import pathlib
 
-from typing import Dict
 from typing import List
 
 import click
@@ -344,6 +344,58 @@ def cli_prepare(
 
     try:
         engine.prepare()
+    except ChildProcessError:
+        # Most likely scenario:
+        # 1. conan had an error and terminated with non-zero error
+        # 2. error has already been logged
+        sys.exit(1)
+
+
+# _________________________________________________________________________
+# Command: deploy [--cache] [--profile=PROFILE | --profile-path=CONANFILE]
+@main.command("deploy")
+@options.profile()
+@options.profile_path()
+@options.conan_arg()
+@options.conan_option()
+@options.conan_setting()
+@click.option(
+    "--rpath/--no-rpath",
+    is_flag=True,
+    default=True,
+    help="Set the RPATH of all binaries and libraries.",
+)
+@click.option("--force", is_flag=True, help="Overwrite existing files.")
+@click.argument("path")
+@click.pass_obj
+def cli_deploy(
+    opt,
+    profile: str,
+    profile_path: str,
+    conan_arg: List[str],
+    conan_option: List[str],
+    conan_setting: List[str],
+    force: bool,
+    rpath: bool,
+    path: str,
+) -> None:
+    """Deploy environment for selected profile.
+
+    This may involve downloading missing and available packages and building
+    outdated packages.
+    """
+    options.deny_profile_and_path(profile, profile_path)
+    conf = Configuration(profile)
+    engine = Engine(conf, conanfile=profile_path)
+    engine.conan_args = list(conan_arg)
+    engine.conan_options = list(conan_option)
+    engine.conan_settings = list(conan_setting)
+
+    try:
+        engine.deploy(
+            pathlib.Path(path),
+            patch_rpath=rpath,
+        )
     except ChildProcessError:
         # Most likely scenario:
         # 1. conan had an error and terminated with non-zero error
