@@ -52,7 +52,7 @@ class Error : public std::exception {
 
   template <typename... Args>
   explicit Error(std::string_view format, Args&&... args)
-      : message_(fmt::format(format, std::forward<Args>(args)...)) {}
+      : message_(fmt::format(fmt::runtime(format), std::forward<Args>(args)...)) {}
 
   [[nodiscard]] const char* what() const noexcept override { return message_.c_str(); }
 };
