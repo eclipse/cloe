@@ -71,7 +71,7 @@ class ModelError : public Error {
 
   template <typename... Args>
   ModelError explanation(std::string_view format, const Args&... args) && {
-    this->set_explanation(fmt::format(format, args...));
+    this->set_explanation(fmt::format(fmt::runtime(format), args...));
     return std::move(*this);
   }
 };
@@ -94,7 +94,7 @@ class ModelAbort : public ModelError {
 
   template <typename... Args>
   ModelAbort explanation(std::string_view format, const Args&... args) && {
-    this->set_explanation(fmt::format(format, args...));
+    this->set_explanation(fmt::format(fmt::runtime(format), args...));
     return std::move(*this);
   }
 };
@@ -115,7 +115,7 @@ class ModelReset : public ModelError {
 
   template <typename... Args>
   ModelReset explanation(std::string_view format, const Args&... args) && {
-    this->set_explanation(fmt::format(format, args...));
+    this->set_explanation(fmt::format(fmt::runtime(format), args...));
     return std::move(*this);
   }
 };
@@ -136,7 +136,7 @@ class ModelStop : public ModelError {
 
   template <typename... Args>
   ModelStop explanation(std::string_view format, const Args&... args) && {
-    this->set_explanation(fmt::format(format, args...));
+    this->set_explanation(fmt::format(fmt::runtime(format), args...));
     return std::move(*this);
   }
 };

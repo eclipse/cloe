@@ -332,7 +332,7 @@ class Conf {
 
   template <typename... Args>
   [[noreturn]] void throw_error(std::string_view format, Args&&... args) const {
-    throw_error(fmt::format(format, std::forward<Args>(args)...));
+    throw_error(fmt::format(fmt::runtime(format), std::forward<Args>(args)...));
   }
   [[noreturn]] void throw_error(const std::string& msg) const;
   [[noreturn]] void throw_unexpected(const std::string& key, const std::string& msg = "") const;
