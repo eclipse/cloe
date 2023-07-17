@@ -11,24 +11,28 @@ import hashlib
 import importlib.util
 import logging
 import os
+import json
 import re
 import shutil
 import subprocess
 import sys
+import platform
 import textwrap
 import shlex
 
 from pathlib import Path
 from collections import OrderedDict
 from typing import Dict
+from typing import Set
 from typing import List
 from typing import Mapping
 from typing import Optional
 from typing import Type
 from typing import Union
 
-from cloe_launch.utility import run_cmd
 from cloe_launch import Configuration
+import cloe_launch.utility as cloe_utils
+from cloe_launch.utility import run_cmd
 
 
 class Environment:
@@ -403,17 +407,18 @@ class Engine:
         """Return the path to the list of pruned environment variables."""
         return self.runtime_dir / "environment_all.sh.env"
 
-    def _prepare_runtime_dir(self) -> None:
+    def _prepare_runtime_dir(self, with_json: bool = False) -> None:
         """Clean and create runtime directory."""
         self.clean()
         logging.debug(f"Create: {self.runtime_dir}")
         self.runtime_dir.mkdir(parents=True)
-        self._prepare_virtualenv()
+        self._prepare_virtualenv(with_json)
         self._write_cloe_env()
         self._write_activate_all(
             [
                 # From Conan VirtualRunEnv (!= virtualrunenv) generator:
-                self.runtime_dir / "conanrun.sh",
+                self.runtime_dir
+                / "conanrun.sh",
             ],
             [
                 # From Conan virtualenv generator:
@@ -424,7 +429,7 @@ class Engine:
                 self.runtime_dir / "environment_cloe_launch.sh.env",
                 # From self._write_cloe_env(), derived from environment_run.sh:
                 self.runtime_dir / "environment_cloe.sh.env",
-            ]
+            ],
         )
         self._write_prompt_sh()
         self._write_bashrc()
@@ -496,21 +501,35 @@ class Engine:
 
     def _write_cloe_env(self) -> None:
         """Derive important CLOE_ variables and write environment_cloe.sh.env file."""
-        conanrun = self.runtime_dir / "conanrun.sh"    # From newer VirtualRunEnv generator
-        activate_run = self.runtime_dir / "activate_run.sh"  # From older virtualrunenv generator
+        conanrun = (
+            self.runtime_dir / "conanrun.sh"
+        )  # From newer VirtualRunEnv generator
+        activate_run = (
+            self.runtime_dir / "activate_run.sh"
+        )  # From older virtualrunenv generator
         if conanrun.exists():
             if activate_run.exists():
-                logging.warning("Warning: Found both conanrun.sh and activate_run.sh in runtime directory!")
+                logging.warning(
+                    "Warning: Found both conanrun.sh and activate_run.sh in runtime directory!"
+                )
                 logging.warning("Note:")
-                logging.warning("  It looks like /both/ VirtualRunEnv and virtualrunenv generators are being run.")
-                logging.warning("  This may come from using an out-of-date cloe-launch-profile package.")
+                logging.warning(
+                    "  It looks like /both/ VirtualRunEnv and virtualrunenv generators are being run."
+                )
+                logging.warning(
+                    "  This may come from using an out-of-date cloe-launch-profile package."
+                )
                 logging.warning("")
-                logging.warning("  Continuing with hybrid approach. Environment variables may be incorrectly set.")
-            env = Environment(conanrun, source_file = True)
+                logging.warning(
+                    "  Continuing with hybrid approach. Environment variables may be incorrectly set."
+                )
+            env = Environment(conanrun, source_file=True)
         elif activate_run.exists():
-            env = Environment(activate_run, source_file = True)
+            env = Environment(activate_run, source_file=True)
         else:
-            raise RuntimeError("cannot find conanrun.sh or activate_run.sh in runtime directory")
+            raise RuntimeError(
+                "cannot find conanrun.sh or activate_run.sh in runtime directory"
+            )
 
         if env.has("CLOE_SHELL"):
             logging.error("Error: recursive cloe shells are not supported.")
@@ -531,7 +550,9 @@ class Engine:
         cloe_env.path_set("CLOE_PLUGIN_PATH", self._extract_plugin_paths(env))
         cloe_env.export(self.runtime_dir / "environment_cloe.sh.env")
 
-    def _write_activate_all(self, source_files: List[Path], env_files: List[Path]) -> None:
+    def _write_activate_all(
+        self, source_files: List[Path], env_files: List[Path]
+    ) -> None:
         """Write activate_all.sh file."""
         activate_file = self.runtime_dir / "activate_all.sh"
         activate_data = textwrap.dedent(
@@ -566,7 +587,7 @@ class Engine:
         with activate_file.open("w") as file:
             file.write(activate_data)
 
-    def _prepare_virtualenv(self) -> None:
+    def _prepare_virtualenv(self, with_json: bool = False) -> None:
         # Get conan to create a virtualenv AND virtualrunenv for us:
         # One gives us the LD_LIBRARY_PATH and the other gives us env_info
         # variables set in packages.
@@ -578,6 +599,9 @@ class Engine:
             "-g",
             "VirtualRunEnv",
         ]
+        if with_json:
+            conan_cmd.append("-g")
+            conan_cmd.append("json")
         for arg in self.conan_args:
             conan_cmd.append(arg)
         for option in self.conan_options:
@@ -600,8 +624,12 @@ class Engine:
         logging.error("Note:")
         logging.error("  This problem usually stems from one of two common errors:")
         logging.error("  - The conanfile for cloe-launch does not require cloe-engine.")
-        logging.error("  - The cloe-engine package or binary has not been built / is corrupted.")
-        logging.error("  However, unconvential or unsupported package configuration may also trigger this.")
+        logging.error(
+            "  - The cloe-engine package or binary has not been built / is corrupted."
+        )
+        logging.error(
+            "  However, unconvential or unsupported package configuration may also trigger this."
+        )
         sys.exit(2)
 
     def _extract_plugin_paths(self, env: Environment) -> List[Path]:
@@ -623,12 +651,14 @@ class Engine:
                 _find_plugin_setups(path)
         return PluginSetup.__subclasses__()
 
-    def _prepare_runtime_env(self, use_cache: bool = False) -> Environment:
+    def _prepare_runtime_env(
+        self, use_cache: bool = False, with_json: bool = False
+    ) -> Environment:
         if self.runtime_env_path().exists() and use_cache:
             logging.debug("Re-using existing runtime directory.")
         else:
             logging.debug("Initializing runtime directory ...")
-            self._prepare_runtime_dir()
+            self._prepare_runtime_dir(with_json=with_json)
 
         # Get environment variables we need:
         return Environment(
@@ -757,6 +787,103 @@ class Engine:
         else:
             self.conan_args.append(f"--build={build_policy}")
         self._prepare_runtime_env(use_cache=False)
+
+    def deploy(
+        self,
+        dest: Path,
+        wrapper: Optional[Path] = None,
+        wrapper_target: Optional[Path] = None,
+        patch_rpath: bool = True,
+        build_policy: str = "outdated",
+    ) -> None:
+        """Deploy dependencies for the profile."""
+        self.capture_output = False
+        if build_policy == "":
+            self.conan_args.append("--build")
+        else:
+            self.conan_args.append(f"--build={build_policy}")
+        self._prepare_runtime_env(use_cache=False, with_json=True)
+
+        # Ensure destination exists:
+        if not dest.is_dir():
+            if dest.exists():
+                logging.error(f"Error: destination is not a directory: {dest}")
+                sys.exit(1)
+            dest.mkdir(parents=True)
+
+        # Copy necessary files to destination:
+        # TODO: Create a manifest and be verbose about files being copied.
+        build_info = self.runtime_dir / "conanbuildinfo.json"
+        logging.info(f"Reading: {build_info}")
+        build_data = json.load(build_info.open())
+        install_manifest: List[Path] = []
+
+        def copy_file(src, dest):
+            install_manifest.append(Path(dest))
+            logging.info(f"Installing: {dest}")
+            return shutil.copy2(src, dest)
+
+        def copy_tree(src, dest, ignore):
+            if src.find("/build/") != -1:
+                logging.warning(
+                    f"Warning: deploying from build directory is strongly discouraged: {dep['rootpath']}"
+                )
+            shutil.copytree(
+                src,
+                dest,
+                copy_function=copy_file,
+                dirs_exist_ok=True,
+                ignore=shutil.ignore_patterns(*ignore),
+            )
+
+        for dep in build_data["dependencies"]:
+            for src in dep["bin_paths"]:
+                copy_tree(src, dest/"bin", ignore=["bzip2"])
+            for src in dep["lib_paths"]:
+                copy_tree(src, dest/"lib", ignore=["cmake", "*.a"])
+
+        # Patching RPATH of all the binaries lets everything run
+        # fine without any extra steps, like setting LD_LIBRARY_PATH.
+        if patch_rpath:
+            assert platform.system() != "Windows"
+            cloe_utils.patch_binary_files_rpath(dest / "bin", ["$ORIGIN/../lib"])
+            cloe_utils.patch_binary_files_rpath(dest / "lib" / "cloe", ["$ORIGIN/.."])
+
+        if wrapper is not None:
+            if wrapper_target is None:
+                wrapper_target = dest / "bin" / "cloe-engine"
+            wrapper_data = textwrap.dedent(
+                f"""\
+                #!/bin/sh
+
+                {wrapper_target} $@
+                """
+            )
+            with wrapper.open("w") as wrapper_file:
+                wrapper_file.write(wrapper_data)
+
+        def simplify_manifest(manifest: Set[Path]):
+            for path in list(manifest):
+                parent = path.parent
+                while parent != parent.parent:
+                    if parent in manifest:
+                        manifest.remove(parent)
+                    parent = parent.parent
+
+        # Create uninstaller from manifest
+        uninstaller_file = self.runtime_dir / "uninstall.sh"
+        logging.info(f"Write: {uninstaller_file}")
+        with uninstaller_file.open("w") as f:
+            install_dirs: Set[Path] = set()
+            f.write("#!/bin/bash\n")
+            for file in install_manifest:
+                install_dirs.add(file.parent)
+                f.write(f"echo 'Removing file: {file}'\n")
+                f.write(f"rm '{file}'\n")
+            simplify_manifest(install_dirs)
+            for path in install_dirs:
+                f.write(f"echo 'Removing dir: {path}'\n")
+                f.write(f"rmdir -p '{path}'\n")
 
     def exec(
         self,
