@@ -78,14 +78,13 @@ class FactoryBase : public Base<CRTP> {
   ~FactoryBase() noexcept override = default;
 
  protected:
-  FactoryBase(const FactoryBase& other) :
-    Base<CRTP>(other),
-    transform_func_(other.transform_func_),
-    available_(other.available_),
-    factory_key_(other.factory_key_),
-    args_key_(other.args_key_),
-    args_subset_(other.args_subset_)
-  {
+  FactoryBase(const FactoryBase& other)
+      : Base<CRTP>(other)
+      , transform_func_(other.transform_func_)
+      , available_(other.available_)
+      , factory_key_(other.factory_key_)
+      , args_key_(other.args_key_)
+      , args_subset_(other.args_subset_) {
     reset_schema();
   }
 
@@ -93,7 +92,7 @@ class FactoryBase : public Base<CRTP> {
     if (&other == this) {
       return *this;
     }
-    *this = static_cast<const Base<CRTP>&>(other);
+    Base<CRTP>::operator=(other);
     transform_func_ = other.transform_func_;
     available_ = other.available_;
     factory_key_ = other.factory_key_;
@@ -404,7 +403,16 @@ class FactoryBase : public Base<CRTP> {
  * instance but is only usable through it's make() method.
  */
 template <typename T>
-class FactoryPointerless : public FactoryBase<T, FactoryPointerless<T>> {};
+class FactoryPointerless : public FactoryBase<T, FactoryPointerless<T>> {
+ public:
+  using FactoryBase<T, FactoryPointerless<T>>::FactoryBase;
+  FactoryPointerless() = default;
+  FactoryPointerless(const FactoryPointerless<T>& other) = default;
+  FactoryPointerless(FactoryPointerless<T>&& other) noexcept = default;
+  FactoryPointerless<T>& operator=(const FactoryPointerless<T>& other) = default;
+  FactoryPointerless<T>& operator=(FactoryPointerless<T>&& other) noexcept = default;
+  ~FactoryPointerless() override = default;
+};
 
 /**
  * Factory is a factory schema that extends FactoryPointerless in that it
@@ -424,6 +432,11 @@ class Factory : public FactoryBase<T, Factory<T>> {
 
  public:  // Constructors
   using FactoryBase<T, Factory<T>>::FactoryBase;
+  Factory(const Factory<T>& other) = default;
+  Factory(Factory<T>&& other) noexcept = default;
+  Factory<T>& operator=(const Factory<T>& other) = default;
+  Factory<T>& operator=(Factory<T>&& other) noexcept = default;
+  ~Factory() override = default;
 
   Factory(Type* ptr, std::string desc) : FactoryBase<T, Factory<T>>(std::move(desc)), ptr_(ptr) {}
 
