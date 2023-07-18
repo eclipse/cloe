@@ -510,7 +510,7 @@ struct CustomData {
   std::string c;
 };
 
-void to_lua(sol::state_view &view, CustomData * /* value */) {
+void to_lua(sol::state_view view, CustomData * /* value */) {
   sol::usertype<CustomData> usertype_table = view.new_usertype<CustomData>("CustomData");
   usertype_table["a"] = &CustomData::a;
   usertype_table["b"] = &CustomData::b;
@@ -525,13 +525,13 @@ TEST(databroker, to_lua) {
   //          Prerequisite: -
   //             Test Data: -
   //       Expected Result: 2) std::logic_error
-  DataBroker db;
+  sol::state state;
+  sol::state_view view(state);
+  DataBroker db {view};
   // 1) Implement a signal
   auto gamma = db.implement<CustomData>("gamma");
 
-  sol::state state;
-  sol::state_view view(state);
-  db.bind(&view);
+
   db.bind("gamma", "gamma");
 
   const auto &code = R"(
