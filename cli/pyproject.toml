@@ -42,3 +42,79 @@ line-length = 88
 [tool.dephell.main]
 from = {format = "poetry", path = "pyproject.toml"}
 to = {format = "setuppy", path = "setup.py"}
+
+[tool.pylint.basic]
+# Bad variable names which should always be refused, separated by a comma.
+bad-names = ["foo", "bar", "baz", "toto", "tutu", "tata"]
+
+# Good variable names which should always be accepted, separated by a comma.
+good-names = ["f", "i", "j", "k", "m", "n", "s", "ex", "_", "kv", "v"]
+
+[tool.pylint.design]
+# List of regular expressions of class ancestor names to ignore when counting
+# public methods (see R0903)
+# exclude-too-few-public-methods =
+
+# List of qualified class names to ignore when counting class parents (see R0901)
+# ignored-parents =
+
+# Maximum number of arguments for function / method.
+max-args = 5
+
+# Maximum number of attributes for a class (see R0902).
+max-attributes = 7
+
+# Maximum number of boolean expressions in an if statement (see R0916).
+max-bool-expr = 5
+
+# Maximum number of branch for function / method body.
+max-branches = 12
+
+# Maximum number of locals for function / method body.
+max-locals = 15
+
+# Maximum number of parents for a class (see R0901).
+max-parents = 7
+
+# Maximum number of public methods for a class (see R0904).
+max-public-methods = 20
+
+# Maximum number of return / yield for function / method body.
+max-returns = 6
+
+# Maximum number of statements in function / method body.
+max-statements = 50
+
+# Minimum number of public methods for a class (see R0903).
+min-public-methods = 2
+
+[tool.pylint.format]
+# Maximum number of characters on a single line.
+max-line-length = 100
+
+# Maximum number of lines in a module.
+max-module-lines = 1000
+
+[tool.pylint."messages control"]
+disable = [
+    "raw-checker-failed",
+    "bad-inline-option",
+    "locally-disabled",
+    "file-ignored",
+    "suppressed-message",
+    "useless-suppression",
+    "deprecated-pragma",
+    "use-symbolic-message-instead",
+    "logging-format-interpolation",
+    "logging-fstring-interpolation",
+]
+
+enable = ["c-extension-no-member"]
+
+[tool.pylint.miscellaneous]
+# List of note tags to take in consideration, separated by a comma.
+notes = ["FIXME", "XXX", "TODO"]
+
+[tool.pylint.refactoring]
+# Maximum number of nested blocks for function / method body
+max-nested-blocks = 5
