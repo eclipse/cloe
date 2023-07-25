@@ -16,290 +16,20 @@ import re
 import shutil
 import subprocess
 import sys
+import shlex
 import platform
 import textwrap
-import shlex
 
 from pathlib import Path
-from collections import OrderedDict
 from typing import Dict
 from typing import Set
 from typing import List
-from typing import Mapping
 from typing import Optional
 from typing import Type
-from typing import Union
 
-from cloe_launch import Configuration
-import cloe_launch.utility as cloe_utils
-from cloe_launch.utility import run_cmd
+from cloe_launch import Configuration, procutils, binutils
+from cloe_launch.procutils import Environment
 
-
-class Environment:
-    """This class stores a set of environment variables for runtimes.
-
-    The following important variables are required for correct execution:
-
-        PATH
-
-    The main uses are to allow plugins to specify or modify variables that
-    they will need when loaded. For example:
-
-        LD_LIBRARY_PATH
-        LD_PRELOAD
-
-    Another use is to specify variables that are required for correct
-    interpolation of stackfiles:
-
-        CLOE_ROOT
-        VTD_ROOT
-        IPGHOME
-
-    As one of the primary use-cases of the Environment class is to allow
-    modification of the *PATH variables, we provide an extra method for
-    modifying path variables.
-
-    Caveats:
-    - This is a global namespace, so it's problematic to combine two
-      plugins that require different environment variables.
-    - Environment variables that contain ":" separated lists do not take
-      escaping into account.
-    """
-
-    _sep = os.pathsep
-    _shell_path: str = "/bin/bash"
-    _shell_env: Dict[str, str] = {
-        "PATH": "/bin:/usr/bin",
-    }
-    _preserve: List[str] = [
-        # Required for avoiding recursive invocations:
-        "CLOE_SHELL",
-        # Required for XDG compliance:
-        "XDG_.*",
-        "HOME",
-        "USER",
-        # Preserve locale settings:
-        "LANGUAGE",
-        "LANG",
-        "LC_.*",
-        # Required for Zsh
-        "ZDOTDIR",
-        # Required for resolving relative paths:
-        "PWD",
-        # Required for graphical output:
-        "XAUTHORITY",
-        "DISPLAY",
-        # Required for correct terminal output:
-        "COLORTERM",
-        "TERM",
-        "TERMINAL",
-        "S_COLORS",
-        # Required for working with proxies:
-        "(HTTP|HTTPS|FTP|SOCKS|NO)_PROXY",
-        "(http|https|ftp|socks|no)_proxy",
-    ]
-    _data: Dict[str, str] = {}
-
-    def __init__(
-        self,
-        env: Union[Path, List[Path], Dict[str, str], None],
-        preserve: List[str] = None,
-        source_file: bool = True,
-    ):
-        # Initialize shell environment
-        if preserve is not None:
-            self._preserve = preserve
-        self._init_shell_env(os.environ)
-
-        # Initialize the environment
-        if isinstance(env, str):
-            env = [Path(env)]
-        if isinstance(env, Path):
-            env = [env]
-        if isinstance(env, list):
-            self._data = {}
-            if source_file:
-                self.init_from_shell(env)
-            else:
-                for file in env:
-                    self.init_from_file(file)
-            if len(env) > 1:
-                self.deduplicate_list("PATH")
-        elif isinstance(env, dict):
-            self.init_from_dict(env)
-        else:
-            self.init_from_env()
-
-    def _init_shell_env(self, base: Mapping[str, str]) -> None:
-        preserve = "|".join(self._preserve)
-        regex = re.compile(f"^({preserve})$")
-        for key in base:
-            if regex.match(key):
-                self._shell_env[key] = base[key]
-
-    def init_from_file(self, filepath: Path) -> None:
-        """Init variables from a file containing KEY=VALUE pairs."""
-        with filepath.open() as file:
-            data = file.read()
-        self.init_from_str(data)
-
-    def init_from_dict(self, env: Dict[str, str]) -> None:
-        """Init variables from a dictionary."""
-        self._data = env
-
-    def init_from_shell(self, filepaths: List[Path], shell: str = None) -> None:
-        """Init variables from a shell sourcing a file."""
-        assert len(filepaths) != 0
-        if shell is None:
-            shell = self._shell_path
-        filepaths = [shlex.quote(x.as_posix()) for x in filepaths]
-        cmd = [
-            shell,
-            "-c",
-            f"source {' && source '.join(filepaths)} &>/dev/null && env",
-        ]
-        result = run_cmd(cmd, env=self._shell_env)
-        if result.returncode != 0:
-            logging.error(
-                f"Error: error sourcing files from shell: {', '.join(filepaths)}"
-            )
-        self.init_from_str(result.stdout)
-
-    def init_from_env(self) -> None:
-        """Init variables from this program's environment."""
-        self._data = os.environ.copy()
-
-    def init_from_str(self, data: str) -> None:
-        """
-        Init variables from a string of KEY=VALUE lines.
-
-        - Leading and trailing whitespace is stripped.
-        - Quotes are not removed.
-        - Empty lines and lines starting with # are ignored.
-        """
-        for line in data.split("\n"):
-            if line.strip() == "":
-                continue
-            if line.startswith("#"):
-                continue
-
-            kv = line.split("=", 1)
-            try:
-                self._data[kv[0]] = kv[1]
-            except IndexError:
-                logging.error(
-                    f"Error: cannot interpret environment key-value pair: {line}"
-                )
-
-    def __delitem__(self, key: str):
-        self._data.__delitem__(key)
-
-    def __getitem__(self, key: str) -> str:
-        return self._data.__getitem__(key)
-
-    def __setitem__(self, key: str, value: str) -> None:
-        self._data.__setitem__(key, value)
-
-    def __str__(self) -> str:
-        indent = "    "
-
-        buf = "{\n"
-        for k in sorted(self._data.keys()):
-            buf += indent + k + ": "
-            val = self._data[k]
-            if k.endswith("PATH"):
-                lst = val.split(self._sep)
-                buf += "[\n"
-                for path in lst:
-                    buf += indent + indent + path + "\n"
-                buf += indent + "]"
-            else:
-                buf += val
-            buf += "\n"
-        buf += "}"
-        return buf
-
-    def path_append(self, key: str, value: Union[Path, str]) -> None:
-        """
-        Append the value to the path-like variable key.
-
-        This uses ":" as the separator between multiple values in the path.
-        """
-        if key in self._data:
-            self._data[key] += self._sep + str(value)
-        else:
-            self._data[key] = str(value)
-
-    def path_prepend(self, key: str, value: Union[Path, str]) -> None:
-        """
-        Prepend the value to the path-like variable key.
-
-        This uses ":" as the separator between multiple values in the path.
-        """
-        if key in self._data:
-            self._data[key] = self._sep + str(value) + self._data[key]
-        else:
-            self._data[key] = str(value)
-
-    def path_set(self, key: str, values: List[Union[Path, str]]) -> None:
-        """Set the key to a :-separated list."""
-        self._data[key] = self._sep.join([str(v) for v in values])
-
-    def deduplicate_list(self, key: str) -> None:
-        """Remove duplicates from the specified key."""
-        if key not in self._data:
-            return
-        self._data[key] = self._sep.join(
-            list(OrderedDict.fromkeys(self._data[key].split(self._sep)))
-        )
-
-    def get(self, key: str, default: str = None) -> Optional[str]:
-        """Get the value at key or return default."""
-        return self._data.get(key, default)
-
-    def get_list(self, key: str, default: List[str] = None) -> Optional[List[str]]:
-        """Get the value at key and split or return default."""
-        if key in self._data:
-            return self._data[key].split(self._sep)
-        return default
-
-    def set(self, key: str, value: Union[Path, str]) -> None:
-        """Set the value."""
-        self._data[key] = str(value)
-
-    def set_default(self, key: str, value: str) -> None:
-        """Set the value if it has not already been set."""
-        if key not in self._data:
-            self._data[key] = value
-
-    def has(self, key: str) -> bool:
-        """Return true if the key is in the environment."""
-        return key in self._data
-
-    def preserve(self, key: str, override: bool = False):
-        """
-        Set the given key if it's not already set and it's in the environment.
-
-        When override is True, the value is taken from the environment
-        regardless of whether it already exists or not.
-
-        This should not be used for path-like variables.
-        """
-        if key not in self._data or override:
-            value = os.getenv(key, None)
-            if value is not None:
-                self._data[key] = value
-
-    def export(self, filepath: Path) -> None:
-        """Write the environment variables to a file in KEY=VALUE pairs."""
-        with filepath.open("w") as file:
-            for k in self._data.keys():
-                qv = shlex.quote(self._data[k])
-                file.write(f"{k}={qv}\n")
-
-    def as_dict(self) -> Dict[str, str]:
-        """Return a reference to the internal dictionary."""
-        return self._data
 
 
 class PluginSetup:
@@ -349,6 +79,8 @@ def _find_plugin_setups(file: Path) -> List[Type[PluginSetup]]:
     """Open a Python module and find all PluginSetups."""
     name = os.path.splitext(file)[0]
     spec = importlib.util.spec_from_file_location(name, file)
+    if spec is None:
+        return []
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
 
@@ -363,7 +95,7 @@ class Engine:
     anonymous_file_regex = "^(/proc/self|/dev)/fd/[0-9]+$"
     engine_path = "cloe-engine"
 
-    def __init__(self, conf: Configuration, conanfile: str = None):
+    def __init__(self, conf: Configuration, conanfile: Optional[str] = None):
         # Set options:
         self.conan_path = Path(conf._conf["conan_path"])
         self.shell_path = Path(conf._conf["shell_path"])
@@ -724,7 +456,7 @@ class Engine:
 
     def shell(
         self,
-        arguments: List[str] = None,
+        arguments: Optional[List[str]] = None,
         use_cache: bool = False,
     ) -> None:
         """Launch a SHELL with the environment variables adjusted."""
@@ -849,8 +581,8 @@ class Engine:
             if shutil.which("patchelf") is None:
                 logging.error("Error: required executable is not available: patchelf")
                 sys.exit(2)
-            cloe_utils.patch_binary_files_rpath(dest / "bin", ["$ORIGIN/../lib"])
-            cloe_utils.patch_binary_files_rpath(dest / "lib" / "cloe", ["$ORIGIN/.."])
+            binutils.patch_binary_files_rpath(dest / "bin", ["$ORIGIN/../lib"])
+            binutils.patch_binary_files_rpath(dest / "lib" / "cloe", ["$ORIGIN/.."])
 
         if wrapper is not None:
             if wrapper_target is None:
@@ -893,7 +625,7 @@ class Engine:
         args: List[str],
         use_cache: bool = False,
         debug: bool = False,
-        override_env: Dict[str, str] = None,
+        override_env: Optional[Dict[str, str]] = None,
     ) -> subprocess.CompletedProcess:
         """Launch cloe-engine with the environment variables adjusted and with
         plugin setup and teardown."""
@@ -931,6 +663,6 @@ class Engine:
         return result
 
     def _run_cmd(self, cmd, must_succeed=True) -> subprocess.CompletedProcess:
-        return run_cmd(
+        return procutils.system(
             cmd, must_succeed=must_succeed, capture_output=self.capture_output
         )
