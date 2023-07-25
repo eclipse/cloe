@@ -3,33 +3,9 @@ import subprocess
 import platform
 
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import List, Optional
 
-
-def run_cmd(
-    cmd: List[str],
-    env: Optional[Dict[str, str]] = None,
-    must_succeed: bool = True,
-    capture_output: bool = True,
-) -> subprocess.CompletedProcess:
-    """Run a command quietly, only printing stderr if the command fails."""
-
-    logging.info(f"Exec: {' '.join(cmd)}")
-    result = subprocess.run(
-        cmd,
-        check=False,
-        stdout=subprocess.PIPE if capture_output else None,
-        stderr=subprocess.STDOUT if capture_output else None,
-        universal_newlines=True,
-        env=env,
-    )
-    if result.returncode != 0:
-        logging.error(f"Error running: {' '.join(cmd)}")
-        if result.stdout is not None:
-            logging.error(result.stdout)
-        if must_succeed:
-            raise ChildProcessError()
-    return result
+from cloe_launch import procutils
 
 
 def patch_rpath(file: Path, rpath: List[str]) -> Optional[subprocess.CompletedProcess]:
@@ -58,14 +34,14 @@ def patch_rpath(file: Path, rpath: List[str]) -> Optional[subprocess.CompletedPr
     file_arg = str(file)
     rpath_arg = ":".join(rpath)
     logging.debug(f"Setting RPATH: {file_arg} -> {rpath_arg}")
-    return run_cmd(["patchelf", "--set-rpath", rpath_arg, file_arg], must_succeed=False)
+    return procutils.system(["patchelf", "--set-rpath", rpath_arg, file_arg], must_succeed=False)
 
 
 def find_binary_files(cwd: Optional[Path] = None) -> List[Path]:
     """Return a list of all file paths that are of the binary type."""
     assert platform.system() != "Windows"
     result = subprocess.run(
-        """find -type f -exec sh -c "file -i '{}' | grep -q '; charset=binary'" \; -print""",
+        """find -type f -exec sh -c "file -i '{}' | grep -q '; charset=binary'" \\; -print""",
         shell=True,
         stdout=subprocess.PIPE,
         check=True,

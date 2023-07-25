@@ -7,13 +7,13 @@ might work in the future. Once the Cloe CLI is in-use, we deprecate and
 remove this script.
 
 Commands:
-  exec      Run cloe-engine with the given arguments.
-  show      Show default/specified profile.
-  list      List the currently available profiles.
-  add       Add a profile with the given name.
-  edit      Edit the default/specified profile with $EDITOR.
-  remove    Remove the specified profile.
-  default   Get or set the default profile.
+  activate  Launch shell with the correct environment from a profile.
+  clean     Clean launcher profile cache.
+  deploy    Deploy environment for selected profile.
+  exec      Launch cloe-engine with a profile.
+  prepare   Prepare environment for selected profile.
+  profile   Manage launcher profiles.
+  shell     Launch shell with the correct environment from a profile.
 
 """
 
