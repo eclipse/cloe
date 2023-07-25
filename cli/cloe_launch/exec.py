@@ -846,6 +846,9 @@ class Engine:
         # fine without any extra steps, like setting LD_LIBRARY_PATH.
         if patch_rpath:
             assert platform.system() != "Windows"
+            if shutil.which("patchelf") is None:
+                logging.error("Error: required executable is not available: patchelf")
+                sys.exit(2)
             cloe_utils.patch_binary_files_rpath(dest / "bin", ["$ORIGIN/../lib"])
             cloe_utils.patch_binary_files_rpath(dest / "lib" / "cloe", ["$ORIGIN/.."])
 
