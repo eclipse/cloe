@@ -6,6 +6,7 @@ setup.sh
 
 # Standard out-of-source build
 build/
+deploy/
 
 # Vendored Conan recipes sometimes extract fetched sources
 vendor/**/src/
