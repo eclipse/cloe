@@ -58,6 +58,19 @@ readable perspective on new releases.
 
       Note that the most recent release is at the *top* of the document.
 
+0.20.1 (2023-07-28)
+-------------------
+
+This is a bugfix release to 0.20.0 that fixes some compile issues.
+
+**Core Libraries:**
+
+fable: Instantiate missing Number<signed char> `[035ed74] <https://github.com/eclipse/cloe/commit/035ed7423365e0629592d00b768db96670ba7538>`_
+
+**Tooling & Dependencies:**
+
+tooling: Ensure minimum GCC version of 8 `[4a9bbbf] <https://github.com/eclipse/cloe/commit/4a9bbbfbd1668c7acab31efc3bd82efbb2423f79>`_
+
 0.20.0 (2023-04-03)
 -------------------
 
