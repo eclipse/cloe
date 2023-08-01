@@ -48,7 +48,7 @@ The steps 1-6 can be performed as one with the cloe-launch ``exec`` command:
 
 For example::
 
-    $ cloe-launch exec -P tests/default_profile.py -- run tests/config_nop_smoketest.json
+    $ cloe-launch exec tests/default_profile.py -- run tests/config_nop_smoketest.json
     {
       "elapsed": "17.837523ms",
       "outcome": "success",
@@ -72,12 +72,12 @@ For example::
 .. rubric:: The ``--`` argument
 
 The ``--`` separates cloe-launch arguments and options from those that should
-be passed directly to cloe-engine. If you want to see the cloe-engine
+be passed directly to conan or cloe-engine. If you want to see the cloe-engine
 help for example, you would need to run::
 
-    $ cloe-launch exec -P tests/default_profile.py -- --help
+    $ cloe-launch exec tests/default_profile.py -- --help
 
-If you omit the ``--`` part, then you will see cloe-launch help instead.
+If you omit the ``--`` part, the flag will be passed to ``conan install``.
 
 Shell Command
 ^^^^^^^^^^^^^
@@ -92,14 +92,14 @@ If you pass any further arguments to the shell command (after specifying
 launching a new shell. This can be useful for accessing environment variables
 that would be defined in the runtime shell::
 
-    $ cloe-launch shell -P tests/conanfile_default.py -o:o cloe:with_vtd=True -- -c '${VTD_LAUNCH} --help'
+    $ cloe-launch shell tests/conanfile_default.py -o cloe:with_vtd=True -- -c '${VTD_LAUNCH} --help'
 
 Activate Command
 ^^^^^^^^^^^^^^^^
 If you want to modify your current shell instead of creating a new one, you can
 use the ``activate`` command::
 
-    $ cloe-launch activate -P tests/conanfile_default.py
+    $ cloe-launch activate tests/conanfile_default.py
     # Please see `cloe-launch activate --help` before activating this.
 
     source ~/.cache/cloe/launcher/7745ffb0e036192c8e29a8b8cc2b9571e7a72c8c/activate_all.sh
@@ -108,11 +108,11 @@ use the ``activate`` command::
 You can then use the ``source`` feature of your shell to integrate these
 commands::
 
-    $ source <(cloe-launch activate -P tests/conanfile_default.py)
+    $ source <(cloe-launch activate tests/conanfile_default.py)
 
 Or use the ``eval`` command::
 
-    $ eval $(cloe-launch activate -P tests/conanfile_default.py)
+    $ eval $(cloe-launch activate tests/conanfile_default.py)
 
 Prepare Command
 ^^^^^^^^^^^^^^^
@@ -125,47 +125,11 @@ The ``prepare`` command is for the use-case where all you want to do is prepare
 the virtual runtime environment, and you want to see the Conan output without
 interference or delay::
 
-    $ cloe-launch prepare -P tests/conanfile_default.py
+    $ cloe-launch prepare tests/conanfile_default.py
 
 This is used by the make target ``smoketest-deps``, which just prepares all
 the virtual environments, which might take some time in case any packages need
 to be built.
-
-Profiles
-^^^^^^^^
-In general, you'll want to use a conanfile from some directory you're working
-in, in which case you can specify this file with the ``-P`` (uppercase) option::
-
-    $ cloe-launch exec -P conanfile.txt -- [cloe-engine arguments]
-
-If you find you are using the same profile all the time, you can "bake" this
-profile into the cloe-launch user configuration::
-
-    $ cloe-launch profile add --profile my_default conanfile.txt
-
-You can then specify it with the ``-p`` (lowercase) option::
-
-    $ cloe-launch exec -p my_default -- [cloe-engine arguments]
-
-And if you make it the default, you don't need to specify ``-p`` or ``-P`` at
-all::
-
-    $ cloe-launch profile default --profile my_default
-
-You can see which profiles you have and manage them with the ``profile``
-command.
-
- .. note::
-    You cannot use Python-based conanfiles as profiles that depend on files
-    that are relative to the original conanfile. This is the case with
-    ``conanfile.py`` and ``tests/conanfile_default.py`` that are in the Cloe repository,
-    for example.
-
-    If you do add such an invalid conanfile as a profile, cloe-launch will not
-    complain, but you will get a Conan error.
-
-    You can convert almost any specific use of ``conanfile.py`` into an
-    equivalent ``conanfile.txt``.
 
 Runtime Cache
 ^^^^^^^^^^^^^
@@ -175,36 +139,33 @@ run. You can minimize this by instructing cloe-launch to re-use the cache
 with the ``-c`` argument. The cache contains the virtual run env based on the
 profile hash, but it may be out-of-date, which is why it's not on by default.
 
+If you provide any (different) options to the Conan install command, these will
+not take effect if you re-use the cache.
+
 You can use this cache for the ``exec``, ``shell``, and ``activate`` commands.
 
 Conan Options
 ^^^^^^^^^^^^^
+
+..
+    TODO: Update this segment
+
 Under the hood, cloe-launch uses Conan to do a lot of the heavy lifting,
-in particular it uses the ``conan install`` command with the two generators
-``virtualenv`` and ``virtualrunenv`` and the profile you specify.
+in particular it uses the ``conan install`` command with the ``VirtualRunEnv``
+generator and the conanfile you specify.
 This ``install`` command accepts a whole host of options, which you can see
 with ``conan install --help``.
 
-The four main cloe-launch commands ``exec``, ``shell``, ``activate``, and
-``prepare`` let you pass such further arguments to Conan.
+Any cloe-launch command that takes a conanfile will also take conan options.
+These are all arguments that follow the conanfile positional arguments
+up until the first ``--`` encountered.
 
 For example, to instruct Conan to build any missing dependencies::
 
-    $ cloe-launch exec -P tests/conanfile_default.py -o:o cloe:with_vtd=True -o --build=missing -- usage
+    $ cloe-launch exec tests/conanfile_default.py -o cloe:with_vtd=True --build=missing -- usage
 
 (This is somewhat contrived example, since it's preferable to use the
 ``prepare`` command for this use-case. But it goes to show you don't *need* to.)
-
-There are three options cloe-launch provides:
-
-``-o ARG``
-   This option will pass ``ARG`` verbatim to Conan.
-
-``-o:o ARG``
-   This option will pass ``--options ARG`` to Conan.
-
-``-o:s ARG``
-   This option will pass ``--settings ARG`` to Conan.
 
  .. note::
     The hash used for the cache is not dependent on these options, so if you
@@ -213,14 +174,12 @@ There are three options cloe-launch provides:
 
 A plausible usage example is::
 
-    cloe-launch prepare -P tests/conanfile_default.py -o:o cloe-engine:server=False
+    cloe-launch prepare tests/conanfile_default.py -o cloe-engine:server=False
 
-The option, ``-o:o cloe-engine:server=False`` evaluates to ``-o
-cloe-engine:server=False`` on the Conan command line and tells Conan to change
+The option ``-o cloe-engine:server=False`` tells Conan to change
 the default option ``server`` of the ``cloe-engine`` package to ``False``. This instructs
 Conan to use a different package, and because it's not built by default, the
-``-o --build=missing`` (which evaluates directly to ``--build=missing`` on the Conan
-command line) tells Conan to build the package if it's missing.
+``--build=missing`` tells Conan to build the package if it's missing.
 
 This is a plausible call to make, since cloe-launch doesn't build missing
 packages by default (to avoid unintentionally running something you didn't want
@@ -235,6 +194,10 @@ to run).
 
 Getting Help
 ^^^^^^^^^^^^
+
+..
+    TODO: Update this output
+
 Once ``cloe-launch`` is available in your PATH, you can get help from the tool
 itself anytime with the ``--help`` flag::
 
@@ -265,7 +228,7 @@ Conan, which is used under-the-hood.
 
 In this case, you might see in the first few lines::
 
-    $ cloe-launch exec -P tests/conanfile_default.py -- check tests/test_minimator_smoketest.json
+    $ cloe-launch exec tests/conanfile_default.py -- check tests/test_minimator_smoketest.json
     Error running: conan install --install-folder /home/captain/.cache/cloe/launcher/167cfb520dd89cc6124d02369b3ae77632f7b6c8 -g virtualenv tests/conanfile_default.py
     Configuration:
     [settings]
