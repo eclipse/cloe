@@ -11,7 +11,7 @@ usage_json() {
    local plugin="$1"
    shift 1
    local launch_options="$@"
-   cloe_launch exec -P "${CLOE_CONF}" $launch_options -- usage --json $plugin \
+   cloe_launch exec "${CLOE_CONF}" $launch_options -- usage --json $plugin \
       | sed -r 's#"\$id": ".*/\.conan/data#"$id": "~/.conan/data#'
 }
 
@@ -19,7 +19,7 @@ usage_user() {
    local plugin="$1"
    shift 1
    local launch_options="$@"
-   cloe_launch exec -P "${CLOE_CONF}" $launch_options -- usage $plugin \
+   cloe_launch exec "${CLOE_CONF}" $launch_options -- usage $plugin \
       | sed -r 's#Path: .*/\.conan/data#Path: ~/.conan/data#'
 }
 
@@ -34,7 +34,7 @@ for plugin in "${refdir}"/*.rst; do
 
    launch_options=
    if [[ "$plugin_ref" == "vtd" ]]; then
-      launch_options="-o:o with_vtd=True -o:o with_esmini=False"
+      launch_options="-o with_vtd=True -o with_esmini=False"
    fi
 
    echo "info: generating usage for: $plugin_ref"

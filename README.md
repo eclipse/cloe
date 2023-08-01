@@ -125,8 +125,9 @@ used.
 Once the `cloe-launch` tool is available, you can do one of the following:
 
  1. Launch a shell with the environment adjusted:
+    <!-- TODO: Update this example!! -->
     ```console
-    $ cloe-launch -v shell -P tests/conanfile_default.py
+    $ cloe-launch -v shell tests/conanfile_default.py
     Source profile: tests/conanfile_default.py
     Profile name: 7745ffb0e036192c8e29a8b8cc2b9571e7a72c8c
     Configuration:
@@ -141,8 +142,9 @@ Once the `cloe-launch` tool is available, you can do one of the following:
     ...
     ```
  2. Launch `cloe-engine` directly:
+    <!-- TODO: Update this example!! -->
     ```console
-    $ cloe-launch -v exec -P conanfile.py -- usage
+    $ cloe-launch -v exec conanfile.py -- usage
     Source profile: tests/conanfile_default.py
     Profile name: 7745ffb0e036192c8e29a8b8cc2b9571e7a72c8c
     Configuration:
