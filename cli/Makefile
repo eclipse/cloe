@@ -26,24 +26,12 @@ help:
 .PHONY: install
 install: export
 	command -v ${PIP} >/dev/null 2>&1
-	# Work-around pip confused by pyproject.toml
-	-mv pyproject.toml pyproject.toml.bak
-	${PIP} install ${PIP_INSTALL_ARGS} . || ( \
-		mv pyproject.toml.bak pyproject.toml; \
-		exit 1; \
-	)
-	mv pyproject.toml.bak pyproject.toml
+	${PIP} install ${PIP_INSTALL_ARGS}
 
 .PHONY: editable
 editable: export
 	command -v ${PIP} >/dev/null 2>&1
-	# Work-around pip confused by pyproject.toml
-	-mv pyproject.toml pyproject.toml.bak
-	${PIP} install -e ${PIP_INSTALL_ARGS} . || ( \
-		mv pyproject.toml.bak pyproject.toml; \
-		exit 1; \
-	)
-	mv pyproject.toml.bak pyproject.toml
+	${PIP} install -e ${PIP_INSTALL_ARGS}
 
 .PHONY: export
 export:

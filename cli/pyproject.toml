@@ -4,27 +4,27 @@
 # This may change in the future.
 #
 
-[tool.poetry]
+[project]
 name = "cloe-launch"
 version = "0.22.0"
 description = "Launch cloe-engine with Conan profiles."
-license = "Apache-2.0"
+license = { text = "Apache-2.0" }
 authors = [
-    "Robert Bosch GmbH <cloe-dev@eclipse.org>",
+    { name = "Eclipse Cloe Contributors", email = "cloe-dev@eclipse.org" },
 ]
 keywords = ["cloe"]
+requires-python = ">=3.7"
+dependencies = [
+    "toml == 0.10.*",
+    "click == 7",
+]
 
-[tool.poetry.dependencies]
-python = "^3.6"
-toml = "^0.10.1"
-click = "^7.1.2"
-
-[tool.poetry.scripts]
-cloe-launch = "cloe_launch.__main__:entry_point"
+[project.scripts]
+cloe-launch = "cloe_launch.commands:main"
 
 [build-system]
-requires = ["poetry>=0.12"]
-build-backend = "poetry.masonry.api"
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
 
 [tool.isort]
 profile = "black"

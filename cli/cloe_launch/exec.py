@@ -31,7 +31,6 @@ from cloe_launch import Configuration, procutils, binutils
 from cloe_launch.procutils import Environment
 
 
-
 class PluginSetup:
     """
     This class loads a file as a Python module and creates from this module
@@ -107,11 +106,9 @@ class Engine:
         self.runtime_dir = Path(conf.profile_runtime(self.profile))
         self.engine_pre_args = conf._conf["engine"]["pre_arguments"]
         self.engine_post_args = conf._conf["engine"]["post_arguments"]
-        self.abort_recursive_shell = True
-        self.preserve_env = False
-        self.conan_args = []
-        self.conan_options = []
-        self.conan_settings = []
+        self.abort_recursive_shell: bool = True
+        self.preserve_env: bool = False
+        self.conan_args: List[str] = []
         self.capture_output = True
 
         logging.info(f"Profile name: {self.profile}")
@@ -336,12 +333,6 @@ class Engine:
             conan_cmd.append("json")
         for arg in self.conan_args:
             conan_cmd.append(arg)
-        for option in self.conan_options:
-            conan_cmd.append("-o")
-            conan_cmd.append(option)
-        for setting in self.conan_settings:
-            conan_cmd.append("-s")
-            conan_cmd.append(setting)
         conan_cmd.append(self.profile_path)
         self._run_cmd(conan_cmd, must_succeed=True)
 

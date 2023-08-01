@@ -2,7 +2,7 @@
   // Include to change the model step width to 5ms / step.
   // You can do this on the command line:
   //
-  //   # cloe-launch shell -P conanfile_default.py
+  //   # cloe-launch shell conanfile_default.py
   //   # cloe-engine run config_nop_smoketest.json option_timestep_5.json
   //
   "version": "4",
