@@ -2,7 +2,7 @@
   // Include to enable callgrind profiling after simulation start.
   // You can do this on the command line:
   //
-  //   # cloe-launch shell -P conanfile_default.py
+  //   # cloe-launch shell conanfile_default.py
   //   # valgrind --tool=callgrind --instr-atstart=no \
   //       cloe-engine run config_nop_smoketest.json debug_callgrind.json
   //
@@ -12,7 +12,7 @@
   // even use this all in a single line:
   //
   //   # valgrind --tool=callgrind --instr-atstart=no \
-  //       cloe-launch exec -P conanfile_default.py -- \
+  //       cloe-launch exec conanfile_default.py -- \
   //       run config_nop_smoketest.json debug_callgrind.json
   //
   "version": "4",
