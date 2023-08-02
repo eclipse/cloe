@@ -38,8 +38,10 @@ TEST(databroker, basic_usage_1) {
   //       Expected Result: 1a) value-changed notification arrived
   //                        1b) new value is readable
   DataBroker db;
+  // setup container variable
+  Container<int> x;
   // setup producer
-  auto x = db.implement<int>("x");
+  x = db.implement<int>("x");
   // setup consumer
   db.signal("x")->subscribe<int>([](const int &) { throw "x changed value"; });
   const auto &x_getter = *db.signal("x")->getter<int>();
@@ -527,10 +529,9 @@ TEST(databroker, to_lua) {
   //       Expected Result: 2) std::logic_error
   sol::state state;
   sol::state_view view(state);
-  DataBroker db {view};
+  DataBroker db{view};
   // 1) Implement a signal
   auto gamma = db.implement<CustomData>("gamma");
-
 
   db.bind("gamma", "gamma");
 
