@@ -235,6 +235,7 @@ class BasicContainer {
   Signal* signal_{};
 
  public:
+  BasicContainer() = default;
   BasicContainer(Signal* signal,
                  databroker::on_value_changed_callback_t<value_type>
                      on_value_changed,
@@ -835,24 +836,23 @@ class DataBroker {
     assert_static_type<T>();
     using compatible_type = databroker::compatible_base_t<T>;
     // Check whether this type was already processed
-    std::type_index type {typeid(compatible_type)};
+    std::type_index type{typeid(compatible_type)};
 
-    if(lua_.has_value()) {
+    if (lua_.has_value()) {
       // Check whether this type was already processed
       auto iter = bindings_.find(type);
       if (iter == bindings_.end()) {
         // if the type is not yet bound store a binding function in bindings_
         ::cloe::databroker::detail::to_lua<T>(*lua_);
-        lua_signal_adapter_t adapter = [](const SignalPtr &signal, sol::state_view state,
+        lua_signal_adapter_t adapter = [](const SignalPtr& signal, sol::state_view state,
                                           std::string_view lua_name) {
-            signal->subscribe<T>([](const T &) {});
-            state[lua_name] = &signal->value<T>();
+          signal->subscribe<T>([](const T&) {});
+          state[lua_name] = &signal->value<T>();
         };
         // Store binding function
         bindings_.emplace(type, std::move(adapter));
       }
     }
-
   }
 
  public:
