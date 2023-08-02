@@ -235,7 +235,7 @@ class BasicContainer {
   Signal* signal_{};
 
  public:
-  BasicContainer() : value_(), on_value_changed_(), signal_() {}
+  BasicContainer() = default;
   BasicContainer(Signal* signal,
                  databroker::on_value_changed_callback_t<value_type>
                      on_value_changed,
