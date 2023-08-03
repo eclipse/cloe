@@ -51,8 +51,9 @@ def cli_prepare(
     passed to `conan install`. See `conan install --help` for help on
     which options are available here.
 
-    Examples:
+    Usage Examples:
 
+    \b
         cloe-launch prepare tests/conanfile.py --build=missing
         cloe-launch prepare tests/conanfile.py -o cloe-engine:server=False --build=outdated
         cloe-launch prepare tests/conanfile.py -s build_type=Debug --build="*/*@cloe/develop"
