@@ -74,6 +74,6 @@ packages. As such, we'd like to make use of the local instance of this Python
 module without resorting to installing it first. This is possible by setting
 the `PYTHONPATH` variable and using the `cloe_launch` module:
 
-    PYTHONPATH="${CLOE_ROOT}/cli" cloe_launch
+    PYTHONPATH="${CLOE_ROOT}/cli" python -m cloe_launch
 
 [1]: https://pipxproject.github.io/pipx/
