@@ -46,7 +46,24 @@ def cli_shell(
     conanfile: str,
     args: List[str],
 ):
-    """Launch shell with the correct environment from a profile."""
+    """Launch shell with the correct environment from a profile.
+
+    No options to cloe-launch may appear after specifying the conanfile.
+    All options encountered after the conanfile and before -- will be
+    passed to `conan install`. See `conan install --help` for help on
+    which options are available here. All arguments after -- will be
+    passed to the shell.
+
+    Set the SHELL environment variable to influence which shell will be used.
+
+    Usage Examples:
+
+    \b
+        cloe-launch shell tests/conanfile.py
+        cloe-launch shell -c tests/conanfile.py -- -c "bats tests"
+        cloe-launch shell -E tests/conanfile.py -o cloe-engine:server=False -- -c "bats tests"
+        SHELL=/bin/bash cloe-launch shell tests/conanfile.py
+    """
     engine = Engine(conf, conanfile=conanfile)
     engine.preserve_env = preserve_env
     engine.conan_args = options.extract_conan_args(args)

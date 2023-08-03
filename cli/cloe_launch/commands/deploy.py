@@ -68,6 +68,12 @@ def cli_deploy(
 
     This may involve downloading missing and available packages and building
     outdated packages.
+
+    Usage Examples:
+
+    \b
+        cloe-launch deploy -f -D /usr/local tests/conanfile.py
+        cloe-launch deploy -D deploy tests/conanfile.py
     """
     engine = Engine(conf, conanfile=conanfile)
     engine.conan_args = options.extract_conan_args(args)

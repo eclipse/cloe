@@ -54,9 +54,19 @@ def cli_exec(
     conanfile: str,
     args: List[str],
 ):
-    """Launch cloe-engine with a profile.
+    """Launch cloe-engine from a Conan recipe.
 
-    ENGINE_ARGS are passed on to cloe-engine.
+    No options to cloe-launch may appear after specifying the conanfile.
+    All options encountered after the conanfile and before -- will be
+    passed to `conan install`. See `conan install --help` for help on
+    which options are available here. All arguments after -- will be
+    passed to the `cloe-engine` binary.
+
+    Usage Examples:
+
+    \b
+        cloe-launch exec -c tests/conanfile.py -- usage
+        cloe-launch exec -c tests/conanfile.py -- -l debug run tests/smoketest.json
     """
     engine = Engine(conf, conanfile=conanfile)
     engine.conan_args = options.extract_conan_args(args)

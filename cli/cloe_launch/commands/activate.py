@@ -60,12 +60,15 @@ def cli_activate(
     \b
     Warnings:
     - If you use method #3 and delete ~/.cache/cloe, you will get errors
-      until you re-create the profile.
+      until you re-create the runtime environment.
     - Deleting or overwriting packages in your Conan cache that are used
       in an activated environment is undefined behavior: it can lead to
       unexpected problems!
-    - Using cloe shell in combination with cloe activate is undefined
-      behavior: it can lead to unexpected problems.
+    - Using cloe shell in combination with cloe activate is currently
+      undefined behavior: it can lead to unexpected problems.
+
+    If you want permanence, it's probably better to use the `deploy`
+    command instead of `activate`.
     """
     engine = Engine(conf, conanfile=conanfile)
     engine.conan_args = options.extract_conan_args(args)
