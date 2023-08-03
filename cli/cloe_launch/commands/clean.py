@@ -41,7 +41,32 @@ def cli_clean(
     all: bool,
     conanfile: str,
 ):
-    """Clean launcher runtime environment for specified configuration."""
+    """Clean launcher runtime environment for specified configuration.
+
+    The runtime environment is by default at `~/.cache/cloe/launcher/`
+    in a directory named after a hash calculated from the conanfile.
+    Currently, the hash does not take additional arguments into account
+    (this should change in the future).
+
+    It is safe to clean a configuration or all configurations.
+    Almost all commands will regenerate these configurations if needed
+    within a few seconds. However, the following cases should be noted:
+
+    \b
+    1. If the `deploy` command is used with a configuration,
+       an uninstall script is stored in the cache.
+       This should be preserved if you want to completely
+       remove a deployed configuration at a later time.
+    2. If the output of the `activate` command is used,
+       for example in the `.bashrc` file,
+       then you should not clean the configuration.
+
+    Usage Examples:
+
+    \b
+        cloe-launch clean tests/conanfile.py
+        cloe-launch clean -a
+    """
     engine = Engine(conf, conanfile=conanfile)
 
     if all:
