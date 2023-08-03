@@ -3,6 +3,7 @@
 
 from pathlib import Path
 
+import toml
 from conan import ConanFile
 from conan.tools import files, scm, env
 
@@ -48,9 +49,5 @@ class CloeLaunchProfile(ConanFile):
     channel = "develop"
 
     def set_version(self):
-        for line in files.load(self, "setup.py").split("\n"):
-            if not line.strip().startswith("version="):
-                continue
-            self.version = line.strip().split("=")[1].strip('",')
-            return
-        raise Exception("cannot find cloe-launch version")
+        pyproject = toml.loads(files.load(self, "pyproject.toml"))
+        self.version = pyproject["project"]["version"]
