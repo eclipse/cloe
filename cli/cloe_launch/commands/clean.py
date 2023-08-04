@@ -29,12 +29,13 @@ import click
 
 from cloe_launch import Configuration
 from cloe_launch.exec import Engine
-from . import options
+from . import _options
+from .options import cli_command
 
 
-@click.command("clean")
+@cli_command("clean")
 @click.option("--all", is_flag=True, help="Clean all runtime environments.")
-@options.conanfile()
+@_options.conanfile()
 @click.pass_obj
 def cli_clean(
     conf: Configuration,

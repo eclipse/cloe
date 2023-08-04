@@ -28,15 +28,16 @@ import click
 
 from cloe_launch import Configuration
 from cloe_launch.exec import Engine
-from . import options
+from . import _options
+from ._options import cli_command
 
 
-@click.command("shell")
-@options.preserve_env()
-@options.override_env()
-@options.cache()
-@options.conanfile()
-@options.args()
+@cli_command("shell")
+@_options.preserve_env()
+@_options.override_env()
+@_options.cache()
+@_options.conanfile()
+@_options.args()
 @click.pass_obj
 def cli_shell(
     conf: Configuration,
@@ -66,7 +67,7 @@ def cli_shell(
     """
     engine = Engine(conf, conanfile=conanfile)
     engine.preserve_env = preserve_env
-    engine.conan_args = options.extract_conan_args(args)
+    engine.conan_args = _options.extract_conan_args(args)
 
     # Replace process with shell.
-    engine.shell(options.extract_target_args(args), use_cache=cache)
+    engine.shell(_options.extract_target_args(args), use_cache=cache)
