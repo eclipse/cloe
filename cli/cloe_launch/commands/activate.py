@@ -26,13 +26,13 @@ import click
 
 from cloe_launch import Configuration
 from cloe_launch.exec import Engine
-from . import options
+from . import _options
+from ._options import cli_command
 
-
-@click.command("activate")
-@options.cache()
-@options.conanfile()
-@options.args()
+@cli_command("activate")
+@_options.cache()
+@_options.conanfile()
+@_options.args()
 @click.pass_obj
 def cli_activate(
     conf: Configuration,
@@ -71,5 +71,5 @@ def cli_activate(
     command instead of `activate`.
     """
     engine = Engine(conf, conanfile=conanfile)
-    engine.conan_args = options.extract_conan_args(args)
+    engine.conan_args = _options.extract_conan_args(args)
     engine.activate(use_cache=cache)
