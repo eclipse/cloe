@@ -27,6 +27,7 @@
 
 #include <cloe/utility/std_extensions.hpp>  // for split_string
 
+#include "error_handler.hpp"  // for format_cloe_error
 #include "lua_api.hpp"
 #include "stack.hpp"
 
@@ -84,7 +85,34 @@ inline bool contains(const std::vector<T>& v, const T& x) {
 
 }  // anonymous namespace
 
+// Handle the exception.
+//
+// @param L     the lua state, which you can wrap in a state_view if necessary
+// @param error the exception, if it exists
+// @param desc  the what() of the exception or a description saying that we hit the general-case catch(...)
+// @return Return value of sol::stack::push()
+int cloe_exception_handler(lua_State* L, sol::optional<const std::exception&> maybe_exception,
+                           sol::string_view desc) {
+  if (maybe_exception) {
+    const std::exception& err = *maybe_exception;
+    std::cerr << "Error: " << format_error(err) << std::endl;
+  } else {
+    std::cerr << "Error: ";
+    std::cerr.write(desc.data(), static_cast<std::streamsize>(desc.size()));
+    std::cerr << std::endl;
+  }
+
+  // you must push 1 element onto the stack to be
+  // transported through as the error object in Lua
+  // note that Lua -- and 99.5% of all Lua users and libraries
+  // -- expects a string so we push a single string (in our
+  // case, the description of the error)
+  return sol::stack::push(L, desc);
+}
+
 void setup_lua(sol::state_view& lua, Stack& stack) {
+  lua.set_exception_handler(&cloe_exception_handler);
+
   // Create cloe table
   {
     sol::table cloe_tbl = lua.create_table();
@@ -116,8 +144,7 @@ void setup_lua(sol::state_view& lua, Stack& stack) {
   // This should extend the cloe table we already defined here.
   auto result = lua.safe_script("require('cloe')");
   if (!result.valid()) {
-    sol::error err = result;
-    throw err;
+    throw static_cast<sol::error>(result);
   }
 }
 

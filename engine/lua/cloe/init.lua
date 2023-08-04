@@ -63,6 +63,21 @@ cloe.load_stackfile = function(file)
     cloe.state.stack:merge_stackfile(file)
 end
 
+--- Try to apply the supplied table to the stack.
+---
+--- @param stack table|string Stack format as Lua table or JSON string
+--- @return nil
+cloe.apply_stack = function(stack)
+    cloe.validate({ stack = { stack, { "string", "table" }} })
+    assert(cloe.state.stack)
+    local file = cloe.api.THIS_SCRIPT_FILE or ""
+    if type(stack) == "table" then
+        cloe.state.stack:merge_stacktable(stack, file)
+    else
+        cloe.state.stack:merge_stackjson(stack, file)
+    end
+end
+
 --- Log a message with a given severity.
 ---
 --- @param level string severity level, one of: trace, debug, info, warn, error, critical
