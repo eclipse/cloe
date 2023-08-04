@@ -26,12 +26,12 @@ help:
 .PHONY: install
 install: export
 	command -v ${PIP} >/dev/null 2>&1
-	${PIP} install ${PIP_INSTALL_ARGS}
+	${PIP} install ${PIP_INSTALL_ARGS} .
 
 .PHONY: editable
 editable: export
 	command -v ${PIP} >/dev/null 2>&1
-	${PIP} install -e ${PIP_INSTALL_ARGS}
+	${PIP} install -e ${PIP_INSTALL_ARGS} .
 
 .PHONY: export
 export:
