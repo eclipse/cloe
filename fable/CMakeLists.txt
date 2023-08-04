@@ -67,6 +67,7 @@ include(CTest)
 if(BUILD_TESTING)
     find_package(GTest REQUIRED)
     find_package(Boost COMPONENTS headers filesystem REQUIRED)
+    find_package(sol2 REQUIRED)
     include(GoogleTest)
 
     add_executable(test-fable
@@ -90,6 +91,7 @@ if(BUILD_TESTING)
         src/fable/schema_test.cpp
         src/fable/utility/chrono_test.cpp
         src/fable/utility/string_test.cpp
+        src/fable/utility/sol_test.cpp
     )
     set_target_properties(test-fable PROPERTIES
         CXX_STANDARD 17
@@ -100,6 +102,7 @@ if(BUILD_TESTING)
         GTest::gtest_main
         Boost::headers
         Boost::filesystem
+        sol2::sol2
         fable
     )
     gtest_add_tests(TARGET test-fable)
