@@ -85,6 +85,42 @@ function cloe.schedule(spec)
     return true
 end
 
+--- Schedule one or more event-action pairs,
+--- with defaults specified as keys inline.
+---
+--- @param specs ScheduleSpec|ScheduleSpec[]
+--- @return boolean[]
+function cloe.schedule_these(specs)
+    local results = {}
+
+    cloe.validate({ specs = { specs, "table" }})
+    cloe.validate({
+        on = { specs.on, {"string", "table"}, true },
+        run = { specs.run, {"string", "table", "function"}, true },
+        enable = { specs.enable, {"boolean", "function"}, true },
+        group = { specs.group, "string", true },
+        priority = { specs.priority, "number", true },
+        pin = { specs.pin, "boolean", true },    -- sticky
+        desc = { specs.desc, "string", true },   -- label
+    })
+
+    for _, trigger in ipairs(specs) do
+        local spec = {
+            on = trigger.on or specs.on or nil,
+            run = trigger.run or specs.run or nil,
+            enable = trigger.enable or specs.enable or nil,
+            group = trigger.group or specs.group or nil,
+            priority = trigger.priority or specs.priority or nil,
+            pin = trigger.pin or specs.pin or nil,
+            desc = trigger.desc or specs.desc or nil,
+        }
+        local result = cloe.schedule(spec)
+        table.insert(results, result)
+    end
+
+    return results
+end
+
 cloe.scheduler = cloe.scheduler or {}
 
 cloe.state.scheduler_pending = cloe.state.scheduler_pending or {}

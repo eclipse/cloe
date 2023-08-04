@@ -21,6 +21,14 @@ load "${CLOE_ROOT}/tests/setup_testname.bash"
     cloe-engine run test_lua04_schedule_test.lua
 }
 
+@test "$(testname 'Expect success' 'test_lua05_apply_stack.lua' 'bbee495e-8e19-4ffb-912f-fa75840a7944')" {
+    cloe-engine run test_lua05_apply_stack.lua
+}
+
+@test "$(testname 'Expect success' 'test_lua06_apply_stack.lua' 'ba5b7fbd-3b47-4767-b7b2-1075bdaa736f')" {
+    cloe-engine run test_lua06_apply_stack.lua
+}
+
 @test "$(testname 'Expect failure' 'test_lua_error_main.lua' '9cc0c5a4-5771-4cec-befe-ae49bd3e0cae')" {
     run cloe-engine run test_lua_error_main.lua
     assert_check_failure $status $output

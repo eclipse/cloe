@@ -16,15 +16,23 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "lua_setup.hpp"
+#include <fable/utility/sol.hpp>
 
+#include "lua_api.hpp"
+#include "lua_setup.hpp"
 #include "stack.hpp"
 
 namespace cloe {
 
 void register_usertype_stack(sol::table& lua) {
-  auto stack = lua.new_usertype<::cloe::Stack>("Stack", sol::no_constructor);
+  auto stack = lua.new_usertype<Stack>("Stack", sol::no_constructor);
   stack["merge_stackfile"] = &Stack::merge_stackfile;
+  stack["merge_stackjson"] = [](Stack& self, const std::string& json, std::string file) {
+    self.from_conf(Conf{fable::parse_json(json), std::move(file)});
+  };
+  stack["merge_stacktable"] = [](Stack& self, sol::object obj, std::string file) {
+    self.from_conf(Conf{Json(obj), std::move(file)});
+  };
 }
 
 }  // namespace cloe

@@ -25,36 +25,24 @@
 // we still need to support earlier versions of Boost.
 #define BOOST_ALLOW_DEPRECATED_HEADERS
 
+#include <boost/algorithm/string/predicate.hpp>
 #include <boost/lexical_cast.hpp>          // for lexical_cast
 #include <boost/uuid/uuid_generators.hpp>  // for random_generator
 #include <boost/uuid/uuid_io.hpp>
-#include <boost/algorithm/string/predicate.hpp>
 
 #include <cloe/core.hpp>      // for logger::get
 #include <fable/utility.hpp>  // for read_conf
 
+#include "error_handler.hpp"  // for conclude_error
 #include "main_commands.hpp"  // for RunOptions, new_stack, new_lua
 #include "simulation.hpp"     // for Simulation, SimulationResult
 #include "stack.hpp"          // for Stack
 
 namespace engine {
 
-void handle_signal(int);
+void handle_signal(int /*sig*/);
 
 Simulation* GLOBAL_SIMULATION_INSTANCE{nullptr};
-
-template <typename Func>
-auto handle_cloe_error(std::ostream& out, Func f) -> decltype(f()) {
-  try {
-    return f();
-  } catch (cloe::Error& e) {
-    out << "Error: " << e.what() << std::endl;
-    if (e.has_explanation()) {
-      out << "    Note:\n" << fable::indent_string(e.explanation(), "    ") << std::endl;
-    }
-    throw cloe::ConcludedError(e);
-  }
-}
 
 int run(const RunOptions& opt, const std::vector<std::string>& filepaths) {
   assert(opt.output != nullptr && opt.error != nullptr);
@@ -75,7 +63,7 @@ int run(const RunOptions& opt, const std::vector<std::string>& filepaths) {
   cloe::Stack stack = cloe::new_stack(opt.stack_options);
   sol::state lua = cloe::new_lua(opt.lua_options, stack);
   try {
-    handle_cloe_error(*opt.stack_options.error, [&]() {
+    cloe::conclude_error(*opt.stack_options.error, [&]() {
       for (const auto& f : filepaths) {
         if (boost::algorithm::ends_with(f, ".lua")) {
           cloe::merge_lua(lua, f);
@@ -94,13 +82,13 @@ int run(const RunOptions& opt, const std::vector<std::string>& filepaths) {
   // Create simulation:
   Simulation sim(std::move(stack), std::move(lua), uuid);
   GLOBAL_SIMULATION_INSTANCE = &sim;
-  std::signal(SIGINT, handle_signal);
+  std::ignore = std::signal(SIGINT, handle_signal);
 
   // Set options:
   sim.set_report_progress(opt.report_progress);
 
   // Run simulation:
-  auto result = handle_cloe_error(*opt.stack_options.error, [&]() { return sim.run(); });
+  auto result = cloe::conclude_error(*opt.stack_options.error, [&]() { return sim.run(); });
   if (result.outcome == SimulationOutcome::NoStart) {
     // If we didn't get past the initialization phase, don't output any
     // statistics or write any files, just go home.
