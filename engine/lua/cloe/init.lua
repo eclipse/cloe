@@ -49,11 +49,12 @@ function cloe.require_feature(id)
     end
 end
 
---- Try to load stackfile, return deserialized json.
+--- Try to load (merge) stackfile.
 ---
---- @param file (string)
+--- @param file string # File path, possibly relative to calling file
 --- @return nil
 cloe.load_stackfile = function(file)
+    cloe.validate({ stack = { file, "string" } })
     assert(cloe.state.stack)
     assert(cloe.api.THIS_SCRIPT_DIR)
     if cloe.fs.is_relative(file) then
@@ -64,8 +65,10 @@ end
 
 --- Log a message with a given severity.
 ---
---- @param level (string) severity level, one of: trace, debug, info, warn, error, critical
---- @param fmt (string) format string with trailing arguments compatible with string.format
+--- @param level string severity level, one of: trace, debug, info, warn, error, critical
+--- @param fmt string format string with trailing arguments compatible with string.format
+--- @param ... any arguments to format string
+--- @return nil
 function cloe.log(level, fmt, ...)
     local msg = string.format(fmt, ...)
     cloe.api.log(level, "lua", msg)
@@ -79,7 +82,7 @@ end
 ---
 --- For more details, see: https://github.com/kikito/inspect.lua
 ---
---- @return string representation of object
+--- @return string # representation of object
 cloe.inspect = require("cloe.inspect")
 
 --- Wraps cloe.inspect with a print function for faster inspection.
