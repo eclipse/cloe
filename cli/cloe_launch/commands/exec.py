@@ -29,21 +29,21 @@ import click
 
 from cloe_launch import Configuration
 from cloe_launch.exec import Engine
-from . import options
+from . import _options
+from ._options import cli_command
 
-
-@click.command("exec")
-@options.preserve_env()
-@options.override_env()
-@options.cache()
+@cli_command("exec")
+@_options.preserve_env()
+@_options.override_env()
+@_options.cache()
 @click.option(
     "-d",
     "--debug",
     is_flag=True,
     help="Launch cloe-engine with GDB.",
 )
-@options.conanfile()
-@options.args()
+@_options.conanfile()
+@_options.args()
 @click.pass_obj
 def cli_exec(
     conf: Configuration,
@@ -69,13 +69,13 @@ def cli_exec(
         cloe-launch exec -c tests/conanfile.py -- -l debug run tests/smoketest.json
     """
     engine = Engine(conf, conanfile=conanfile)
-    engine.conan_args = options.extract_conan_args(args)
+    engine.conan_args = _options.extract_conan_args(args)
     engine.preserve_env = preserve_env
 
     # Run cloe-engine and pass on returncode:
     # If cloe-engine is killed/aborted, subprocess will return 250.
-    engine_args = options.extract_target_args(args)
-    overrides = options.process_overrides(override_env)
+    engine_args = _options.extract_target_args(args)
+    overrides = _options.process_overrides(override_env)
     result = engine.exec(
         engine_args, use_cache=cache, debug=debug, override_env=overrides
     )
