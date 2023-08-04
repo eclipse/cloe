@@ -19,3 +19,4 @@
 local cloe = cloe or {}
 
 cloe.state.report = cloe.state.report or {}
+cloe.state.report.tests = cloe.state.report.tests or {}
