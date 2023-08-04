@@ -201,6 +201,14 @@ function cloe.schedule_test(test)
         return false
     end
 
+    -- Setup report
+    if cloe.state.report.tests[test.id] then
+        error("test already scheduled with id: " .. test.id)
+    end
+    test._report = {}
+    cloe.state.report.tests[test.id] = test._report
+
+    -- Set up coroutine handling:
     test._coroutine = coroutine.create(test.run)
     test._resume = function(...)
         local ok, result = coroutine.resume(test._coroutine, ...)
@@ -232,13 +240,6 @@ end
 --- Return a new test fixture for test
 function cloe.test_fixture(test)
     local z = {}
-
-    -- Ensure cloe reports has the necessary structure
-    cloe.state.report.tests = cloe.state.report.tests or {}
-    if cloe.state.report.tests[test.id] then
-        error("test already scheduled with id: " .. test.id)
-    end
-    cloe.state.report.tests[test.id] = {}
 
     z.report = function(data)
         data = cloe.tbl_extend("error", { time = tostring(test._sync:time()) }, data)
@@ -273,21 +274,26 @@ function cloe.test_fixture(test)
     end
 
     z.stop = function(fmt, ...)
+        if fmt then
+            z.printf(fmt, ...)
+        end
         coroutine.yield(function()
             coroutine.close(test._coroutine)
         end)
     end
 
     z.fail = function(fmt, ...)
-        fmt = fmt or ""
-        z.errorf(fmt, ...)
+        if fmt then
+            z.errorf(fmt, ...)
+        end
         z.do_action("fail")
         z.stop()
     end
 
     z.succeed = function(fmt, ...)
-        fmt = fmt or ""
-        z.printf(fmt, ...)
+        if fmt then
+            z.printf(fmt, ...)
+        end
         z.do_action("succeed")
         z.stop()
     end

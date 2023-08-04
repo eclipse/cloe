@@ -44,6 +44,7 @@ struct SimulationResult {
   SimulationOutcome outcome;
   SimulationStatistics statistics;
   cloe::Json triggers;
+  cloe::Json report;
   boost::optional<boost::filesystem::path> output_dir;
 
  public:
@@ -95,7 +96,7 @@ struct SimulationResult {
   friend void to_json(cloe::Json& j, const SimulationResult& r) {
     j = cloe::Json{
         {"uuid", r.uuid},       {"statistics", r.statistics}, {"simulation", r.sync},
-        {"elapsed", r.elapsed}, {"outcome", r.outcome},
+        {"elapsed", r.elapsed}, {"outcome", r.outcome}, {"report", r.report},
     };
   }
 };

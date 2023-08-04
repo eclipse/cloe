@@ -94,6 +94,7 @@
 #include <cloe/utility/resource_handler.hpp>  // for INCLUDE_RESOURCE, RESOURCE_HANDLER
 #include <cloe/vehicle.hpp>                   // for Vehicle
 #include <fable/utility.hpp>                  // for pretty_print
+#include <fable/utility/sol.hpp>              // for sol::object to_json
 
 #include "coordinator.hpp"            // for register_usertype_coordinator
 #include "lua_action.hpp"             // for LuaAction,
@@ -1529,6 +1530,7 @@ SimulationResult Simulation::run() {
   r.statistics = ctx.statistics;
   r.elapsed = ctx.progress.elapsed();
   r.triggers = ctx.coordinator->history();
+  r.report = sol::object(ctx.lua["cloe"]["state"]["report"]);
 
   abort_fn_ = nullptr;
   return r;
