@@ -59,7 +59,7 @@ class PersistentConfable : public Confable {
  public:
   const Conf& conf() const { return conf_; }
 
-  void from_conf(const Conf& c) {
+  void from_conf(const Conf& c) override {
     Confable::from_conf(c);
     conf_ = c;
   }
@@ -913,9 +913,10 @@ class Stack : public Confable {
  public:  // Constructors
   Stack();
   Stack(const Stack& other);
-  Stack(Stack&& other);
-  Stack& operator=(Stack other);
-  ~Stack() = default;
+  Stack(Stack&& other) noexcept;
+  Stack& operator=(const Stack& other);
+  Stack& operator=(Stack&& other) noexcept;
+  ~Stack() override = default;
 
   friend void swap(Stack& left, Stack& right);
 
@@ -932,7 +933,7 @@ class Stack : public Confable {
    */
   void set_conf_reader(ConfReader fn) {
     assert(fn != nullptr);
-    conf_reader_func_ = fn;
+    conf_reader_func_ = std::move(fn);
   }
 
   void merge_stackfile(const std::string& filepath);
