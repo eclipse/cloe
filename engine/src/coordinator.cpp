@@ -30,6 +30,7 @@
 #include <vector>              // for vector<>
 
 #include <sol/optional.hpp>
+#include <fable/utility/sol.hpp>
 
 #include <cloe/core.hpp>       // for Json, Duration, Logger
 #include <cloe/handler.hpp>    // for HandlerType, Request
