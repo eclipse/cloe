@@ -43,9 +43,10 @@ local is_spec_enabled = function(spec)
     end
 end
 
---- Schedule
+--- Schedule an event-action pair.
+---
 --- @param spec ScheduleSpec
---- @return boolean
+--- @return boolean # true if schedule
 function cloe.schedule(spec)
     cloe.validate({ spec = { spec, "table" }})
     cloe.validate({
