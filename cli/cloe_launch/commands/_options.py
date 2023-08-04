@@ -27,6 +27,11 @@ from typing import Tuple, List, Dict
 import click
 
 
+def cli_command(name):
+    """Click command with correct settings applied."""
+    return click.command(name, context_settings={"allow_interspersed_args": False})
+
+
 def conanfile():
     """Click argument CONANFILE."""
     return click.argument(
@@ -36,7 +41,7 @@ def conanfile():
 
 def args():
     """Click argument ARGS."""
-    return click.argument("args", nargs=-1)
+    return click.argument("args", nargs=-1, type=click.UNPROCESSED)
 
 
 def split_args(xargs) -> Tuple[List[str], List[str]]:

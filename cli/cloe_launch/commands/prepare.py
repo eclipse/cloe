@@ -29,12 +29,13 @@ import click
 
 from cloe_launch import Configuration
 from cloe_launch.exec import Engine
-from . import options
+from . import _options
+from ._options import cli_command
 
 
-@click.command("prepare")
-@options.conanfile()
-@options.args()
+@cli_command("prepare")
+@_options.conanfile()
+@_options.args()
 @click.pass_obj
 def cli_prepare(
     conf: Configuration,
@@ -60,7 +61,7 @@ def cli_prepare(
         cloe-launch prepare tests/conanfile.py --require-override boost/1.81
     """
     engine = Engine(conf, conanfile=conanfile)
-    engine.conan_args = options.extract_conan_args(args)
+    engine.conan_args = _options.extract_conan_args(args)
 
     try:
         engine.prepare()
