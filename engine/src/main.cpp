@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
 
   // Version Command:
   engine::VersionOptions version_options{};
-  auto version = app.add_subcommand("version", "Show program version information.");
+  auto* version = app.add_subcommand("version", "Show program version information.");
   version->add_flag("-j,--json", version_options.output_json,
                     "Output version information as JSON data");
   version->add_option("-J,--json-indent", version_options.json_indent, "JSON indentation level");
@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
   // Usage Command:
   engine::UsageOptions usage_options{};
   std::string usage_key_or_path;
-  auto usage = app.add_subcommand("usage", "Show schema or plugin usage information.");
+  auto* usage = app.add_subcommand("usage", "Show schema or plugin usage information.");
   usage->add_flag("-j,--json", usage_options.output_json, "Output global/plugin JSON schema");
   usage->add_option("-J,--json-indent", usage_options.json_indent, "JSON indentation level");
   usage->add_option("files", usage_key_or_path, "Plugin name, key or path to show schema of");
@@ -49,14 +49,14 @@ int main(int argc, char** argv) {
   // Dump Command:
   engine::DumpOptions dump_options{};
   std::vector<std::string> dump_files;
-  auto dump = app.add_subcommand("dump", "Dump configuration of (merged) stack files.");
+  auto* dump = app.add_subcommand("dump", "Dump configuration of (merged) stack files.");
   dump->add_option("-J,--json-indent", dump_options.json_indent, "JSON indentation level");
   dump->add_option("files", dump_files, "Files to read into the stack");
 
   // Check Command:
   engine::CheckOptions check_options{};
   std::vector<std::string> check_files;
-  auto check = app.add_subcommand("check", "Validate stack file configurations.");
+  auto* check = app.add_subcommand("check", "Validate stack file configurations.");
   check->add_flag("-s,--summarize", check_options.summarize, "Summarize results");
   check->add_flag("-j,--json", check_options.output_json, "Output results as JSON data");
   check->add_option("-J,--json-indent", check_options.json_indent, "JSON indentation level");
@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
   // Run Command:
   engine::RunOptions run_options{};
   std::vector<std::string> run_files{};
-  auto run = app.add_subcommand("run", "Run a simulation with (merged) stack files.");
+  auto* run = app.add_subcommand("run", "Run a simulation with (merged) stack files.");
   run->add_option("-J,--json-indent", run_options.json_indent, "JSON indentation level");
   run->add_option("-u,--uuid", run_options.uuid, "Override simulation UUID")
       ->envname("CLOE_SIMULATION_UUID");
@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
   // Shell Command:
   engine::ShellOptions shell_options{};
   std::vector<std::string> shell_files{};
-  auto shell = app.add_subcommand("shell", "Start a Lua shell.");
+  auto* shell = app.add_subcommand("shell", "Start a Lua shell.");
   shell->add_flag("-i,--interactive,!--no-interactive", shell_options.interactive,
                     "Drop into interactive mode (default)");
   shell->add_option("-c,--command", shell_options.commands, "Lua to run after running files");
@@ -101,7 +101,7 @@ int main(int argc, char** argv) {
 
   // Stack Options:
   cloe::StackOptions stack_options{};
-  stack_options.environment.reset(new fable::Environment());
+  stack_options.environment = std::make_unique<fable::Environment>();
   app.add_option("-p,--plugin-path", stack_options.plugin_paths,
                  "Scan additional directory for plugins (Env:CLOE_PLUGIN_PATH)");
   app.add_option("-i,--ignore", stack_options.ignore_sections,
