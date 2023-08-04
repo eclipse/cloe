@@ -29,6 +29,9 @@ require("cloe.util")
 require("cloe.schedule")
 require("cloe.report")
 
+-- This is just required for documentation.
+cloe.fs = require("cloe.fs")
+
 --- @alias FeatureId string
 
 --- Return if Cloe has feature as defined by string.
@@ -79,6 +82,9 @@ cloe.apply_stack = function(stack)
 end
 
 --- Log a message with a given severity.
+---
+--- For example:
+---     cloe.log("info", "Got value of %d, expected %d", 4, 6)
 ---
 --- @param level string severity level, one of: trace, debug, info, warn, error, critical
 --- @param fmt string format string with trailing arguments compatible with string.format

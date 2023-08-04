@@ -13,7 +13,7 @@ check_engine_with_server() {
     # Note: you will have to update the schema files every time you change the schema,
     # in order that this test completes successfully. Here's how you do it.
     #
-    #    cloe-launch -vv exec -P conanfile.py -- usage -j > tests/test_engine_json_schema.json
+    #    cloe-launch -vv exec conanfile.py -- usage -j > tests/test_engine_json_schema.json
     #
     # Then use git diff to check that the changes make sense and are what you expect.
     if ! type diff &>/dev/null; then

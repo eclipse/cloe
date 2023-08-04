@@ -34,7 +34,7 @@ std::string dirname(const std::string& file) {
 }
 
 std::string normalize(const std::string& file) {
-  return fs::weakly_canonical(fs::path(file)).generic_string();
+  return fs::path(file).lexically_normal();
 }
 
 std::string realpath(const std::string& file) {
