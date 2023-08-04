@@ -25,24 +25,17 @@
 
 #pragma once
 
-#include <sol/sol.hpp>  // for state_view
-#include <fable/json.hpp> // for Json
+#include <filesystem>  // for std::filesystem::path
+
+#include <sol/protected_function_result.hpp>  // for protected_function_result
+#include <sol/state_view.hpp>                 // for state_view
 
 namespace cloe {
 
 /**
  * Safely load and run a user Lua script.
  */
-[[nodiscard]]
-sol::protected_function_result lua_safe_script_file(sol::state_view& lua, const std::filesystem::path& filepath);
+[[nodiscard]] sol::protected_function_result lua_safe_script_file(
+    sol::state_view& lua, const std::filesystem::path& filepath);
 
 }  // namespace cloe
-
-namespace nlohmann {
-
-template <>
-struct adl_serializer<sol::object> {
-  static void to_json(json& j, const sol::object& obj);
-};
-
-} // namespace nlohmann

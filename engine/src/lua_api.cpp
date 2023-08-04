@@ -19,12 +19,9 @@
 #include "lua_api.hpp"
 
 #include <filesystem>  // for path
-#include <stdexcept>   // for exception
 
-#include <nlohmann/json.hpp>   // for json
-#include <sol/object.hpp>      // for object
-#include <sol/state_view.hpp>  // for state_view
-#include <cloe/core/logger.hpp>
+#include <cloe/core/logger.hpp>  // for logger::get
+#include <sol/state_view.hpp>    // for state_view
 
 namespace cloe {
 
@@ -46,75 +43,4 @@ sol::protected_function_result lua_safe_script_file(sol::state_view& lua,
   return result;
 }
 
-// nlohmann::json to_json(const sol::object& obj) {
-//   nlohmann::json j;
-//   nlohmann::to_json(j, obj);
-//   return j;
-// }
-
 }  // namespace cloe
-
-/*
- * In order to provide serialization for third-party types, we need to either
- * use their namespace or provide a specialization in that of nlohmann. It is
- * illegal to define anything in the std namespace, so we are left no choice in
- * this regard.
- *
- * See: https://github.com/nlohmann/json
- */
-namespace nlohmann {
-
-void adl_serializer<sol::object>::to_json(json& j, const sol::object& obj) {
-  switch (obj.get_type()) {
-    case sol::type::table: {
-      for (auto& kv : obj.as<sol::table>()) {
-        auto key = kv.first.as<std::string>();
-        j[key] = json();
-        const sol::object& val = kv.second.as<sol::object>();
-        to_json(j[key], val);
-      }
-      break;
-    }
-    case sol::type::string: {
-      j = obj.as<std::string>();
-      break;
-    }
-    case sol::type::boolean: {
-      j = obj.as<bool>();
-      break;
-    }
-    case sol::type::number: {
-      std::optional<double> dbl = obj.as<std::optional<double>>();
-      if (dbl) {
-        j = *dbl;
-      } else {
-        j = obj.as<int64_t>();
-      }
-      break;
-    }
-    case sol::type::nil:
-    case sol::type::none: {
-      j = nullptr;
-      break;
-    }
-    case sol::type::poly:
-      // throw std::out_of_range("cannot serialize lua poly type to JSON");
-      j = "<poly>";
-      break;
-    case sol::type::function:
-      // throw std::out_of_range("cannot serialize lua function to JSON");
-      j = "<function>";
-      break;
-    case sol::type::thread:
-      // throw std::out_of_range("cannot serialize lua thread to JSON");
-      j = "<thread>";
-      break;
-    case sol::type::userdata:
-    case sol::type::lightuserdata:
-      // TODO: If we want to serialize userdata, we need to extend this here.
-      j = "<userdata>";
-      break;
-  }
-}
-
-}  // namespace nlohmann
