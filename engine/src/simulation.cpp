@@ -1388,7 +1388,7 @@ StateId SimulationMachine::KeepAlive::impl(SimulationContext& ctx) {
 // ABORT --------------------------------------------------------------------------------------- //
 
 StateId SimulationMachine::Abort::impl(SimulationContext& ctx) {
-  auto previous_state = state_machine()->previous_state();
+  const auto *previous_state = state_machine()->previous_state();
   if (previous_state == KEEP_ALIVE) {
     return DISCONNECT;
   } else if (previous_state == CONNECT) {
@@ -1420,7 +1420,7 @@ Simulation::Simulation(cloe::Stack&& config, sol::state&& lua, const std::string
 
 SimulationResult Simulation::run() {
   // Input:
-  SimulationContext ctx{sol::state_view(lua_)};
+  SimulationContext ctx{lua_.lua_state()};
   ctx.db = std::make_unique<cloe::DataBroker>(ctx.lua);
   ctx.server = make_server(config_.server);
   ctx.coordinator = std::make_unique<Coordinator>(ctx.lua, ctx.db.get());
