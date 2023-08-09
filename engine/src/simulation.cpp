@@ -952,7 +952,7 @@ StateId SimulationMachine::Start::impl(SimulationContext& ctx) {
             }
           }
           // actually bind all virtually bound signals to lua
-          db.bind("cloe", "signals");
+          db.bind("signals", "cloe");
         } break;
         case sol::type::none:
         case sol::type::lua_nil: {
@@ -1396,7 +1396,7 @@ StateId SimulationMachine::KeepAlive::impl(SimulationContext& ctx) {
 // ABORT --------------------------------------------------------------------------------------- //
 
 StateId SimulationMachine::Abort::impl(SimulationContext& ctx) {
-  const auto *previous_state = state_machine()->previous_state();
+  const auto* previous_state = state_machine()->previous_state();
   if (previous_state == KEEP_ALIVE) {
     return DISCONNECT;
   } else if (previous_state == CONNECT) {
