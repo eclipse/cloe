@@ -458,6 +458,22 @@ TEST(databroker, setter_incorrect_type) {
   EXPECT_THROW({ const auto &x_setter = db.setter<double>("x"); }, std::logic_error);
 }
 
+TEST(databroker, container_default_ctor) {
+  //         Test Scenario: positive-test
+  // Test Case Description: Use default ctor of container
+  //            Test Steps: 1) Create container-variable
+  //                        2) Implement signal & assign container to the container-variable
+  //          Prerequisite: -
+  //             Test Data: -
+  //       Expected Result: <no issues>
+
+  DataBroker db;
+  // 1) Implement container
+  Container<int> x_container;
+  // 2) Implement a signal
+  x_container = db.implement<int>("x");
+}
+
 TEST(databroker, test_api_type_error_compiler_messages) {
   //         Test Scenario: compiler-error test
   // Test Case Description: Intentionally raises compiler error to (manually) determine the correctness of the implementation
@@ -506,39 +522,97 @@ TEST(databroker, test_api_type_error_compiler_messages) {
   // STEP 3: Rebuild
 }
 
+TEST(databroker, to_lua_1) {
+  //         Test Scenario: positive-test
+  // Test Case Description: Implement a custom datatype and manipulate a member from Lua
+  //            Test Steps: 1) Implement a signal with a custom datatype
+  //                        2) Manipulate a member from Lua
+  //          Prerequisite: -
+  //             Test Data: -
+  //       Expected Result: I) The value of the member changed
+  //                        II) The value-changed event was received
+  sol::state state;
+  sol::state_view view(state);
+  DataBroker db{view};
+  // 1) Implement a signal
+  auto gamma = db.implement<double>("gamma");
+  auto gamma2 = 2.71828;
+  db.subscribe<double>("gamma", [&](const double &value) { gamma2 = value; });
+  // bind signals
+  db.bind_signal("gamma");
+  db.bind("signals");
+  // 2) Manipulate a member from Lua
+  const auto &code = R"(
+    signals.gamma = 1.154431
+  )";
+  // run lua
+  state.open_libraries(sol::lib::base, sol::lib::package);
+  state.script(code);
+  // verify I
+  EXPECT_EQ(gamma, 1.154431);
+  // verify II
+  EXPECT_EQ(gamma2, 1.154431);
+}
+
+/**
+ * Model for arbitrary custom classes
+ */
 struct CustomData {
-  int a;
-  double b;
-  std::string c;
+  int a{0};
+  double b{0};
+  std::string c{};
+  double d{0};
+  double get_d() { return d; }
+  void set_d(double value) { d = value; }
 };
 
+/**
+ * Mandatory ADL function to bind the CustomData type to the Lua-VM
+ */
 void to_lua(sol::state_view view, CustomData * /* value */) {
   sol::usertype<CustomData> usertype_table = view.new_usertype<CustomData>("CustomData");
   usertype_table["a"] = &CustomData::a;
   usertype_table["b"] = &CustomData::b;
   usertype_table["c"] = &CustomData::c;
+  usertype_table["d"] = sol::property(&CustomData::get_d, &CustomData::set_d);
 }
 
-TEST(databroker, to_lua) {
-  //         Test Scenario: negative-test
-  // Test Case Description: Get the setter-function of a signal by using the wrong datatype
-  //            Test Steps: 1) Implement a signal
-  //                        2) Get the setter-function of the signal by using the wrong datatype
+TEST(databroker, to_lua_2) {
+  //         Test Scenario: positive-test
+  // Test Case Description: Implement a custom datatype and manipulate a member from Lua
+  //            Test Steps: 1) Implement a signal with a custom datatype
+  //                        2) Manipulate a member from Lua
   //          Prerequisite: -
   //             Test Data: -
-  //       Expected Result: 2) std::logic_error
+  //       Expected Result: 2) The value of the member changed
   sol::state state;
   sol::state_view view(state);
   DataBroker db{view};
   // 1) Implement a signal
+  auto euler = db.implement<CustomData>("euler");
   auto gamma = db.implement<CustomData>("gamma");
-
-  db.bind("gamma", "gamma");
-
+  // bind signals
+  db.bind_signal("euler");
+  db.bind_signal("gamma");
+  db.bind("signals");
+  // 2) Manipulate a member from Lua
   const auto &code = R"(
-    gamma.b = 1.154431
-	)";
-  state.script(code);
+    -- This is not what you think
+    signals.euler.b = 2.71828
+    signals.euler.d = 2.71828
 
-  EXPECT_EQ(gamma.value().b, 1.154431);
+    -- This is what you want to do:
+    local gamma = CustomData.new()
+    gamma.b = 1.154431
+    gamma.d = 1.154431
+    signals.gamma = gamma
+	)";
+  // run lua
+  state.open_libraries(sol::lib::base, sol::lib::package);
+  state.script(code);
+  // verify
+  EXPECT_EQ(euler.value().b, 0.0);       // reading signals.euler gives a temporary copy
+  EXPECT_EQ(euler.value().d, 0.0);
+  EXPECT_EQ(gamma.value().b, 1.154431);  // writing signals.gamma works as expected
+  EXPECT_EQ(gamma.value().d, 1.154431);
 }
