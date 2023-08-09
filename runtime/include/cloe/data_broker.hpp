@@ -817,7 +817,7 @@ class DataBroker {
 
  public:
   DataBroker() = default;
-  explicit DataBroker(const sol::state_view& lua) : lua_(lua) {}
+  explicit DataBroker(const sol::state_view& lua) : lua_(lua), signals_object_(*lua_) {}
   DataBroker(const DataBroker&) = delete;
   DataBroker(DataBroker&&) = delete;
   ~DataBroker() = default;
@@ -825,10 +825,109 @@ class DataBroker {
   DataBroker& operator=(DataBroker&&) = delete;
 
  private:
-  std::optional<sol::state_view> lua_;
+  /**
+    * Dynamic class which embedds all signals in shape of properties into the Lua-VM
+    */
+  class SignalsObject {
+   private:
+    /**
+      * Lua-Getter Function (C++ -> Lua)
+      */
+    using lua_getter_fn = std::function<sol::object(sol::this_state&)>;
+    /**
+      * Lua-Setter Function (Lua -> C++)
+      */
+    using lua_setter_fn = std::function<void(sol::stack_object&)>;
+    /**
+      * Lua accessors (getter/setter)
+      */
+    struct lua_accessor {
+      lua_getter_fn getter;
+      lua_setter_fn setter;
+    };
+    /**
+      * Signals map (name -> accessors)
+      */
+    using accessors = std::unordered_map<std::string, lua_accessor>;
+    /**
+      * Mapped signals
+      */
+    accessors accessors_;
+    /**
+      * Lua usertype, declares this class towards Lua
+      */
+    sol::usertype<SignalsObject> signals_table_;
+
+   public:
+    SignalsObject(sol::state_view& lua)
+        : accessors_()
+        , signals_table_(lua.new_usertype<SignalsObject>(
+              "SignalsObject", sol::meta_function::new_index, &SignalsObject::set_property_lua,
+              sol::meta_function::index, &SignalsObject::get_property_lua)) {}
+
+    /**
+      * \brief Getter function for dynamic Lua properties
+      * \param name Accessed name on Lua level
+      * \param s Current Lua-state
+      */
+    sol::object get_property_lua(const char* name, sol::this_state s) {
+      auto iter = accessors_.find(name);
+      if (iter != accessors_.end()) {
+        auto result = iter->second.getter(s);
+        return result;
+      } else {
+        throw std::out_of_range(
+            fmt::format("Failure to access signal '{}' from Lua since it is not bound.", name));
+      }
+    }
+    /**
+      * \brief Setter function for dynamic Lua properties
+      * \param name Accessed name on Lua level
+      * \param object Lua-Object assigned to the property
+      */
+    void set_property_lua(const char* name, sol::stack_object object) {
+      auto iter = accessors_.find(name);
+      if (iter != accessors_.end()) {
+        iter->second.setter(object);
+      } else {
+        throw std::out_of_range(
+            fmt::format("Failure to access signal '{}' from Lua since it is not bound.", name));
+      }
+    }
+    /**
+      *  \brief Binds one signal to Lua
+      *  \param signal signal to be bound to Lua
+      *  \param lua_name name of the signal in Lua
+      */
+    template <typename T>
+    void bind(const SignalPtr& signal, std::string_view lua_name) {
+      lua_accessor accessor;
+      accessor.getter = [=](sol::this_state& state) -> sol::object {
+        const T& value = signal->value<T>();
+        return sol::make_object(state, value);
+      };
+      accessor.setter = [=](sol::stack_object& value) -> void {
+        T obj = value.as<T>();
+        signal->set_value<T>(obj);
+      };
+      auto inserted = accessors_.try_emplace(std::string(lua_name), std::move(accessor));
+      if (!inserted.second) {
+        throw std::out_of_range(fmt::format(
+            "Failure adding lua-accessor for signal {}. Name already exists.", lua_name));
+      }
+    }
+  };
+  /**
+    * state_view of Lua
+    */
+  std::optional<sol::state_view> lua_{};
+  /**
+    * Instance of signals body which incorporates all bound signals
+    */
+  std::optional<SignalsObject> signals_object_{};
 
   /**
-  * \brief: Declares a DataType to Lua (if not yet done)
+  * \brief Declares a DataType to Lua (if not yet done)
   * \note: The function can be used independent of a bound Lua instance
   */
   template <typename T>
@@ -839,17 +938,21 @@ class DataBroker {
     std::type_index type{typeid(compatible_type)};
 
     if (lua_.has_value()) {
-      // Check whether this type was already processed
+      // Check whether this type was already processed, if not declare it and store an adapter function in bindings_
       auto iter = bindings_.find(type);
       if (iter == bindings_.end()) {
-        // if the type is not yet bound store a binding function in bindings_
+        // Declare type to Lua-VM
         ::cloe::databroker::detail::to_lua<T>(*lua_);
-        lua_signal_adapter_t adapter = [](const SignalPtr& signal, sol::state_view state,
-                                          std::string_view lua_name) {
+        // Create adapter for Lua-VM
+        lua_signal_adapter_t adapter = [this](const SignalPtr& signal, sol::state_view state,
+                                              std::string_view lua_name) {
+          //adapter_impl<T>(signal, state, lua_name);
+          // Subscribe to the value-changed event to indicate the signal is used
           signal->subscribe<T>([](const T&) {});
-          state[lua_name] = &signal->value<T>();
+          // Implement the signal as a property in Lua
+          signals_object_->bind<T>(signal, lua_name);
         };
-        // Store binding function
+        // Store adapter function
         bindings_.emplace(type, std::move(adapter));
       }
     }
@@ -857,11 +960,12 @@ class DataBroker {
 
  public:
   /**
-    * \brief: Binds a signal to the Lua-VM
+    * \brief Binds a signal to the Lua-VM
     * \param signal_name Name of the signal
     * \param lua_name Name of the table/variable used in Lua
+    * \note The bind-method needs to be invoked at least once (in total) to bring all signal bindings into effect
     */
-  void bind(std::string_view signal_name, std::string_view lua_name) {
+  void bind_signal(std::string_view signal_name, std::string_view lua_name) {
     if (!lua_.has_value()) {
       throw std::logic_error(
           "DataBroker: Binding a signal to Lua must not happen, before binding the Lua "
@@ -879,6 +983,54 @@ class DataBroker {
     const lua_signal_adapter_t& adapter = iter->second;
     adapter(signal, (*lua_), lua_name);
   }
+  /**
+    * \brief Binds a signal to the Lua-VM
+    * \param signal_name Name of the signal
+    * \note The bind-method needs to be invoked at least once (in total) to bring all signal bindings into effect
+    */
+  void bind_signal(std::string_view signal_name) { bind_signal(signal_name, signal_name); }
+
+  /**
+    * \brief Binds the signals-object to Lua
+    * \param table_name Name which shall be used for the table
+    * \param parent_table_name Name of the parent-table, "" if global shall be used
+    */
+  void bind(std::string_view table_name, std::string_view parent_table_name) {
+    sol::state_view& lua = *lua_;
+    if (parent_table_name.length() > 0) {
+      sol::table parent;
+      sol::object value = lua[parent_table_name];
+      auto type = value.get_type();
+      switch (type) {
+        case sol::type::table: {
+          parent = value.as<sol::table>();
+        } break;
+        case sol::type::none:
+        case sol::type::lua_nil: {
+          // clang-format off
+          throw std::invalid_argument(
+            fmt::format("Cannot find parent_table_name '{}'.", parent_table_name)
+          );
+          // clang-format on
+        } break;
+        default: {
+          // clang-format off
+          throw std::invalid_argument(
+            fmt::format("parent_table_name '{}' has an unexpected datatype {}.", parent_table_name, static_cast<int>(type))
+          );
+          // clang-format on
+        } break;
+      }
+      parent[table_name] = &(*signals_object_);
+    } else {
+      lua[table_name] = &(*signals_object_);
+    }
+  }
+  /**
+    * \brief Binds the signals-object to Lua
+    * \param table_name Name which shall be used for the table
+    */
+  void bind(std::string_view table_name) { bind(table_name, ""); }
 
  public:
   /**
@@ -1168,18 +1320,7 @@ class DataBroker {
   extern template const Signal::typed_set_value_function_t<elem>& DataBroker::setter<elem>(        \
       std::string_view name);
 
-#define CLOE_DATABROKER_TEMPLATE_INSTANTATION_TYPES() \
-  CLOE_DATABROKER_TEMPLATE_INSTANTIATION(bool)        \
-  CLOE_DATABROKER_TEMPLATE_INSTANTIATION(int8_t)      \
-  CLOE_DATABROKER_TEMPLATE_INSTANTIATION(uint8_t)     \
-  CLOE_DATABROKER_TEMPLATE_INSTANTIATION(int16_t)     \
-  CLOE_DATABROKER_TEMPLATE_INSTANTIATION(uint16_t)    \
-  CLOE_DATABROKER_TEMPLATE_INSTANTIATION(int32_t)     \
-  CLOE_DATABROKER_TEMPLATE_INSTANTIATION(uint32_t)    \
-  CLOE_DATABROKER_TEMPLATE_INSTANTIATION(int64_t)     \
-  CLOE_DATABROKER_TEMPLATE_INSTANTIATION(uint64_t)    \
-  CLOE_DATABROKER_TEMPLATE_INSTANTIATION(float)       \
-  CLOE_DATABROKER_TEMPLATE_INSTANTIATION(double)
+#define CLOE_DATABROKER_TEMPLATE_INSTANTATION_TYPES()
 
 CLOE_DATABROKER_TEMPLATE_INSTANTATION_TYPES()
 
