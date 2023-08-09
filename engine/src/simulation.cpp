@@ -75,14 +75,14 @@
 
 #include "simulation.hpp"
 
-#include <cstdint>  // for uint64_t
-#include <fstream>  // for ofstream
-#include <future>   // for future<>, async
-#include <sstream>  // for stringstream
-#include <string>   // for string
-#include <thread>   // for sleep_for
+#include <cstdint>                            // for uint64_t
+#include <fstream>                            // for ofstream
+#include <future>                             // for future<>, async
+#include <sstream>                            // for stringstream
+#include <string>                             // for string
+#include <thread>                             // for sleep_for
 
-#include <boost/filesystem.hpp>  // for is_directory, is_regular_file, ...
+#include <boost/filesystem.hpp>               // for is_directory, is_regular_file, ...
 
 #include <cloe/controller.hpp>                // for Controller
 #include <cloe/core/abort.hpp>                // for AsyncAbort
@@ -96,13 +96,13 @@
 #include <fable/utility.hpp>                  // for pretty_print
 #include <fable/utility/sol.hpp>              // for sol::object to_json
 
-#include "coordinator.hpp"            // for register_usertype_coordinator
-#include "lua_action.hpp"             // for LuaAction,
-#include "lua_api.hpp"                // for to_json(json, sol::object)
-#include "simulation_context.hpp"     // for SimulationContext
-#include "utility/command.hpp"        // for CommandFactory
-#include "utility/state_machine.hpp"  // for State, StateMachine
-#include "utility/time_event.hpp"     // for TimeCallback, NextCallback, NextEvent, TimeEvent
+#include "coordinator.hpp"                    // for register_usertype_coordinator
+#include "lua_action.hpp"                     // for LuaAction,
+#include "lua_api.hpp"                        // for to_json(json, sol::object)
+#include "simulation_context.hpp"             // for SimulationContext
+#include "utility/command.hpp"                // for CommandFactory
+#include "utility/state_machine.hpp"          // for State, StateMachine
+#include "utility/time_event.hpp"  // for TimeCallback, NextCallback, NextEvent, TimeEvent
 
 // PROJECT_SOURCE_DIR is normally exported by CMake during build, but it's not
 // available for the linters, so we define a dummy value here for that case.
@@ -758,6 +758,11 @@ size_t insert_triggers_from_config(SimulationContext& ctx) {
   return count;
 }
 
+/**
+  * Pseudo-class which hosts the Cloe-Signals as properties inside of the Lua-VM
+  */
+class LuaCloeSignal {};
+
 StateId SimulationMachine::Start::impl(SimulationContext& ctx) {
   logger()->info("Starting simulation...");
 
@@ -918,11 +923,11 @@ StateId SimulationMachine::Start::impl(SimulationContext& ctx) {
             }
             std::string signal_name = value.as<std::string>();
 
-            // bind signal 'signal_name' to lua
+            // virtually bind signal 'signal_name' to lua
             auto iter = db[signal_name];
             if (iter != signals.end()) {
               try {
-                db.bind(signal_name, signal_name);
+                db.bind_signal(signal_name);
                 // clang-format off
                   logger()->info(
                       "Binding signal '{}' as '{}'.",
@@ -946,6 +951,8 @@ StateId SimulationMachine::Start::impl(SimulationContext& ctx) {
               binding_failure = true;
             }
           }
+          // actually bind all virtually bound signals to lua
+          db.bind("signals", "cloe");
         } break;
         case sol::type::none:
         case sol::type::lua_nil: {
@@ -1038,7 +1045,7 @@ StateId SimulationMachine::StepBegin::impl(SimulationContext& ctx) {
       logger()->info("The {} {} is no longer operational.", type, m.name());
       return false;  // abort loop
     }
-    return true;  // next model
+    return true;     // next model
   });
   return (all_operational ? STEP_SIMULATORS : STOP);
 }
@@ -1389,7 +1396,7 @@ StateId SimulationMachine::KeepAlive::impl(SimulationContext& ctx) {
 // ABORT --------------------------------------------------------------------------------------- //
 
 StateId SimulationMachine::Abort::impl(SimulationContext& ctx) {
-  const auto *previous_state = state_machine()->previous_state();
+  const auto* previous_state = state_machine()->previous_state();
   if (previous_state == KEEP_ALIVE) {
     return DISCONNECT;
   } else if (previous_state == CONNECT) {
