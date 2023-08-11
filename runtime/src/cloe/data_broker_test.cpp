@@ -525,8 +525,8 @@ TEST(databroker, test_api_type_error_compiler_messages) {
 TEST(databroker, to_lua_1) {
   //         Test Scenario: positive-test
   // Test Case Description: Implement a custom datatype and manipulate a member from Lua
-  //            Test Steps: 1) Implement a signal with a custom datatype
-  //                        2) Manipulate a member from Lua
+  //            Test Steps: 1) Implement a signal
+  //                        2) Stimulate the signal from Lua
   //          Prerequisite: -
   //             Test Data: -
   //       Expected Result: I) The value of the member changed
@@ -538,18 +538,32 @@ TEST(databroker, to_lua_1) {
   auto gamma = db.implement<double>("gamma");
   auto gamma2 = 2.71828;
   db.subscribe<double>("gamma", [&](const double &value) { gamma2 = value; });
+
+  auto euler = db.declare<double>("euler");
+  auto euler2 = 0.0;
+  euler->set_setter<double>([&](const double &value) { euler2 = value; });
+
+  const char *special_name = "  special.characters  ";
+  auto special = db.implement<double>(special_name);
+
   // bind signals
   db.bind_signal("gamma");
+  db.bind_signal("euler");
+  db.bind_signal(special_name);
+
   db.bind("signals");
   // 2) Manipulate a member from Lua
   const auto &code = R"(
     signals.gamma = 1.154431
+    signals.euler = 2.71828
+    signals["  special.characters  "] = -1.0
   )";
   // run lua
   state.open_libraries(sol::lib::base, sol::lib::package);
   state.script(code);
   // verify I
   EXPECT_EQ(gamma, 1.154431);
+  EXPECT_EQ(special, -1);
   // verify II
   EXPECT_EQ(gamma2, 1.154431);
 }
@@ -581,7 +595,7 @@ TEST(databroker, to_lua_2) {
   //         Test Scenario: positive-test
   // Test Case Description: Implement a custom datatype and manipulate a member from Lua
   //            Test Steps: 1) Implement a signal with a custom datatype
-  //                        2) Manipulate a member from Lua
+  //                        2) Stimulate a member from Lua
   //          Prerequisite: -
   //             Test Data: -
   //       Expected Result: 2) The value of the member changed
@@ -611,8 +625,8 @@ TEST(databroker, to_lua_2) {
   state.open_libraries(sol::lib::base, sol::lib::package);
   state.script(code);
   // verify
-  EXPECT_EQ(euler.value().b, 0.0);       // reading signals.euler gives a temporary copy
-  EXPECT_EQ(euler.value().d, 0.0);
-  EXPECT_EQ(gamma.value().b, 1.154431);  // writing signals.gamma works as expected
-  EXPECT_EQ(gamma.value().d, 1.154431);
+  EXPECT_EQ(euler.value().b, 0.0);       // Reading signals.euler to access a member
+  EXPECT_EQ(euler.value().d, 0.0);       // gives a temporary copy which is modified.
+  EXPECT_EQ(gamma.value().b, 1.154431);  // Writing signals.gamma works as expected.
+  EXPECT_EQ(gamma.value().d, 1.154431);  //
 }
