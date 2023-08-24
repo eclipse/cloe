@@ -52,21 +52,21 @@
  * The DEFINE_COMPONENT_FACTORY_MAKE macro can also be used to use the default
  * implementation.
  */
-#define DEFINE_COMPONENT_FACTORY(xFactoryType, xConfigType, xName, xDescription)              \
-  class xFactoryType : public ::cloe::ComponentFactory {                                      \
-   public:                                                                                    \
-    xFactoryType() : ComponentFactory(xName, xDescription) {}                                 \
-    std::unique_ptr<::cloe::ComponentFactory> clone() const override {                        \
-      return std::make_unique<std::decay<decltype(*this)>::type>(*this);                      \
-    }                                                                                         \
-    std::unique_ptr<::cloe::Component> make(                                                  \
+#define DEFINE_COMPONENT_FACTORY(xFactoryType, xConfigType, xName, xDescription)               \
+  class xFactoryType : public ::cloe::ComponentFactory {                                       \
+   public:                                                                                     \
+    xFactoryType() : ComponentFactory(xName, xDescription) {}                                  \
+    std::unique_ptr<::cloe::ComponentFactory> clone() const override {                         \
+      return std::make_unique<std::decay<decltype(*this)>::type>(*this);                       \
+    }                                                                                          \
+    std::unique_ptr<::cloe::Component> make(                                                   \
         const ::fable::Conf&, std::vector<std::shared_ptr<::cloe::Component>>) const override; \
-                                                                                              \
-   protected:                                                                                 \
-    ::cloe::Schema schema_impl() override { return config_.schema(); }                        \
-                                                                                              \
-   private:                                                                                   \
-    xConfigType config_;                                                                      \
+                                                                                               \
+   protected:                                                                                  \
+    ::cloe::Schema schema_impl() override { return config_.schema(); }                         \
+                                                                                               \
+   private:                                                                                    \
+    xConfigType config_;                                                                       \
   };
 
 /**
@@ -80,7 +80,7 @@
  */
 #define DEFINE_COMPONENT_FACTORY_MAKE(xFactoryType, xComponentType, xInputType)              \
   std::unique_ptr<::cloe::Component> xFactoryType::make(                                     \
-      const ::fable::Conf& c, std::vector<std::shared_ptr<::cloe::Component>> comp) const {   \
+      const ::fable::Conf& c, std::vector<std::shared_ptr<::cloe::Component>> comp) const {  \
     decltype(config_) conf{config_};                                                         \
     assert(comp.size() == 1);                                                                \
     if (!c->is_null()) {                                                                     \
