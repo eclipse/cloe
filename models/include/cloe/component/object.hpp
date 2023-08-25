@@ -24,6 +24,8 @@
 #include <memory>  // for shared_ptr<>
 #include <vector>  // for vector<>
 
+#include <sol/sol.hpp>  // for Lua related aspects
+
 #include <Eigen/Geometry>           // for Isometry3d, Vector3d
 #include <fable/enum.hpp>           // for ENUM_SERIALIZATION
 #include <fable/json.hpp>           // for Json
@@ -98,8 +100,8 @@ struct Object {
         {"angular_velocity", o.angular_velocity},
     };
   }
-  friend void to_lua(sol::state_view view, Wheel* /* value */) {
-    sol::usertype<Wheel> usertype_table = view.new_usertype<Wheel>("Wheel");
+  friend void to_lua(sol::state_view view, Object* /* value */) {
+    sol::usertype<Object> usertype_table = view.new_usertype<Object>("Object");
     usertype_table["id"] = &Object::id;
     usertype_table["exist_prob"] = &Object::exist_prob;
     usertype_table["type"] = &Object::type;
