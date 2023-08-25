@@ -98,6 +98,19 @@ struct Object {
         {"angular_velocity", o.angular_velocity},
     };
   }
+  friend void to_lua(sol::state_view view, Wheel* /* value */) {
+    sol::usertype<Wheel> usertype_table = view.new_usertype<Wheel>("Wheel");
+    usertype_table["id"] = &Object::id;
+    usertype_table["exist_prob"] = &Object::exist_prob;
+    usertype_table["type"] = &Object::type;
+    usertype_table["classification"] = &Object::classification;
+    usertype_table["pose"] = &Object::pose;
+    usertype_table["dimensions"] = &Object::dimensions;
+    usertype_table["cog_offset"] = &Object::cog_offset;
+    usertype_table["velocity"] = &Object::velocity;
+    usertype_table["acceleration"] = &Object::acceleration;
+    usertype_table["angular_velocity"] = &Object::angular_velocity;
+  }
 };
 
 /**

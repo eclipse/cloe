@@ -34,6 +34,7 @@ add_library(fable
     ${fable_PUBLIC_HEADERS}
 )
 add_library(fable::fable ALIAS fable)
+target_compile_definitions(fable PUBLIC SOL_SAFE_NUMERICS=1)
 set_target_properties(fable PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON

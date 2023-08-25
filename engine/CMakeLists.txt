@@ -149,6 +149,7 @@ target_compile_definitions(cloe-enginelib
     CLOE_ENGINE_VERSION="${CLOE_ENGINE_VERSION}"
     CLOE_ENGINE_TIMESTAMP="${CLOE_ENGINE_TIMESTAMP}"
     PROJECT_SOURCE_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}\"
+    SOL_SAFE_NUMERICS=1
 )
 target_include_directories(cloe-enginelib
   PRIVATE
