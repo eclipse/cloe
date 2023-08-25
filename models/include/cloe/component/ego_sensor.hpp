@@ -24,7 +24,7 @@
 #include <cloe/component.hpp>         // for Component
 #include <cloe/component/object.hpp>  // for Object
 
-#include <fable/json.hpp> // for Json
+#include <fable/json.hpp>  // for Json
 
 namespace cloe {
 
