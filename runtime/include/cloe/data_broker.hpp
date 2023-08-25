@@ -214,6 +214,11 @@ using SignalPtr = std::shared_ptr<Signal>;
 using lua_signal_adapter_t =
     std::function<void(const SignalPtr&, sol::state_view, std::string_view)>;
 
+/**
+  * Function which declares a specific datatype to the Lua-VM
+  */
+using lua_signal_declarator_t = std::function<void(sol::state_view)>;
+
 template <typename T>
 using Container = BasicContainer<databroker::compatible_base_t<T>>;
 
@@ -814,6 +819,7 @@ class DataBroker {
  private:
   SignalContainer signals_{};
   std::unordered_map<std::type_index, lua_signal_adapter_t> bindings_{};
+  std::unordered_map<std::type_index, bool> lua_declared_types_{};
 
  public:
   DataBroker() = default;
@@ -927,22 +933,45 @@ class DataBroker {
   std::optional<SignalsObject> signals_object_{};
 
   /**
-  * \brief Declares a DataType to Lua (if not yet done)
-  * \note: The function can be used independent of a bound Lua instance
-  */
+    * \brief Declares a DataType to Lua (if not yet done)
+    * \note: The function can be used independent of a bound Lua instance
+    */
+  template <typename T>
+  void declare_type(lua_signal_declarator_t type_declarator) {
+    assert_static_type<T>();
+    using compatible_type = databroker::compatible_base_t<T>;
+
+    if (lua_.has_value()) {
+      std::type_index type{typeid(compatible_type)};
+      auto iter = lua_declared_types_.find(type);
+      if (iter == lua_declared_types_.end()) {
+        lua_declared_types_[type] = true;
+        // declare type
+        type_declarator(*lua_);
+      }
+    }
+  }
+
+  /**
+    * \brief Declares a DataType to Lua (if not yet done)
+    * \note: The function can be used independent of a bound Lua instance
+    */
   template <typename T>
   void declare() {
     assert_static_type<T>();
     using compatible_type = databroker::compatible_base_t<T>;
-    // Check whether this type was already processed
-    std::type_index type{typeid(compatible_type)};
-
     if (lua_.has_value()) {
       // Check whether this type was already processed, if not declare it and store an adapter function in bindings_
+      std::type_index type{typeid(compatible_type)};
       auto iter = bindings_.find(type);
       if (iter == bindings_.end()) {
-        // Declare type to Lua-VM
-        ::cloe::databroker::detail::to_lua<T>(*lua_);
+        // Check wether this type was already declared to the Lua-VM, if not declare it
+        auto declared_types_iter = lua_declared_types_.find(type);
+        if (declared_types_iter == lua_declared_types_.end()) {
+          lua_declared_types_[type] = true;
+          ::cloe::databroker::detail::to_lua<T>(*lua_);
+        }
+
         // Create adapter for Lua-VM
         lua_signal_adapter_t adapter = [this](const SignalPtr& signal, sol::state_view state,
                                               std::string_view lua_name) {
