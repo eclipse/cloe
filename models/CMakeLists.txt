@@ -12,6 +12,7 @@ set(alias cloe::models)
 find_package(cloe-runtime REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Boost COMPONENTS headers REQUIRED)
+find_package(sol2 REQUIRED)
 
 message(STATUS "-> Building ${output} library.")
 file(GLOB ${target}_PUBLIC_HEADERS "include/**/*.hpp")
@@ -42,6 +43,7 @@ target_link_libraries(${target}
     cloe::runtime
     Boost::headers
     Eigen3::Eigen
+    sol2::sol2
 )
 
 # Testing -------------------------------------------------------------
