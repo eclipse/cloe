@@ -113,8 +113,8 @@ TEST(databroker, basic_usage_3) {
       // 1b) determine signal value
       EXPECT_EQ(signal->value<int>(), int_value);
     } else {
-      throw fmt::format(
-          "Datatype of signal '{}' is unsupported. Type: '{}'", signal->name(), type->name());
+      throw fmt::format("Datatype of signal '{}' is unsupported. Type: '{}'", signal->name(),
+                        type->name());
     }
   };
   handler("x");
@@ -629,4 +629,131 @@ TEST(databroker, to_lua_2) {
   EXPECT_EQ(euler.value().d, 0.0);       // gives a temporary copy which is modified.
   EXPECT_EQ(gamma.value().b, 1.154431);  // Writing signals.gamma works as expected.
   EXPECT_EQ(gamma.value().d, 1.154431);  //
+}
+
+/**
+  * Model for arbitrary custom enumerator
+  */
+enum CustomEnum : int { Normal = 1, Exception = -1, Unexpected = -2 };
+
+/**
+ * Mandatory ADL function to bind the CustomData type to the Lua-VM
+ */
+void to_lua(sol::state_view view, CustomEnum * /* value */) {
+  // clang-format off
+  view.new_enum("CustomEnum"
+    ,"Normal", CustomEnum::Normal
+    ,"Exception", CustomEnum::Exception
+    ,"Unexpected", CustomEnum::Unexpected
+  );
+  // clang-format on
+}
+
+/**
+ * C++ exception handler which is preprocessing potential exceptions
+ */
+int my_exception_handler(lua_State *L, sol::optional<const std::exception &> maybe_exception,
+                         sol::string_view description) {
+  std::cout << "An exception occurred ";
+  if (maybe_exception) {
+    std::cout << "description straight from the exception: ";
+    const std::exception &ex = *maybe_exception;
+    std::cout << ex.what();
+  } else {
+    std::cout << "description from the description parameter: ";
+    std::cout.write(description.data(), static_cast<std::streamsize>(description.size()));
+  }
+  std::cout << std::endl;
+  // you must push 1 element onto the stack to be
+  // transported through as the error object in Lua
+  // note that Lua -- and 99.5% of all Lua users and libraries -- expects a string
+  // so we push a single string (in our case, the description of the error)
+  return sol::stack::push(L, description);
+}
+
+TEST(databroker, to_lua_3) {
+  //         Test Scenario: positive-test
+  // Test Case Description: Implement a custom datatype and manipulate a member from Lua
+  //            Test Steps: 1) Implement a signal
+  //                        2) Stimulate the signal from Lua
+  //          Prerequisite: -
+  //             Test Data: -
+  //       Expected Result: I) The value of the member changed
+  //                        II) The value-changed event was received
+  sol::state state;
+  sol::state_view view(state);
+  DataBroker db{view};
+  // 1) Implement a signal
+  auto tau = db.implement<CustomEnum>("tau");
+  tau = CustomEnum::Exception;
+
+  db.subscribe<CustomEnum>("tau", [&](const CustomEnum &value) {
+    switch (value) {
+      case CustomEnum::Normal:
+        // its ok
+        break;
+      case CustomEnum::Exception:
+        throw "This is an exception";
+        break;
+      default:
+        throw std::runtime_error("This is not good");
+    }
+  });
+
+  // bind signals
+  db.bind_signal("tau");
+  db.bind("signals");
+  // 2) Manipulate a member from Lua
+  const auto &code = R"(
+    -- Custom error-handler function
+    function myerrorhandler( err )
+      if (err == "This is an exception") then
+        print("I knew it would happen, it's fine.")
+      else
+        print("This is the end my friend.")
+        print(debug.traceback())
+        return "not good"
+      end
+    end
+
+    print("tau: " .. tostring(signals.tau))
+    -- If you are confident that
+    -- such an assignments works
+    -- just do it
+    signals.tau = CustomEnum.Normal
+    print("tau: " .. tostring(signals.tau))
+
+    -- If you are less confident that
+    -- such an assignments works
+    -- use an error-handler
+    status, result = xpcall( function()
+      signals.tau = CustomEnum.Exception
+    end , myerrorhandler )
+    if (result ~= nil) then
+      return
+    end
+
+    -- If you are less confident that
+    -- such an assignments works
+    -- use an error-handler
+    status, result = xpcall( function()
+      signals.tau = CustomEnum.Unexpected
+    end , myerrorhandler )
+    if (result ~= nil) then
+      return
+    end
+
+    print("tau: " .. tostring(signals.tau))
+  )";
+  // run lua
+  state.open_libraries(sol::lib::base, sol::lib::package, sol::lib::debug, sol::lib::os);
+  state.set_exception_handler(&my_exception_handler);
+  state.script(code);
+
+  EXPECT_EQ(tau, CustomEnum::Unexpected);
+
+  //EXPECT_THROW({ x = 123; }, const char *);
+  // verify I
+  //EXPECT_EQ(gamma, 1.154431);
+  //sdasdsad
 }
