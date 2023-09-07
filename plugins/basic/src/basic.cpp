@@ -22,13 +22,13 @@
 
 #include "basic.hpp"
 
-#include <chrono>            // for duration<>
-#include <memory>            // for shared_ptr<>, unique_ptr<>
-#include <optional>          // for optional
-#include <string>            // for string
-#include <tuple>             // for tie
-#include <utility>           // for pair, make_pair
-#include <vector>            // for vector<>
+#include <chrono>    // for duration<>
+#include <memory>    // for shared_ptr<>, unique_ptr<>
+#include <optional>  // for optional
+#include <string>    // for string
+#include <tuple>     // for tie
+#include <utility>   // for pair, make_pair
+#include <vector>    // for vector<>
 
 #include <fable/schema.hpp>  // for Schema
 #include <sol/reference.hpp>
@@ -48,7 +48,7 @@
 #include <cloe/utility/resource_handler.hpp>            // for INCLUDE_RESOURCE
 #include <cloe/vehicle.hpp>                             // for Vehicle
 
-#include "hmi_contact.hpp"                              // for PushButton, Switch
+#include "hmi_contact.hpp"  // for PushButton, Switch
 
 INCLUDE_RESOURCE(controller_ui, PROJECT_SOURCE_DIR "/ui/dyn_controller_ui.json");
 
@@ -398,31 +398,45 @@ class BasicController : public Controller {
 
   void enroll(Registrar& r) override {
     auto& db = r.data_broker();
-    auto acc_signal = db.declare<cloe::controller::basic::AccConfiguration>("basic-controller.acc");
-    acc_signal->set_getter<cloe::controller::basic::AccConfiguration>(
-        [this]() -> const cloe::controller::basic::AccConfiguration& { return this->acc_.config; });
-    acc_signal->set_setter<cloe::controller::basic::AccConfiguration>(
-        [this](const cloe::controller::basic::AccConfiguration& value) {
-          this->acc_.config = value;
-        });
-
-    auto aeb_signal = db.declare<cloe::controller::basic::AebConfiguration>("basic-controller.aeb");
-    aeb_signal->set_getter<cloe::controller::basic::AebConfiguration>(
-        [this]() -> const cloe::controller::basic::AebConfiguration& { return this->aeb_.config; });
-    aeb_signal->set_setter<cloe::controller::basic::AebConfiguration>(
-        [this](const cloe::controller::basic::AebConfiguration& value) {
-          this->aeb_.config = value;
-        });
-
-    auto lka_signal = db.declare<cloe::controller::basic::LkaConfiguration>("basic-controller.lka");
-    lka_signal->set_getter<cloe::controller::basic::LkaConfiguration>(
-        [this]() -> const cloe::controller::basic::LkaConfiguration& { return this->lka_.config; });
-    lka_signal->set_setter<cloe::controller::basic::LkaConfiguration>(
-        [this](const cloe::controller::basic::LkaConfiguration& value) {
-          this->lka_.config = value;
-        });
-
-    //    db.declare<std::string>("basic-controller.driver_request");
+    if (this->veh_) {
+      auto& vehicle = this->veh_->name();
+      {
+        std::string name1 = fmt::format("vehicles.{}.{}.acc", vehicle, name());
+        auto acc_signal = db.declare<cloe::controller::basic::AccConfiguration>(name1);
+        acc_signal->set_getter<cloe::controller::basic::AccConfiguration>(
+            [this]() -> const cloe::controller::basic::AccConfiguration& {
+              return this->acc_.config;
+            });
+        acc_signal->set_setter<cloe::controller::basic::AccConfiguration>(
+            [this](const cloe::controller::basic::AccConfiguration& value) {
+              this->acc_.config = value;
+            });
+      }
+      {
+        std::string name1 = fmt::format("vehicles.{}.{}.aeb", vehicle, name());
+        auto aeb_signal = db.declare<cloe::controller::basic::AebConfiguration>(name1);
+        aeb_signal->set_getter<cloe::controller::basic::AebConfiguration>(
+            [this]() -> const cloe::controller::basic::AebConfiguration& {
+              return this->aeb_.config;
+            });
+        aeb_signal->set_setter<cloe::controller::basic::AebConfiguration>(
+            [this](const cloe::controller::basic::AebConfiguration& value) {
+              this->aeb_.config = value;
+            });
+      }
+      {
+        std::string name1 = fmt::format("vehicles.{}.{}.lka", vehicle, name());
+        auto lka_signal = db.declare<cloe::controller::basic::LkaConfiguration>(name1);
+        lka_signal->set_getter<cloe::controller::basic::LkaConfiguration>(
+            [this]() -> const cloe::controller::basic::LkaConfiguration& {
+              return this->lka_.config;
+            });
+        lka_signal->set_setter<cloe::controller::basic::LkaConfiguration>(
+            [this](const cloe::controller::basic::LkaConfiguration& value) {
+              this->lka_.config = value;
+            });
+      }
+    }
 
     auto lua = r.register_lua_table();
 
