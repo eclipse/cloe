@@ -53,7 +53,7 @@ TEST(lua_types_test, object) {
   // 2) Manipulate a member from Lua
   const auto &code = R"(
     local gamma = signals.gamma
-    gamma.type = cloe.type.cloe.Object.Type.Static;
+    gamma.type = cloe.types.cloe.Object.Type.Static;
     gamma.classification = cloe.types.cloe.Object.Class.Pedestrian
     signals.gamma = gamma
   )";
