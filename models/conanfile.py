@@ -44,6 +44,8 @@ class CloeModels(ConanFile):
         self.requires(f"cloe-runtime/{self.version}@cloe/develop")
         self.requires("boost/[>=1.65.1]")
         self.requires("eigen/3.4.0")
+        # Dependencies for Lua/Lua-Adapter
+        self.requires("sol2/3.3.0")
 
     def build_requirements(self):
         self.test_requires("gtest/1.13.0")

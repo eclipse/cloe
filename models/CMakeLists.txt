@@ -22,6 +22,7 @@ add_library(${target}
     src/cloe/component/utility/ego_sensor_canon.cpp
     src/cloe/component/utility/steering_utils.cpp
     src/cloe/utility/actuation_state.cpp
+    src/cloe/utility/lua_types.cpp
 
     # For IDE integration
     ${${target}_PUBLIC_HEADERS}
@@ -58,6 +59,7 @@ if(BUILD_TESTING)
         src/cloe/component/latlong_actuator_test.cpp
         src/cloe/component/utility/steering_utils_test.cpp
         src/cloe/utility/actuation_level_test.cpp
+        src/cloe/utility/lua_types_test.cpp
     )
     set_target_properties(test-models PROPERTIES
         CXX_STANDARD 17
