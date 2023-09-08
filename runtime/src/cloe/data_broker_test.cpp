@@ -604,6 +604,8 @@ TEST(databroker, to_lua_2) {
   DataBroker db{view};
   // 1) Implement a signal
   auto euler = db.implement<CustomData>("euler");
+  auto euler2 = 0.0;
+  db.subscribe<CustomData>("euler", [&](const CustomData &value) { euler2 = value.b; });
   auto gamma = db.implement<CustomData>("gamma");
   // bind signals
   db.bind_signal("euler");
@@ -625,10 +627,13 @@ TEST(databroker, to_lua_2) {
   state.open_libraries(sol::lib::base, sol::lib::package);
   state.script(code);
   // verify
-  EXPECT_EQ(euler.value().b, 0.0);       // Reading signals.euler to access a member
-  EXPECT_EQ(euler.value().d, 0.0);       // gives a temporary copy which is modified.
-  EXPECT_EQ(gamma.value().b, 1.154431);  // Writing signals.gamma works as expected.
-  EXPECT_EQ(gamma.value().d, 1.154431);  //
+  // EXPECT_EQ(euler.value().b, 2.71828); // This would require that a std::ref is bound to the Lua-VM
+  // EXPECT_EQ(euler.value().d, 2.71828); //
+  EXPECT_EQ(euler.value().b, 0.0);
+  EXPECT_EQ(euler.value().d, 0.0);
+  EXPECT_EQ(euler2, 0);  // value-changed event does not work with references :(
+  EXPECT_EQ(gamma.value().b, 1.154431);
+  EXPECT_EQ(gamma.value().d, 1.154431);
 }
 
 /**
@@ -724,7 +729,7 @@ TEST(databroker, to_lua_3) {
     print("tau: " .. tostring(signals.tau))
 
     -- If you are less confident that
-    -- such an assignments works
+    -- such an assignment works
     -- use an error-handler
     status, result = xpcall( function()
       signals.tau = CustomEnum.Exception
@@ -734,7 +739,7 @@ TEST(databroker, to_lua_3) {
     end
 
     -- If you are less confident that
-    -- such an assignments works
+    -- such an assignment works
     -- use an error-handler
     status, result = xpcall( function()
       signals.tau = CustomEnum.Unexpected
@@ -751,9 +756,58 @@ TEST(databroker, to_lua_3) {
   state.script(code);
 
   EXPECT_EQ(tau, CustomEnum::Unexpected);
+}
 
-  //EXPECT_THROW({ x = 123; }, const char *);
-  // verify I
-  //EXPECT_EQ(gamma, 1.154431);
-  //sdasdsad
+template <typename T, typename Tag>
+struct Quantity {
+  T value_;
+
+  Quantity() : value_{} {}
+  Quantity(const double &value) : value_{value} {}
+};
+
+struct km_tag {};
+
+using km = Quantity<double, km_tag>;
+
+km operator""_km(long double value) { return km{static_cast<double>(value)}; }
+
+/**
+ * Mandatory ADL function to bind the CustomData type to the Lua-VM
+ */
+void to_lua(sol::state_view view, km * /* value */) {
+  // clang-format off
+  sol::usertype<km> usertype_table = view.new_usertype<km>("km",sol::constructors<km(), km(const double&)>{} );
+  usertype_table["value_"] = &km::value_;
+  // clang-format on
+}
+
+TEST(databroker, to_lua_4) {
+  //         Test Scenario: positive-test
+  // Test Case Description: Implement a custom datatype and manipulate a member from Lua
+  //            Test Steps: 1) Implement a signal
+  //                        2) Stimulate the signal from Lua
+  //          Prerequisite: -
+  //             Test Data: -
+  //       Expected Result: I) The value of the member changed
+  //                        II) The value-changed event was received
+  sol::state state;
+  sol::state_view view(state);
+  DataBroker db{view};
+  // 1) Implement a signal
+  auto tau = db.implement<km>("tau");
+
+  // bind signals
+  db.bind_signal("tau");
+  db.bind("signals");
+  // 2) Manipulate a member from Lua
+  const auto &code = R"(
+    local tau = km.new(1.2)
+    signals.tau = tau
+  )";
+  // run lua
+  state.open_libraries(sol::lib::base, sol::lib::package, sol::lib::debug, sol::lib::os);
+  state.script(code);
+
+  EXPECT_EQ(tau->value_, 1.2);
 }
