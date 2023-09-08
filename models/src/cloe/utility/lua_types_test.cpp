@@ -23,9 +23,47 @@
 
 #include <cloe/utility/lua_types.hpp>
 
-#include <Eigen/Dense>
+#include <Eigen/Dense>  // for Eigen
+
+#include <cloe/component/object.hpp>  // for cloe::Object
 
 using DataBroker = cloe::DataBroker;
+
+TEST(lua_types_test, object) {
+  //         Test Scenario: positive-test
+  // Test Case Description: Implement a vector3d signal and manipulate a member from Lua
+  //            Test Steps: 1) Implement a signal
+  //                        2) Stimulate the signal from Lua
+  //          Prerequisite: -
+  //             Test Data: -
+  //       Expected Result: I) The value of the member changed
+  sol::state state;
+  sol::state_view view(state);
+  DataBroker db{view};
+
+  // Register all types
+  cloe::utility::register_lua_types(db);
+
+  // 1) Implement a signal
+  auto gamma = db.implement<cloe::Object>("gamma");
+
+  // bind signals
+  db.bind_signal("gamma");
+  db.bind("signals");
+  // 2) Manipulate a member from Lua
+  const auto &code = R"(
+    local gamma = signals.gamma
+    gamma.type = cloe.type.cloe.Object.Type.Static;
+    gamma.classification = cloe.types.cloe.Object.Class.Pedestrian
+    signals.gamma = gamma
+  )";
+  // run lua
+  state.open_libraries(sol::lib::base, sol::lib::package);
+  state.script(code);
+  // verify I
+  EXPECT_EQ(gamma->type, cloe::Object::Type::Static);
+  EXPECT_EQ(gamma->classification, cloe::Object::Class::Pedestrian);
+}
 
 TEST(lua_types_test, vector3d) {
   //         Test Scenario: positive-test

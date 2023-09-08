@@ -273,7 +273,7 @@ void register_vector(DataBroker& db, const std::vector<const char*>& ns, const c
                      std::make_index_sequence<MatrixTypeTraits<T>::Rows>{});
 }
 
-std::vector namespace_cloe_object = {"Cloe", "Object"};
+std::vector namespace_cloe_object = {"cloe", "Object"};
 
 void register_lua_types(DataBroker& db) {
   register_vector<Eigen::Vector2i>(db, namespace_eigen, "Vector2i", vector_names_xyzw);
