@@ -5,8 +5,16 @@ export CLOE_ROOT="${BATS_TEST_DIRNAME}/../.."
 load "${CLOE_ROOT}/tests/setup_bats.bash"
 load "${CLOE_ROOT}/tests/setup_testname.bash"
 
-check_engine_with_server() {
-    cloe-engine version | grep -F "server: true" &>/dev/null
+require_program() {
+    if ! type $1 &>/dev/null; then
+        skip "required program not present: $1"
+    fi
+}
+
+require_engine_with_server() {
+    if ! cloe-engine version | grep -F "server: true" &>/dev/null; then
+        skip "required engine option not set: server"
+    fi
 }
 
 @test "$(testname 'Expect schema equality' 'test_engine_json_schema.json' '4d368665-b666-4289-8a7a-b76ca53db688')" {
@@ -16,17 +24,13 @@ check_engine_with_server() {
     #    cloe-launch -vv exec conanfile.py -- usage -j > tests/test_engine_json_schema.json
     #
     # Then use git diff to check that the changes make sense and are what you expect.
-    if ! type diff &>/dev/null; then
-        skip "required program diff not present"
-    fi
+    require_program diff
 
     diff <(cloe-engine usage -j 2>/dev/null) test_engine_json_schema.json
 }
 
 @test "$(testname 'Expect stack equality' 'test_engine_nop_smoketest_dump.json' '3b23bb69-b249-49c8-8b4c-2fa993d8677e')" {
-    if ! type diff &>/dev/null; then
-        skip "required program diff not present"
-    fi
+    require_program diff
 
     # The plugin section and the registry section have path references, which
     # are not reproducible, so we need to rewrite them and delete these lines.
@@ -71,12 +75,9 @@ check_engine_with_server() {
 }
 
 @test "$(testname 'Expect run success' 'test_engine_curl_succeed.json' 'f473cb96-7f2e-4ac1-801a-fd93343f6e24')" {
-    if ! type curl &>/dev/null; then
-        skip "required program curl not present"
-    fi
-    if ! check_engine_with_server; then
-        skip "server component disabled"
-    fi
+    require_program curl
+    require_engine_with_server
+
     cloe-engine run test_engine_curl_succeed.json
 }
 
@@ -181,17 +182,13 @@ check_engine_with_server() {
 }
 
 @test "$(testname 'Expect check success' 'test_engine_keep_alive.json' '254544dc-c17a-4a5c-8685-723ed1c758cf')" {
-    if ! type kill &>/dev/null; then
-        skip "required program kill not present"
-    fi
+    require_program kill
 
     cloe-engine check test_engine_keep_alive.json
 }
 
 @test "$(testname 'Expect run success' 'test_engine_keep_alive.json' '0c5ace05-f5ca-4615-9c14-62a75b69651a')" {
-    if ! type kill &>/dev/null; then
-        skip "required program kill not present"
-    fi
+    require_program kill
 
     cloe-engine run test_engine_keep_alive.json
 }
@@ -243,12 +240,8 @@ check_engine_with_server() {
 }
 
 @test "$(testname 'Expect run success' 'test_engine_pause.json' '845e3c9b-2a6d-469a-93a7-67fe9531c81e')" {
-    if ! type curl &>/dev/null; then
-        skip "required program curl not present"
-    fi
-    if ! check_engine_with_server; then
-        skip "server component disabled"
-    fi
+    require_program curl
+    require_engine_with_server
 
     cloe-engine run test_engine_pause.json
 }
@@ -285,12 +278,8 @@ check_engine_with_server() {
 }
 
 @test "$(testname 'Expect run syskill' 'test_engine_watchdog.json' '058ff9b7-98dc-4583-8e80-c70e9c5e1f4e')" {
-    if ! type curl &>/dev/null; then
-        skip "required program curl not present"
-    fi
-    if ! check_engine_with_server; then
-        skip "server component disabled"
-    fi
+    require_program curl
+    require_engine_with_server
 
     cloe-engine check test_engine_watchdog.json
 

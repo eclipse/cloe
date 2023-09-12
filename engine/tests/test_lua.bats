@@ -5,6 +5,12 @@ export CLOE_ROOT="${BATS_TEST_DIRNAME}/../.."
 load "${CLOE_ROOT}/tests/setup_bats.bash"
 load "${CLOE_ROOT}/tests/setup_testname.bash"
 
+require_program() {
+    if ! type $1 &>/dev/null; then
+        skip "required program not present: $1"
+    fi
+}
+
 @test "$(testname 'Expect success' 'test_lua01_include_json.lua' '224b2b67-1aaf-4ba2-855c-9bf986574e30')" {
     cloe-engine run test_lua01_include_json.lua
 }
@@ -28,6 +34,19 @@ load "${CLOE_ROOT}/tests/setup_testname.bash"
 @test "$(testname 'Expect success' 'test_lua06_apply_stack.lua' 'ba5b7fbd-3b47-4767-b7b2-1075bdaa736f')" {
     cloe-engine run test_lua06_apply_stack.lua
 }
+
+@test "$(testname 'Expect success' 'test_lua07_schedule_pause.lua' '41ece52e-146a-414d-b93d-4bc4512c49b8')" {
+    require_program netcat
+    require_program curl
+
+    cloe-engine run test_lua07_schedule_pause.lua
+}
+
+# @test "$(testname 'Expect report' 'test_lua07_report_structure.lua' 'b65b0ae3-a648-4284-adb2-658e5ded6e56')" {
+#     local tmpfile=$(mktemp)
+#     cloe-engine -l error run test_lua07_report_structure.lua | jq .report > $tmpfile
+#     diff $tmpfile test_lua07_report_structure.json
+# }
 
 @test "$(testname 'Expect failure' 'test_lua_error_main.lua' '9cc0c5a4-5771-4cec-befe-ae49bd3e0cae')" {
     run cloe-engine run test_lua_error_main.lua
