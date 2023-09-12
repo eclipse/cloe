@@ -8,7 +8,7 @@ from conan.tools import scm
 
 
 class CloeTest(ConanFile):
-    python_requires = "cloe-launch-profile/[~=0.20.0]@cloe/develop"
+    python_requires = "cloe-launch-profile/[>=0.20.0]@cloe/develop"
     python_requires_extend = "cloe-launch-profile.Base"
 
     default_options = {
