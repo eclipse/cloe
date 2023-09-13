@@ -195,11 +195,26 @@ command
 """""""
 Run arbitrary system commands as interpreted by the ``/bin/sh`` shell.
 
-==============  ==========  ==============  ==================================
-Parameter       Required    Type            Description
-==============  ==========  ==============  ==================================
-``command``     yes         string          command to execute in shell
-==============  ==========  ==============  ==================================
+==================  ==========  ==============  ==================================
+Parameter           Required    Type            Description
+==================  ==========  ==============  ==================================
+``command``         yes         string          command to execute in shell
+``mode``            no          string          one of ``sync``, ``async``, ``detach``
+``output``          no          string          one of ``never``, ``normal``, ``always``
+``ignore_failure``  no          bool            whether to ignore execution failure
+==================  ==========  ==============  ==================================
+
+And the alternative is:
+
+==================  ==========  ==============  ==================================
+Parameter           Required    Type            Description
+==================  ==========  ==============  ==================================
+``path``            yes         string          command to execute directly
+``args``            no          array           arguments to pass to path
+``mode``            no          string          one of ``sync``, ``async``, ``detach``
+``output``          no          string          one of ``never``, ``normal``, ``always``
+``ignore_failure``  no          bool            whether to ignore execution failure
+==================  ==========  ==============  ==================================
 
 Inline short-form is supported as the content of ``command``.
 
