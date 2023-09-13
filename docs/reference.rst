@@ -21,6 +21,12 @@ background knowledge for any of the following topics.
    a Cloe stack file. These configure the runtime and the orchestration of
    a simulation.
 
+:doc:`reference/hooks`
+   provides an explanation of how to use pre-connect and post-disconnect hooks.
+
+:doc:`reference/variables`
+   provides an explanation of variable interpolation in input stack files.
+
 :doc:`reference/watchdog`
    provides a detailed explanation of the watchdog feature of the Cloe runtime.
 
@@ -48,6 +54,8 @@ background knowledge for any of the following topics.
    reference/system-states
    reference/model-states
    reference/config
+   reference/hooks
+   reference/variables
    reference/watchdog
    reference/json-api
    reference/triggers
