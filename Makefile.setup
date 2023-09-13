@@ -144,9 +144,6 @@ install-python-deps::
 		toml \
 		pipx \
 		;
-	# Some Conan recipes need the toml Python library,
-	# which isn't available in the conan pipx environment.
-	[[ ${PIP} == "pipx" ]] && ${PIP} inject conan toml
 
 .PHONY: install-sphinx-deps
 install-sphinx-deps:
