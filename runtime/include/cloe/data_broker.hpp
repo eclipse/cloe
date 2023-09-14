@@ -932,6 +932,7 @@ class DataBroker {
     */
   std::optional<SignalsObject> signals_object_{};
 
+ public:
   /**
     * \brief Declares a DataType to Lua (if not yet done)
     * \note: The function can be used independent of a bound Lua instance
@@ -952,6 +953,7 @@ class DataBroker {
     }
   }
 
+ private:
   /**
     * \brief Declares a DataType to Lua (if not yet done)
     * \note: The function can be used independent of a bound Lua instance
