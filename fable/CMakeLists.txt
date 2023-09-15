@@ -34,7 +34,6 @@ add_library(fable
     ${fable_PUBLIC_HEADERS}
 )
 add_library(fable::fable ALIAS fable)
-target_compile_definitions(fable PUBLIC SOL_SAFE_NUMERICS=1)
 set_target_properties(fable PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
@@ -98,6 +97,10 @@ if(BUILD_TESTING)
         Boost::filesystem
         sol2::sol2
         fable
+    )
+    target_compile_definitions(test-fable
+      PUBLIC
+        SOL_ALL_SAFETIES_ON=1
     )
     gtest_add_tests(TARGET test-fable)
 endif()
