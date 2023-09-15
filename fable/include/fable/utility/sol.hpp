@@ -36,6 +36,12 @@
 #include <sol/object.hpp>    // for object
 #include <sol/optional.hpp>  // for optional
 #include <sol/table.hpp>     // for table
+#include <sol/version.hpp>   // for SOL_IS_OFF, SOL_SAFE_NUMERICS, ...
+
+#if SOL_IS_OFF(SOL_SAFE_NUMERICS) && SOL_IS_OFF(SOL_ALL_SAFETIES_ON)
+#error "nlohmann support for sol requires at least SOL_SAFE_NUMERICS=1"
+#include <force_compiler_to_stop_here>
+#endif
 
 namespace nlohmann {
 

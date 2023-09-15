@@ -105,6 +105,10 @@ if(BUILD_TESTING)
         sol2::sol2
         fable
     )
+    target_compile_definitions(test-fable
+      PUBLIC
+        SOL_ALL_SAFETIES_ON=1
+    )
     gtest_add_tests(TARGET test-fable)
 endif()
 
