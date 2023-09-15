@@ -811,3 +811,81 @@ TEST(databroker, to_lua_4) {
 
   EXPECT_EQ(tau->value_, 1.2);
 }
+
+//         Test Scenario: positive-test
+// Test Case Description: Tag an object in various ways with predefined datatypes and read the value of the tags
+//            Test Steps: 1) Tag the object
+//          Prerequisite: -
+//             Test Data: -
+//       Expected Result: I) The value of the tags is unchanged
+//                        II) Only the actually tags are available
+struct important_tag : cloe::MetaInformation::Tag<int> {};
+struct paramount_tag : cloe::MetaInformation::Tag<std::string> {};
+struct principal_tag : cloe::MetaInformation::Tag<double> {};
+struct frivolous_tag : cloe::MetaInformation::Tag<void> {};
+
+TEST(metainformations, metainformation_1) {
+  cloe::MetaInformation metainformations;
+  // step 1
+  metainformations.add<important_tag>(1);
+  metainformations.add<paramount_tag>("Hello World");
+  metainformations.add<principal_tag>(3.1415);
+  // expected I
+  EXPECT_EQ(*metainformations.get<important_tag>(), 1);
+  EXPECT_EQ(*metainformations.get<paramount_tag>(), "Hello World");
+  EXPECT_EQ(*metainformations.get<principal_tag>(), 3.1415);
+  // expected II
+  EXPECT_FALSE(metainformations.get<frivolous_tag>());
+}
+
+//         Test Scenario: positive-test
+// Test Case Description: Define tag-type and value-type at once
+//            Test Steps: 1) Tag the object
+//          Prerequisite: -
+//             Test Data: -
+//       Expected Result: I) The value of the tag is unchanged
+struct prime_tag : cloe::MetaInformation::Tag<prime_tag> {
+  bool x;
+  std::string y;
+  double z;
+
+  bool operator==(const prime_tag &rhs) const {
+    return ((x == rhs.x) && (y == rhs.y) && (z == rhs.z));
+  }
+};
+
+TEST(metainformations, metainformation_2) {
+  cloe::MetaInformation metainformations;
+  // step -1
+  prime_tag metainformation;
+  metainformation.x = 1;
+  metainformation.y = "Hello World";
+  metainformation.z = 3.1415;
+  metainformations.add(metainformation);
+  // expectation I
+  EXPECT_EQ(*metainformations.get<prime_tag>(), metainformation);
+}
+
+//         Test Scenario: positive-test
+// Test Case Description: Tag a signal with metadata
+//            Test Steps: 1) Create a signal
+//                        2) Tag the signal
+//          Prerequisite: -
+//             Test Data: -
+//       Expected Result: I) The value of the tag is unchanged
+
+TEST(metainformations, metainformation_3) {
+  DataBroker db;
+  // step 1
+  auto signal = db.declare<int>("x");
+  // step 2
+  signal->add_metadata<important_tag>(1);
+  signal->add_metadata<paramount_tag>("Hello World");
+  signal->add_metadata<principal_tag>(3.1415);
+  signal->add_metadata<frivolous_tag>();
+  // expected I
+  EXPECT_EQ(*signal->get_metadata<important_tag>(), 1);
+  EXPECT_EQ(*signal->get_metadata<paramount_tag>(), "Hello World");
+  EXPECT_EQ(*signal->get_metadata<principal_tag>(), 3.1415);
+  EXPECT_TRUE(signal->get_metadata<frivolous_tag>());
+}
