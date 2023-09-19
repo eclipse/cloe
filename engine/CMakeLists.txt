@@ -87,6 +87,7 @@ add_library(cloe::lualib ALIAS cloe-lualib)
 target_compile_definitions(cloe-lualib
   PUBLIC
     SOL_ALL_SAFETIES_ON=1
+    LRDB_USE_BOOST_ASIO=1
 )
 set_target_properties(cloe-lualib PROPERTIES
     CXX_STANDARD 17
@@ -100,6 +101,7 @@ target_include_directories(cloe-lualib
 )
 target_link_libraries(cloe-lualib
   PUBLIC
+    boost::boost
     sol2::sol2
     cloe::stacklib
     cloe::runtime

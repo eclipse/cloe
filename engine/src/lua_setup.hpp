@@ -25,13 +25,13 @@
 
 #include <iostream>  // for ostream, cerr
 #include <memory>    // for shared_ptr<>
+#include <optional>  // for optional<>
 #include <string>    // for string
 #include <vector>    // for vector<>
-#include <optional>  // for optional<>
 
-#include <sol/table.hpp>
-#include <sol/state_view.hpp>
 #include <sol/state.hpp>
+#include <sol/state_view.hpp>
+#include <sol/table.hpp>
 
 #include <fable/environment.hpp>  // for Environment
 
@@ -55,7 +55,7 @@ struct LuaOptions {
  * \see stack_factory.hpp
  * \see lua_setup.cpp
  */
-sol::state new_lua(const LuaOptions& opt, Stack& s);
+sol::state new_lua(const LuaOptions& opt, const bool lua_debugging, Stack& s);
 
 /**
  * Merge the provided Lua file into the existing `Stack`, respecting `StackOptions`.

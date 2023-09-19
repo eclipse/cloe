@@ -61,7 +61,7 @@ int run(const RunOptions& opt, const std::vector<std::string>& filepaths) {
 
   // Load the stack file:
   cloe::Stack stack = cloe::new_stack(opt.stack_options);
-  sol::state lua = cloe::new_lua(opt.lua_options, stack);
+  sol::state lua = cloe::new_lua(opt.lua_options, opt.debug, stack);
   try {
     cloe::conclude_error(*opt.stack_options.error, [&]() {
       for (const auto& f : filepaths) {

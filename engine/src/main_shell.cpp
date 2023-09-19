@@ -26,9 +26,9 @@
 
 #include <fmt/format.h>
 
-#include "lua_api.hpp"     // for lua_safe_script_file
-#include "stack.hpp"           // for Stack
-#include "main_commands.hpp"   // for Stack, new_stack, LuaOptions, new_lua
+#include "lua_api.hpp"        // for lua_safe_script_file
+#include "main_commands.hpp"  // for Stack, new_stack, LuaOptions, new_lua
+#include "stack.hpp"          // for Stack
 
 namespace engine {
 
@@ -37,7 +37,7 @@ int shell(const ShellOptions& opt, const std::vector<std::string>& filepaths) {
 
   cloe::StackOptions stack_opt = opt.stack_options;
   cloe::Stack stack = cloe::new_stack(stack_opt);
-  sol::state lua = cloe::new_lua(opt.lua_options, stack);
+  sol::state lua = cloe::new_lua(opt.lua_options, false, stack);
 
   // Determine whether we should be interactive or not
   bool interactive = opt.interactive ? *opt.interactive : opt.commands.empty() && filepaths.empty();
