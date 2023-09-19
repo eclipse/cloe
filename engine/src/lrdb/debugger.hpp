@@ -773,26 +773,10 @@ class debugger {
 
   static bool is_path_separator(char c) { return c == '\\' || c == '/'; }
   static bool is_file_path_match(const char* path1, const char* path2) {
-    while (true) {
-      // skip './'
-      if (*path1 == '.' && is_path_separator(*(path1 + 1))) {
-        path1 += 2;
-        continue;
-      }
-      if (*path2 == '.' && is_path_separator(*(path2 + 1))) {
-        path2 += 2;
-        continue;
-      }
-
-      if ((*path1 != *path2) && (!is_path_separator(*path1) || !is_path_separator(*path2))) {
-        return false;
-      }
-      if (*path1 == '\0') {
-        return true;
-      }
-      path1++;
-      path2++;
-    }
+    auto p1 = std::filesystem::canonical(std::filesystem::path(std::string(path1)));
+    auto p2 = std::filesystem::canonical(std::filesystem::path(std::string(path2)));
+    bool match = p1 == p2;
+    return match;
   }
 
   breakpoint_info* search_breakpoints(debug_info& debuginfo) {
