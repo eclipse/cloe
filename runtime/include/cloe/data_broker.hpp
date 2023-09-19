@@ -559,6 +559,26 @@ class MetaInformation {
 };
 
 /**
+  * Signal-Metainformation for generation of Lua documentation
+  */
+struct LuaAutocompletionTag : MetaInformation::Tag<LuaAutocompletionTag> {
+  enum class LuaDatatype {
+    Number,
+    String,
+  };
+
+  /**
+    * Lua datatype of the signal
+    */
+  LuaDatatype datatype;
+  /**
+    * Documentation text
+    * \note Use <br> to achieve a linebreak
+    */
+  std::string text;
+};
+
+/**
  * Signal-Descriptor
  *
  * \note: Design-Goals:
