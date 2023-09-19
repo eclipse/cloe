@@ -889,3 +889,38 @@ TEST(metainformations, metainformation_3) {
   EXPECT_EQ(*signal->get_metadata<principal_tag>(), 3.1415);
   EXPECT_TRUE(signal->get_metadata<frivolous_tag>());
 }
+
+//         Test Scenario: positive-test
+// Test Case Description: Tag a signal with metadata
+//            Test Steps: 1) Create a signal
+//                        2) Tag the signal
+//          Prerequisite: -
+//             Test Data: -
+//       Expected Result: I) The value of the tag is unchanged
+
+struct tag_data {
+  bool x;
+  std::string y;
+  double z;
+
+  bool operator==(const tag_data &rhs) const {
+    return std::tie(x, y, z) == std::tie(rhs.x, rhs.y, rhs.z);
+  }
+};
+
+struct shared_tag_1 : cloe::MetaInformation::Tag<const tag_data &> {};
+struct shared_tag_2 : cloe::MetaInformation::Tag<std::reference_wrapper<const tag_data>> {};
+
+TEST(metainformations, metainformation_4) {
+  cloe::MetaInformation metainformations;
+  // step -1
+  tag_data metainformation;
+  metainformation.x = 1;
+  metainformation.y = "Hello World";
+  metainformation.z = 3.1415;
+  //metainformations.add<shared_tag_1>(metainformation);
+  metainformations.add<shared_tag_2>(metainformation);
+  // expectation I
+  //EXPECT_EQ(*metainformations.get<shared_tag_1>(), metainformation);
+  EXPECT_EQ(metainformations.get<shared_tag_2>()->get(), metainformation);
+}
