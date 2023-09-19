@@ -87,6 +87,7 @@ add_library(cloe::lualib ALIAS cloe-lualib)
 target_compile_definitions(cloe-lualib
   PUBLIC
     SOL_ALL_SAFETIES_ON=1
+    LRDB_USE_BOOST_ASIO=1
 )
 set_target_properties(cloe-lualib PROPERTIES
     CXX_STANDARD 17
@@ -100,6 +101,7 @@ target_include_directories(cloe-lualib
 )
 target_link_libraries(cloe-lualib
   PUBLIC
+    boost::boost
     sol2::sol2
     cloe::stacklib
     cloe::runtime
@@ -190,6 +192,18 @@ else()
     PUBLIC
       CLOE_ENGINE_WITH_SERVER=0
   )
+endif()
+
+option(CLOE_ENGINE_WITH_LRDB "Enable LRDB Lua Debugger?" ON)
+if(CLOE_ENGINE_WITH_LRDB)
+  message(STATUS "-> Enable LRDB component")
+  add_subdirectory(vendor/lrdb)
+  target_sources(cloe-enginelib PRIVATE src/lua_debugger.cpp)
+  target_link_libraries(cloe-enginelib PRIVATE lrdb::lrdb)
+  target_compile_definitions(cloe-enginelib PUBLIC CLOE_ENGINE_WITH_LRDB=1)
+else()
+  message(STATUS "-> Disable LRDB component")
+  target_compile_definitions(cloe-enginelib PUBLIC CLOE_ENGINE_WITH_LRDB=0)
 endif()
 
 # Executable ---------------------------------------------------------

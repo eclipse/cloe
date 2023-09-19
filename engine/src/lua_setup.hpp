@@ -25,13 +25,13 @@
 
 #include <iostream>  // for ostream, cerr
 #include <memory>    // for shared_ptr<>
+#include <optional>  // for optional<>
 #include <string>    // for string
 #include <vector>    // for vector<>
-#include <optional>  // for optional<>
 
-#include <sol/table.hpp>
-#include <sol/state_view.hpp>
 #include <sol/state.hpp>
+#include <sol/state_view.hpp>
+#include <sol/table.hpp>
 
 #include <fable/environment.hpp>  // for Environment
 
@@ -56,6 +56,16 @@ struct LuaOptions {
  * \see lua_setup.cpp
  */
 sol::state new_lua(const LuaOptions& opt, Stack& s);
+
+#if CLOE_ENGINE_WITH_LRDB
+/**
+ * Start Lua debugger server on port.
+ *
+ * \param lua
+ * \param listen_port
+ */
+void start_lua_debugger(sol::state& lua, int listen_port);
+#endif
 
 /**
  * Merge the provided Lua file into the existing `Stack`, respecting `StackOptions`.

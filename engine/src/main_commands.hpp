@@ -20,10 +20,10 @@
  * \see  main.cpp
  */
 
-#include <vector>
 #include <string>
+#include <vector>
 
-#include <boost/optional.hpp>                    // for optional<>
+#include <boost/optional.hpp>  // for optional<>
 
 #include "lua_setup.hpp"
 #include "stack_factory.hpp"
@@ -75,6 +75,9 @@ struct RunOptions {
   bool write_output = true;
   bool require_success = false;
   bool report_progress = true;
+
+  bool debug_lua = false;
+  int debug_lua_port = 21110;
 };
 
 int run(const RunOptions& opt, const std::vector<std::string>& filepaths);
@@ -122,4 +125,4 @@ struct VersionOptions {
 
 int version(const VersionOptions& opt);
 
-} // namespace engine
+}  // namespace engine

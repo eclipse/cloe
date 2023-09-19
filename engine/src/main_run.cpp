@@ -46,6 +46,7 @@ Simulation* GLOBAL_SIMULATION_INSTANCE{nullptr};
 
 int run(const RunOptions& opt, const std::vector<std::string>& filepaths) {
   assert(opt.output != nullptr && opt.error != nullptr);
+  auto log = cloe::logger::get("cloe");
   cloe::logger::get("cloe")->info("Cloe {}", CLOE_ENGINE_VERSION);
 
   // Set the UUID of the simulation:
@@ -62,6 +63,16 @@ int run(const RunOptions& opt, const std::vector<std::string>& filepaths) {
   // Load the stack file:
   cloe::Stack stack = cloe::new_stack(opt.stack_options);
   sol::state lua = cloe::new_lua(opt.lua_options, stack);
+#if CLOE_ENGINE_WITH_LRDB
+  if (opt.debug_lua) {
+    log->info("Lua debugger listening at port: {}", opt.debug_lua_port);
+    cloe::start_lua_debugger(lua, opt.debug_lua_port);
+  }
+#else
+  if (opt.debug_lua) {
+    log->error("Lua debugger feature not available.");
+  }
+#endif
   try {
     cloe::conclude_error(*opt.stack_options.error, [&]() {
       for (const auto& f : filepaths) {
