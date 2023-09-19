@@ -54,7 +54,7 @@ end
 
 --- Try to load (merge) stackfile.
 ---
---- @param file string # File path, possibly relative to calling file
+--- @param file string File path, possibly relative to calling file
 --- @return nil
 cloe.load_stackfile = function(file)
     cloe.validate({ stack = { file, "string" } })
@@ -64,6 +64,21 @@ cloe.load_stackfile = function(file)
         file = cloe.api.THIS_SCRIPT_DIR .. "/" .. file
     end
     cloe.state.stack:merge_stackfile(file)
+end
+
+--- Read stackfile JSON file as Lua table.
+---
+--- @param file string File path
+--- @return nil
+cloe.read_stackfile = function(file)
+    cloe.validate({ file = { file, "string" } })
+    local fp = io.open(file, "r")
+    if not fp then
+        error("cannot open file: " .. file)
+    end
+    local data = fp:read("*all")
+    local json = require("json")
+    return json:decode(data)
 end
 
 --- Try to apply the supplied table to the stack.
