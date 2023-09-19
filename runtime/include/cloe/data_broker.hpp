@@ -400,6 +400,15 @@ class MetaInformation {
   MetaInformation() = default;
   virtual ~MetaInformation() = default;
 
+ private:
+  template <typename T>
+  constexpr void assert_static_type() {
+    // prevent usage of references
+    static_assert(std::is_reference_v<typename T::tag_type> == false,
+                  "References are unsupported.");
+  }
+
+ public:
   template <typename T>
   /**
     * Removes an metainformation
@@ -479,6 +488,8 @@ class MetaInformation {
   >
   // clang-format on
   add(typename T::tag_type metainformation) {
+    assert_static_type<T>();
+
     std::any metainformation_any = std::move(metainformation);
     add_any<T>(std::move(metainformation_any));
   }
@@ -497,7 +508,9 @@ class MetaInformation {
     && !std::is_move_constructible_v<typename T::tag_type>
   >
   // clang-format on
-  add(typename T::tag_type metainformation) {
+  add(const typename T::tag_type& metainformation) {
+    assert_static_type<T>();
+
     std::any metainformation_any = metainformation;
     add_any<T>(std::move(metainformation_any));
   }
@@ -520,14 +533,26 @@ class MetaInformation {
      * Adds a metainformation
      * \tparam T Type of the metainformation-tag
      * \param metainformation Actual metainformation to be added
+     * \note This overload is enabled only when the tag inherits Tag<> and is the effective tag_type
+     *
+     * Usage Note:
+     *
+     * ```
+     * struct my_tag : cloe::MetaInformation::Tag<my_tag> {
+     *  ...
+     * };
+     * ```
      */
   template <typename T>
   // clang-format off
   std::enable_if_t<
-        std::is_base_of_v< Tag< T >, T >
+       std::is_base_of_v< Tag< T >, T >
+    && std::is_same_v<T, typename T::tag_type>
   >
   // clang-format on
   add(T metainformation) {
+    assert_static_type<T>();
+
     std::any metainformation_any = std::move(metainformation);
     add_any<T>(std::move(metainformation_any));
   }
@@ -607,6 +632,8 @@ class Signal {
   type_erased_on_value_change_event_function_t on_value_changed_{};
   /// std::function returning the count of event subscribers
   std::function<std::size_t()> subscriber_count_{};
+  /// metadata accompanying the signal
+  MetaInformation metainformations_;
 
   /**
    * Private default c'tor
@@ -791,18 +818,42 @@ class Signal {
     return *trigger_fn;
   }
 
-  MetaInformation metainformations_;
-
-  template <typename T, typename T2 = typename T::tag_type>
-  std::enable_if_t<!std::is_void_v<T2>> add_metadata(T2 metainformation) {
-    metainformations_.add<T>(metainformation);
+  /**
+   * Tags a signal with metadata
+   *
+   * \tparam T Type of the tag
+   * \param metadata Metadata used to tag the signal
+   * \note This is the overload for non-void tags (T2 != void)
+   */
+  template <typename T>
+  std::enable_if_t<!std::is_void_v<typename T::tag_type>> add_metadata(
+      typename T::tag_type metadata) {
+    static_assert(std::is_reference_v<typename T::tag_type> == false);
+    metainformations_.add<T>(metadata);
   }
-  template <typename T, typename T2 = typename T::tag_type>
-  std::enable_if_t<std::is_void_v<T2>> add_metadata() {
+
+  /**
+   * Tags a signal with a void tag
+   *
+   * \tparam T Type of the tag
+   */
+  template <typename T>
+  // clang-format off
+  std::enable_if_t<
+    std::is_void_v<typename T::tag_type>
+  >
+  // clang-format on
+  add_metadata() {
     metainformations_.add<T>();
   }
-
-  template <typename T, typename T2 = typename T::tag_type>
+  /**
+   * Get a tag of the signal
+   *
+   * \tparam T Type of the tag
+   * \returns const typename T::tag_type* pointing to the tag-value (or nullptr), if typename T::tag_type != void
+   * \returns bool expressing the presence of the tag, if typename T::tag_type == void
+   */
+  template <typename T>
   auto get_metadata() -> decltype(metainformations_.get<T>()) {
     return metainformations_.get<T>();
   }
