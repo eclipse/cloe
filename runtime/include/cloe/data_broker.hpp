@@ -1145,9 +1145,9 @@ class DataBroker {
           const cpp_type& value = signal->value<cpp_type>();
           return sol::make_object(state, value);
         };
-        result.setter = [signal](sol::stack_object& value1) -> void {
-          lua_type value2 = value1.as<lua_type>();
-          signal->set_value<cpp_type>(value2);
+        result.setter = [signal](sol::stack_object& obj) -> void {
+          lua_type value = obj.as<lua_type>();
+          signal->set_value<cpp_type>(value);
         };
         return result;
       }
@@ -1167,17 +1167,15 @@ class DataBroker {
           if (value) {
             return sol::make_object(state, value.value());
           } else {
-            return sol::make_object(state, nullptr);
+            return sol::make_object(state, sol::lua_nil);
           }
         };
-        result.setter = [signal](sol::stack_object& value1) -> void {
-          lua_type value2 = value1.as<lua_type>();
-          cpp_type value4;
-          if (value2) {
-            const T& value3 = value2.value();
-            value4 = value3;
+        result.setter = [signal](sol::stack_object& obj) -> void {
+          cpp_type value;
+          if (obj != sol::lua_nil) {
+            value = obj.as<T>();
           }
-          signal->set_value<cpp_type>(value4);
+          signal->set_value<cpp_type>(value);
         };
         return result;
       }
