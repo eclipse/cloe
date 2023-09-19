@@ -21,12 +21,16 @@ class CloeEngine(ConanFile):
         # server dependencies are incompatible with your target system.
         "server": [True, False],
 
+        # Whether the LRDB integration is compiled and built into the Cloe engine.
+        "lrdb": [True, False],
+
         # Make the compiler be strict and pedantic.
         # Disable if you upgrade compilers and run into new warnings preventing
         # the build from completing. May be removed in the future.
         "pedantic": [True, False],
     }
     default_options = {
+        "lrdb": True,
         "server": True,
         "pedantic": True,
 
@@ -73,6 +77,7 @@ class CloeEngine(ConanFile):
         tc.cache_variables["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
         tc.cache_variables["CLOE_PROJECT_VERSION"] = self.version
         tc.cache_variables["CLOE_ENGINE_WITH_SERVER"] = self.options.server
+        tc.cache_variables["CLOE_ENGINE_WITH_LRDB"] = self.options.lrdb
         tc.cache_variables["TargetLintingExtended"] = self.options.pedantic
         tc.generate()
 

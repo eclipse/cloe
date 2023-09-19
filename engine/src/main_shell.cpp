@@ -26,9 +26,9 @@
 
 #include <fmt/format.h>
 
-#include "lua_api.hpp"     // for lua_safe_script_file
-#include "stack.hpp"           // for Stack
-#include "main_commands.hpp"   // for Stack, new_stack, LuaOptions, new_lua
+#include "lua_api.hpp"        // for lua_safe_script_file
+#include "main_commands.hpp"  // for Stack, new_stack, LuaOptions, new_lua
+#include "stack.hpp"          // for Stack
 
 namespace engine {
 
@@ -79,10 +79,10 @@ int shell(const ShellOptions& opt, const std::vector<std::string>& filepaths) {
   std::vector<std::pair<std::string, std::function<bool()>>> actions{};
   for (const auto& file : filepaths) {
     auto cmd = fmt::format("dofile(\"{}\")", file);
-    actions.emplace_back(std::make_pair(std::move(cmd), [&]() { return evaluate_file(file); }));
+    actions.emplace_back(std::move(cmd), [&]() { return evaluate_file(file); });
   }
   for (const auto& cmd : opt.commands) {
-    actions.emplace_back(std::make_pair(cmd, [&]() { return evaluate(cmd.c_str()); }));
+    actions.emplace_back(cmd, [&]() { return evaluate(cmd.c_str()); });
   }
 
   if (interactive) {

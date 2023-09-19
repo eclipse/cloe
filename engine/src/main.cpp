@@ -24,8 +24,8 @@
 
 #include <cloe/core/logger.hpp>
 
-#include "main_commands.hpp"
 #include "config.hpp"
+#include "main_commands.hpp"
 
 int main(int argc, char** argv) {
   CLI::App app("Cloe " CLOE_ENGINE_VERSION);
@@ -78,6 +78,11 @@ int main(int argc, char** argv) {
   run->add_flag("--require-success,!--no-require-success", run_options.require_success,
                 "Require simulation success")
       ->envname("CLOE_REQUIRE_SUCCESS");
+  run->add_flag("--debug-lua", run_options.debug_lua,
+                "Debug the Lua simulation");
+  run->add_option("--debug-lua-port", run_options.debug_lua_port,
+                  "Port to listen on for debugger to attach to")
+      ->envname("CLOE_DEBUG_LUA_PORT");
   run->add_option("files", run_files, "Files to merge into a single stackfile")->required();
 
   // One of the above subcommands must be used.
@@ -88,7 +93,7 @@ int main(int argc, char** argv) {
   std::vector<std::string> shell_files{};
   auto* shell = app.add_subcommand("shell", "Start a Lua shell.");
   shell->add_flag("-i,--interactive,!--no-interactive", shell_options.interactive,
-                    "Drop into interactive mode (default)");
+                  "Drop into interactive mode (default)");
   shell->add_option("-c,--command", shell_options.commands, "Lua to run after running files");
   shell->add_option("files", shell_files, "Lua files to run before starting the shell");
 
