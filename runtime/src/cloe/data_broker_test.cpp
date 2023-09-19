@@ -812,6 +812,51 @@ TEST(databroker, to_lua_4) {
   EXPECT_EQ(tau->value_, 1.2);
 }
 
+TEST(databroker, to_lua_5) {
+  //         Test Scenario: positive-test
+  // Test Case Description: Implement a custom datatype and manipulate a member from Lua
+  //            Test Steps: 1) Implement a signal
+  //                        2) Stimulate the signal from Lua
+  //          Prerequisite: -
+  //             Test Data: -
+  //       Expected Result: I) The value of the member changed
+  //                        II) The value-changed event was received
+  sol::state state;
+  sol::state_view view(state);
+  DataBroker db{view};
+  // 1) Implement a signal
+  auto optional1 = db.implement<std::optional<int>>("optional1");
+  auto optional2 = db.implement<std::optional<int>>("optional2");
+  auto optional3 = db.implement<std::optional<int>>("optional3");
+  optional1 = 0;
+  optional2 = std::optional<int>();
+  optional3 = 0;
+
+  // bind signals
+  db.bind_signal("optional1");
+  db.bind_signal("optional2");
+  db.bind_signal("optional3");
+  db.bind("signals");
+  // 2) Manipulate a member from Lua
+  const auto &code = R"(
+    if (signals.optional1 == 0) then
+      signals.optional1 = 1
+    end
+    signals.optional1 = 1
+    if (signals.optional2 == nil) then
+      signals.optional3 = nil
+    end
+  )";
+  // run lua
+  state.open_libraries(sol::lib::base, sol::lib::package, sol::lib::debug, sol::lib::os);
+  state.script(code);
+
+  EXPECT_EQ(optional1->has_value(), true);
+  EXPECT_EQ(optional1->value(), 1);
+  EXPECT_EQ(optional2->has_value(), false);
+  EXPECT_EQ(optional3->has_value(), false);
+}
+
 //         Test Scenario: positive-test
 // Test Case Description: Tag an object in various ways with predefined datatypes and read the value of the tags
 //            Test Steps: 1) Tag the object
