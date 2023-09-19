@@ -1133,21 +1133,64 @@ class DataBroker {
       }
     }
     /**
+     * Factory which produces the gluecode to r/w Lua properties
+     */
+    template <typename T>
+    struct LuaAccessorFactory {
+      using cpp_type = T;
+      using lua_type = T;
+      static lua_accessor make(const SignalPtr& signal) {
+        lua_accessor result;
+        result.getter = [signal](sol::this_state& state) -> sol::object {
+          const cpp_type& value = signal->value<cpp_type>();
+          return sol::make_object(state, value);
+        };
+        result.setter = [signal](sol::stack_object& value1) -> void {
+          lua_type value2 = value1.as<lua_type>();
+          signal->set_value<cpp_type>(value2);
+        };
+        return result;
+      }
+    };
+    /**
+     * Factory which produces the gluecode to r/w Lua properties
+     * \note Specialization for std::optional
+     */
+    template <typename T>
+    struct LuaAccessorFactory<std::optional<T>> {
+      using cpp_type = std::optional<T>;
+      using lua_type = sol::optional<T>;
+      static lua_accessor make(const SignalPtr& signal) {
+        lua_accessor result;
+        result.getter = [signal](sol::this_state& state) -> sol::object {
+          const cpp_type& value = signal->value<cpp_type>();
+          if (value) {
+            return sol::make_object(state, value.value());
+          } else {
+            return sol::make_object(state, nullptr);
+          }
+        };
+        result.setter = [signal](sol::stack_object& value1) -> void {
+          lua_type value2 = value1.as<lua_type>();
+          cpp_type value4;
+          if (value2) {
+            const T& value3 = value2.value();
+            value4 = value3;
+          }
+          signal->set_value<cpp_type>(value4);
+        };
+        return result;
+      }
+    };
+
+    /**
       *  \brief Binds one signal to Lua
       *  \param signal signal to be bound to Lua
       *  \param lua_name name of the signal in Lua
       */
     template <typename T>
     void bind(const SignalPtr& signal, std::string_view lua_name) {
-      lua_accessor accessor;
-      accessor.getter = [=](sol::this_state& state) -> sol::object {
-        const T& value = signal->value<T>();
-        return sol::make_object(state, value);
-      };
-      accessor.setter = [=](sol::stack_object& value) -> void {
-        T obj = value.as<T>();
-        signal->set_value<T>(obj);
-      };
+      lua_accessor accessor = LuaAccessorFactory<T>::make(signal);
       auto inserted = accessors_.try_emplace(std::string(lua_name), std::move(accessor));
       if (!inserted.second) {
         throw std::out_of_range(fmt::format(
