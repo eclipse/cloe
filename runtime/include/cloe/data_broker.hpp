@@ -1137,17 +1137,17 @@ class DataBroker {
      */
     template <typename T>
     struct LuaAccessorFactory {
-      using cpp_type = T;
-      using lua_type = T;
+      using type = T;
+      using value_type = T;
       static lua_accessor make(const SignalPtr& signal) {
         lua_accessor result;
         result.getter = [signal](sol::this_state& state) -> sol::object {
-          const cpp_type& value = signal->value<cpp_type>();
+          const value_type& value = signal->value<value_type>();
           return sol::make_object(state, value);
         };
         result.setter = [signal](sol::stack_object& obj) -> void {
-          lua_type value = obj.as<lua_type>();
-          signal->set_value<cpp_type>(value);
+          T value = obj.as<value_type>();
+          signal->set_value<value_type>(value);
         };
         return result;
       }
@@ -1158,12 +1158,12 @@ class DataBroker {
      */
     template <typename T>
     struct LuaAccessorFactory<std::optional<T>> {
-      using cpp_type = std::optional<T>;
-      using lua_type = sol::optional<T>;
+      using type = std::optional<T>;
+      using value_type = T;
       static lua_accessor make(const SignalPtr& signal) {
         lua_accessor result;
         result.getter = [signal](sol::this_state& state) -> sol::object {
-          const cpp_type& value = signal->value<cpp_type>();
+          const type& value = signal->value<type>();
           if (value) {
             return sol::make_object(state, value.value());
           } else {
@@ -1171,11 +1171,11 @@ class DataBroker {
           }
         };
         result.setter = [signal](sol::stack_object& obj) -> void {
-          cpp_type value;
+          type value;
           if (obj != sol::lua_nil) {
-            value = obj.as<T>();
+            value = obj.as<value_type>();
           }
-          signal->set_value<cpp_type>(value);
+          signal->set_value<type>(value);
         };
         return result;
       }
