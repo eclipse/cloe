@@ -929,10 +929,10 @@ TEST(metainformations, metainformation_3) {
   signal->add_metadata<principal_tag>(3.1415);
   signal->add_metadata<frivolous_tag>();
   // expected I
-  EXPECT_EQ(*signal->get_metadata<important_tag>(), 1);
-  EXPECT_EQ(*signal->get_metadata<paramount_tag>(), "Hello World");
-  EXPECT_EQ(*signal->get_metadata<principal_tag>(), 3.1415);
-  EXPECT_TRUE(signal->get_metadata<frivolous_tag>());
+  EXPECT_EQ(*signal->metadata<important_tag>(), 1);
+  EXPECT_EQ(*signal->metadata<paramount_tag>(), "Hello World");
+  EXPECT_EQ(*signal->metadata<principal_tag>(), 3.1415);
+  EXPECT_TRUE(signal->metadata<frivolous_tag>());
 }
 
 //         Test Scenario: positive-test

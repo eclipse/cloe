@@ -315,6 +315,8 @@ struct EngineConf : public Confable {
   boost::optional<boost::filesystem::path> output_file_result{"result.json"};
   boost::optional<boost::filesystem::path> output_file_triggers{"triggers.json"};
   boost::optional<boost::filesystem::path> output_file_signals{"signals.json"};
+  boost::optional<boost::filesystem::path> output_file_signals_autocompletion{
+      "signals_autocompletion.lua"};
   boost::optional<boost::filesystem::path> output_file_data_stream;
   bool output_clobber_files{true};
 
