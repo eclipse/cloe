@@ -760,4 +760,40 @@ function cloe.defaulttable(create)
   })
 end
 
+--- Run a command with the default system shell and return the output.
+---
+--- Discover the shell with:
+---
+---   cloe.system('echo "System shell: $0" >&2')
+---
+--- Note on stderr:
+---   Only stdout is captured. The stderr output from the command
+---   is sent straight to stderr of the calling program and not
+---   discarded.
+---
+---   Capture stderr with:
+---
+---     cmd 2>&1
+---
+---   Discard stderr with:
+---
+---     cmd 2>/dev/null
+---
+--- @param cmd string Command to run
+--- @param raw boolean Whether to return the strings raw.
+--- @return string # Possibly processed string output from system command
+function cloe.system(cmd, raw)
+  local f = assert(io.popen(cmd, 'r'))
+  local s = assert(f:read('*a'))
+  f:close()
+
+  if raw then
+    return s
+  end
+  s = string.gsub(s, '^%s+', '')
+  s = string.gsub(s, '%s+$', '')
+  s = string.gsub(s, '[\n\r]+', ' ')
+  return s
+end
+
 return cloe
