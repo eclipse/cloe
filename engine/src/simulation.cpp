@@ -75,14 +75,14 @@
 
 #include "simulation.hpp"
 
-#include <cstdint>                            // for uint64_t
-#include <fstream>                            // for ofstream
-#include <future>                             // for future<>, async
-#include <sstream>                            // for stringstream
-#include <string>                             // for string
-#include <thread>                             // for sleep_for
+#include <cstdint>  // for uint64_t
+#include <fstream>  // for ofstream
+#include <future>   // for future<>, async
+#include <sstream>  // for stringstream
+#include <string>   // for string
+#include <thread>   // for sleep_for
 
-#include <boost/filesystem.hpp>               // for is_directory, is_regular_file, ...
+#include <boost/filesystem.hpp>  // for is_directory, is_regular_file, ...
 
 #include <cloe/controller.hpp>                // for Controller
 #include <cloe/core/abort.hpp>                // for AsyncAbort
@@ -96,13 +96,13 @@
 #include <fable/utility.hpp>                  // for pretty_print
 #include <fable/utility/sol.hpp>              // for sol::object to_json
 
-#include "coordinator.hpp"                    // for register_usertype_coordinator
-#include "lua_action.hpp"                     // for LuaAction,
-#include "lua_api.hpp"                        // for to_json(json, sol::object)
-#include "simulation_context.hpp"             // for SimulationContext
-#include "utility/command.hpp"                // for CommandFactory
-#include "utility/state_machine.hpp"          // for State, StateMachine
-#include "utility/time_event.hpp"  // for TimeCallback, NextCallback, NextEvent, TimeEvent
+#include "coordinator.hpp"            // for register_usertype_coordinator
+#include "lua_action.hpp"             // for LuaAction,
+#include "lua_api.hpp"                // for to_json(json, sol::object)
+#include "simulation_context.hpp"     // for SimulationContext
+#include "utility/command.hpp"        // for CommandFactory
+#include "utility/state_machine.hpp"  // for State, StateMachine
+#include "utility/time_event.hpp"     // for TimeCallback, NextCallback, NextEvent, TimeEvent
 
 // PROJECT_SOURCE_DIR is normally exported by CMake during build, but it's not
 // available for the linters, so we define a dummy value here for that case.
@@ -1045,7 +1045,7 @@ StateId SimulationMachine::StepBegin::impl(SimulationContext& ctx) {
       logger()->info("The {} {} is no longer operational.", type, m.name());
       return false;  // abort loop
     }
-    return true;     // next model
+    return true;  // next model
   });
   return (all_operational ? STEP_SIMULATORS : STOP);
 }
@@ -1426,6 +1426,46 @@ Simulation::Simulation(cloe::Stack&& config, sol::state&& lua, const std::string
     , logger_(cloe::logger::get("cloe"))
     , uuid_(uuid) {}
 
+struct SignalReport {
+  std::string name;
+  std::vector<std::string> names;
+
+  friend void to_json(cloe::Json& j, const SignalReport& r) {
+    j = cloe::Json{
+        {"name", r.name},
+        {"names", r.names},
+    };
+  }
+};
+struct SignalsReport {
+  std::vector<SignalReport> signals;
+
+  friend void to_json(cloe::Json& j, const SignalsReport& r) {
+    j = cloe::Json{
+        {"signals", r.signals},
+    };
+  }
+};
+
+cloe::Json dump_signals(cloe::DataBroker& db) {
+  SignalsReport report;
+
+  const auto& signals = db.signals();
+  for (const auto& [key, signal] : signals) {
+    // create signal
+    auto& signalreport = report.signals.emplace_back();
+    // copy the signal-names
+    signalreport.name = key;
+    std::copy(signal->names().begin(), signal->names().end(),
+              std::back_inserter(signalreport.names));
+
+    const auto& metadata = signal->metadata();
+  }
+
+  auto json = cloe::Json{report};
+  return json;
+}
+
 SimulationResult Simulation::run() {
   // Input:
   SimulationContext ctx{lua_.lua_state()};
@@ -1538,6 +1578,7 @@ SimulationResult Simulation::run() {
   r.elapsed = ctx.progress.elapsed();
   r.triggers = ctx.coordinator->history();
   r.report = sol::object(ctx.lua["cloe"]["state"]["report"]);
+  r.signals = dump_signals(*ctx.db);
 
   abort_fn_ = nullptr;
   return r;
@@ -1563,6 +1604,7 @@ size_t Simulation::write_output(const SimulationResult& r) const {
   write_file(r.config.engine.output_file_result, r);
   write_file(r.config.engine.output_file_config, r.config);
   write_file(r.config.engine.output_file_triggers, r.triggers);
+  write_file(r.config.engine.output_file_signals, r.signals);
   logger()->info("Wrote {} output files.", files_written);
 
   return files_written;

@@ -28,7 +28,7 @@
 #include <boost/filesystem/path.hpp>  // for path
 
 #include <fable/enum.hpp>  // for ENUM_SERIALIZATION
-#include <sol/state.hpp> // for state
+#include <sol/state.hpp>   // for state
 
 #include "simulation_context.hpp"
 #include "stack.hpp"  // for Stack
@@ -45,6 +45,7 @@ struct SimulationResult {
   SimulationStatistics statistics;
   cloe::Json triggers;
   cloe::Json report;
+  cloe::Json signals;  // dump of all signals in DataBroker right before the simulation started
   boost::optional<boost::filesystem::path> output_dir;
 
  public:
@@ -96,7 +97,7 @@ struct SimulationResult {
   friend void to_json(cloe::Json& j, const SimulationResult& r) {
     j = cloe::Json{
         {"uuid", r.uuid},       {"statistics", r.statistics}, {"simulation", r.sync},
-        {"elapsed", r.elapsed}, {"outcome", r.outcome}, {"report", r.report},
+        {"elapsed", r.elapsed}, {"outcome", r.outcome},       {"report", r.report},
     };
   }
 };
