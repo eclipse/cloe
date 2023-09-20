@@ -1459,11 +1459,33 @@ cloe::Json dump_signals(cloe::DataBroker& db) {
     std::copy(signal->names().begin(), signal->names().end(),
               std::back_inserter(signalreport.names));
 
-    const auto& metadata = signal->metadata();
+    const auto& metadata = signal->metadatas();
   }
 
   auto json = cloe::Json{report};
   return json;
+}
+
+std::vector<std::string> dump_signals_autocompletion(cloe::DataBroker& db) {
+  auto result = std::vector<std::string>{};
+  result.emplace_back("---@meta");
+  result.emplace_back("---@class signals");
+
+  const auto& signals = db.signals();
+  for (const auto& [key, signal] : signals) {
+    const auto* tag = signal->metadata<cloe::LuaAutocompletionTag>();
+    if (tag) {
+      const auto* lua_type = to_ASCIIZ(tag->datatype);
+      const auto& lua_helptext = tag->text;
+      auto line = fmt::format("---@field {} {} {}", key, lua_type, lua_helptext);
+      result.emplace_back(std::move(line));
+    } else {
+      auto line = fmt::format("---@field {}", key);
+      result.emplace_back(std::move(line));
+    }
+  }
+  //
+  return result;
 }
 
 SimulationResult Simulation::run() {
@@ -1579,6 +1601,7 @@ SimulationResult Simulation::run() {
   r.triggers = ctx.coordinator->history();
   r.report = sol::object(ctx.lua["cloe"]["state"]["report"]);
   r.signals = dump_signals(*ctx.db);
+  r.signals_autocompletion = dump_signals_autocompletion(*ctx.db);
 
   abort_fn_ = nullptr;
   return r;
@@ -1605,6 +1628,7 @@ size_t Simulation::write_output(const SimulationResult& r) const {
   write_file(r.config.engine.output_file_config, r.config);
   write_file(r.config.engine.output_file_triggers, r.triggers);
   write_file(r.config.engine.output_file_signals, r.signals);
+  write_file(r.config.engine.output_file_signals_autocompletion, r.signals_autocompletion);
   logger()->info("Wrote {} output files.", files_written);
 
   return files_written;

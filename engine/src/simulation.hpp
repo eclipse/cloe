@@ -46,6 +46,8 @@ struct SimulationResult {
   cloe::Json triggers;
   cloe::Json report;
   cloe::Json signals;  // dump of all signals in DataBroker right before the simulation started
+  std::vector<std::string>
+      signals_autocompletion;  // pseudo lua file used for vscode autocompletion
   boost::optional<boost::filesystem::path> output_dir;
 
  public:
