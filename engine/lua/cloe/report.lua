@@ -20,3 +20,52 @@ local cloe = cloe or {}
 
 cloe.state.report = cloe.state.report or {}
 cloe.state.report.tests = cloe.state.report.tests or {}
+
+local m = {}
+
+--- Return system hostname.
+---
+--- @return string
+function m.get_hostname()
+    -- FIXME(windows): Does `hostname` have `-f` argument in Windows?
+    return cloe.system("hostname -f")
+end
+
+--- Return current username.
+---
+--- In a Docker container this probably doesn't provide a lot of value.
+---
+--- @return string
+function m.get_username()
+    return cloe.system("whoami")
+end
+
+--- Return current date and time in RFC 3339 format.
+---
+--- Example: 2006-08-14 02:34:56-06:00
+---
+--- @return string
+function m.get_datetime()
+    -- FIXME(windows): Does this command exist on Windows?
+    return cloe.system("date --rfc-3339")
+end
+
+--- Initialize report metadata.
+---
+--- @param header table Optional report header information that will be merged in.
+--- @return nil
+function cloe.init_report(header)
+    cloe.validate({
+        header = { header, "table", true }
+    })
+    cloe.state.report.metadata = {
+        hostname = m.get_hostname(),
+        username = m.get_username(),
+        datetime = m.get_datetime(),
+    }
+    if header then
+        cloe.state.report.metadata = cloe.tbl_deep_extend("force", cloe.state.report.metadata, header)
+    end
+end
+
+return m
