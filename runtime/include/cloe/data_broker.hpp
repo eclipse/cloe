@@ -562,10 +562,32 @@ class MetaInformation {
   * Signal-Metainformation for generation of Lua documentation
   */
 struct LuaAutocompletionTag : MetaInformation::Tag<LuaAutocompletionTag> {
+/**
+ * X-Macro style enum-to-string conversion
+*/
+#define LUADATATYPE_LIST \
+  X(Number, 1)           \
+  X(String, 2)
+
   enum class LuaDatatype {
-    Number,
-    String,
+#define X(name, value) name = value,
+    LUADATATYPE_LIST
+#undef X
   };
+
+  friend const char* to_ASCIIZ(LuaDatatype type) {
+    switch (type) {
+#define X(name, value)    \
+  case LuaDatatype::name: \
+    return #name;
+      LUADATATYPE_LIST
+#undef X
+      default:
+        return {};
+    }
+  }
+
+#undef LUADATATYPE_LIST
 
   /**
     * Lua datatype of the signal
@@ -874,9 +896,13 @@ class Signal {
    * \returns bool expressing the presence of the tag, if typename T::tag_type == void
    */
   template <typename T>
-  auto get_metadata() -> decltype(metainformations_.get<T>()) {
+  auto metadata() -> decltype(metainformations_.get<T>()) {
     return metainformations_.get<T>();
   }
+  /**
+   * Get all tags of the signal
+   */
+  const MetaInformation& metadatas() const { return metainformations_; }
 
  private:
   /**
