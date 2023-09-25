@@ -75,8 +75,9 @@ struct RunOptions {
   bool write_output = true;
   bool require_success = false;
   bool report_progress = true;
-  // Lua: Starts debug server, requires attaching remote debugger
-  bool debug = false;
+
+  bool debug_lua = false;
+  int debug_lua_port = 21110;
 };
 
 int run(const RunOptions& opt, const std::vector<std::string>& filepaths);

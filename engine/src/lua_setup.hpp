@@ -55,7 +55,17 @@ struct LuaOptions {
  * \see stack_factory.hpp
  * \see lua_setup.cpp
  */
-sol::state new_lua(const LuaOptions& opt, const bool lua_debugging, Stack& s);
+sol::state new_lua(const LuaOptions& opt, Stack& s);
+
+#if CLOE_ENGINE_WITH_LRDB
+/**
+ * Start Lua debugger server on port.
+ *
+ * \param lua
+ * \param listen_port
+ */
+void start_lua_debugger(sol::state& lua, int listen_port);
+#endif
 
 /**
  * Merge the provided Lua file into the existing `Stack`, respecting `StackOptions`.

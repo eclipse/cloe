@@ -37,7 +37,7 @@ int shell(const ShellOptions& opt, const std::vector<std::string>& filepaths) {
 
   cloe::StackOptions stack_opt = opt.stack_options;
   cloe::Stack stack = cloe::new_stack(stack_opt);
-  sol::state lua = cloe::new_lua(opt.lua_options, false, stack);
+  sol::state lua = cloe::new_lua(opt.lua_options, stack);
 
   // Determine whether we should be interactive or not
   bool interactive = opt.interactive ? *opt.interactive : opt.commands.empty() && filepaths.empty();
@@ -79,10 +79,10 @@ int shell(const ShellOptions& opt, const std::vector<std::string>& filepaths) {
   std::vector<std::pair<std::string, std::function<bool()>>> actions{};
   for (const auto& file : filepaths) {
     auto cmd = fmt::format("dofile(\"{}\")", file);
-    actions.emplace_back(std::make_pair(std::move(cmd), [&]() { return evaluate_file(file); }));
+    actions.emplace_back(std::move(cmd), [&]() { return evaluate_file(file); });
   }
   for (const auto& cmd : opt.commands) {
-    actions.emplace_back(std::make_pair(cmd, [&]() { return evaluate(cmd.c_str()); }));
+    actions.emplace_back(cmd, [&]() { return evaluate(cmd.c_str()); });
   }
 
   if (interactive) {

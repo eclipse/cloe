@@ -194,6 +194,18 @@ else()
   )
 endif()
 
+option(CLOE_ENGINE_WITH_LRDB "Enable LRDB Lua Debugger?" ON)
+if(CLOE_ENGINE_WITH_LRDB)
+  message(STATUS "-> Enable LRDB component")
+  add_subdirectory(vendor/lrdb)
+  target_sources(cloe-enginelib PRIVATE src/lua_debugger.cpp)
+  target_link_libraries(cloe-enginelib PRIVATE lrdb::lrdb)
+  target_compile_definitions(cloe-enginelib PUBLIC CLOE_ENGINE_WITH_LRDB=1)
+else()
+  message(STATUS "-> Disable LRDB component")
+  target_compile_definitions(cloe-enginelib PUBLIC CLOE_ENGINE_WITH_LRDB=0)
+endif()
+
 # Executable ---------------------------------------------------------
 add_subdirectory(vendor/linenoise)
 add_executable(cloe-engine
