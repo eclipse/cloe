@@ -341,19 +341,6 @@ void register_wheel_sensor(DataBroker& db,
     signal->add<cloe::SignalDocumentation>(documentation);
   }
   {
-    using type = decltype(cloe::Wheel::velocity);
-    auto signal =
-        db.declare<type>(fmt::format("vehicles.{}.sensor.wheels.{}.velocity", vehicle, wheel_name));
-    signal->set_getter<type>([wheel_getter]() -> const type& { return wheel_getter().velocity; });
-    auto documentation =
-        fmt::format("Sensor for the translative velocity of the {} wheel of the '{}' vehicle",
-                    wheel_name, vehicle);
-    signal->add<cloe::LuaAutocompletionTag>(cloe::LuaAutocompletionTag::LuaDatatype::Number,
-                                            cloe::LuaAutocompletionTag::PhysicalQuantity::Velocity,
-                                            documentation);
-    signal->add<cloe::SignalDocumentation>(documentation);
-  }
-  {
     using type = decltype(cloe::Wheel::spring_compression);
     auto signal = db.declare<type>(
         fmt::format("vehicles.{}.sensor.wheels.{}.spring_compression", vehicle, wheel_name));
