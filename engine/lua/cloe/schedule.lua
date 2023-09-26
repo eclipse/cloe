@@ -106,13 +106,13 @@ function cloe.schedule_these(specs)
 
     for _, trigger in ipairs(specs) do
         local spec = {
-            on = trigger.on or specs.on or nil,
-            run = trigger.run or specs.run or nil,
-            enable = trigger.enable or specs.enable or nil,
-            group = trigger.group or specs.group or nil,
-            priority = trigger.priority or specs.priority or nil,
-            pin = trigger.pin or specs.pin or nil,
-            desc = trigger.desc or specs.desc or nil,
+            on = trigger.on or specs.on,
+            run = trigger.run or specs.run,
+            enable = trigger.enable == nil and specs.enable or trigger.enable,
+            group = trigger.group or specs.group,
+            priority = trigger.priority or specs.priority,
+            pin = trigger.pin == nil and specs.pin or trigger.pin,
+            desc = trigger.desc or specs.desc,
         }
         local result = cloe.schedule(spec)
         table.insert(results, result)
