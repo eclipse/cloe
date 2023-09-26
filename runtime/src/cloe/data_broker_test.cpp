@@ -924,10 +924,10 @@ TEST(metainformations, metainformation_3) {
   // step 1
   auto signal = db.declare<int>("x");
   // step 2
-  signal->add_metadata<important_tag>(1);
-  signal->add_metadata<paramount_tag>("Hello World");
-  signal->add_metadata<principal_tag>(3.1415);
-  signal->add_metadata<frivolous_tag>();
+  signal->add<important_tag>(1);
+  signal->add<paramount_tag>("Hello World");
+  signal->add<principal_tag>(3.1415);
+  signal->add<frivolous_tag>();
   // expected I
   EXPECT_EQ(*signal->metadata<important_tag>(), 1);
   EXPECT_EQ(*signal->metadata<paramount_tag>(), "Hello World");

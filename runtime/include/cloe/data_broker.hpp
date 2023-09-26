@@ -530,19 +530,23 @@ class MetaInformation {
     add_any<T>(std::move(metainformation_any));
   }
   /**
-     * Adds a metainformation
-     * \tparam T Type of the metainformation-tag
-     * \param metainformation Actual metainformation to be added
-     * \note This overload is enabled only when the tag inherits Tag<> and is the effective tag_type
-     *
-     * Usage Note:
-     *
-     * ```
-     * struct my_tag : cloe::MetaInformation::Tag<my_tag> {
-     *  ...
-     * };
-     * ```
-     */
+    * Adds a metainformation
+    * \tparam T Type of the metainformation-tag
+    * \param metainformation Actual metainformation to be added
+    * \note This overload is enabled only when the tag inherits Tag<> and is the effective tag_type
+    *
+    * Usage Note:
+    *
+    * ```
+    * struct my_tag : cloe::MetaInformation::Tag<my_tag> {
+    *  ...
+    * };
+    * ...
+    * my_tag tag;
+    * ...
+    * add(std::move(tag));
+    * ```
+    */
   template <typename T>
   // clang-format off
   std::enable_if_t<
@@ -556,6 +560,46 @@ class MetaInformation {
     std::any metainformation_any = std::move(metainformation);
     add_any<T>(std::move(metainformation_any));
   }
+  /**
+    * Adds a metainformation constructed from the supplied parameters
+    * \tparam T Type of the metainformation-tag
+    * \tparam TArgs... Type of the metainformation c'tor arguments
+    * \param args Arguments for the c'tor of the metainformation
+    * \note This overload is enabled only when the tag inherits Tag<> and is the effective tag_type
+    *
+    * Usage Note:
+    *
+    * ```
+    * add<TagType>(arg1, arg2, ...);
+    *  ...
+    * };
+    * ```
+    */
+  template <typename T, typename... TArgs>
+  // clang-format off
+  std::enable_if_t<
+       std::is_base_of_v< Tag< T >, T >
+    && std::is_same_v<T, typename T::tag_type>
+  >
+  // clang-format on
+  add(TArgs... args) {
+    assert_static_type<T>();
+    T metainformation(std::forward<TArgs>(args)...);
+    std::any metainformation_any = std::move(metainformation);
+    add_any<T>(std::move(metainformation_any));
+  }
+};
+
+struct SignalDocumentation : MetaInformation::Tag<SignalDocumentation> {
+  /**
+    * Documentation text
+    * \note Use <br> to achieve a linebreak
+    */
+  std::string text;
+
+  SignalDocumentation(std::string text_) : text{std::move(text_)} {}
+
+  friend const std::string& to_string(const SignalDocumentation& doc) { return doc.text; }
 };
 
 /**
@@ -563,9 +607,10 @@ class MetaInformation {
   */
 struct LuaAutocompletionTag : MetaInformation::Tag<LuaAutocompletionTag> {
 /**
- * X-Macro style enum-to-string conversion
-*/
+ * X-Macro: enum definition & enum-to-string conversion
+ */
 #define LUADATATYPE_LIST \
+  X(Class, 0)            \
   X(Number, 1)           \
   X(String, 2)
 
@@ -575,7 +620,7 @@ struct LuaAutocompletionTag : MetaInformation::Tag<LuaAutocompletionTag> {
 #undef X
   };
 
-  friend const char* to_ASCIIZ(LuaDatatype type) {
+  friend std::string to_string(LuaDatatype type) {
     switch (type) {
 #define X(name, value)    \
   case LuaDatatype::name: \
@@ -586,18 +631,60 @@ struct LuaAutocompletionTag : MetaInformation::Tag<LuaAutocompletionTag> {
         return {};
     }
   }
-
 #undef LUADATATYPE_LIST
+
+/**
+ * X-Macro: enum definition & enum-to-string conversion
+ */
+#define PHYSICALQUANTITIES_LIST \
+  X(Dimensionless, "[]")        \
+  X(Radian, "[rad]")            \
+  X(Length, "[m]")              \
+  X(Time, "[s]")                \
+  X(Mass, "[kg]")               \
+  X(Temperature, "[K]")         \
+  X(ElectricCurrent, "[A]")     \
+  X(Velocity, "[m/s]")          \
+  X(Acceleration, "[m/s^2]")    \
+  X(Jerk, "[m/s^3]")            \
+  X(Jounce, "[m/s^4]")          \
+  X(Crackle, "[m/s^5]")
+
+  enum class PhysicalQuantity {
+#define X(name, value) name,
+    PHYSICALQUANTITIES_LIST
+#undef X
+  };
+
+  friend std::string to_string(PhysicalQuantity type) {
+    switch (type) {
+#define X(name, value)         \
+  case PhysicalQuantity::name: \
+    return #value;
+      PHYSICALQUANTITIES_LIST
+#undef X
+      default:
+        return {};
+    }
+  }
+#undef PHYSICALQUANTITIES_LIST
 
   /**
     * Lua datatype of the signal
     */
   LuaDatatype datatype;
   /**
+    * Lua datatype of the signal
+    */
+  PhysicalQuantity unit;
+  /**
     * Documentation text
     * \note Use <br> to achieve a linebreak
     */
   std::string text;
+
+  LuaAutocompletionTag(LuaDatatype datatype_, PhysicalQuantity unit_, std::string text_)
+      : datatype{std::move(datatype_)}, unit{std::move(unit_)}, text{std::move(text_)} {}
 };
 
 /**
@@ -868,10 +955,22 @@ class Signal {
    * \note This is the overload for non-void tags (T2 != void)
    */
   template <typename T>
-  std::enable_if_t<!std::is_void_v<typename T::tag_type>> add_metadata(
-      typename T::tag_type metadata) {
+  std::enable_if_t<!std::is_void_v<typename T::tag_type>> add(typename T::tag_type metadata) {
     static_assert(std::is_reference_v<typename T::tag_type> == false);
     metainformations_.add<T>(metadata);
+  }
+  /**
+   * Tags a signal with metadata constructed from parameters
+   *
+   * \tparam T Type of the tag
+   * \tparam TArgs Type of the metadata c'tor parameters
+   * \param args Metadata c'tor arguments
+   * \note This is the overload for non-void tags (T2 != void)
+   */
+  template <typename T, typename... TArgs>
+  std::enable_if_t<!std::is_void_v<typename T::tag_type>> add(TArgs&&... args) {
+    static_assert(std::is_reference_v<typename T::tag_type> == false);
+    metainformations_.add<T>(std::forward<TArgs>(args)...);
   }
 
   /**
@@ -885,7 +984,7 @@ class Signal {
     std::is_void_v<typename T::tag_type>
   >
   // clang-format on
-  add_metadata() {
+  add() {
     metainformations_.add<T>();
   }
   /**
