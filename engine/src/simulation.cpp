@@ -1459,7 +1459,7 @@ cloe::Json dump_signals(cloe::DataBroker& db) {
     std::copy(signal->names().begin(), signal->names().end(),
               std::back_inserter(signalreport.names));
 
-    const auto& metadata = signal->metadatas();
+    const auto& meqtadata = signal->metadatas();
   }
 
   auto json = cloe::Json{report};
@@ -1475,7 +1475,7 @@ std::vector<std::string> dump_signals_autocompletion(cloe::DataBroker& db) {
   for (const auto& [key, signal] : signals) {
     const auto* tag = signal->metadata<cloe::LuaAutocompletionTag>();
     if (tag) {
-      const auto* lua_type = to_ASCIIZ(tag->datatype);
+      const auto* lua_type = to_string(tag->datatype);
       const auto& lua_helptext = tag->text;
       auto line = fmt::format("---@field {} {} {}", key, lua_type, lua_helptext);
       result.emplace_back(std::move(line));
