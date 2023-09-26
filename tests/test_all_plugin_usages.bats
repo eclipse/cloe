@@ -11,6 +11,7 @@ setup() {
     IFS="${OLDIFS}"
     cloe_plugins=()
     for path in ${plugin_path[@]}; do
+        shopt -s nullglob
         cloe_plugins+=(${path}/*.so)
     done
     cloe_plugins+=("builtin://simulator/nop" "builtin://controller/nop")
