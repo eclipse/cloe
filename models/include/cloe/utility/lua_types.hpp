@@ -23,10 +23,22 @@
 
 #include <cloe/data_broker.hpp>
 
+#include <Eigen/Dense>
+
+#include <cloe/component/wheel.hpp>
+
 namespace cloe {
 namespace utility {
 
 extern void register_lua_types(cloe::DataBroker& db);
+
+extern void register_gaspedal_sensor(DataBroker& db, const std::string& vehicle,
+                                     std::function<const double&()> gaspedal_getter);
+extern void register_wheel_sensor(DataBroker& db,
+                                  const std::string& vehicle,
+                                  const std::string& wheel_name,
+                                  std::function<const ::cloe::Wheel&()>
+                                      wheel_getter);
 
 }  // namespace utility
 }  // namespace cloe
