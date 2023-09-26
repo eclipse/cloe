@@ -275,6 +275,87 @@ void register_vector(DataBroker& db, const std::vector<const char*>& ns, const c
 
 std::vector namespace_cloe_object = {"cloe", "Object"};
 
+void register_gaspedal_sensor(DataBroker& db, const std::string& vehicle,
+                              std::function<const double&()> gaspedal_getter) {
+  {
+    using type = double;
+    auto signal = db.declare<type>(fmt::format("vehicles.{}.sensor.gaspedal.position", vehicle));
+    signal->set_getter<type>(std::move(gaspedal_getter));
+    auto documentation = fmt::format(
+        "Normalized gas pedal position for the '{}' vehicle<br><br>"
+        "Range [min-max]: [0-1]",
+        vehicle);
+    signal->add<cloe::LuaAutocompletionTag>(
+        cloe::LuaAutocompletionTag::LuaDatatype::Number,
+        cloe::LuaAutocompletionTag::PhysicalQuantity::Dimensionless,
+        documentation);
+    signal->add<cloe::SignalDocumentation>(documentation);
+  }
+}
+void register_wheel_sensor(DataBroker& db,
+                           const std::string& vehicle,
+                           const std::string& wheel_name,
+                           std::function<const ::cloe::Wheel&()>
+                               wheel_getter) {
+  {
+    using type = cloe::Wheel;
+    auto signal =
+        db.declare<type>(fmt::format("vehicles.{}.sensor.wheels.{}", vehicle, wheel_name));
+    signal->set_getter<type>([wheel_getter]() -> const type& { return wheel_getter(); });
+    auto documentation = fmt::format(
+        "Wheel sensor for the front-left wheel of the '{}' vehicle<br><br>"
+        "rotation: Rotational angle of wheel around y-axis in [rad]<br>"
+        "velocity: Compression of the spring in [m]<br>"
+        "spring_compression: Compression of the spring in [m]",
+        vehicle);
+    signal->add<cloe::LuaAutocompletionTag>(
+        cloe::LuaAutocompletionTag::LuaDatatype::Class,
+        cloe::LuaAutocompletionTag::PhysicalQuantity::Dimensionless,
+        documentation);
+    signal->add<cloe::SignalDocumentation>(documentation);
+  }
+  {
+    using type = decltype(cloe::Wheel::rotation);
+    auto signal =
+        db.declare<type>(fmt::format("vehicles.{}.sensor.wheels.{}.rotation", vehicle, wheel_name));
+    signal->set_getter<type>([wheel_getter]() -> const type& { return wheel_getter().rotation; });
+    auto documentation =
+        fmt::format("Sensor for the rotation around y-axis of the {} wheel of the '{}' vehicle",
+                    wheel_name, vehicle);
+    signal->add<cloe::LuaAutocompletionTag>(cloe::LuaAutocompletionTag::LuaDatatype::Number,
+                                            cloe::LuaAutocompletionTag::PhysicalQuantity::Radian,
+                                            documentation);
+    signal->add<cloe::SignalDocumentation>(documentation);
+  }
+  {
+    using type = decltype(cloe::Wheel::velocity);
+    auto signal =
+        db.declare<type>(fmt::format("vehicles.{}.sensor.wheels.{}.velocity", vehicle, wheel_name));
+    signal->set_getter<type>([wheel_getter]() -> const type& { return wheel_getter().velocity; });
+    auto documentation =
+        fmt::format("Sensor for the translative velocity of the {} wheel of the '{}' vehicle",
+                    wheel_name, vehicle);
+    signal->add<cloe::LuaAutocompletionTag>(cloe::LuaAutocompletionTag::LuaDatatype::Number,
+                                            cloe::LuaAutocompletionTag::PhysicalQuantity::Velocity,
+                                            documentation);
+    signal->add<cloe::SignalDocumentation>(documentation);
+  }
+  {
+    using type = decltype(cloe::Wheel::spring_compression);
+    auto signal = db.declare<type>(
+        fmt::format("vehicles.{}.sensor.wheels.{}.spring_compression", vehicle, wheel_name));
+    signal->set_getter<type>(
+        [wheel_getter]() -> const type& { return wheel_getter().spring_compression; });
+    auto documentation =
+        fmt::format("Wheel sensor for spring compression of the {} wheel of the '{}' vehicle",
+                    wheel_name, vehicle);
+    signal->add<cloe::LuaAutocompletionTag>(cloe::LuaAutocompletionTag::LuaDatatype::Number,
+                                            cloe::LuaAutocompletionTag::PhysicalQuantity::Radian,
+                                            documentation);
+    signal->add<cloe::SignalDocumentation>(documentation);
+  }
+}
+
 void register_lua_types(DataBroker& db) {
   register_vector<Eigen::Vector2i>(db, namespace_eigen, "Vector2i", vector_names_xyzw);
   register_vector<Eigen::Vector3i>(db, namespace_eigen, "Vector3i", vector_names_xyzw);
