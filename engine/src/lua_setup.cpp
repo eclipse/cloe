@@ -27,9 +27,13 @@
 
 #include <cloe/utility/std_extensions.hpp>  // for split_string
 
+#include <fable/utility/sol.hpp>     // for Json(sol::object)
+#include <fable/utility/string.hpp>  // for join_vector
+
 #include "error_handler.hpp"  // for format_cloe_error
 #include "lua_api.hpp"
 #include "stack.hpp"
+#include "utility/command.hpp"  // for CommandExecuter, CommandResult
 
 // This variable is set from CMakeLists.txt, but in case it isn't,
 // we will assume that the server is disabled.
@@ -76,6 +80,26 @@ void cloe_api_log(const std::string& level, const std::string& prefix, const std
   auto lev = logger::into_level(level);
   auto log = cloe::logger::get(prefix.empty() ? prefix : "lua");
   log->log(lev, msg.c_str());
+}
+
+std::string cloe_api_exec(sol::object obj, sol::object limit_log) {
+  Command cmd;
+  cmd.from_conf(fable::Conf{Json(obj)});
+
+  auto log = cloe::logger::get("lua");
+  auto old_level = log->level();
+  if (limit_log != sol::lua_nil && limit_log.as<bool>()) {
+    log->set_level(LogLevel::warn);
+  }
+  engine::CommandExecuter exec(cloe::logger::get("lua"));
+  auto result = exec.run_and_release(cmd);
+  log->set_level(old_level);
+
+  if (!result.exit_code) {
+    // There is no output in this case...
+    return "";
+  }
+  return fable::join_vector(result.output, "\n");
 }
 
 template <typename T>
@@ -131,6 +155,7 @@ void setup_lua(sol::state_view& lua, Stack& stack) {
 
     sol::table api_tbl = lua.create_table();
     api_tbl.set_function("log", cloe_api_log);
+    api_tbl.set_function("exec", cloe_api_exec);
 
     sol::table experimental_tbl = lua.create_table();
     experimental_tbl.set_function("throw_exception", throw_exception);
