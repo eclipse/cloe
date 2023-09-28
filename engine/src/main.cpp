@@ -22,6 +22,7 @@
 
 #include <CLI/CLI.hpp>
 
+#include <cloe/core/error.hpp>
 #include <cloe/core/logger.hpp>
 
 #include "config.hpp"
@@ -197,6 +198,8 @@ int main(int argc, char** argv) {
     } else if (*shell) {
       return engine::shell(with_global_options(shell_options), shell_files);
     }
+  } catch (cloe::ConcludedError& e) {
+    return EXIT_FAILURE;
   } catch (std::exception& e) {
     bool is_logic_error = false;
     if (dynamic_cast<std::logic_error*>(&e) != nullptr) {
@@ -227,9 +230,6 @@ int main(int argc, char** argv) {
 
     std::cerr << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
               << std::endl;
-
-    // Write a core dump.
-    throw;
   }
 
   return EXIT_FAILURE;
