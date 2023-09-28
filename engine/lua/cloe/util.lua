@@ -760,6 +760,23 @@ function cloe.defaulttable(create)
   })
 end
 
+--- @class CommandSpecA
+--- @field path string name or path of executable
+--- @field args table list of arguments
+--- @field mode? string execution mode (one of "sync", "async", "detach")
+--- @field log_output? string output verbosity ("never", "on_error", "always")
+--- @field ignore_failure? boolean whether to ignore failure
+
+--- @class CommandSpecB
+--- @field command string command or script to run with default shell
+--- @field mode? string execution mode (one of "sync", "async", "detach")
+--- @field log_output? string output verbosity ("never", "on_error", "always")
+--- @field ignore_failure? boolean whether to ignore failure
+
+--- @alias CommandSpecC string command or script to run with default shell
+
+--- @alias CommandSpec (CommandSpecA | CommandSpecB | CommandSpecC)
+
 --- Run a command with the default system shell and return the output.
 ---
 --- Discover the shell with:
@@ -779,21 +796,18 @@ end
 ---
 ---     cmd 2>/dev/null
 ---
---- @param cmd string Command to run
---- @param raw boolean Whether to return the strings raw.
---- @return string # Possibly processed string output from system command
-function cloe.system(cmd, raw)
-  local f = assert(io.popen(cmd, 'r'))
-  local s = assert(f:read('*a'))
-  f:close()
-
-  if raw then
-    return s
+--- @param cmd CommandSpec Command to run
+--- @return string, number # Combined output, exit code
+function cloe.system(cmd)
+  -- FIXME: This is not a very nice API...
+  if type(cmd) == "string" then
+    cmd = {
+      command = cmd,
+    }
   end
-  s = string.gsub(s, '^%s+', '')
-  s = string.gsub(s, '%s+$', '')
-  s = string.gsub(s, '[\n\r]+', ' ')
-  return s
+  if cmd.log_output == nil then cmd.log_output = "on_error" end
+  if cmd.ignore_failure == nil then cmd.ignore_failure = true end
+  return cloe.api.exec(cmd)
 end
 
 return cloe
