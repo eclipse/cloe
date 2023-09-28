@@ -50,7 +50,7 @@ The following third-party libraries are included in the Cloe repository:
   - License: MIT
   - License-Source: https://raw.githubusercontent.com/kikito/inspect.lua/master/MIT-LICENSE.txt
   - Website: https://github.com/kikito/inspect.lua
-  - Source: engine/lua/cloe/inspect.lua
+  - Source: engine/lua/inspect.lua
 
 - Linenoise
   - License: BSD2
