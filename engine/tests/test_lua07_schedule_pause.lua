@@ -44,6 +44,30 @@ cloe.schedule_these {
     }
 }
 
+
+-- Alternate implementation wih Lua API
+cloe.schedule_these {
+    on = "time=0.5",
+    {
+        -- Resume from outside
+        run = function()
+            cloe.system {
+                command = "curl --retry 10 --retry-connrefused --retry-delay 1 localhost:7892",
+                mode = "detach"
+            }
+        end
+    },
+    {
+        -- Pause
+        run = function()
+            cloe.system [[
+                echo "Resume with: curl localhost:7892";
+                echo OK | netcat -l localhost 7892
+            ]]
+        end
+    }
+}
+
 cloe.schedule {
     on = "time=1",
     run = "succeed"
