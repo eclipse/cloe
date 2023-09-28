@@ -41,7 +41,7 @@ struct CommandResult {
   std::string command;
   boost::optional<boost::process::child> child;
   boost::optional<int> exit_code;
-  boost::optional<std::system_error> error;
+  boost::optional<std::runtime_error> error;
   std::vector<std::string> output;
 };
 
