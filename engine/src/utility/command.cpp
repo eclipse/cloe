@@ -30,6 +30,9 @@ namespace engine {
 CommandResult CommandExecuter::run_and_release(const cloe::Command& cmd) const {
   namespace bp = boost::process;
 
+  // Verbosity is Never(0), OnFailure(1), Always(2)
+  auto verbose = static_cast<int>(cmd.verbosity());
+
   CommandResult r;
   r.name = cmd.executable().filename().native();
   r.command = cmd.command();
@@ -40,7 +43,9 @@ CommandResult CommandExecuter::run_and_release(const cloe::Command& cmd) const {
     return r;
   }
 
-  logger()->info("Run: {}", r.command);
+  if (verbose > 1) {
+    logger()->info("Run: {}", r.command);
+  }
   try {
     if (!cmd.is_sync()) {
       r.child = bp::child(cmd.executable(), cmd.args());
@@ -56,20 +61,19 @@ CommandResult CommandExecuter::run_and_release(const cloe::Command& cmd) const {
       // was only found by rummaging through the source code. Ridiculous.
       r.child = bp::child(cmd.executable(), cmd.args(), (bp::std_out & bp::std_err) > is);
 
-      if (cmd.verbosity() != cloe::Command::Verbosity::Never) {
-        std::string line;
-        bool log_output = logger_ && cmd.verbosity() == cloe::Command::Verbosity::Always;
-        while (r.child->running() && std::getline(is, line)) {
-          if (log_output) {
-            logger()->debug("{}:{} | {}", r.name, r.child->id(), line);
-          }
-          r.output.push_back(line);
+      std::string line;
+      // After finished running output the rest of the lines.
+      while (std::getline(is, line)) {
+        if (verbose > 1) {
+          logger()->debug("{}:{} | {}", r.name, r.child->id(), line);
         }
+        r.output.push_back(line);
       }
+
       r.child->wait();
       r.exit_code = r.child->exit_code();
 
-      if (*r.exit_code != 0) {
+      if (*r.exit_code != 0 && (verbose > 0 || !cmd.ignore_failure())) {
         logger()->error("Error running: {}", r.command);
         if (!r.output.empty()) {
           std::stringstream s;
@@ -85,19 +89,16 @@ CommandResult CommandExecuter::run_and_release(const cloe::Command& cmd) const {
       }
     }
   } catch (std::system_error& e) {
-    logger()->error("Error running: {}", r.command);
-    logger()->error("> Message: {}", e.what());
+    if (verbose > 0 || !cmd.ignore_failure()) {
+      logger()->error("Error running: {}", r.command);
+      logger()->error("> Message: {}", e.what());
 
-    if (!cmd.ignore_failure()) {
-      throw cloe::ConcludedError{e};
+      if (!cmd.ignore_failure()) {
+        throw cloe::ConcludedError{e};
+      }
     }
 
     r.error = e;
-  } catch (std::runtime_error& e) {
-    // TODO(ben): When does this happen?
-    if (!cmd.ignore_failure()) {
-      throw cloe::ConcludedError{e};
-    }
   }
 
   return r;

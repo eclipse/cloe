@@ -62,9 +62,9 @@ class Command : public Confable {
    * Logging verbosity.
    */
   enum class Verbosity {
-    Never,   /// never log anything
-    Normal,  /// log combined error when an error occurs
-    Always,  /// log combined output
+    Never,    /// never log anything
+    OnError,  /// log combined error when an error occurs
+    Always,   /// log combined output
   };
 
   Command() = default;
@@ -101,12 +101,12 @@ class Command : public Confable {
    */
   std::string command() const;
 
-  Verbosity verbosity() const { return output_; }
+  Verbosity verbosity() const { return log_output_; }
   Command verbosity(Verbosity v) && {
     set_verbosity(v);
     return std::move(*this);
   }
-  void set_verbosity(Verbosity v) { output_ = v; }
+  void set_verbosity(Verbosity v) { log_output_ = v; }
 
   Mode mode() const { return mode_; }
   Command mode(Mode m) && {
@@ -140,13 +140,13 @@ class Command : public Confable {
         {"path", make_schema(&executable_, "path to executable").require().not_empty().executable()},
         {"args", make_schema(&args_, "arguments to executable")},
         {"mode", make_schema(&mode_, "synchronization mode to use")},
-        {"output", make_schema(&output_, "how to log command output")},
+        {"log_output", make_schema(&log_output_, "how to log command output")},
         {"ignore_failure", make_schema(&ignore_failure_, "whether to ignore execution failure")},
       },
       Struct{
         {"command", make_schema(&command_, "command to execute within shell").require().not_empty()},
         {"mode", make_schema(&mode_, "synchronization mode to use")},
-        {"output", make_schema(&output_, "how to log command output")},
+        {"log_output", make_schema(&log_output_, "how to log command output")},
         {"ignore_failure", make_schema(&ignore_failure_, "whether to ignore execution failure")},
       },
       String{&command_, "command to execute within shell"}.not_empty(),
@@ -161,7 +161,7 @@ class Command : public Confable {
   std::vector<std::string> args_;
   std::string command_;
   Mode mode_ = Mode::Sync;
-  Verbosity output_ = Verbosity::Always;
+  Verbosity log_output_ = Verbosity::Always;
   bool ignore_failure_ = false;
 };
 
@@ -174,7 +174,7 @@ ENUM_SERIALIZATION(Command::Mode, ({
 
 ENUM_SERIALIZATION(Command::Verbosity, ({
   {Command::Verbosity::Never, "never"},
-  {Command::Verbosity::Normal, "normal"},
+  {Command::Verbosity::OnError, "on_error"},
   {Command::Verbosity::Always, "always"},
 }))
 // clang-format on
