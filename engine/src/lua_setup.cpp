@@ -82,24 +82,21 @@ void cloe_api_log(const std::string& level, const std::string& prefix, const std
   log->log(lev, msg.c_str());
 }
 
-std::string cloe_api_exec(sol::object obj, sol::object limit_log) {
+std::tuple<sol::object, sol::object> cloe_api_exec(sol::object obj, sol::this_state s) {
+  // FIXME: This is not a very nice function...
   Command cmd;
   cmd.from_conf(fable::Conf{Json(obj)});
 
-  auto log = cloe::logger::get("lua");
-  auto old_level = log->level();
-  if (limit_log != sol::lua_nil && limit_log.as<bool>()) {
-    log->set_level(LogLevel::warn);
-  }
   engine::CommandExecuter exec(cloe::logger::get("lua"));
   auto result = exec.run_and_release(cmd);
-  log->set_level(old_level);
-
-  if (!result.exit_code) {
-    // There is no output in this case...
-    return "";
+  if (cmd.mode() != cloe::Command::Mode::Sync) {
+    return {sol::lua_nil, sol::lua_nil};
   }
-  return fable::join_vector(result.output, "\n");
+  sol::state_view lua(s);
+  return {
+    sol::object(lua, sol::in_place, fable::join_vector(result.output, "\n")),
+    sol::object(lua, sol::in_place, *result.exit_code),
+  };
 }
 
 template <typename T>
