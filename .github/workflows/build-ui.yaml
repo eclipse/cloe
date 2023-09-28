@@ -1,3 +1,4 @@
+---
 name: Build UI
 
 on:
@@ -5,7 +6,9 @@ on:
     branches:
       - master
       - develop
-      - 'release/**'
+      - "release/**"
+    paths:
+      - "ui/**"
   pull_request:
     paths:
       - "ui/**"
@@ -34,8 +37,7 @@ jobs:
           echo $version
           if [[ $version == "v18"* ]]; then
               npm run build_v18
-          else 
+          else
               npm run build
           fi
         shell: bash
-
