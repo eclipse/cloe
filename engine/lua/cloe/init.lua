@@ -119,7 +119,7 @@ end
 --- For more details, see: https://github.com/kikito/inspect.lua
 ---
 --- @return string # representation of object
-cloe.inspect = require("cloe.inspect")
+cloe.inspect = require("inspect")
 
 --- Wraps cloe.inspect with a print function for faster inspection.
 cloe.describe = function(...)
