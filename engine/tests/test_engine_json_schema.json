@@ -523,11 +523,11 @@
                         ],
                         "type": "string"
                       },
-                      "output": {
+                      "log_output": {
                         "description": "how to log command output",
                         "enum": [
                           "never",
-                          "normal",
+                          "on_error",
                           "always"
                         ],
                         "type": "string"
@@ -574,11 +574,11 @@
                         ],
                         "type": "string"
                       },
-                      "output": {
+                      "log_output": {
                         "description": "how to log command output",
                         "enum": [
                           "never",
-                          "normal",
+                          "on_error",
                           "always"
                         ],
                         "type": "string"
@@ -616,11 +616,11 @@
                         ],
                         "type": "string"
                       },
-                      "output": {
+                      "log_output": {
                         "description": "how to log command output",
                         "enum": [
                           "never",
-                          "normal",
+                          "on_error",
                           "always"
                         ],
                         "type": "string"
