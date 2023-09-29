@@ -24,13 +24,13 @@
 
 #include <cloe/utility/xdg.hpp>  // for find_all_config
 
-#include "stack.hpp" // for Stack
 #include "main_commands.hpp"  // for new_stack
+#include "stack.hpp"          // for Stack
 
 namespace engine {
 
-void show_usage(const cloe::Stack& s, std::ostream& output);
-void show_plugin_usage(std::shared_ptr<cloe::Plugin> p, std::ostream& os, bool json, size_t indent);
+void show_usage(const cloe::Stack& s, std::ostream& os);
+void show_plugin_usage(const cloe::Plugin& p, std::ostream& os, bool json, int indent);
 
 int usage(const UsageOptions& opt, const std::string& argument) {
   cloe::Stack s;
@@ -50,7 +50,7 @@ int usage(const UsageOptions& opt, const std::string& argument) {
     }
   } else {
     std::shared_ptr<cloe::Plugin> p = s.get_plugin_or_load(argument);
-    show_plugin_usage(p, *opt.output, opt.output_json, opt.json_indent);
+    show_plugin_usage(*p, *opt.output, opt.output_json, static_cast<int>(opt.json_indent));
   }
   return result ? EXIT_SUCCESS : EXIT_FAILURE;
 }
@@ -68,15 +68,15 @@ void print_plugin_usage(std::ostream& os, const cloe::Plugin& p, const std::stri
  * Print a nicely formatted list of available plugins.
  */
 void print_available_plugins(const cloe::Stack& s, std::ostream& os,
-                                    const std::string& word = "Available") {
+                             const std::string& word = "Available") {
   const std::string prefix = "  ";
   auto print_available = [&](const std::string& type) {
     os << word << " " << type << "s:" << std::endl;
 
     std::vector<std::pair<std::string, std::string>> vec;
-    for (auto& kv : s.get_all_plugins()) {
+    for (const auto& kv : s.get_all_plugins()) {
       if (kv.second->type() == type) {
-        vec.emplace_back(std::make_pair(kv.second->name(), kv.first));
+        vec.emplace_back(kv.second->name(), kv.first);
       }
     }
 
@@ -87,14 +87,14 @@ void print_available_plugins(const cloe::Stack& s, std::ostream& os,
 
     // Calculate how wide the first column needs to be:
     size_t max_length = 0;
-    for (auto x : vec) {
+    for (const auto& x : vec) {
       if (x.first.size() > max_length) {
         max_length = x.first.size();
       }
     }
 
     // Print the available names:
-    for (auto x : vec) {
+    for (const auto& x : vec) {
       auto n = x.first.size();
       os << prefix << x.first << std::string(max_length - n, ' ') << " [" << x.second << "]\n";
     }
@@ -207,7 +207,7 @@ Please report any bugs to: cloe-dev@eclipse.org
 
   {
     auto files = cloe::utility::find_all_config(CLOE_XDG_SUFFIX "/config.json");
-    if (files.size() != 0) {
+    if (files.empty()) {
       os << "Discovered default configuration files:" << std::endl;
       for (auto& f : files) {
         os << "  " << f.native() << std::endl;
@@ -219,12 +219,11 @@ Please report any bugs to: cloe-dev@eclipse.org
   print_available_plugins(s, os);
 }
 
-void show_plugin_usage(std::shared_ptr<cloe::Plugin> p, std::ostream& os, bool json,
-                              size_t indent) {
-  auto m = p->make<cloe::ModelFactory>();
+void show_plugin_usage(const cloe::Plugin& p, std::ostream& os, bool json, int indent) {
+  auto m = p.make<cloe::ModelFactory>();
 
   if (json) {
-    cloe::Json js = m->schema().json_schema_qualified(p->path());
+    cloe::Json js = m->schema().json_schema_qualified(p.path());
     js["title"] = m->name();
     js["description"] = m->description();
     os << js.dump(indent) << std::endl;
@@ -232,12 +231,12 @@ void show_plugin_usage(std::shared_ptr<cloe::Plugin> p, std::ostream& os, bool j
   }
 
   os << "Name: " << m->name() << std::endl;
-  os << "Type: " << p->type() << std::endl;
+  os << "Type: " << p.type() << std::endl;
   os << "Path: ";
-  if (p->path() == "") {
+  if (p.path().empty()) {
     os << "n/a" << std::endl;
   } else {
-    os << p->path() << std::endl;
+    os << p.path() << std::endl;
   }
   os << "Usage: " << m->schema().usage().dump(indent) << std::endl;
   os << "Defaults: " << m->to_json().dump(indent) << std::endl;
