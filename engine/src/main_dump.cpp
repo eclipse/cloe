@@ -30,8 +30,8 @@ namespace engine {
 int dump(const DumpOptions& opt, const std::vector<std::string>& filepaths) {
   assert(opt.output != nullptr && opt.error != nullptr);
   try {
-    cloe::Stack s = cloe::new_stack(opt.stack_options, filepaths);
-    *opt.output << s.to_json().dump(opt.json_indent) << std::endl;
+    auto stack = cloe::new_stack(opt.stack_options, filepaths);
+    *opt.output << stack.to_json().dump(opt.json_indent) << std::endl;
     return EXIT_SUCCESS;
   } catch (cloe::ConcludedError& e) {
     return EXIT_FAILURE;

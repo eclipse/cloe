@@ -22,25 +22,13 @@
 #include <cloe/plugin.hpp>        // for CLOE_PLUGIN_MANIFEST_VERSION
 #include <cloe/utility/inja.hpp>  // for inja_env
 
-#include "main_commands.hpp" // for VersionOptions
-#include "config.hpp"  // for CLOE_STACK_VERSION
+#include "config.hpp"         // for CLOE_STACK_VERSION
+#include "main_commands.hpp"  // for VersionOptions
 
 namespace engine {
 
-int version(const VersionOptions& opt) {
-  cloe::Json v{
-      {"engine", CLOE_ENGINE_VERSION},                             // from CMakeLists.txt
-      {"build_date", CLOE_ENGINE_TIMESTAMP},                       // from CMakeLists.txt
-      {"stack", CLOE_STACK_VERSION},                               // from "stack.hpp"
-      {"plugin_manifest", CLOE_PLUGIN_MANIFEST_VERSION},           // from <cloe/plugin.hpp>
-      {"feature_server", CLOE_ENGINE_WITH_SERVER ? true : false},  // from CMakeLists.txt
-  };
-
-  if (opt.output_json) {
-    *opt.output << v.dump(opt.json_indent) << std::endl;
-  } else {
-    auto env = cloe::utility::inja_env();
-    *opt.output << env.render(R"(Cloe [[engine]]
+static const constexpr char* VERSION_TMPL =
+    R"(Cloe [[engine]]
 
 Engine Version:  [[engine]]
 Build Date:      [[build_date]]
@@ -48,8 +36,23 @@ Stack:           [[stack]]
 Plugin Manifest: [[plugin_manifest]]
 Features:
   server: [[feature_server]]
-)",
-                             v);
+)";
+
+int version(const VersionOptions& opt) {
+  cloe::Json metadata{
+      {"engine", CLOE_ENGINE_VERSION},                    // from CMakeLists.txt
+      {"build_date", CLOE_ENGINE_TIMESTAMP},              // from CMakeLists.txt
+      {"stack", CLOE_STACK_VERSION},                      // from "stack.hpp"
+      {"plugin_manifest", CLOE_PLUGIN_MANIFEST_VERSION},  // from <cloe/plugin.hpp>
+      {"feature_server", CLOE_ENGINE_WITH_SERVER != 0},   // from CMakeLists.txt
+      {"feature_lrdb", CLOE_ENGINE_WITH_LRDB != 0},       // from CMakeLists.txt
+  };
+
+  if (opt.output_json) {
+    *opt.output << metadata.dump(opt.json_indent) << std::endl;
+  } else {
+    auto env = cloe::utility::inja_env();
+    *opt.output << env.render(VERSION_TMPL, metadata);
   }
 
   return EXIT_SUCCESS;

@@ -24,18 +24,18 @@
 
 #include <cloe/utility/xdg.hpp>  // for find_all_config
 
-#include "stack.hpp" // for Stack
 #include "main_commands.hpp"  // for new_stack
+#include "stack.hpp"          // for Stack
 
 namespace engine {
 
-void show_usage(const cloe::Stack& s, std::ostream& output);
-void show_plugin_usage(std::shared_ptr<cloe::Plugin> p, std::ostream& os, bool json, size_t indent);
+void show_usage(const cloe::Stack& stack, std::ostream& out);
+void show_plugin_usage(const cloe::Plugin& plugin, std::ostream& out, bool json, int indent);
 
 int usage(const UsageOptions& opt, const std::string& argument) {
-  cloe::Stack s;
+  cloe::Stack stack;
   try {
-    s = cloe::new_stack(opt.stack_options);
+    stack = cloe::new_stack(opt.stack_options);
   } catch (cloe::ConcludedError& e) {
     return EXIT_FAILURE;
   }
@@ -44,13 +44,13 @@ int usage(const UsageOptions& opt, const std::string& argument) {
   bool result = true;
   if (argument.empty()) {
     if (opt.output_json) {
-      *opt.output << s.schema().json_schema().dump(opt.json_indent) << std::endl;
+      *opt.output << stack.schema().json_schema().dump(opt.json_indent) << std::endl;
     } else {
-      show_usage(s, *opt.output);
+      show_usage(stack, *opt.output);
     }
   } else {
-    std::shared_ptr<cloe::Plugin> p = s.get_plugin_or_load(argument);
-    show_plugin_usage(p, *opt.output, opt.output_json, opt.json_indent);
+    std::shared_ptr<cloe::Plugin> plugin = stack.get_plugin_or_load(argument);
+    show_plugin_usage(*plugin, *opt.output, opt.output_json, static_cast<int>(opt.json_indent));
   }
   return result ? EXIT_SUCCESS : EXIT_FAILURE;
 }
@@ -58,47 +58,64 @@ int usage(const UsageOptions& opt, const std::string& argument) {
 // --------------------------------------------------------------------------------------------- //
 
 template <typename T>
-void print_plugin_usage(std::ostream& os, const cloe::Plugin& p, const std::string& prefix = "  ") {
-  auto f = p.make<T>();
-  auto u = f->schema().usage_compact();
-  os << dump_json(u, prefix) << std::endl;
+void print_plugin_usage(std::ostream& out, const cloe::Plugin& plugin,
+                        const std::string& prefix = "  ") {
+  auto factory = plugin.make<T>();
+  auto usage = factory->schema().usage_compact();
+  out << dump_json(usage, prefix) << std::endl;
 }
 
 /**
  * Print a nicely formatted list of available plugins.
+ *
+ * Output looks like:
+ *
+ *     Available simulators:
+ *       nop [builtin://simulator/nop]
+ *
+ *     Available controllers:
+ *       basic [/path/to/basic.so]
+ *       nop   [builtin://controller/nop]
+ *
+ *     Available components:
+ *       noisy_lane_sensor [/path/to/noisy_lane_sensor.so]
+ *       speedometer       [/path/to/speedometer.so]
+ *
  */
-void print_available_plugins(const cloe::Stack& s, std::ostream& os,
-                                    const std::string& word = "Available") {
+void print_available_plugins(const cloe::Stack& stack, std::ostream& out,
+                             const std::string& word = "Available") {
   const std::string prefix = "  ";
   auto print_available = [&](const std::string& type) {
-    os << word << " " << type << "s:" << std::endl;
+    out << word << " " << type << "s:" << std::endl;
 
-    std::vector<std::pair<std::string, std::string>> vec;
-    for (auto& kv : s.get_all_plugins()) {
-      if (kv.second->type() == type) {
-        vec.emplace_back(std::make_pair(kv.second->name(), kv.first));
+    std::vector<std::pair<std::string, std::string>> plugins;
+    // Get and filter out plugins that are the wanted type.
+    for (const auto& pair : stack.get_all_plugins()) {
+      if (pair.second->type() == type) {
+        plugins.emplace_back(pair.second->name(), pair.first);
       }
     }
 
-    if (vec.empty()) {
-      os << prefix << "n/a" << std::endl << std::endl;
+    if (plugins.empty()) {
+      out << prefix << "n/a" << std::endl << std::endl;
       return;
     }
 
     // Calculate how wide the first column needs to be:
     size_t max_length = 0;
-    for (auto x : vec) {
-      if (x.first.size() > max_length) {
-        max_length = x.first.size();
+    for (const auto& pair : plugins) {
+      if (pair.first.size() > max_length) {
+        max_length = pair.first.size();
       }
     }
 
     // Print the available names:
-    for (auto x : vec) {
-      auto n = x.first.size();
-      os << prefix << x.first << std::string(max_length - n, ' ') << " [" << x.second << "]\n";
+    for (const auto& pair : plugins) {
+      auto name_len = pair.first.size();
+      out << prefix << pair.first << std::string(max_length - name_len, ' ') << " [" << pair.second
+          << "]\n";
     }
-    os << std::endl;
+    out << std::endl;
   };
 
   print_available("simulator");
@@ -109,10 +126,10 @@ void print_available_plugins(const cloe::Stack& s, std::ostream& os,
 /**
  * Print full program usage.
  */
-void show_usage(const cloe::Stack& s, std::ostream& os) {
-  os << fmt::format("Cloe {} ({})", CLOE_ENGINE_VERSION, CLOE_ENGINE_TIMESTAMP) << std::endl;
+void show_usage(const cloe::Stack& stack, std::ostream& out) {
+  out << fmt::format("Cloe {} ({})", CLOE_ENGINE_VERSION, CLOE_ENGINE_TIMESTAMP) << std::endl;
 
-  os << R"(
+  out << R"(
 Cloe is a simulation middleware tool that ties multiple plugins together into a
 cohesive and coherent simulation. This is performed based on JSON input that we
 name "stack files".
@@ -207,40 +224,39 @@ Please report any bugs to: cloe-dev@eclipse.org
 
   {
     auto files = cloe::utility::find_all_config(CLOE_XDG_SUFFIX "/config.json");
-    if (files.size() != 0) {
-      os << "Discovered default configuration files:" << std::endl;
-      for (auto& f : files) {
-        os << "  " << f.native() << std::endl;
+    if (files.empty()) {
+      out << "Discovered default configuration files:" << std::endl;
+      for (auto& file : files) {
+        out << "  " << file.native() << std::endl;
       }
-      os << std::endl;
+      out << std::endl;
     }
   }
 
-  print_available_plugins(s, os);
+  print_available_plugins(stack, out);
 }
 
-void show_plugin_usage(std::shared_ptr<cloe::Plugin> p, std::ostream& os, bool json,
-                              size_t indent) {
-  auto m = p->make<cloe::ModelFactory>();
+void show_plugin_usage(const cloe::Plugin& plugin, std::ostream& out, bool as_json, int indent) {
+  auto factory = plugin.make<cloe::ModelFactory>();
 
-  if (json) {
-    cloe::Json js = m->schema().json_schema_qualified(p->path());
-    js["title"] = m->name();
-    js["description"] = m->description();
-    os << js.dump(indent) << std::endl;
+  if (as_json) {
+    cloe::Json json = factory->schema().json_schema_qualified(plugin.path());
+    json["title"] = factory->name();
+    json["description"] = factory->description();
+    out << json.dump(indent) << std::endl;
     return;
   }
 
-  os << "Name: " << m->name() << std::endl;
-  os << "Type: " << p->type() << std::endl;
-  os << "Path: ";
-  if (p->path() == "") {
-    os << "n/a" << std::endl;
+  out << "Name: " << factory->name() << std::endl;
+  out << "Type: " << plugin.type() << std::endl;
+  out << "Path: ";
+  if (plugin.path().empty()) {
+    out << "n/a" << std::endl;
   } else {
-    os << p->path() << std::endl;
+    out << plugin.path() << std::endl;
   }
-  os << "Usage: " << m->schema().usage().dump(indent) << std::endl;
-  os << "Defaults: " << m->to_json().dump(indent) << std::endl;
+  out << "Usage: " << factory->schema().usage().dump(indent) << std::endl;
+  out << "Defaults: " << factory->to_json().dump(indent) << std::endl;
 }
 
 }  // namespace engine
