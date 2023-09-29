@@ -42,7 +42,8 @@ namespace engine {
 
 void handle_signal(int /*sig*/);
 
-Simulation* GLOBAL_SIMULATION_INSTANCE{nullptr};
+// We need a global instance so that our signal handler has access to it.
+Simulation* GLOBAL_SIMULATION_INSTANCE{nullptr}; // NOLINT
 
 int run(const RunOptions& opt, const std::vector<std::string>& filepaths) {
   assert(opt.output != nullptr && opt.error != nullptr);
@@ -75,11 +76,11 @@ int run(const RunOptions& opt, const std::vector<std::string>& filepaths) {
 #endif
   try {
     cloe::conclude_error(*opt.stack_options.error, [&]() {
-      for (const auto& f : filepaths) {
-        if (boost::algorithm::ends_with(f, ".lua")) {
-          cloe::merge_lua(lua, f);
+      for (const auto& file : filepaths) {
+        if (boost::algorithm::ends_with(file, ".lua")) {
+          cloe::merge_lua(lua, file);
         } else {
-          cloe::merge_stack(opt.stack_options, stack, f);
+          cloe::merge_stack(opt.stack_options, stack, file);
         }
       }
       if (!opt.allow_empty) {
@@ -154,9 +155,9 @@ void handle_signal(int sig) {
     default:
       std::cerr << std::endl;  // print newline so that ^C is on its own line
       if (++interrupts == 3) {
-        std::signal(sig, SIG_DFL);  // third time goes to the default handler
+        std::ignore = std::signal(sig, SIG_DFL);  // third time goes to the default handler
       }
-      if (GLOBAL_SIMULATION_INSTANCE) {
+      if (GLOBAL_SIMULATION_INSTANCE != nullptr) {
         GLOBAL_SIMULATION_INSTANCE->signal_abort();
       }
       break;

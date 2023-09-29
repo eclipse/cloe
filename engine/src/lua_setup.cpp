@@ -69,7 +69,8 @@ sol::table make_cloe_api_features(sol::state_view& lua) {
     "cloe-stackfile-4.1", true,
 
     // Server enabled:
-    "cloe-server", CLOE_ENGINE_WITH_SERVER
+    "cloe-server", CLOE_ENGINE_WITH_SERVER,
+    "cloe-lrdb", CLOE_ENGINE_WITH_LRDB
   );
   // clang-format on
 }

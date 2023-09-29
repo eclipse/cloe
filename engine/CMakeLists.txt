@@ -108,6 +108,24 @@ target_link_libraries(cloe-lualib
     fable::fable
     Threads::Threads
 )
+if(BUILD_TESTING)
+    add_executable(test-lualib
+        src/lua_stack_test.cpp
+    )
+    set_target_properties(test-lualib PROPERTIES
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED ON
+    )
+    target_link_libraries(test-lualib
+        GTest::gtest
+        GTest::gtest_main
+        Boost::boost
+        cloe::models
+        cloe::stacklib
+        cloe::lualib
+    )
+    gtest_add_tests(TARGET test-lualib)
+endif()
 
 # Library libengine ----------------------------------------------
 add_library(cloe-enginelib
@@ -166,32 +184,18 @@ target_link_libraries(cloe-enginelib
     sol2::sol2
     Threads::Threads
 )
+
 option(CLOE_ENGINE_WITH_SERVER "Enable integrated server component?" ON)
 if(CLOE_ENGINE_WITH_SERVER)
   message(STATUS "-> Enable server component")
   find_package(cloe-oak REQUIRED)
-  target_sources(cloe-enginelib
-    PRIVATE
-      src/server.cpp
-  )
-  target_link_libraries(cloe-enginelib
-    PRIVATE
-      cloe::oak
-  )
-  target_compile_definitions(cloe-enginelib
-    PUBLIC
-      CLOE_ENGINE_WITH_SERVER=1
-  )
+  target_sources(cloe-enginelib PRIVATE src/server.cpp)
+  target_link_libraries(cloe-enginelib PRIVATE cloe::oak)
+  target_compile_definitions(cloe-lualib PUBLIC CLOE_ENGINE_WITH_SERVER=1)
 else()
   message(STATUS "-> Disable server component")
-  target_sources(cloe-enginelib
-    PRIVATE
-      src/server_mock.cpp
-  )
-  target_compile_definitions(cloe-enginelib
-    PUBLIC
-      CLOE_ENGINE_WITH_SERVER=0
-  )
+  target_sources(cloe-enginelib PRIVATE src/server_mock.cpp)
+  target_compile_definitions(cloe-lualib PUBLIC CLOE_ENGINE_WITH_SERVER=0)
 endif()
 
 option(CLOE_ENGINE_WITH_LRDB "Enable LRDB Lua Debugger?" ON)
@@ -200,10 +204,10 @@ if(CLOE_ENGINE_WITH_LRDB)
   add_subdirectory(vendor/lrdb)
   target_sources(cloe-enginelib PRIVATE src/lua_debugger.cpp)
   target_link_libraries(cloe-enginelib PRIVATE lrdb::lrdb)
-  target_compile_definitions(cloe-enginelib PUBLIC CLOE_ENGINE_WITH_LRDB=1)
+  target_compile_definitions(cloe-lualib PUBLIC CLOE_ENGINE_WITH_LRDB=1)
 else()
   message(STATUS "-> Disable LRDB component")
-  target_compile_definitions(cloe-enginelib PUBLIC CLOE_ENGINE_WITH_LRDB=0)
+  target_compile_definitions(cloe-lualib PUBLIC CLOE_ENGINE_WITH_LRDB=0)
 endif()
 
 # Executable ---------------------------------------------------------
