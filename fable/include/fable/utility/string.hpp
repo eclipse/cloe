@@ -20,11 +20,22 @@
  * \see  fable/utility/string.cpp
  */
 
+#pragma once
+
 #include <string>       // for string
 #include <string_view>  // for string_view
 #include <vector>       // for vector<>
 
 namespace fable {
+
+inline bool starts_with(std::string_view s, std::string_view prefix) {
+  return s.size() >= prefix.size() && s.compare(0, prefix.size(), prefix) == 0;
+}
+
+inline bool ends_with(std::string_view s, std::string_view suffix) {
+  return s.size() >= suffix.size() &&
+         s.compare(s.size() - suffix.size(), std::string::npos, suffix) == 0;
+}
 
 std::string join_vector(const std::vector<std::string>& v, std::string_view sep);
 
