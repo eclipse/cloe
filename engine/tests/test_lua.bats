@@ -42,11 +42,19 @@ require_program() {
     cloe-engine run test_lua07_schedule_pause.lua
 }
 
-# @test "$(testname 'Expect report' 'test_lua07_report_structure.lua' 'b65b0ae3-a648-4284-adb2-658e5ded6e56')" {
+@test "$(testname 'Expect success' 'test_lua08_apply_project.lua' '037010ed-7b08-4874-94bd-27d959bdfaca')" {
+    cloe-engine run test_lua08_apply_project.lua
+}
+
+# @test "$(testname 'Expect report' 'test_lua08_apply_project.lua' 'b65b0ae3-a648-4284-adb2-658e5ded6e56')" {
 #     local tmpfile=$(mktemp)
-#     cloe-engine -l error run test_lua07_report_structure.lua | jq .report > $tmpfile
-#     diff $tmpfile test_lua07_report_structure.json
+#     cloe-engine -l error run test_lua08_apply_project.lua | jq .report > $tmpfile
+#     diff $tmpfile test_lua08_apply_project_report.json
 # }
+
+@test "$(testname 'Expect success' 'test_lua09_no_json.lua' '5a0fe683-355c-4584-97ea-fa012f40fa81')" {
+    cloe-engine run test_lua09_no_json.lua
+}
 
 @test "$(testname 'Check API' 'test_lua_api_cloe_system.lua' '23496512-a7f9-4fb7-8ed3-a655954b24f7')" {
     cloe-engine shell test_lua_api_cloe_system.lua

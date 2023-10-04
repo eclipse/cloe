@@ -27,7 +27,7 @@ cloe.state = cloe.state or {}
 
 require("cloe.util")
 require("cloe.schedule")
-require("cloe.report")
+cloe.report = require("cloe.report")
 
 -- This is just required for documentation.
 cloe.fs = require("cloe.fs")
