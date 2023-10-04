@@ -1,5 +1,5 @@
 local cloe = require("cloe")
-local proj = require("project")
+local proj = cloe.require("project")
 
 proj.configure_all {
     with_server = false,

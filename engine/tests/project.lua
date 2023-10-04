@@ -181,9 +181,7 @@ m.configure_virtue = function(vehicle)
             { binding = "virtue", vehicle = vehicle }
         }
     }
-    cloe.schedule {
-        { on = "virtue/failure", run = "fail" }
-    }
+    cloe.schedule { on = "virtue/failure", run = "fail" }
 end
 
 --- Configure basic controller for vehicle.
@@ -212,9 +210,7 @@ m.set_realtime_factor = function(factor)
     if factor == 0 then
         error "cannot set realtime factor of 0"
     end
-    cloe.schedule {
-        { on = "start", run = "realtime_factor="..tostring(factor) }
-    }
+    cloe.schedule { on = "start", run = "realtime_factor="..tostring(factor) }
 end
 
 return m
