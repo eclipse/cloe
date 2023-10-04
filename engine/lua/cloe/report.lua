@@ -46,8 +46,7 @@ end
 ---
 --- @return string
 function m.get_datetime()
-    -- FIXME(windows): Does this command exist on Windows?
-    return cloe.system("date --rfc-3339=seconds")
+    return tostring(os.date("%Y-%m-%d %H:%M"))
 end
 
 --- Initialize report metadata.
