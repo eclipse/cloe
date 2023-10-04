@@ -1511,10 +1511,11 @@ SimulationResult Simulation::run() {
 
   // Abort handler:
   SimulationMachine machine;
-  abort_fn_ = [this, &ctx, &machine]() {
+  abort_fn_ = [this, &r, &ctx, &machine]() {
     static size_t requests = 0;
 
     logger()->info("Signal caught.");
+    r.errors.emplace_back("user sent abort signal (e.g. with Ctrl+C)");
     requests += 1;
     if (ctx.progress.is_init_ended()) {
       if (!ctx.progress.is_exec_ended()) {
@@ -1571,9 +1572,11 @@ SimulationResult Simulation::run() {
     // Run the simulation
     machine.run(ctx);
   } catch (cloe::ConcludedError& e) {
-    // Nothing
+    r.errors.emplace_back(e.what());
+    ctx.outcome = SimulationOutcome::Aborted;
   } catch (std::exception& e) {
-    throw;
+    r.errors.emplace_back(e.what());
+    ctx.outcome = SimulationOutcome::Aborted;
   }
 
   try {
@@ -1582,6 +1585,7 @@ SimulationResult Simulation::run() {
     ctx.commander->run_all(config_.engine.hooks_post_disconnect);
   } catch (cloe::ConcludedError& e) {
     // TODO(ben): ensure outcome is correctly saved
+    r.errors.emplace_back(e.what());
   }
 
   // Wait for any running children to terminate.
