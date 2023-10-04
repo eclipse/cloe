@@ -42,6 +42,7 @@ struct SimulationResult {
   SimulationSync sync;
   cloe::Duration elapsed;
   SimulationOutcome outcome;
+  std::vector<std::string> errors;
   SimulationStatistics statistics;
   cloe::Json triggers;
   cloe::Json report;
@@ -98,8 +99,13 @@ struct SimulationResult {
 
   friend void to_json(cloe::Json& j, const SimulationResult& r) {
     j = cloe::Json{
-        {"uuid", r.uuid},       {"statistics", r.statistics}, {"simulation", r.sync},
-        {"elapsed", r.elapsed}, {"outcome", r.outcome},       {"report", r.report},
+        {"elapsed", r.elapsed},
+        {"errors", r.errors},
+        {"outcome", r.outcome},
+        {"report", r.report},
+        {"simulation", r.sync},
+        {"statistics", r.statistics},
+        {"uuid", r.uuid},
     };
   }
 };
