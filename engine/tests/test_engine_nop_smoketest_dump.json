@@ -31,7 +31,6 @@
       "path": "${CLOE_SIMULATION_UUID}"
     },
     "plugin_path": [
-      "/.../cloe-engine/.../",
       "/.../cloe-plugin-basic/.../",
       "/.../cloe-plugin-mocks/.../",
       "/.../cloe-plugin-noisy-sensor/.../",
