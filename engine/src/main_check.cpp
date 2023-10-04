@@ -34,14 +34,14 @@ namespace engine {
  * This mirrors most closely the standard unix command-line philosophy.
  */
 void check_stack(const cloe::StackOptions& opt, const std::vector<std::string>& files,
-                        bool* ok = nullptr) {
-  if (ok) {
-    *ok = false;
+                 bool* okay = nullptr) {
+  if (okay != nullptr) {
+    *okay = false;
   }
-  cloe::Stack s = cloe::new_stack(opt, files);
-  s.check_completeness();
-  if (ok) {
-    *ok = true;
+  auto stack = cloe::new_stack(opt, files);
+  stack.check_completeness();
+  if (okay != nullptr) {
+    *okay = true;
   }
 }
 
@@ -51,12 +51,12 @@ void check_stack(const cloe::StackOptions& opt, const std::vector<std::string>& 
  * This is useful for those who want a definitive answer for the input.
  */
 std::string check_summary(const CheckOptions& opt, const std::vector<std::string>& files,
-                                 bool* ok = nullptr) {
+                          bool* okay = nullptr) {
   cloe::StackOptions stack_opt = opt.stack_options;
   stack_opt.error = nullptr;
 
   try {
-    check_stack(stack_opt, files, ok);
+    check_stack(stack_opt, files, okay);
     return "OK";
   } catch (cloe::StackIncompleteError& e) {
     return "INCOMPLETE (" + std::string(e.what()) + ")";
@@ -72,15 +72,15 @@ std::string check_summary(const CheckOptions& opt, const std::vector<std::string
  * error object for each error.
  */
 cloe::Json check_json(const CheckOptions& opt, const std::vector<std::string>& files,
-                             bool* ok = nullptr) {
+                      bool* okay = nullptr) {
   cloe::StackOptions stack_opt = opt.stack_options;
   stack_opt.error = nullptr;
 
   if (opt.summarize) {
-    return check_summary(opt, files, ok);
+    return check_summary(opt, files, okay);
   } else {
     try {
-      check_stack(stack_opt, files, ok);
+      check_stack(stack_opt, files, okay);
       return nullptr;
     } catch (cloe::SchemaError& e) {
       return e;
@@ -95,21 +95,21 @@ cloe::Json check_json(const CheckOptions& opt, const std::vector<std::string>& f
 }
 
 int check_merged(const CheckOptions& opt, const std::vector<std::string>& filepaths) {
-  bool ok = false;
+  bool okay = false;
   if (opt.output_json) {
-    *opt.output << check_json(opt, filepaths, &ok).dump(opt.json_indent) << std::endl;
+    *opt.output << check_json(opt, filepaths, &okay).dump(opt.json_indent) << std::endl;
   } else if (opt.summarize) {
-    *opt.output << check_summary(opt, filepaths, &ok) << std::endl;
+    *opt.output << check_summary(opt, filepaths, &okay) << std::endl;
   } else {
     try {
-      check_stack(opt.stack_options, filepaths, &ok);
+      check_stack(opt.stack_options, filepaths, &okay);
     } catch (cloe::ConcludedError&) {
     } catch (std::exception& e) {
       *opt.output << e.what() << std::endl;
     }
   }
 
-  return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+  return okay ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 int check(const CheckOptions& opt, const std::vector<std::string>& filepaths) {
