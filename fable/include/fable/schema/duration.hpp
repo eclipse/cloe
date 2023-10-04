@@ -29,7 +29,8 @@
 #include <string>   // for string
 #include <utility>  // for move
 
-#include <fable/schema/interface.hpp>  // for Base<>
+#include <fable/schema/interface.hpp>   // for Base<>
+#include <fable/utility/templates.hpp>  // for is_safe_cast<>, typeinfo<>
 
 namespace fable::schema {
 
@@ -142,34 +143,36 @@ class Duration : public Base<Duration<T, Period>> {
    */
   template <typename B>
   bool validate_bounds(const Conf& c, std::optional<SchemaError>& err) const {
-    auto v = c.get<B>();
-    if (!std::numeric_limits<B>::is_signed && value_min_ < 0) {
-      // If B is unsigned and value_min_ is less than 0, there is no way
-      // that v cannot fulfill the minimum requirements. Trying to use the
-      // other branches will "underflow" the value_min_ which will invalidate
-      // any comparison.
-    } else if (exclusive_min_) {
-      if (v <= static_cast<B>(value_min_)) {
-        return this->set_error(err, c, "expected exclusive minimum of {}, got {}", value_min_, v);
-      }
-    } else {
-      if (v < static_cast<B>(value_min_)) {
-        return this->set_error(err, c, "expected minimum of {}, got {}", value_min_, v);
+    auto original = c.get<B>();
+    auto value = static_cast<T>(original);
+    if constexpr (!std::is_floating_point_v<T>) {
+      if (!is_cast_safe<T>(original)) {
+        return this->set_error(err, c,
+                               "failed to convert input to destination type {}, got {}( {} ) = {}",
+                               typeinfo<T>::name, typeinfo<B>::name, original, value);
       }
     }
 
-    if (!std::numeric_limits<B>::is_signed && value_max_ < 0) {
-      // If B is unsigned, but our maximum value is somewhere below 0, then v
-      // will by definition always be out-of-bounds.
-      return this->set_error(err, c, "expected {}maximum of {}, got {}",
-                             (exclusive_max_ ? "exclusive " : ""), value_max_, v);
-    } else if (exclusive_max_) {
-      if (v >= static_cast<B>(value_max_)) {
-        return this->set_error(err, c, "expected exclusive maximum of {}, got {}", value_max_, v);
+    // Check minimum value:
+    if (exclusive_min_) {
+      if (value <= value_min_) {
+        return this->set_error(err, c, "expected exclusive minimum of {}, got {}", value_min_,
+                               value);
       }
     } else {
-      if (v > static_cast<B>(value_max_)) {
-        return this->set_error(err, c, "expected maximum of {}, got {}", value_max_, v);
+      if (value < value_min_) {
+        return this->set_error(err, c, "expected minimum of {}, got {}", value_min_, value);
+      }
+    }
+
+    if (exclusive_max_) {
+      if (value >= value_max_) {
+        return this->set_error(err, c, "expected exclusive maximum of {}, got {}", value_max_,
+                               value);
+      }
+    } else {
+      if (value > value_max_) {
+        return this->set_error(err, c, "expected maximum of {}, got {}", value_max_, value);
       }
     }
 
