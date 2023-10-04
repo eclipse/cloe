@@ -37,8 +37,11 @@ require_engine_with_server() {
     # This does not negatively affect the validity of the test.
     reference_file=test_engine_nop_smoketest_dump.json
     diff <(cloe-engine dump config_nop_smoketest.json |
-        sed -r -e 's#"/.*\/.*.conan/data/([^/]+)/.*"#"/.../\1/.../"#' -e "\\#(${HOME-/root}|${CONAN_USER_HOME-/cloe_dev})/.*#d") \
-           ${reference_file}
+           sed -r -e 's#"/.*\/.*.conan/data/([^/]+)/.*"#"/.../\1/.../"#' \
+               -e "\\#(${HOME-/root}|${CONAN_USER_HOME-/cloe_dev})/.*#d" \
+               -e "#\.\.\./cloe-engine/\.\.\.#d" \
+          ) \
+          ${reference_file}
 }
 
 @test "$(testname 'Expect check success' 'test_engine_smoketest.json' '20c3f11e-4a93-4066-b61e-d485be5c8979')" {
