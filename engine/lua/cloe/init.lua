@@ -90,7 +90,6 @@ cloe.apply_stack = function(stack)
     assert(cloe.state.stack)
     local file = cloe.api.THIS_SCRIPT_FILE or ""
     if type(stack) == "table" then
-        cloe.log("info", "What the fuck: %s, %s", stack, file)
         cloe.state.stack:merge_stacktable(stack, file)
     else
         cloe.state.stack:merge_stackjson(stack, file)
