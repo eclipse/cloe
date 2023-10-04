@@ -32,6 +32,26 @@ require("cloe.report")
 -- This is just required for documentation.
 cloe.fs = require("cloe.fs")
 
+--- Require a module, prioritizing modules relative to the script
+--- launched by cloe-engine.
+---
+--- If cloe.api.THIS_SCRIPT_DIR is unset, this is equivalent to require().
+---
+--- @param module string module identifier, such as "project"
+function cloe.require(module)
+    if cloe.api.THIS_SCRIPT_DIR then
+        local old_package_path = package.path
+        package.path = string.format("%s/?.lua;%s/?/init.lua;%s",
+            cloe.api.THIS_SCRIPT_DIR, cloe.api.THIS_SCRIPT_DIR, package.path)
+        local module_table = require(module)
+        package.path = old_package_path
+        return module_table
+    else
+        cloe.log("warn", "cloe.require() expects cloe.api.THIS_SCRIPT_DIR to be set, but it is not")
+        return require(module)
+    end
+end
+
 --- @alias FeatureId string
 
 --- Return if Cloe has feature as defined by string.
