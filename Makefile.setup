@@ -61,7 +61,7 @@ setup-git:
 .PHONY: setup-conan
 setup-conan:
 	# Install Conan if it is not available.
-	if ! command -v conan >/dev/null 2>&1; then ${PIP} install --user --upgrade "conan<2""; fi
+	if ! command -v conan >/dev/null 2>&1; then ${PIP} install --user --upgrade "conan<2"; fi
 	# Initialize Conan configuration if it doesn't already exist.
 	#
 	# Since running any conan command, even conan --help creates ${CONAN_DIR}
