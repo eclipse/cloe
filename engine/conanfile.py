@@ -91,9 +91,22 @@ class CloeEngine(ConanFile):
             cm.test()
 
     def package(self):
-        cm = cmake.CMake(self)
         if self.should_install:
+            cm = cmake.CMake(self)
             cm.install()
+
+            # Package license files for compliance
+            for meta, dep in self.dependencies.items():
+                if dep.package_folder is None:
+                    continue
+                ref = str(meta.ref)
+                name = ref[: str(ref).index("/")]
+                files.copy(
+                    self,
+                    "*",
+                    src=os.path.join(dep.package_folder, "licenses"),
+                    dst=os.path.join(self.package_folder, "licenses", name),
+                )
 
     def package_id(self):
         self.info.requires["boost"].full_package_mode()
