@@ -22,7 +22,7 @@
 # -- Project information -----------------------------------------------------
 
 project = "Eclipse Cloe"
-copyright = "2022 Eclipse Cloe Contributors"
+copyright = "2023 Eclipse Cloe Contributors"
 author = "Cloe Team"
 
 # The short X.Y version
@@ -50,6 +50,14 @@ extensions = [
     "sphinx_copybutton",
     "sphinx_inline_tabs",
     "myst_parser",
+]
+
+myst_enable_extensions = [
+    "colon_fence",
+    "tasklist",
+    "fieldlist",
+    "deflist",
+    "attrs_block",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
