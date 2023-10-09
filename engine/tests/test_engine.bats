@@ -38,8 +38,8 @@ require_engine_with_server() {
     reference_file=test_engine_nop_smoketest_dump.json
     diff <(cloe-engine dump config_nop_smoketest.json |
            sed -r -e 's#"/.*\/.*.conan/data/([^/]+)/.*"#"/.../\1/.../"#' \
+               -e '\#\.\.\./cloe-engine/\.\.\.#d' \
                -e "\\#(${HOME-/root}|${CONAN_USER_HOME-/cloe_dev})/.*#d" \
-               -e "#\.\.\./cloe-engine/\.\.\.#d" \
           ) \
           ${reference_file}
 }
