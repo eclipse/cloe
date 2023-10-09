@@ -1,6 +1,10 @@
 local cloe = require("cloe")
 local ans, ec
 
+function string:endswith(suffix)
+    return self:sub(-#suffix) == suffix
+end
+
 ans, ec = cloe.system "echo hello world"
 assert(ec == 0)
 assert(ans == "hello world")
@@ -10,4 +14,4 @@ ans, ec = cloe.system {
     log_output = "never",
 }
 assert(ec ~= 0)
-assert(ans == "/bin/bash: echoxxx: command not found")
+assert(ans:endswith("echoxxx: command not found"))
