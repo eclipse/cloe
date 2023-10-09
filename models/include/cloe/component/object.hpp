@@ -112,6 +112,10 @@ struct Object {
     usertype_table["velocity"] = &Object::velocity;
     usertype_table["acceleration"] = &Object::acceleration;
     usertype_table["angular_velocity"] = &Object::angular_velocity;
+    usertype_table["ego_position"] = +[](const Object &self, const Eigen::Isometry3d &sensorMountPose) {
+        Eigen::Vector3d pos = sensorMountPose * self.pose * self.cog_offset;
+        return pos;
+    };
   }
 };
 
