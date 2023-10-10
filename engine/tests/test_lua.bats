@@ -46,19 +46,35 @@ require_program() {
     cloe-engine run test_lua08_apply_project.lua
 }
 
-# @test "$(testname 'Expect report' 'test_lua08_apply_project.lua' 'b65b0ae3-a648-4284-adb2-658e5ded6e56')" {
-#     local tmpfile=$(mktemp)
-#     cloe-engine -l error run test_lua08_apply_project.lua | jq .report > $tmpfile
-#     diff $tmpfile test_lua08_apply_project_report.json
-# }
+@test "$(testname 'Expect success' 'test_lua08_apply_project.lua' '037010ed-7b08-4874-94bd-27d959bdfaca')" {
+    cd ..
+    cloe-engine run tests/test_lua08_apply_project.lua
+}
 
 @test "$(testname 'Expect success' 'test_lua09_no_json.lua' '5a0fe683-355c-4584-97ea-fa012f40fa81')" {
     cloe-engine run test_lua09_no_json.lua
 }
 
+@test "$(testname 'Expect success' 'test_lua10_heavy_cpu.lua' 'fbf32388-a80e-4fb3-b334-b4cd4f020cdb')" {
+    cloe-engine -l warn run test_lua10_heavy_cpu.lua
+}
+
+@test "$(testname 'Expect success' 'test_lua11_serial_tests.lua' '852edc33-a344-437e-b11d-82527a0ea387')" {
+    cloe-engine run test_lua11_serial_tests.lua
+}
+
+@test "$(testname 'Expect failure' 'test_lua12_fail_after_stop.lua' '880875e8-b7ad-4d86-abf5-b2cd31b1a1db')" {
+    run cloe-engine run test_lua12_fail_after_stop.lua
+    assert_check_failure $status $output
+}
+
+# --- API ---------------------------------------------------------------------
+
 @test "$(testname 'Check API' 'test_lua_api_cloe_system.lua' '23496512-a7f9-4fb7-8ed3-a655954b24f7')" {
     cloe-engine shell test_lua_api_cloe_system.lua
 }
+
+# --- Better errors -----------------------------------------------------------
 
 @test "$(testname 'Expect failure' 'test_lua_error_main.lua' '9cc0c5a4-5771-4cec-befe-ae49bd3e0cae')" {
     run cloe-engine run test_lua_error_main.lua
