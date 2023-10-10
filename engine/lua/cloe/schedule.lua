@@ -190,6 +190,7 @@ end
 
 --- @class TestSpec
 --- @field id string
+--- @field info? table
 --- @field name string
 --- @field desc? string
 --- @field enable? boolean|function():boolean
@@ -217,6 +218,7 @@ function cloe.schedule_test(test)
     cloe.validate({ test = { test, "table" }})
     cloe.validate({
         desc = { test.desc, "string", true },
+        info = {test.info, "table", true},
         enable = { test.enable, {"boolean", "function"}, true },
         id = { test.id, "string" },
         name = { test.name, "string", true },
@@ -231,8 +233,17 @@ function cloe.schedule_test(test)
     if cloe.state.report.tests[test.id] then
         error("test already scheduled with id: " .. test.id)
     end
-    test._report = {}
-    cloe.state.report.tests[test.id] = test._report
+
+    
+    cloe.state.report.tests[test.id] = {activity={}, info={}, sourceline = "not available"}
+
+    local sourceline = debug.getinfo(2)
+    if sourceline then
+        cloe.state.report.tests[test.id].sourceline = sourceline.currentline
+    end
+
+    -- Insert the info table to the test.id part of the report
+    cloe.state.report.tests[test.id].info = test.info
 
     -- Set up coroutine handling:
     test._coroutine = coroutine.create(test.run)
@@ -278,7 +289,7 @@ function cloe.test_fixture(test)
     z.report = function(data)
         data = cloe.tbl_extend("error", { time = tostring(test._sync:time()) }, data)
         cloe.log("debug", "Report for %s: %s", test.id, cloe.inspect(data, { indent = ' ', newline = '' }))
-        table.insert(cloe.state.report.tests[test.id], data)
+        table.insert(cloe.state.report.tests[test.id].activity, data)
     end
 
     z.report_with = function(level, fmt, ...)
