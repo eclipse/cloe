@@ -16,8 +16,24 @@
 -- functions should be documented so that the Lua Language Server
 -- can give the users auto-completion and documentation hints.
 local cloe = require("cloe")
+local report = require("cloe.report")
 
 local m = {}
+
+--- Initializing project specific report metadata.
+---
+--- @return nil
+function m.init_report()
+    cloe.state.report.metadata = {
+        datetime = report.get_datetime(),
+        hostname = "node01",
+        username = "jenkins",
+        device_under_test = {},
+        simulator = {},
+        docker_version = "24.0.5",
+        source_file = cloe.fs.realpath(cloe.api.THIS_SCRIPT_FILE)
+    }
+end
 
 --- Apply a stackfile, setting version to "4".
 ---
