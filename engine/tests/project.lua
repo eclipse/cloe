@@ -60,7 +60,7 @@ m.configure_all = function(opts)
     m.configure_vehicle(vehname, simname, {
         with_noisy_sensor = opts.with_noisy_sensor
     })
-    m.configure_server(false)
+    m.configure_server(opts.with_server)
     m.configure_virtue(vehname)
     m.configure_basic(vehname)
 end
@@ -212,5 +212,24 @@ m.set_realtime_factor = function(factor)
     end
     cloe.schedule { on = "start", run = "realtime_factor="..tostring(factor) }
 end
+
+--- Do an action after given duration.
+---
+--- @param duration string Duration with unit of time, e.g. "5s" or "5000ms"
+--- @param action string|function Anything that can be scheduled
+--- @return nil
+m.action_after = function(duration, action)
+    local dur = cloe.Duration.new(duration)
+    return cloe.schedule { on = "next=" .. dur:s(), run = action }
+end
+
+--- Fail after this amount of time.
+m.fail_after = function(duration) return m.action_after(duration, "fail") end
+
+--- Succeed after this amount of time.
+m.succeed_after = function(duration) return m.action_after(duration, "succeed") end
+
+--- Stop after this amount of time.
+m.stop_after = function(duration) return m.action_after(duration, "stop") end
 
 return m
