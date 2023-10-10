@@ -22,13 +22,14 @@ local cloe = cloe or {}
 --- @alias ScheduleGroup string
 
 --- @class ScheduleSpec
---- @field on string
+--- @field on string|function|table
 --- @field run function|string|table
 --- @field desc? string
 --- @field enable? boolean|fun():boolean
 --- @field group? ScheduleGroup
 --- @field pin? boolean
 --- @field priority? integer
+--- @field source? string
 
 local is_spec_enabled = function(spec)
     local default = true
@@ -50,13 +51,14 @@ end
 function cloe.schedule(spec)
     cloe.validate({ spec = { spec, "table" }})
     cloe.validate({
-        on = { spec.on, {"string", "table"} },
+        on = { spec.on, {"string", "table", "function"} },
         run = { spec.run, {"string", "table", "function"} },
         enable = { spec.enable, {"boolean", "function"}, true },
         group = { spec.group, "string", true },
         priority = { spec.priority, "number", true },
         pin = { spec.pin, "boolean", true },    -- sticky
         desc = { spec.desc, "string", true },   -- label
+        source = { spec.source, "string", true },
     })
     if not is_spec_enabled(spec) then
         return false
@@ -64,13 +66,34 @@ function cloe.schedule(spec)
 
     local event = spec.on
     local action = spec.run
-    local action_source = nil
-    if type(action) == "function" then
+    local action_source = spec.source
+    if not action_source and type(action) == "function" then
         local debinfo = debug.getinfo(action)
         action_source = string.format("%s:%s-%s", debinfo.short_src, debinfo.linedefined, debinfo.lastlinedefined)
     end
-    local group = spec.group or ""
+
+    -- TODO: Replace this with proper Lua function events
     local pin =  spec.pin or false
+    if type(event) == "function" then
+        local old_event = event
+        local old_action = action
+        local old_pin = pin
+        pin = true
+        event = "loop"
+        action = function(sync)
+            if old_event(sync) then
+                if type(old_action) == "function" then
+                    old_action(sync)
+                else
+                    -- TODO: Maybe this works for functions too
+                    cloe.scheduler.execute_action(old_action)
+                end
+                return old_pin
+            end
+        end
+    end
+
+    local group = spec.group or ""
     local priority = spec.priority or 100
 
     cloe.scheduler.insert({
@@ -95,7 +118,7 @@ function cloe.schedule_these(specs)
 
     cloe.validate({ specs = { specs, "table" }})
     cloe.validate({
-        on = { specs.on, {"string", "table"}, true },
+        on = { specs.on, {"string", "table", "function"}, true },
         run = { specs.run, {"string", "table", "function"}, true },
         enable = { specs.enable, {"boolean", "function"}, true },
         group = { specs.group, "string", true },
@@ -169,20 +192,23 @@ end
 --- @field id string
 --- @field name string
 --- @field desc? string
---- @field enable? boolean|fun():boolean
---- @field on? string -- |string[]|fun():boolean
---- @field run fun(TestFixture):boolean
+--- @field enable? boolean|function():boolean
+--- @field on? string|function():boolean
+--- @field run function(TestFixture):boolean
 --- @field report? function
 
 --- @class TestFixture
 --- @field id string
 --- @field name? string
 --- @field desc? string
---- @field assert fun(...)
---- @field print fun(...)
---- @field succeed fun(...)
---- @field fail fun(...)
---- @field abort fun(...)
+--- @field assert function(...)
+--- @field print function(...)
+--- @field succeed function(...)
+--- @field fail function(...)
+--- @field abort function(...)
+--- @field wait_duration function(string)
+--- @field wait_until function(function():boolean)
+--- @field do_action function(table|string)
 
 --- Schedule a test as a coroutine that can yield to Cloe.
 ---
@@ -194,7 +220,7 @@ function cloe.schedule_test(test)
         enable = { test.enable, {"boolean", "function"}, true },
         id = { test.id, "string" },
         name = { test.name, "string", true },
-        on = { test.on, "string" },
+        on = { test.on, {"string", "function"} },
         run = { test.run, "function" },
     })
     if not is_spec_enabled(test) then
@@ -214,14 +240,21 @@ function cloe.schedule_test(test)
         local ok, result = coroutine.resume(test._coroutine, ...)
         if not ok then
             error(result)
-        elseif type(result) == "table" then
-            cloe.schedule(result)
-        elseif type(result) == "function" then
-            result()
-        else
-            error("unknown test yield result")
+        elseif result then
+            local result_type = type(result)
+            if result_type == "table" then
+                cloe.schedule(result)
+            elseif result_type == "function" then
+                result()
+            else
+                error("unknown test yield result: " .. cloe.inspect(result))
+            end
         end
     end
+
+    -- In the trigger ensure that the source is the caller of this function
+    local debinfo = debug.getinfo(test.run)
+    test._source = string.format("%s:%s-%s", debinfo.short_src, debinfo.linedefined, debinfo.lastlinedefined)
 
     cloe.schedule({
         on = test.on,
@@ -229,6 +262,7 @@ function cloe.schedule_test(test)
         pin = false,
         desc = test.desc,
         enable = true,
+        source = test._source,
         run = function(sync)
             cloe.log("info", "Running test: %s", test.id)
             test._sync = sync
