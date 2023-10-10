@@ -49,6 +49,25 @@ function m.get_datetime()
     return tostring(os.date("%Y-%m-%d %H:%M"))
 end
 
+
+--- Return Git hash of HEAD for the given directory path.
+---
+--- @param path string
+--- @return string or nil
+function m.get_git_hash(path)
+    cloe.validate({
+        path = { path, "string", true }
+    })
+    local cmd = "git"
+    local args = {"-C", path, "rev-parse", "HEAD"}
+    local hash, err = cloe.system({path = cmd, args = args})
+    if err ~= 0 then
+        return nil
+    end
+    return hash
+end
+
+
 --- Initialize report metadata.
 ---
 --- @param header table Optional report header information that will be merged in.
