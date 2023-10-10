@@ -7,6 +7,7 @@ Checks: >
     misc-*,
     performance-*,
     readability-*,
+    -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
     -modernize-use-trailing-return-type,
     -readability-identifier-length,
     -readability-redundant-access-specifiers,
