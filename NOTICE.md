@@ -52,6 +52,12 @@ The following third-party libraries are included in the Cloe repository:
   - Website: https://github.com/kikito/inspect.lua
   - Source: engine/lua/inspect.lua
 
+- Typecheck
+  - License: MIT
+  - License-Source: https://github.com/gvvaughan/typecheck/raw/master/LICENSE.md
+  - Website: https://github.com/gvvaughan/typecheck
+  - Source: engine/lua/typecheck.lua
+
 - Linenoise
   - License: BSD2
   - License-Source: https://raw.githubusercontent.com/antirez/linenoise/master/LICENSE
