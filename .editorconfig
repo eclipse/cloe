@@ -7,26 +7,22 @@ insert_final_newline = true
 charset = utf-8
 indent_style = space
 indent_size = 4
+trim_trailing_whitespace = true
 
 [Makefile*]
 indent_style = tab
 
-[*.json]
+[*.{json,yaml,yml}]
 indent_size = 2
-trim_trailing_whitespace = true
 
-[*.{h,hpp,c,cc,cpp}]
+[*.{h,hpp,c,cc,cpp,hxx,cxx}]
 indent_size = 2
-trim_trailing_whitespace = true
 
-[*.json]
-indent_size = 2
-trim_trailing_whitespace = true
+[*.lua]
+indent_size = 4
 
 [*.html]
 indent_size = 2
-trim_trailing_whitespace = true
 
 [*.rst]
 indent_size = 4
-trim_trailing_whitespace = true
