@@ -56,7 +56,7 @@ require_program() {
 }
 
 @test "$(testname 'Expect success' 'test_lua10_heavy_cpu.lua' 'fbf32388-a80e-4fb3-b334-b4cd4f020cdb')" {
-    cloe-engine -l warn run test_lua10_heavy_cpu.lua
+    cloe-engine run test_lua10_heavy_cpu.lua
 }
 
 @test "$(testname 'Expect success' 'test_lua11_serial_tests.lua' '852edc33-a344-437e-b11d-82527a0ea387')" {
