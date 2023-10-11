@@ -187,7 +187,7 @@ class VtdConan(ConanFile):
             try:
                 patch_rpath(
                     file, [
-                        f"$ORIGIN/{os.path.relpath(libdir, (dst / file).parent)}"]
+                        f"$ORIGIN/{os.path.relpath(libdir, (dst / file).parent)}", "$ORIGIN"]
                 )
             except:
                 # Not all files can be set, but even if this happens it doesn't appear
