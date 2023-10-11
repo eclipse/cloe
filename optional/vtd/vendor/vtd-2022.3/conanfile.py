@@ -53,6 +53,7 @@ def find_binary_files() -> List[Path]:
     )
     return [Path(x) for x in result.stdout.decode().splitlines()]
 
+
 def remove_broken_symlinks() -> None:
     """Remove all broken symlinks that are in the vtd_folder."""
     subprocess.run(
@@ -75,7 +76,7 @@ class VtdConan(ConanFile):
     options = {
         "with_osi": [True, False],
         "with_road_designer": [True, False],
-        "with_image_generator":  [True, False],
+        "with_image_generator": [True, False],
     }
     default_options = {
         "with_osi": True,
@@ -98,8 +99,7 @@ class VtdConan(ConanFile):
 
     def configure(self):
         if self.settings.os == "Windows":
-            raise ConanInvalidConfiguration(
-                "VTD binaries do not exist for Windows")
+            raise ConanInvalidConfiguration("VTD binaries do not exist for Windows")
 
     def build(self):
         src = Path(self.source_folder)
@@ -130,11 +130,11 @@ class VtdConan(ConanFile):
         )
         patch_rpath(
             vtddir / "Runtime/Core/ModuleManager/lib/libVTDModulePlugin.so.2022",
-            ["$ORIGIN/../../Lib"]
+            ["$ORIGIN/../../Lib"],
         )
         patch_rpath(
             vtddir / "Runtime/Core/ModuleManager/lib/libprotobuf.so.9",
-            ["$ORIGIN/../../Lib"]
+            ["$ORIGIN/../../Lib"],
         )
         patch_rpath(
             vtddir / "Runtime/Core/ModuleManager/lib/libopen_simulation_interface.so",
@@ -145,7 +145,8 @@ class VtdConan(ConanFile):
             ["$ORIGIN/../Lib", "$ORIGIN/lib"],
         )
         patch_rpath(
-            vtddir / "Runtime/Core/ModuleManager.cxx98/lib/libopen_simulation_interface.so",
+            vtddir
+            / "Runtime/Core/ModuleManager.cxx98/lib/libopen_simulation_interface.so",
             ["$ORIGIN/../../Lib", "$ORIGIN"],
         )
         patch_rpath(
@@ -165,7 +166,8 @@ class VtdConan(ConanFile):
             ["$ORIGIN/../../Lib"],
         )
         patch_rpath(
-            vtddir / "Runtime/Core/ModuleManager.cxx11/lib/libopen_simulation_interface.so",
+            vtddir
+            / "Runtime/Core/ModuleManager.cxx11/lib/libopen_simulation_interface.so",
             ["$ORIGIN/../../Lib", "$ORIGIN"],
         )
         patch_rpath(
@@ -173,9 +175,8 @@ class VtdConan(ConanFile):
             ["$ORIGIN/../../Lib"],
         )
         patch_rpath(
-            vtddir /
-            "Runtime/Core/ParamServer/paramServer.2022.3.40", [
-                "$ORIGIN/../Lib"]
+            vtddir / "Runtime/Core/ParamServer/paramServer.2022.3.40",
+            ["$ORIGIN/../Lib"],
         )
         patch_rpath(
             vtddir / "Runtime/Core/Traffic/ghostdriver.2022.3.40_flexlm",
@@ -186,8 +187,11 @@ class VtdConan(ConanFile):
         for file in find_binary_files():
             try:
                 patch_rpath(
-                    file, [
-                        f"$ORIGIN/{os.path.relpath(libdir, (dst / file).parent)}"]
+                    file,
+                    [
+                        f"$ORIGIN/{os.path.relpath(libdir, (dst / file).parent)}",
+                        "$ORIGIN",
+                    ],
                 )
             except:
                 # Not all files can be set, but even if this happens it doesn't appear

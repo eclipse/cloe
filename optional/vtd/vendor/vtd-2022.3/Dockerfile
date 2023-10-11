@@ -45,7 +45,7 @@ RUN --mount=type=cache,id=ubuntu-20.04-cache,target=/var/cache/apt \
         libdatrie1 \
         libdv4 \
         libdvdnav4 \
-        libdvdread4 \
+        libdvdread7 \
         libegl1-mesa \
         libflac8 \
         libfontconfig1 \
@@ -70,10 +70,9 @@ RUN --mount=type=cache,id=ubuntu-20.04-cache,target=/var/cache/apt \
         libjpeg-turbo8 \
         libkrb5-26-heimdal \
         libldap-2.4-2 \
-        libldb1 \
+        libldb2 \
         liblzo2-2 \
         libmp3lame0 \
-        libntdb1 \
         libogg0 \
         liborc-0.4-0 \
         libpango-1.0-0 \
@@ -81,15 +80,14 @@ RUN --mount=type=cache,id=ubuntu-20.04-cache,target=/var/cache/apt \
         libpangoft2-1.0-0 \
         libpixman-1-0 \
         libpulse0 \
-        libqt4-network \
-        libqt4-qt3support \
-        libqt4-script \
-        libqt4-sql \
-        libqt4-svg \
-        libqt4-xml \
-        libqt4-xmlpatterns \
-        libqtcore4 \
-        libqtgui4 \
+        libqt5network5 \
+        libqt5script5 \
+        libqt5sql5 \
+        libqt5svg5 \
+        libqt5xml5 \
+        libqt5xmlpatterns5 \
+        libqt5core5a \
+        libqt5gui5 \
         libroken18-heimdal \
         libsasl2-2 \
         libsdl1.2debian \
@@ -138,11 +136,21 @@ RUN --mount=type=cache,id=ubuntu-20.04-cache,target=/var/cache/apt \
         tcsh \
         xterm \
         wget \
-        && \
-    wget 'https://launchpad.net/~ubuntu-security/+archive/ubuntu/ppa/+build/15108504/+files/libpng12-0_1.2.54-1ubuntu1.1_amd64.deb' -O /root/libpng12.deb && \
-    dpkg -i /root/libpng12.deb && \
-    rm /root/libpng12.deb && \
-    rm -rf /var/lib/apt/lists/*
+        libncursesw5 \
+        libpng16-16 \
+        libwebp6 \
+        libffi7\
+        zlib1g-dev && \
+        rm -rf /var/lib/apt/lists/*
+        
+RUN wget 'https://sourceforge.net/projects/libpng/files/libpng12/1.2.59/libpng-1.2.59.tar.xz' && \
+    tar Jxfv libpng-1.2.59.tar.xz && \
+    cd libpng-1.2.59 && \
+    ./configure && \
+    make && \
+    cp .libs/libpng12.so.0.59.0 /lib/x86_64-linux-gnu/ && \
+    cp -d .libs/libpng12.so.0 /lib/x86_64-linux-gnu/ && \
+    rm -rf libpng-1.2.59
 
 RUN pip3 install --upgrade pip && \
     pip3 install "conan<2.0.0"
