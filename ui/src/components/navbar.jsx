@@ -35,7 +35,7 @@ function NavBar(props) {
         props.getSimulationDataFromJSON(file, e.target.result);
       };
       reader.readAsText(file);
-    } else if (file.type === "application/x-gzip") {
+    } else if (file.type === "application/x-gzip" || file.type === "application/gzip") {
       const fd = new FormData();
       fd.append("uploaded_file", file);
       const config = {
