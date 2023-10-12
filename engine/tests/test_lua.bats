@@ -68,6 +68,10 @@ require_program() {
     assert_check_failure $status $output
 }
 
+@test "$(testname 'Expect success' 'test_lua13_bdds_eval.lua' 'd7f31aaa-ccab-421b-a9ae-06aa3835018b')" {
+    cloe-engine run test_lua13_bdd_eval.lua
+}
+
 # --- API ---------------------------------------------------------------------
 
 @test "$(testname 'Check API' 'test_lua_api_cloe_system.lua' '23496512-a7f9-4fb7-8ed3-a655954b24f7')" {

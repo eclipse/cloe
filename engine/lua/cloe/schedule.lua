@@ -49,15 +49,15 @@ end
 --- @param spec ScheduleSpec
 --- @return boolean # true if schedule
 function cloe.schedule(spec)
-    cloe.validate({ spec = { spec, "table" }})
+    cloe.validate({ spec = { spec, "table" } })
     cloe.validate({
-        on = { spec.on, {"string", "table", "function"} },
-        run = { spec.run, {"string", "table", "function"} },
-        enable = { spec.enable, {"boolean", "function"}, true },
+        on = { spec.on, { "string", "table", "function" } },
+        run = { spec.run, { "string", "table", "function" } },
+        enable = { spec.enable, { "boolean", "function" }, true },
         group = { spec.group, "string", true },
         priority = { spec.priority, "number", true },
-        pin = { spec.pin, "boolean", true },    -- sticky
-        desc = { spec.desc, "string", true },   -- label
+        pin = { spec.pin, "boolean", true },  -- sticky
+        desc = { spec.desc, "string", true }, -- label
         source = { spec.source, "string", true },
     })
     if not is_spec_enabled(spec) then
@@ -73,7 +73,7 @@ function cloe.schedule(spec)
     end
 
     -- TODO: Replace this with proper Lua function events
-    local pin =  spec.pin or false
+    local pin = spec.pin or false
     if type(event) == "function" then
         local old_event = event
         local old_action = action
@@ -116,15 +116,15 @@ end
 function cloe.schedule_these(specs)
     local results = {}
 
-    cloe.validate({ specs = { specs, "table" }})
+    cloe.validate({ specs = { specs, "table" } })
     cloe.validate({
-        on = { specs.on, {"string", "table", "function"}, true },
-        run = { specs.run, {"string", "table", "function"}, true },
-        enable = { specs.enable, {"boolean", "function"}, true },
+        on = { specs.on, { "string", "table", "function" }, true },
+        run = { specs.run, { "string", "table", "function" }, true },
+        enable = { specs.enable, { "boolean", "function" }, true },
         group = { specs.group, "string", true },
         priority = { specs.priority, "number", true },
-        pin = { specs.pin, "boolean", true },    -- sticky
-        desc = { specs.desc, "string", true },   -- label
+        pin = { specs.pin, "boolean", true },  -- sticky
+        desc = { specs.desc, "string", true }, -- label
     })
 
     for _, trigger in ipairs(specs) do
@@ -215,14 +215,14 @@ end
 ---
 --- @param test TestSpec
 function cloe.schedule_test(test)
-    cloe.validate({ test = { test, "table" }})
+    cloe.validate({ test = { test, "table" } })
     cloe.validate({
         desc = { test.desc, "string", true },
-        info = {test.info, "table", true},
-        enable = { test.enable, {"boolean", "function"}, true },
+        info = { test.info, "table", true },
+        enable = { test.enable, { "boolean", "function" }, true },
         id = { test.id, "string" },
         name = { test.name, "string", true },
-        on = { test.on, {"string", "function"} },
+        on = { test.on, { "string", "function" } },
         run = { test.run, "function" },
     })
     if not is_spec_enabled(test) then
@@ -234,8 +234,7 @@ function cloe.schedule_test(test)
         error("test already scheduled with id: " .. test.id)
     end
 
-    
-    cloe.state.report.tests[test.id] = {activity={}, info={}, sourceline = "not available"}
+    cloe.state.report.tests[test.id] = { activity = {}, info = {}, sourceline = "not available" }
 
     local sourceline = debug.getinfo(2)
     if sourceline then
@@ -282,7 +281,21 @@ function cloe.schedule_test(test)
     })
 end
 
+local function count_leading_tabs(str)
+    local count = 0
+    for i = 1, #str do
+        local char = string.sub(str, i, i)
+        if char == "\t" then
+            count = count + 1
+        else
+            break
+        end
+    end
+    return count
+end
+
 --- Return a new test fixture for test
+local lust = require("lust")
 function cloe.test_fixture(test)
     local z = {}
 
@@ -379,6 +392,26 @@ function cloe.test_fixture(test)
         })
         z.debugf("do action: %s", action)
         cloe.scheduler.execute_action(action)
+    end
+
+    z.describe = function(...)
+        lust.nocolor()
+        local oldprint = _G.print
+        local lust_describe_activity = { name = "", evaluation = {} }
+        _G.print = function(msg)
+            local tab_count = count_leading_tabs(msg)
+            msg = cloe.trim(msg) -- remove leading tab
+            if tab_count == 0 then
+                lust_describe_activity["name"] = msg
+            elseif tab_count > 0 then
+                table.insert(lust_describe_activity.evaluation, msg)
+            end
+        end
+
+        lust.describe(...)
+        table.insert(cloe.state.report.tests[test.id].activity, lust_describe_activity)
+        z.printf("%s", lust_describe_activity)
+        _G.print = oldprint
     end
 
     return z
