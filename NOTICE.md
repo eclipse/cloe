@@ -70,6 +70,12 @@ The following third-party libraries are included in the Cloe repository:
   - Website: https://github.com/satoren/LRDB
   - Source: engine/vendor/lrdb
 
+- Lust
+  - License: MIT
+  - License-Source: https://raw.githubusercontent.com/bjornbytes/lust/master/LICENSE
+  - Website: https://github.com/bjornbytes/lust
+  - Source: engine/lua/lust.lua
+
 The following third-party libraries are used by this project (these are usually
 installed with the help of Conan):
 
