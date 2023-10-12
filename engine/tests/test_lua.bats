@@ -46,7 +46,7 @@ require_program() {
     cloe-engine run test_lua08_apply_project.lua
 }
 
-@test "$(testname 'Expect success' 'test_lua08_apply_project.lua' '037010ed-7b08-4874-94bd-27d959bdfaca')" {
+@test "$(testname 'Expect success' 'test_lua08_apply_project.lua (2)' '037010ed-7b08-4874-94bd-27d959bdfaca')" {
     cd ..
     cloe-engine run tests/test_lua08_apply_project.lua
 }
