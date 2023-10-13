@@ -234,15 +234,12 @@ function cloe.schedule_test(test)
         error("test already scheduled with id: " .. test.id)
     end
 
-    cloe.state.report.tests[test.id] = { activity = {}, info = {}, sourceline = "not available" }
+    cloe.state.report.tests[test.id] = { activity = {}, info = test.info, sourceline = "not available" }
 
     local sourceline = debug.getinfo(2)
     if sourceline then
         cloe.state.report.tests[test.id].sourceline = sourceline.currentline
     end
-
-    -- Insert the info table to the test.id part of the report
-    cloe.state.report.tests[test.id].info = test.info
 
     -- Set up coroutine handling:
     test._coroutine = coroutine.create(test.run)
@@ -410,7 +407,6 @@ function cloe.test_fixture(test)
 
         lust.describe(...)
         table.insert(cloe.state.report.tests[test.id].activity, lust_describe_activity)
-        z.printf("%s", lust_describe_activity)
         _G.print = oldprint
     end
 

@@ -16,23 +16,23 @@
 -- functions should be documented so that the Lua Language Server
 -- can give the users auto-completion and documentation hints.
 local cloe = require("cloe")
-local report = require("cloe.report")
 
 local m = {}
 
---- Initializing project specific report metadata.
+--- Initialize project specific report metadata.
 ---
+--- @param ... table
 --- @return nil
-function m.init_report()
-    cloe.state.report.metadata = {
-        datetime = report.get_datetime(),
-        hostname = "node01",
-        username = "jenkins",
-        device_under_test = {},
-        simulator = {},
-        docker_version = "24.0.5",
-        source_file = cloe.fs.realpath(cloe.api.THIS_SCRIPT_FILE)
-    }
+function m.init_report(...)
+    local results = {}
+    if cloe.api.THIS_SCRIPT_FILE then
+        results["source_file"] = cloe.fs.realpath(cloe.api.THIS_SCRIPT_FILE)
+    end
+    results["datetime"] = cloe.report.get_datetime()
+    for i, tbl in ipairs({ ... }) do
+        results = cloe.tbl_extend("force", results, tbl)
+    end
+    cloe.state.report.metadata = results
 end
 
 --- Apply a stackfile, setting version to "4".
@@ -45,15 +45,15 @@ end
 --- @return nil -- Return value of cloe.apply_stack
 m.apply_stack = function(spec)
     cloe.validate({
-        spec = {spec, "table"}
+        spec = { spec, "table" }
     })
     spec.version = "4"
     return cloe.apply_stack(spec)
 end
 
---- @class ProjectOptions 
+--- @class ProjectOptions
 --- @field with_server? boolean
---- @field with_noisy_sensor boolean
+--- @field with_noisy_sensor? boolean
 
 --- Configure all aspects of the simulation.
 ---
@@ -62,7 +62,7 @@ end
 --- @param opts ProjectOptions
 --- @return nil
 m.configure_all = function(opts)
-    cloe.validate({opts = {opts, "table", true }})
+    cloe.validate({ opts = { opts, "table", true } })
     opts = opts or {}
     cloe.validate({
         with_server = { opts.with_server, "boolean", true },
@@ -87,7 +87,7 @@ end
 --- @return nil -- Return value of cloe.apply_stack
 m.configure_nop_simulator = function(name)
     cloe.validate({
-        name = {name, "string"}
+        name = { name, "string" }
     })
 
     return m.apply_stack {
@@ -108,9 +108,9 @@ end
 --- @return nil -- Return value of cloe.apply_stack
 m.configure_vehicle = function(name, simulator, opts)
     cloe.validate({
-        name = {name, "string"},
-        simulator = {simulator, {"string", "table"}},
-        opts = {opts, "table", true},
+        name = { name, "string" },
+        simulator = { simulator, { "string", "table" } },
+        opts = { opts, "table", true },
     })
     local from = simulator
     if type(from) == "string" then
@@ -211,9 +211,9 @@ m.configure_basic = function(vehicle)
         }
     }
     cloe.schedule_these {
-        { on = "start", run = "basic/hmi=!enable" },
-        { on = "next=1", run = "basic/hmi=enable" },
-        { on = "time=5", run = "basic/hmi=resume" },
+        { on = "start",    run = "basic/hmi=!enable" },
+        { on = "next=1",   run = "basic/hmi=enable" },
+        { on = "time=5",   run = "basic/hmi=resume" },
         { on = "time=5.5", run = "basic/hmi=!resume" },
     }
 end
@@ -226,7 +226,7 @@ m.set_realtime_factor = function(factor)
     if factor == 0 then
         error "cannot set realtime factor of 0"
     end
-    cloe.schedule { on = "start", run = "realtime_factor="..tostring(factor) }
+    cloe.schedule { on = "start", run = "realtime_factor=" .. tostring(factor) }
 end
 
 --- Do an action after given duration.
