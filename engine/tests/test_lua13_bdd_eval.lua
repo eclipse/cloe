@@ -5,7 +5,9 @@ do
     project.configure_all {
         with_server = false,
     }
-    project.init_report()
+    project.init_report(
+        require("report_config"), { foo = "bar" }
+    )
     project.set_realtime_factor(-1)
 end
 
