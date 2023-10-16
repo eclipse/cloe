@@ -1,4 +1,12 @@
 --[[
+ Source: https://github.com/gvvaughan/typecheck/blob/v3.0/lib/typecheck/init.lua
+ Modifications:
+ - Rename typecheck/init.lua -> typecheck.lua.
+ - Embed LICENSE.md into this file.
+ - Add this comment.
+]]
+
+--[[
  Gradual Function Type Checking for Lua 5.1, 5.2, 5.3 & 5.4
  Copyright (C) 2014-2023 Gary V. Vaughan
 
@@ -21,13 +29,7 @@
  CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]
---[[
- Source: https://github.com/gvvaughan/typecheck/commit/e0886a1f16daa3e37b762f2236d017a2d3de74dc
- Modifications:
- - Rename typecheck/init.lua -> typecheck.lua.
- - Embed LICENSE.md into this file.
- - Add this comment.
-]]
+
 --[[--
  Gradual type checking for Lua functions.
 
