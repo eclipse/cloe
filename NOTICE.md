@@ -58,6 +58,12 @@ The following third-party libraries are included in the Cloe repository:
   - Website: https://github.com/gvvaughan/typecheck
   - Source: engine/lua/typecheck.lua
 
+- Tableshape
+  - License: MIT
+  - License-Source: https://github.com/leafo/tableshape/blob/v2.6.0/README.md
+  - Website: https://github.com/leafo/tableshape
+  - Source: engine/lua/tableshape.lua
+
 - Linenoise
   - License: BSD2
   - License-Source: https://raw.githubusercontent.com/antirez/linenoise/master/LICENSE
