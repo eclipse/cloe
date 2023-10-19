@@ -522,6 +522,7 @@ end
 --    function arguments
 -- @raises argerror when an argument validator returns failure
 -- @see argerror
+-- @return function
 -- @usage
 --    local unpack = checktypes('unpack', types.table) ..
 --    function(t, i, j)
@@ -1407,6 +1408,7 @@ return setmetatable({
    -- @function argscheck
    -- @string decl function type declaration string
    -- @func inner function to wrap with argument checking
+   -- @return function
    -- @usage
    --    local case = argscheck('std.functional.case(?any, #table) => [any...]',
    --       function(with, branches)

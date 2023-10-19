@@ -2,47 +2,54 @@ local cloe = require("cloe")
 
 do
     local project = require("project")
-    project.configure_all {
+    project.configure_all({
         with_server = false,
-    }
-    project.init_report(
-        require("report_config"), { foo = "bar" }
-    )
+    })
+    project.init_report(require("report_config"), { foo = "bar" })
     project.set_realtime_factor(-1)
 end
 
--- schedule_test with improved logging using LUST - https://github.com/bjornbytes/lust
+-- Example schedule_test with testing using the Lust library:
+--
+--     https://github.com/bjornbytes/lust
+--
+-- Inside the run function we need to use z:describe to start
+-- using the Lust library, and we need to import `lust.it` and
+-- `lust.expect` from it.
 cloe.schedule_test {
-    -- Note that this is the same ID as used in BATS.
-    id = "a3ac1491-0213-40cf-b227-0dbb503c96c9",
+    id = "d7f31aaa-ccab-421b-a9ae-06aa3835018b",
     on = "start",
     info = { hello = "test", rqm = "big number" },
     desc = "this is a long text for test",
+    terminate = false,
+
+    --- @param z TestFixture
+    --- @param sync Sync
     run = function(z, sync)
+        -- If we want to use the Lust
         local lust = require("lust")
         local it, expect = lust.it, lust.expect
 
         cloe.log("info", "Entering test")
 
-        z.describe("test group 0", function()
+        z:describe("test group 0", function()
             it("", function()
                 expect(true).to.be.truthy()
             end)
         end)
 
-
         cloe.log("info", "Asserting something...")
 
-        z.describe("test group 1", function()
+        z:describe("test group 1", function()
             it("time at start is 0s", function()
                 expect(sync:time():s()).to.be(0)
             end)
         end)
 
         cloe.log("info", "Waiting 1s...")
-        z.wait_duration("1s")
+        z:wait_duration("1s")
 
-        z.describe("test group 2", function()
+        z:describe("test group 2", function()
             it("yield does not work and the time has not advanced", function()
                 expect(sync:time() >= cloe.Duration.new("1s")).to.be.truthy()
             end)
@@ -52,6 +59,6 @@ cloe.schedule_test {
         end)
 
         cloe.log("info", "We're good here.")
-        z.succeed()
-    end
+        z:succeed()
+    end,
 }

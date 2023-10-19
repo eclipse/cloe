@@ -75,20 +75,6 @@ void start_lua_debugger(sol::state& lua, int listen_port);
 void merge_lua(sol::state_view& lua, const std::string& filepath);
 
 /**
- * Add package path to Lua search path.
- *
- * \see lua_setup_builtin.cpp
- */
-void configure_package_path(sol::state_view& lua, const std::vector<std::string>& paths);
-
-/**
- * Define the Lua global standard libraries.
- *
- * \see lua_setup_builtin.cpp
- */
-void register_builtins(sol::state_view& lua);
-
-/**
  * Define the filesystem library functions in the given table.
  *
  * The following functions are made available:

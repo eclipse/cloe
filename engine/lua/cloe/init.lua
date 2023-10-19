@@ -16,134 +16,87 @@
 -- SPDX-License-Identifier: Apache-2.0
 --
 
--- The `cloe` table will be made availabe by cloe-engine, but if it
--- isn't, then use an empty table instead.
---
--- This prevents us from overwriting the fields that cloe-engine sets.
-local cloe = assert(cloe)
+local api = require("cloe-engine")
+local engine = require("cloe.engine")
 
---- Namespace that contains state relevant to a simulation.
-cloe.state = cloe.state or {}
+local cloe = {
+    --- Table of functions for dealing with file paths.
+    fs = require("cloe-engine.fs"),
 
-require("cloe.util")
-require("cloe.schedule")
-cloe.report = require("cloe.report")
+    --- Validate input arguments of a function in a single line.
+    ---
+    --- This is basically a specialized version of the typecheck.argscheck
+    --- function, in that it does not wrap the original function,
+    --- thereby preserving the type data that the Lua language server
+    --- uses to provide hints and autocompletion.
+    validate = require("cloe.typecheck").validate,
 
--- This is just required for documentation.
-cloe.fs = require("cloe.fs")
+    --- Return a human-readable representation of a Lua object.
+    ---
+    --- This is primarily used for debugging and should not be used
+    --- when performance is important. It is a table, but acts as a
+    --- function.
+    ---
+    --- For more details, see: https://github.com/kikito/inspect.lua
+    inspect = require("inspect").inspect,
+
+    --- Print a human-readable representation of a Lua object.
+    ---
+    --- This just prints the output of inspect.
+    ---
+    --- For more details, see: https://github.com/kikito/inspect.lua
+    ---
+    --- @param root any
+    --- @param options? table
+    --- @return nil
+    describe = function(root, options)
+        print(require("inspect").inspect(root, options))
+    end,
+}
+
+-- Import cloe.engine into cloe namespace.
+for k, v in pairs(engine) do
+    cloe[k] = v
+end
 
 --- Require a module, prioritizing modules relative to the script
 --- launched by cloe-engine.
 ---
---- If cloe.api.THIS_SCRIPT_DIR is unset, this is equivalent to require().
+--- If api.state.current_script_dir is nil, this is equivalent to require().
 ---
 --- @param module string module identifier, such as "project"
 function cloe.require(module)
-    if cloe.api.THIS_SCRIPT_DIR then
+    cloe.validate("cloe.require(string)", module)
+    local script_dir = api.state.current_script_dir
+    if script_dir then
         local old_package_path = package.path
-        package.path = string.format("%s/?.lua;%s/?/init.lua;%s",
-            cloe.api.THIS_SCRIPT_DIR, cloe.api.THIS_SCRIPT_DIR, package.path)
+        package.path = string.format("%s/?.lua;%s/?/init.lua;%s", script_dir, script_dir, package.path)
         local module_table = require(module)
         package.path = old_package_path
         return module_table
     else
-        cloe.log("warn", "cloe.require() expects cloe.api.THIS_SCRIPT_DIR to be set, but it is not")
+        engine.log("warn", "cloe.require() expects cloe-engine.get_script_dir() ~= nil, but it is not", nil)
         return require(module)
     end
 end
 
---- @alias FeatureId string
-
---- Return if Cloe has feature as defined by string.
+--- Initialize report metadata.
 ---
---- @param id (FeatureId)  feature identifier, such as `cloe-0.20`
---- @return boolean
-function cloe.has_feature(id)
-    return cloe.state.features[id] and true or false
-end
-
---- Throw an exception if Cloe does not have feature as defined by string.
----
---- @param id (FeatureId)  feature identifier, such as `cloe-0.20`
---- @return nil
-function cloe.require_feature(id)
-    if not cloe.has_feature(id) then
-        cloe.api.experimental.throw_exception("required feature " .. id .. " is not available")
+--- @param header table Optional report header information that will be merged in.
+--- @return table
+function cloe.init_report(header)
+    cloe.validate("cloe.init_report(?table)", header)
+    local system = require("cloe.system")
+    local report = api.state.report
+    report.metadata = {
+        hostname = system.get_hostname(),
+        username = system.get_username(),
+        datetime = system.get_datetime(),
+    }
+    if header then
+        report.metadata = require("cloe.luax").tbl_deep_extend("force", report.metadata, header)
     end
-end
-
---- Try to load (merge) stackfile.
----
---- @param file string File path, possibly relative to calling file
---- @return nil
-cloe.load_stackfile = function(file)
-    cloe.validate({ stack = { file, "string" } })
-    assert(cloe.state.stack)
-    assert(cloe.api.THIS_SCRIPT_DIR)
-    if cloe.fs.is_relative(file) then
-        file = cloe.api.THIS_SCRIPT_DIR .. "/" .. file
-    end
-    cloe.state.stack:merge_stackfile(file)
-end
-
---- Read stackfile JSON file as Lua table.
----
---- @param file string File path
---- @return nil
-cloe.read_stackfile = function(file)
-    cloe.validate({ file = { file, "string" } })
-    local fp = io.open(file, "r")
-    if not fp then
-        error("cannot open file: " .. file)
-    end
-    local data = fp:read("*all")
-    local json = require("json")
-    return json:decode(data)
-end
-
---- Try to apply the supplied table to the stack.
----
---- @param stack table|string Stack format as Lua table or JSON string
---- @return nil
-cloe.apply_stack = function(stack)
-    cloe.validate({ stack = { stack, { "string", "table" }} })
-    assert(cloe.state.stack)
-    local file = cloe.api.THIS_SCRIPT_FILE or ""
-    if type(stack) == "table" then
-        cloe.state.stack:merge_stacktable(stack, file)
-    else
-        cloe.state.stack:merge_stackjson(stack, file)
-    end
-end
-
---- Log a message with a given severity.
----
---- For example:
----     cloe.log("info", "Got value of %d, expected %d", 4, 6)
----
---- @param level string severity level, one of: trace, debug, info, warn, error, critical
---- @param fmt string format string with trailing arguments compatible with string.format
---- @param ... any arguments to format string
---- @return nil
-function cloe.log(level, fmt, ...)
-    local msg = string.format(fmt, ...)
-    cloe.api.log(level, "lua", msg)
-end
-
---- Return a human-readable representation of Lua objects.
----
---- This is primarily used for debugging and should not be used
---- when performance is important. It is a table, but acts as a
---- function.
----
---- For more details, see: https://github.com/kikito/inspect.lua
----
---- @return string # representation of object
-cloe.inspect = require("inspect")
-
---- Wraps cloe.inspect with a print function for faster inspection.
-cloe.describe = function(...)
-    print(cloe.inspect(...))
+    return report
 end
 
 return cloe

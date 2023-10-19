@@ -15,13 +15,17 @@ TRIGGER_NEXT = false
 cloe.schedule_test {
     id = "TEST-A",
     on = "start",
+
+    --- @param z TestFixture
     run = function(z)
-        z.printf("Entering TEST-A")
-        z.wait_duration("5s")
-        z.printf("Waited 5 seconds, complete")
+        z:printf("Entering TEST-A")
+        z:wait_duration("5s")
+        z:printf("Waited 5 seconds, complete")
         _G.TRIGGER_NEXT = true
     end
 }
+
+local dur = cloe.Duration.new
 
 cloe.schedule_test {
     id = "TEST-B",
@@ -29,12 +33,12 @@ cloe.schedule_test {
         cloe.log("debug", "Waiting on TRIGGER_NEXT = %s", TRIGGER_NEXT)
         return TRIGGER_NEXT
     end,
+
+    --- @param z TestFixture
+    --- @param sync Sync
     run = function(z, sync)
-        z.printf("Entering TEST-B")
-        if sync:time() ~= (cloe.Duration.new("5s") + sync:step_width()) then
-            z.fail("TEST-B not started at expected time 5s, got %s", sync:time())
-        end
-        z.succeed()
+        z:printf("Entering TEST-B")
+        z:assert(sync:time() == (dur("5s") + sync:step_width()), "TEST-B should start after TEST-A completed, at 5s")
     end
 }
 

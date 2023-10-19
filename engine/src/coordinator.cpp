@@ -22,15 +22,15 @@
 
 #include "coordinator.hpp"
 
-#include <functional>          // for bind
-#include <memory>              // for unique_ptr<>, shared_ptr<>
-#include <mutex>               // for unique_lock<>
-#include <string>              // for string
-#include <utility>             // for move
-#include <vector>              // for vector<>
+#include <functional>  // for bind
+#include <memory>      // for unique_ptr<>, shared_ptr<>
+#include <mutex>       // for unique_lock<>
+#include <string>      // for string
+#include <utility>     // for move
+#include <vector>      // for vector<>
 
-#include <sol/optional.hpp>
 #include <fable/utility/sol.hpp>
+#include <sol/optional.hpp>
 
 #include <cloe/core.hpp>       // for Json, Duration, Logger
 #include <cloe/handler.hpp>    // for HandlerType, Request
@@ -57,9 +57,7 @@ void to_json(Json& j, const HistoryTrigger& t) {
 }
 
 Coordinator::Coordinator(sol::state_view lua, cloe::DataBroker* db)
-    : lua_(lua), executer_registrar_(trigger_registrar(Source::TRIGGER)), db_(db) {
-  lua_["cloe"]["plugins"] = lua_.create_table();
-}
+    : lua_(lua), executer_registrar_(trigger_registrar(Source::TRIGGER)), db_(db) {}
 
 class TriggerRegistrar : public cloe::TriggerRegistrar {
  public:
@@ -181,7 +179,7 @@ void Coordinator::register_event(const std::string& key, EventFactoryPtr&& ef,
 
 sol::table Coordinator::register_lua_table(const std::string& field) {
   auto tbl = lua_.create_table();
-  lua_["cloe"]["plugins"][field] = tbl;
+  luat_cloe_engine_plugins(lua_)[field] = tbl;
   return tbl;
 }
 
@@ -206,13 +204,13 @@ void Coordinator::insert_trigger_from_lua(const Sync& sync, const sol::object& o
 }
 
 size_t Coordinator::process_pending_lua_triggers(const Sync& sync) {
-  sol::object obj = lua_["cloe"]["state"]["scheduler_pending"];
+  auto triggers = sol::object(luat_cloe_engine_initial_input(lua_)["triggers"]);
   size_t count = 0;
-  for (auto& kv : obj.as<sol::table>()) {
+  for (auto& kv : triggers.as<sol::table>()) {
     store_trigger(make_trigger(kv.second), sync);
     count++;
   }
-  lua_["cloe"]["state"]["scheduler_pending"] = lua_.create_table();
+  luat_cloe_engine_initial_input(lua_)["triggers_processed"] = count;
   return count;
 }
 

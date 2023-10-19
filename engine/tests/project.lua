@@ -15,7 +15,10 @@
 -- In order to be maximally useful to users, each of the defined
 -- functions should be documented so that the Lua Language Server
 -- can give the users auto-completion and documentation hints.
+local api = require("cloe-engine")
 local cloe = require("cloe")
+local luax = require("cloe.luax")
+local system = require("cloe.system")
 
 local m = {}
 
@@ -25,14 +28,16 @@ local m = {}
 --- @return nil
 function m.init_report(...)
     local results = {}
-    if cloe.api.THIS_SCRIPT_FILE then
-        results["source_file"] = cloe.fs.realpath(cloe.api.THIS_SCRIPT_FILE)
+    local file = api.state.current_script_file
+    if file then
+        results["source"] = cloe.fs.realpath(file)
     end
-    results["datetime"] = cloe.report.get_datetime()
-    for i, tbl in ipairs({ ... }) do
-        results = cloe.tbl_extend("force", results, tbl)
+    results["datetime"] = system.get_datetime()
+    for _, tbl in ipairs({ ... }) do
+        results = luax.tbl_extend("force", results, tbl)
     end
-    cloe.state.report.metadata = results
+
+    api.state.report.metadata = results
 end
 
 --- Apply a stackfile, setting version to "4".
@@ -44,9 +49,7 @@ end
 --- @param spec table Stack input table
 --- @return nil -- Return value of cloe.apply_stack
 m.apply_stack = function(spec)
-    cloe.validate({
-        spec = { spec, "table" }
-    })
+    cloe.validate("project.apply_stack(table)", spec)
     spec.version = "4"
     return cloe.apply_stack(spec)
 end
@@ -62,9 +65,9 @@ end
 --- @param opts ProjectOptions
 --- @return nil
 m.configure_all = function(opts)
-    cloe.validate({ opts = { opts, "table", true } })
+    cloe.validate("project.configure_all(?table)", opts)
     opts = opts or {}
-    cloe.validate({
+    luax.validate({
         with_server = { opts.with_server, "boolean", true },
         with_noisy_sensor = { opts.with_noisy_sensor, "boolean", true },
     })
@@ -74,7 +77,7 @@ m.configure_all = function(opts)
 
     m.configure_nop_simulator(simname)
     m.configure_vehicle(vehname, simname, {
-        with_noisy_sensor = opts.with_noisy_sensor
+        with_noisy_sensor = opts.with_noisy_sensor,
     })
     m.configure_server(opts.with_server)
     m.configure_virtue(vehname)
@@ -86,15 +89,13 @@ end
 --- @param name string Name of simulator (e.g. "sim")
 --- @return nil -- Return value of cloe.apply_stack
 m.configure_nop_simulator = function(name)
-    cloe.validate({
-        name = { name, "string" }
-    })
+    cloe.validate("project.configure_nop_simulator(string)", name)
 
-    return m.apply_stack {
+    return m.apply_stack({
         simulators = {
-            { binding = "nop", name = name }
-        }
-    }
+            { binding = "nop", name = name },
+        },
+    })
 end
 
 --- @class VehicleOptions
@@ -107,29 +108,25 @@ end
 --- @param opts VehicleOptions
 --- @return nil -- Return value of cloe.apply_stack
 m.configure_vehicle = function(name, simulator, opts)
-    cloe.validate({
-        name = { name, "string" },
-        simulator = { simulator, { "string", "table" } },
-        opts = { opts, "table", true },
-    })
+    cloe.validate("project.configure_vehicle(string, string|table, ?table)", name, simulator, opts)
     local from = simulator
     if type(from) == "string" then
         from = {
             simulator = simulator,
-            index = 0
+            index = 0,
         }
     end
     opts = opts or {}
-    cloe.validate({
-        with_noisy_sensor = { opts.with_noisy_sensor, "boolean", true }
+    luax.validate({
+        with_noisy_sensor = { opts.with_noisy_sensor, "boolean", true },
     })
 
     local components = {
         ["cloe::speedometer"] = {
             binding = "speedometer",
             name = "default_speed",
-            from = "cloe::gndtruth_ego_sensor"
-        }
+            from = "cloe::gndtruth_ego_sensor",
+        },
     }
     if opts.with_noisy_sensor then
         components["cloe::default_world_sensor"] = {
@@ -143,27 +140,27 @@ m.configure_vehicle = function(name, simulator, opts)
                         distribution = {
                             binding = "normal",
                             mean = 0.0,
-                            std_deviation = 0.3
-                        }
-                    }
-                }
-            }
+                            std_deviation = 0.3,
+                        },
+                    },
+                },
+            },
         }
     end
 
     if from.simulator == "nop" then
-        cloe.schedule {
+        cloe.schedule({
             desc = "Vehicle should never move with nop binding",
             on = "default_speed/kmph=>0.0",
-            run = "fail"
-        }
+            run = "fail",
+        })
     end
 
-    return m.apply_stack {
+    return m.apply_stack({
         vehicles = {
-            { name = name, from = from, components = components }
-        }
-    }
+            { name = name, from = from, components = components },
+        },
+    })
 end
 
 --- Configure server if possible.
@@ -179,12 +176,12 @@ m.configure_server = function(enable)
             enable = false
         end
     end
-    return m.apply_stack {
+    return m.apply_stack({
         server = {
             listen = enable,
-            listen_port = 23456
-        }
-    }
+            listen_port = 23456,
+        },
+    })
 end
 
 --- Configure virtue controller for vehicle.
@@ -192,12 +189,12 @@ end
 --- @param vehicle string Vehicle name
 --- @return nil
 m.configure_virtue = function(vehicle)
-    m.apply_stack {
+    m.apply_stack({
         controllers = {
-            { binding = "virtue", vehicle = vehicle }
-        }
-    }
-    cloe.schedule { on = "virtue/failure", run = "fail" }
+            { binding = "virtue", vehicle = vehicle },
+        },
+    })
+    cloe.schedule({ on = "virtue/failure", run = "fail" })
 end
 
 --- Configure basic controller for vehicle.
@@ -205,17 +202,17 @@ end
 --- @param vehicle string Vehicle name
 --- @return nil
 m.configure_basic = function(vehicle)
-    m.apply_stack {
+    m.apply_stack({
         controllers = {
-            { binding = "basic", vehicle = vehicle }
-        }
-    }
-    cloe.schedule_these {
-        { on = "start",    run = "basic/hmi=!enable" },
-        { on = "next=1",   run = "basic/hmi=enable" },
-        { on = "time=5",   run = "basic/hmi=resume" },
+            { binding = "basic", vehicle = vehicle },
+        },
+    })
+    cloe.schedule_these({
+        { on = "start", run = "basic/hmi=!enable" },
+        { on = "next=1", run = "basic/hmi=enable" },
+        { on = "time=5", run = "basic/hmi=resume" },
         { on = "time=5.5", run = "basic/hmi=!resume" },
-    }
+    })
 end
 
 --- Set realtime factor.
@@ -224,9 +221,9 @@ end
 --- @return nil
 m.set_realtime_factor = function(factor)
     if factor == 0 then
-        error "cannot set realtime factor of 0"
+        error("cannot set realtime factor of 0")
     end
-    cloe.schedule { on = "start", run = "realtime_factor=" .. tostring(factor) }
+    cloe.schedule({ on = "start", run = "realtime_factor=" .. tostring(factor) })
 end
 
 --- Do an action after given duration.
@@ -236,16 +233,22 @@ end
 --- @return nil
 m.action_after = function(duration, action)
     local dur = cloe.Duration.new(duration)
-    return cloe.schedule { on = "next=" .. dur:s(), run = action }
+    return cloe.schedule({ on = "next=" .. dur:s(), run = action })
 end
 
 --- Fail after this amount of time.
-m.fail_after = function(duration) return m.action_after(duration, "fail") end
+m.fail_after = function(duration)
+    return m.action_after(duration, "fail")
+end
 
 --- Succeed after this amount of time.
-m.succeed_after = function(duration) return m.action_after(duration, "succeed") end
+m.succeed_after = function(duration)
+    return m.action_after(duration, "succeed")
+end
 
 --- Stop after this amount of time.
-m.stop_after = function(duration) return m.action_after(duration, "stop") end
+m.stop_after = function(duration)
+    return m.action_after(duration, "stop")
+end
 
 return m

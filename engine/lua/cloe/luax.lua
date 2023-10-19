@@ -33,7 +33,7 @@
 
 -- SPDX-License-Identifier: Apache-2.0
 
-local cloe = cloe or {}
+local luax = {}
 
 --- Returns a deep copy of the given object. Non-table objects are copied as
 --- in a typical Lua assignment, whereas table objects are copied recursively.
@@ -43,8 +43,8 @@ local cloe = cloe or {}
 ---
 ---@param orig table Table to copy
 ---@return table Table of copied keys and (nested) values.
-function cloe.deepcopy(orig) end -- luacheck: no unused
-cloe.deepcopy = (function()
+function luax.deepcopy(orig) end -- luacheck: no unused
+luax.deepcopy = (function()
   local function _id(v)
     return v
   end
@@ -59,7 +59,7 @@ cloe.deepcopy = (function()
       cache[orig] = copy
       local mt = getmetatable(orig)
       for k, v in pairs(orig) do
-        copy[cloe.deepcopy(k, cache)] = cloe.deepcopy(v, cache)
+        copy[luax.deepcopy(k, cache)] = luax.deepcopy(v, cache)
       end
       return setmetatable(copy, mt)
     end,
@@ -82,7 +82,7 @@ end)()
 
 --- Splits a string at each instance of a separator.
 ---
----@see |cloe.split()|
+---@see |luax.split()|
 ---@see https://www.lua.org/pil/20.2.html
 ---@see http://lua-users.org/wiki/StringLibraryTutorial
 ---
@@ -90,8 +90,8 @@ end)()
 ---@param sep string Separator or pattern
 ---@param plain boolean If `true` use `sep` literally (passed to string.find)
 ---@return function Iterator over the split components
-function cloe.gsplit(s, sep, plain)
-  cloe.validate({ s = { s, 's' }, sep = { sep, 's' }, plain = { plain, 'b', true } })
+function luax.gsplit(s, sep, plain)
+  luax.validate({ s = { s, 's' }, sep = { sep, 's' }, plain = { plain, 'b', true } })
 
   local start = 1
   local done = false
@@ -132,7 +132,7 @@ end
 ---  split("|x|y|z|", "|", {trimempty=true}) --> {'x', 'y', 'z'}
 --- </pre>
 ---
----@see |cloe.gsplit()|
+---@see |luax.gsplit()|
 ---
 ---@param s string String to split
 ---@param sep string Separator or pattern
@@ -141,15 +141,15 @@ end
 ---       - trimempty: (boolean) If `true` remove empty items from the front
 ---         and back of the list
 ---@return table List of split components
-function cloe.split(s, sep, kwargs)
-  cloe.validate({ kwargs = { kwargs, 't', true } })
+function luax.split(s, sep, kwargs)
+  luax.validate({ kwargs = { kwargs, 't', true } })
   kwargs = kwargs or {}
   local plain = kwargs.plain
   local trimempty = kwargs.trimempty
 
   local t = {}
   local skip = trimempty
-  for c in cloe.gsplit(s, sep, plain) do
+  for c in luax.gsplit(s, sep, plain) do
     if c ~= '' then
       skip = false
     end
@@ -178,7 +178,7 @@ end
 ---
 ---@param t table Table
 ---@return table List of keys
-function cloe.tbl_keys(t)
+function luax.tbl_keys(t)
   assert(type(t) == 'table', string.format('Expected table, got %s', type(t)))
 
   local keys = {}
@@ -193,7 +193,7 @@ end
 ---
 ---@param t table Table
 ---@return table List of values
-function cloe.tbl_values(t)
+function luax.tbl_values(t)
   assert(type(t) == 'table', string.format('Expected table, got %s', type(t)))
 
   local values = {}
@@ -208,8 +208,8 @@ end
 ---@param func function|table Function or callable table
 ---@param t table Table
 ---@return table Table of transformed values
-function cloe.tbl_map(func, t)
-  cloe.validate({ func = { func, 'c' }, t = { t, 't' } })
+function luax.tbl_map(func, t)
+  luax.validate({ func = { func, 'c' }, t = { t, 't' } })
 
   local rettab = {}
   for k, v in pairs(t) do
@@ -223,8 +223,8 @@ end
 ---@param func function|table Function or callable table
 ---@param t table Table
 ---@return table Table of filtered values
-function cloe.tbl_filter(func, t)
-  cloe.validate({ func = { func, 'c' }, t = { t, 't' } })
+function luax.tbl_filter(func, t)
+  luax.validate({ func = { func, 'c' }, t = { t, 't' } })
 
   local rettab = {}
   for _, entry in pairs(t) do
@@ -240,8 +240,8 @@ end
 ---@param t table Table to check
 ---@param value any Value to compare
 ---@return boolean `true` if `t` contains `value`
-function cloe.tbl_contains(t, value)
-  cloe.validate({ t = { t, 't' } })
+function luax.tbl_contains(t, value)
+  luax.validate({ t = { t, 't' } })
 
   for _, v in ipairs(t) do
     if v == value then
@@ -257,7 +257,7 @@ end
 ---
 ---@param t table Table to check
 ---@return boolean `true` if `t` is empty
-function cloe.tbl_isempty(t)
+function luax.tbl_isempty(t)
   assert(type(t) == 'table', string.format('Expected table, got %s', type(t)))
   return next(t) == nil
 end
@@ -265,7 +265,7 @@ end
 --- We only merge empty tables or tables that are not a list
 ---@private
 local function can_merge(v)
-  return type(v) == 'table' and (cloe.tbl_isempty(v) or not cloe.tbl_islist(v))
+  return type(v) == 'table' and (luax.tbl_isempty(v) or not luax.tbl_islist(v))
 end
 
 local function tbl_extend(behavior, deep_extend, ...)
@@ -282,13 +282,13 @@ local function tbl_extend(behavior, deep_extend, ...)
   end
 
   local ret = {}
-  if cloe._empty_dict_mt ~= nil and getmetatable(select(1, ...)) == cloe._empty_dict_mt then
-    ret = cloe.empty_dict()
+  if luax._empty_dict_mt ~= nil and getmetatable(select(1, ...)) == luax._empty_dict_mt then
+    ret = luax.empty_dict()
   end
 
   for i = 1, select('#', ...) do
     local tbl = select(i, ...)
-    cloe.validate({ ['after the second argument'] = { tbl, 't' } })
+    luax.validate({ ['after the second argument'] = { tbl, 't' } })
     if tbl then
       for k, v in pairs(tbl) do
         if deep_extend and can_merge(v) and can_merge(ret[k]) then
@@ -316,13 +316,13 @@ end
 ---      - "force": use value from the rightmost map
 ---@param ... table Two or more map-like tables
 ---@return table Merged table
-function cloe.tbl_extend(behavior, ...)
+function luax.tbl_extend(behavior, ...)
   return tbl_extend(behavior, false, ...)
 end
 
 --- Merges recursively two or more map-like tables.
 ---
----@see |cloe.tbl_extend()|
+---@see |luax.tbl_extend()|
 ---
 ---@param behavior string Decides what to do if a key is found in more than one map:
 ---      - "error": raise an error
@@ -330,7 +330,7 @@ end
 ---      - "force": use value from the rightmost map
 ---@param ... table Two or more map-like tables
 ---@return table Merged table
-function cloe.tbl_deep_extend(behavior, ...)
+function luax.tbl_deep_extend(behavior, ...)
   return tbl_extend(behavior, true, ...)
 end
 
@@ -341,7 +341,7 @@ end
 ---@param a any First value
 ---@param b any Second value
 ---@return boolean `true` if values are equals, else `false`
-function cloe.deep_equal(a, b)
+function luax.deep_equal(a, b)
   if a == b then
     return true
   end
@@ -350,7 +350,7 @@ function cloe.deep_equal(a, b)
   end
   if type(a) == 'table' then
     for k, v in pairs(a) do
-      if not cloe.deep_equal(v, b[k]) then
+      if not luax.deep_equal(v, b[k]) then
         return false
       end
     end
@@ -371,8 +371,8 @@ end
 --- Note that this *modifies* the input.
 ---@param o table Table to add the reverse to
 ---@return table o
-function cloe.tbl_add_reverse_lookup(o)
-  local keys = cloe.tbl_keys(o)
+function luax.tbl_add_reverse_lookup(o)
+  local keys = luax.tbl_keys(o)
   for _, k in ipairs(keys) do
     local v = o[k]
     if o[v] then
@@ -394,15 +394,15 @@ end
 ---
 --- Examples:
 --- <pre>
----  cloe.tbl_get({ key = { nested_key = true }}, 'key', 'nested_key') == true
----  cloe.tbl_get({ key = {}}, 'key', 'nested_key') == nil
+---  luax.tbl_get({ key = { nested_key = true }}, 'key', 'nested_key') == true
+---  luax.tbl_get({ key = {}}, 'key', 'nested_key') == nil
 --- </pre>
 ---
 ---@param o table Table to index
 ---@param ... string Optional strings (0 or more, variadic) via which to index the table
 ---
 ---@return any Nested value indexed by key (if it exists), else nil
-function cloe.tbl_get(o, ...)
+function luax.tbl_get(o, ...)
   local keys = { ... }
   if #keys == 0 then
     return
@@ -423,15 +423,15 @@ end
 ---
 --- NOTE: This mutates dst!
 ---
----@see |cloe.tbl_extend()|
+---@see |luax.tbl_extend()|
 ---
 ---@param dst table List which will be modified and appended to
 ---@param src table List from which values will be inserted
 ---@param start number Start index on src. Defaults to 1
 ---@param finish number Final index on src. Defaults to `#src`
 ---@return table dst
-function cloe.list_extend(dst, src, start, finish)
-  cloe.validate({
+function luax.list_extend(dst, src, start, finish)
+  luax.validate({
     dst = { dst, 't' },
     src = { src, 't' },
     start = { start, 'n', true },
@@ -450,7 +450,7 @@ end
 ---
 ---@param t table List-like table
 ---@return table Flattened copy of the given list-like table
-function cloe.tbl_flatten(t)
+function luax.tbl_flatten(t)
   local result = {}
   local function _tbl_flatten(_t)
     local n = #_t
@@ -470,12 +470,12 @@ end
 --- Tests if a Lua table can be treated as an array.
 ---
 --- Empty table `{}` is assumed to be an array, unless it was created by
---- |cloe.empty_dict()| or returned as a dict-like |API| or Vimscript result,
---- for example from |rpcrequest()| or |cloe.fn|.
+--- |luax.empty_dict()| or returned as a dict-like |API| or Vimscript result,
+--- for example from |rpcrequest()| or |luax.fn|.
 ---
 ---@param t table Table
 ---@return boolean `true` if array-like table, else `false`
-function cloe.tbl_islist(t)
+function luax.tbl_islist(t)
   if type(t) ~= 'table' then
     return false
   end
@@ -495,25 +495,25 @@ function cloe.tbl_islist(t)
   else
     -- TODO(bfredl): in the future, we will always be inside nvim
     -- then this check can be deleted.
-    if cloe._empty_dict_mt == nil then
+    if luax._empty_dict_mt == nil then
       return nil
     end
-    return getmetatable(t) ~= cloe._empty_dict_mt
+    return getmetatable(t) ~= luax._empty_dict_mt
   end
 end
 
 --- Counts the number of non-nil values in table `t`.
 ---
 --- <pre>
---- cloe.tbl_count({ a=1, b=2 }) => 2
---- cloe.tbl_count({ 1, 2 }) => 2
+--- luax.tbl_count({ a=1, b=2 }) => 2
+--- luax.tbl_count({ 1, 2 }) => 2
 --- </pre>
 ---
 ---@see https://github.com/Tieske/Penlight/blob/master/lua/pl/tablex.lua
 ---@param t table Table
 ---@return number Number of non-nil values in table
-function cloe.tbl_count(t)
-  cloe.validate({ t = { t, 't' } })
+function luax.tbl_count(t)
+  luax.validate({ t = { t, 't' } })
 
   local count = 0
   for _ in pairs(t) do
@@ -528,7 +528,7 @@ end
 ---@param start number Start range of slice
 ---@param finish number End range of slice
 ---@return table Copy of table sliced from start to finish (inclusive)
-function cloe.list_slice(list, start, finish)
+function luax.list_slice(list, start, finish)
   local new_list = {}
   for i = start or 1, finish or #list do
     new_list[#new_list + 1] = list[i]
@@ -541,8 +541,8 @@ end
 ---@see https://www.lua.org/pil/20.2.html
 ---@param s string String to trim
 ---@return string String with whitespace removed from its beginning and end
-function cloe.trim(s)
-  cloe.validate({ s = { s, 's' } })
+function luax.trim(s)
+  luax.validate({ s = { s, 's' } })
   return s:match('^%s*(.*%S)') or ''
 end
 
@@ -551,8 +551,8 @@ end
 ---@see https://github.com/rxi/lume
 ---@param s string String to escape
 ---@return string %-escaped pattern string
-function cloe.pesc(s)
-  cloe.validate({ s = { s, 's' } })
+function luax.pesc(s)
+  luax.validate({ s = { s, 's' } })
   return s:gsub('[%(%)%.%%%+%-%*%?%[%]%^%$]', '%%%1')
 end
 
@@ -561,8 +561,8 @@ end
 ---@param s string String
 ---@param prefix string Prefix to match
 ---@return boolean `true` if `prefix` is a prefix of `s`
-function cloe.startswith(s, prefix)
-  cloe.validate({ s = { s, 's' }, prefix = { prefix, 's' } })
+function luax.startswith(s, prefix)
+  luax.validate({ s = { s, 's' }, prefix = { prefix, 's' } })
   return s:sub(1, #prefix) == prefix
 end
 
@@ -571,8 +571,8 @@ end
 ---@param s string String
 ---@param suffix string Suffix to match
 ---@return boolean `true` if `suffix` is a suffix of `s`
-function cloe.endswith(s, suffix)
-  cloe.validate({ s = { s, 's' }, suffix = { suffix, 's' } })
+function luax.endswith(s, suffix)
+  luax.validate({ s = { s, 's' }, suffix = { suffix, 's' } })
   return #suffix == 0 or s:sub(-#suffix) == suffix
 end
 
@@ -581,7 +581,7 @@ end
 --- Usage example:
 --- <pre>
 ---  function user.new(name, age, hobbies)
----    cloe.validate{
+---    luax.validate{
 ---      name={name, 'string'},
 ---      age={age, 'number'},
 ---      hobbies={hobbies, 'table'},
@@ -592,22 +592,22 @@ end
 ---
 --- Examples with explicit argument values (can be run directly):
 --- <pre>
----  cloe.validate{arg1={{'foo'}, 'table'}, arg2={'foo', 'string'}}
+---  luax.validate{arg1={{'foo'}, 'table'}, arg2={'foo', 'string'}}
 ---     => NOP (success)
 ---
----  cloe.validate{arg1={1, 'table'}}
+---  luax.validate{arg1={1, 'table'}}
 ---     => error('arg1: expected table, got number')
 ---
----  cloe.validate{arg1={3, function(a) return (a % 2) == 0 end, 'even number'}}
+---  luax.validate{arg1={3, function(a) return (a % 2) == 0 end, 'even number'}}
 ---     => error('arg1: expected even number, got 3')
 --- </pre>
 ---
 --- If multiple types are valid they can be given as a list.
 --- <pre>
----  cloe.validate{arg1={{'foo'}, {'table', 'string'}}, arg2={'foo', {'table', 'string'}}}
+---  luax.validate{arg1={{'foo'}, {'table', 'string'}}, arg2={'foo', {'table', 'string'}}}
 ---     => NOP (success)
 ---
----  cloe.validate{arg1={1, {'string', table'}}}
+---  luax.validate{arg1={1, {'string', table'}}}
 ---     => error('arg1: expected string|table, got number')
 ---
 --- </pre>
@@ -626,7 +626,7 @@ end
 ---               only if the argument is valid. Can optionally return an additional
 ---               informative error message as the second returned value.
 ---             - msg: (optional) error string if validation fails
-function cloe.validate(opt) end -- luacheck: no unused
+function luax.validate(opt) end -- luacheck: no unused
 
 do
   local type_names = {
@@ -648,7 +648,7 @@ do
   }
 
   local function _is_type(val, t)
-    return type(val) == t or (t == 'callable' and cloe.is_callable(val))
+    return type(val) == t or (t == 'callable' and luax.is_callable(val))
   end
 
   ---@private
@@ -670,7 +670,7 @@ do
         types = { types }
       end
 
-      if cloe.is_callable(types) then
+      if luax.is_callable(types) then
         -- Check user-provided validation function
         local valid, optional_message = types(val)
         if not valid then
@@ -713,7 +713,7 @@ do
     return true, nil
   end
 
-  function cloe.validate(opt)
+  function luax.validate(opt)
     local ok, err_msg = is_valid(opt)
     if not ok then
       error(err_msg, 2)
@@ -724,7 +724,7 @@ end
 ---
 ---@param f any Any object
 ---@return boolean `true` if `f` is callable, else `false`
-function cloe.is_callable(f)
+function luax.is_callable(f)
   if type(f) == 'function' then
     return true
   end
@@ -744,14 +744,14 @@ end
 --- this function, effectively allowing to create nested tables on the fly:
 ---
 --- <pre>
---- local a = cloe.defaulttable()
+--- local a = luax.defaulttable()
 --- a.b.c = 1
 --- </pre>
 ---
 ---@param create function|nil The function called to create a missing value.
 ---@return table Empty table with metamethod
-function cloe.defaulttable(create)
-  create = create or cloe.defaulttable
+function luax.defaulttable(create)
+  create = create or luax.defaulttable
   return setmetatable({}, {
     __index = function(tbl, key)
       rawset(tbl, key, create())
@@ -760,54 +760,4 @@ function cloe.defaulttable(create)
   })
 end
 
---- @class CommandSpecA
---- @field path string name or path of executable
---- @field args table list of arguments
---- @field mode? string execution mode (one of "sync", "async", "detach")
---- @field log_output? string output verbosity ("never", "on_error", "always")
---- @field ignore_failure? boolean whether to ignore failure
-
---- @class CommandSpecB
---- @field command string command or script to run with default shell
---- @field mode? string execution mode (one of "sync", "async", "detach")
---- @field log_output? string output verbosity ("never", "on_error", "always")
---- @field ignore_failure? boolean whether to ignore failure
-
---- @alias CommandSpecC string command or script to run with default shell
-
---- @alias CommandSpec (CommandSpecA | CommandSpecB | CommandSpecC)
-
---- Run a command with the default system shell and return the output.
----
---- Discover the shell with:
----
----   cloe.system('echo "System shell: $0" >&2')
----
---- Note on stderr:
----   Only stdout is captured. The stderr output from the command
----   is sent straight to stderr of the calling program and not
----   discarded.
----
----   Capture stderr with:
----
----     cmd 2>&1
----
----   Discard stderr with:
----
----     cmd 2>/dev/null
----
---- @param cmd CommandSpec Command to run
---- @return string, number # Combined output, exit code
-function cloe.system(cmd)
-  -- FIXME: This is not a very nice API...
-  if type(cmd) == "string" then
-    cmd = {
-      command = cmd,
-    }
-  end
-  if cmd.log_output == nil then cmd.log_output = "on_error" end
-  if cmd.ignore_failure == nil then cmd.ignore_failure = true end
-  return cloe.api.exec(cmd)
-end
-
-return cloe
+return luax

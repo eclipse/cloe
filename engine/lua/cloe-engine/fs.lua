@@ -17,18 +17,15 @@
 --
 
 ---
---- @meta
+--- @meta cloe-engine.fs
 ---
---- This file contains the type annotations of the `cloe.fs` table,
---- defined in `src/lua_setup_fs.cpp` as of this writing.
+--- This file contains the type annotations of the `cloe-engine.fs` module,
+--- which are exported by the cloe-engine executable.
 ---
-
-local cloe = cloe or {}
-if cloe.fs then
-    return cloe.fs
-end
 
 local fs = {}
+
+local unavailable = require("cloe-engine").unavailable
 
 --- Return the basename of the filepath.
 ---
@@ -39,7 +36,10 @@ local fs = {}
 ---
 --- @param path string filepath
 --- @return string # basename of file without parent
-function fs.basename(path) end
+--- @nodiscard
+function fs.basename(path)
+    return unavailable("fs.path", path)
+end
 
 --- Return the parent of the filepath.
 ---
@@ -52,7 +52,10 @@ function fs.basename(path) end
 ---
 --- @param path string filepath
 --- @return string # parent of file without basename
-function fs.dirname(path) end
+--- @nodiscard
+function fs.dirname(path)
+    return unavailable("fs.dirname", path)
+end
 
 --- Return the normalized filepath.
 ---
@@ -63,7 +66,10 @@ function fs.dirname(path) end
 ---
 --- @param path string filepath
 --- @return string # normalized file
-function fs.normalize(path) end
+--- @nodiscard
+function fs.normalize(path)
+    return unavailable("fs.normalize", path)
+end
 
 --- Return the true filepath, resolving symlinks and normalizing.
 --- If the file does not exist, an empty string is returned.
@@ -75,26 +81,38 @@ function fs.normalize(path) end
 ---
 --- @param path string filepath
 --- @return string # real path of file
-function fs.realpath(path) end
+--- @nodiscard
+function fs.realpath(path)
+    return unavailable("fs.realpath", path)
+end
 
 --- Return the left and right arguments joined together.
 ---
 --- @param left string filepath
 --- @param right string filepath
 --- @return string # filepaths joined as "left/right"
-function fs.join(left, right) end
+--- @nodiscard
+function fs.join(left, right)
+    return unavailable("fs.join", left, right)
+end
 
 --- Return whether path is an absolute path.
 ---
 --- @param path string filepath to check
 --- @return boolean # true if path is absolute
-function fs.is_absolute(path) end
+--- @nodiscard
+function fs.is_absolute(path)
+    return unavailable("fs.is_absolute", path)
+end
 
 --- Return whether path is a relative path.
 ---
 --- @param path string filepath to check
 --- @return boolean # true if path is relative
-function fs.is_relative(path) end
+--- @nodiscard
+function fs.is_relative(path)
+    return unavailable("fs.is_relative", path)
+end
 
 --- Return whether path refers to an existing directory.
 ---
@@ -103,7 +121,10 @@ function fs.is_relative(path) end
 ---
 --- @param file string filepath to check
 --- @return boolean # true if path exists and is a directory
-function fs.is_dir(file) end
+--- @nodiscard
+function fs.is_dir(file)
+    return unavailable("fs.is_dir", file)
+end
 
 --- Return whether path refers to an existing normal file.
 ---
@@ -114,13 +135,19 @@ function fs.is_dir(file) end
 ---
 --- @param file string filepath to check
 --- @return boolean # true if path exists and is a normal file
-function fs.is_file(file) end
+--- @nodiscard
+function fs.is_file(file)
+    return unavailable("fs.is_file", file)
+end
 
 --- Return whether path refers to an existing symlink.
 ---
 --- @param file string filepath to check
 --- @return boolean # true if path exists and is a symlink
-function fs.is_symlink(file) end
+--- @nodiscard
+function fs.is_symlink(file)
+    return unavailable("fs.is_symlink", file)
+end
 
 --- Return whether path refers to something that exists,
 --- but is not a file, directory, or symlink.
@@ -129,13 +156,19 @@ function fs.is_symlink(file) end
 ---
 --- @param file string filepath to check
 --- @return boolean # true if path exists and is not a normal file, symlink, or directory
-function fs.is_other(file) end
+--- @nodiscard
+function fs.is_other(file)
+    return unavailable("fs.is_other", file)
+end
 
 --- Return whether path refers to something that exists,
 --- regardless what it is.
 ---
 --- @param file string filepath to check
 --- @return boolean # true if path exists
-function fs.exists(file) end
+--- @nodiscard
+function fs.exists(file)
+    return unavailable("fs.is_other", file)
+end
 
 return fs

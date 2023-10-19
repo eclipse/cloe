@@ -77,7 +77,6 @@ add_library(cloe-lualib
     src/lua_api.cpp
     src/lua_setup.hpp
     src/lua_setup.cpp
-    src/lua_setup_builtin.cpp
     src/lua_setup_duration.cpp
     src/lua_setup_fs.cpp
     src/lua_setup_stack.cpp

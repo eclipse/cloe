@@ -38,4 +38,36 @@ namespace cloe {
 [[nodiscard]] sol::protected_function_result lua_safe_script_file(
     sol::state_view& lua, const std::filesystem::path& filepath);
 
+/**
+ * Return the cloe-engine table as it is exported into Lua.
+ *
+ * If you make any changes to these paths, make sure to reflect it:
+ *
+ *     engine/lua/cloe-engine/init.lua
+ *
+ */
+[[nodiscard]] inline auto luat_cloe_engine(sol::state_view& lua) {
+  return lua["package"]["loaded"]["cloe-engine"];
+}
+
+[[nodiscard]] inline auto luat_cloe_engine_fs(sol::state_view& lua) {
+  return lua["package"]["loaded"]["cloe-engine.fs"];
+}
+
+[[nodiscard]] inline auto luat_cloe_engine_types(sol::state_view& lua) {
+  return lua["package"]["loaded"]["cloe-engine.types"];
+}
+
+[[nodiscard]] inline auto luat_cloe_engine_initial_input(sol::state_view& lua) {
+  return lua["package"]["loaded"]["cloe-engine"]["initial_input"];
+}
+
+[[nodiscard]] inline auto luat_cloe_engine_state(sol::state_view& lua) {
+  return lua["package"]["loaded"]["cloe-engine"]["state"];
+}
+
+[[nodiscard]] inline auto luat_cloe_engine_plugins(sol::state_view& lua) {
+  return lua["package"]["loaded"]["cloe-engine"]["plugins"];
+}
+
 }  // namespace cloe
