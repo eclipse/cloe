@@ -25,9 +25,9 @@ cloe.schedule {
     on = "stop",
     run = function(sync)
         if sync:achievable_realtime_factor() > 1 then
-            cloe.scheduler.execute_action("succeed")
+            cloe.execute_action("succeed")
         else
-            cloe.scheduler.execute_action("fail")
+            cloe.execute_action("fail")
         end
     end
 }
