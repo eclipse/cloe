@@ -167,7 +167,7 @@ class Event {
   /**
    * Return the number of event handlers subscribed to this event.
    */
-  std::size_t count() const { return eventhandlers_.size(); }
+  [[nodiscard]] std::size_t count() const { return eventhandlers_.size(); }
 
   /**
    * Raise this event.
@@ -197,7 +197,7 @@ class DataBroker;
  */
 template <typename T>
 constexpr void assert_static_type() {
-  static_assert(databroker::is_incompatible_type_v<T> == false,
+  static_assert(!static_cast<bool>(databroker::is_incompatible_type_v<T>),
                 "Incompatible-Datatype-Error.\n"
                 "\n"
                 "Please find the offending LOC in above line 'require from here'.\n"
@@ -232,7 +232,7 @@ class BasicContainer {
    * Access-token for regulating API access (public -> private)
    */
   struct access_token {
-    explicit access_token(int){};
+    explicit access_token(int /*unused*/){};
   };
 
   value_type value_{};
@@ -244,7 +244,7 @@ class BasicContainer {
   BasicContainer(Signal* signal,
                  databroker::on_value_changed_callback_t<value_type>
                      on_value_changed,
-                 access_token)
+                 access_token /*unused*/)
       : value_(), on_value_changed_(std::move(on_value_changed)), signal_(signal) {
     update_accessor_functions(this);
   }
@@ -275,8 +275,8 @@ class BasicContainer {
   value_type& value() { return value_; }
   void set_value(databroker::signal_type_cref_t<T> value) { *this = value; }
 
-  bool has_subscriber() const;
-  std::size_t subscriber_count() const;
+  [[nodiscard]] bool has_subscriber() const;
+  [[nodiscard]] std::size_t subscriber_count() const;
 
   // mimic std::optional
   constexpr const value_type* operator->() const noexcept { return &value_; }
@@ -706,7 +706,7 @@ class Signal {
    * Access-token for regulating API access (public -> private).
    */
   struct access_token {
-    explicit access_token(int){};
+    explicit access_token(int /*unused*/){};
   };
 
   /**
@@ -775,7 +775,7 @@ class Signal {
    * Public c'tor, accessible only via private access-token
    * \note: Design-#1: The class shall be constructible via external helpers
    */
-  explicit Signal(access_token) : Signal() {}
+  explicit Signal(access_token /*unused*/) : Signal() {}
   Signal(const Signal&) = delete;
   Signal(Signal&&) = default;
   virtual ~Signal() = default;
@@ -1067,7 +1067,7 @@ class Signal {
    * \return First name of the signal
    */
   const std::string& name() const {
-    if (!names_.size()) {
+    if (names_.empty()) {
       throw std::logic_error("signal does not have a name");
     }
     return names_.front();
@@ -1079,7 +1079,7 @@ class Signal {
    * \return First name of the signal
    */
   std::string name_or(std::string def) const {
-    if (!names_.size()) {
+    if (names_.empty()) {
       return def;
     }
     return names_.front();
@@ -1162,7 +1162,7 @@ class Signal {
 
 template <typename T>
 void BasicContainer<T>::update_accessor_functions(BasicContainer* container) {
-  if (signal_) {
+  if (signal_ != nullptr) {
     // Create getter-function
     if (container) {
       signal_->template set_getter<T>(
@@ -1183,7 +1183,7 @@ bool BasicContainer<T>::has_subscriber() const {
 
 template <typename T>
 std::size_t BasicContainer<T>::subscriber_count() const {
-  return signal_ ? signal_->subscriber_count() : 0;
+  return signal_ != nullptr ? signal_->subscriber_count() : 0;
 }
 
 /**
@@ -1432,54 +1432,26 @@ class DataBroker {
     const lua_signal_adapter_t& adapter = iter->second;
     adapter(signal, (*lua_), lua_name);
   }
+
   /**
-    * \brief Binds a signal to the Lua-VM
-    * \param signal_name Name of the signal
-    * \note The bind-method needs to be invoked at least once (in total) to bring all signal bindings into effect
-    */
+   * \brief Binds a signal to the Lua-VM
+   * \param signal_name Name of the signal
+   * \note The bind-method needs to be invoked at least once (in total) to bring all signal bindings into effect
+   */
   void bind_signal(std::string_view signal_name) { bind_signal(signal_name, signal_name); }
 
   /**
-    * \brief Binds the signals-object to Lua
-    * \param table_name Name which shall be used for the table
-    * \param parent_table_name Name of the parent-table, "" if global shall be used
-    */
-  void bind(std::string_view table_name, std::string_view parent_table_name) {
-    sol::state_view& lua = *lua_;
-    if (parent_table_name.length() > 0) {
-      sol::table parent;
-      sol::object value = lua[parent_table_name];
-      auto type = value.get_type();
-      switch (type) {
-        case sol::type::table: {
-          parent = value.as<sol::table>();
-        } break;
-        case sol::type::none:
-        case sol::type::lua_nil: {
-          // clang-format off
-          throw std::invalid_argument(
-            fmt::format("Cannot find parent_table_name '{}'.", parent_table_name)
-          );
-          // clang-format on
-        } break;
-        default: {
-          // clang-format off
-          throw std::invalid_argument(
-            fmt::format("parent_table_name '{}' has an unexpected datatype {}.", parent_table_name, static_cast<int>(type))
-          );
-          // clang-format on
-        } break;
-      }
-      parent[table_name] = &(*signals_object_);
-    } else {
-      lua[table_name] = &(*signals_object_);
-    }
+   * \brief Binds the signals-object to Lua
+   * \param signals_name Name which shall be used for the table
+   * \param parent_table Parent-table to use
+   */
+  void bind(std::string_view signals_name, sol::table parent) {
+    parent[signals_name] = &(*signals_object_);
   }
-  /**
-    * \brief Binds the signals-object to Lua
-    * \param table_name Name which shall be used for the table
-    */
-  void bind(std::string_view table_name) { bind(table_name, ""); }
+
+  void bind(std::string_view signals_name) {
+    (*lua_)[signals_name] = &(*signals_object_);
+  }
 
  public:
   /**
