@@ -97,6 +97,9 @@ void interactive_shell(sol::state& lua, std::ostream& os, const std::vector<std:
     os << "warning: dropping to interactive console early due to error" << std::endl;
   }
 
+  // Export describe into global namespace
+  lua.safe_script(R"#( function describe(obj) print(require("inspect").inspect(obj)) end )#");
+
   // Start REPL loop
   std::string buf;
   std::string vbuf;
@@ -107,7 +110,6 @@ void interactive_shell(sol::state& lua, std::ostream& os, const std::vector<std:
     }
     buf += line;
     linenoiseFree(line);
-
 
     sol::load_result chunk;
     {
@@ -146,7 +148,7 @@ void interactive_shell(sol::state& lua, std::ostream& os, const std::vector<std:
       print_error(os, result);
     } else if (result.return_count() > 0) {
       for (auto r : result) {
-        lua["cloe"]["describe"](r);
+        lua["describe"](r);
       }
     }
 

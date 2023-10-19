@@ -78,6 +78,10 @@ require_program() {
     cloe-engine shell test_lua_api_cloe_system.lua
 }
 
+@test "$(testname 'Check API' 'test_lua_api_cloe_typecheck.lua' 'd10cfa73-c03e-4e3d-876d-60d7c5c0ee73')" {
+    cloe-engine shell test_lua_api_cloe_typecheck.lua
+}
+
 # --- Better errors -----------------------------------------------------------
 
 @test "$(testname 'Expect failure' 'test_lua_error_main.lua' '9cc0c5a4-5771-4cec-befe-ae49bd3e0cae')" {
