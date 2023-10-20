@@ -969,3 +969,28 @@ TEST(metainformations, metainformation_4) {
   //EXPECT_EQ(*metainformations.get<shared_tag_1>(), metainformation);
   EXPECT_EQ(metainformations.get<shared_tag_2>()->get(), metainformation);
 }
+
+//         Test Scenario: positive-test
+// Test Case Description: Statically declare & obtain a signal via a descriptor
+//            Test Steps: 1) Create a signal via a SignalDescriptor
+//                        2) Obtain a signal via a SignalDescriptor
+//          Prerequisite: -
+//             Test Data: -
+//       Expected Result: I) The value of the tag is unchanged
+
+using signal_type = int;
+// using signal_type = std::optional<int>;
+char int1_name[] = "int_1";
+struct signal_int1 : ::cloe::databroker::SignalDescriptor<signal_type, int1_name> {};
+char int2_name[] = "int_2";
+struct signal_int2 : ::cloe::databroker::SignalDescriptor<signal_type, int2_name> {};
+
+TEST(descriptors, descriptors_1) {
+  DataBroker db;
+
+  // step 1
+  signal_int1::declare(db);
+  // step 2
+  auto signal1 = signal_int1::signal(db);
+  EXPECT_THROW(signal_int2::signal(db), std::out_of_range);
+}
