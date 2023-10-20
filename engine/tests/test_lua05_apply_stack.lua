@@ -26,13 +26,19 @@ cloe.schedule_these {
     { run = "realtime_factor=-1" },
 }
 
-cloe.schedule { on = "time=60", run = "succeed" }
-
 cloe.schedule {
     on = "loop",
     pin = true,
     run = function(sync)
         cloe.log("info", "Current time is %s", sync:time())
+    end
+}
+
+cloe.schedule_test {
+    id = "precondition",
+    on = "start",
+    run = function(z)
+        z:printf("hello there")
     end
 }
 
