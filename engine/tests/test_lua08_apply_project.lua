@@ -1,20 +1,13 @@
 local cloe = require("cloe")
-local proj = cloe.require("project")
 
-proj.configure_all {
-    with_server = false,
-    with_noisy_sensor = true,
-}
-
--- All the conditions we want to fail on:
-cloe.schedule_these {
-    run = "fail",
-    { on = "time=5" },
-}
-
--- All the things we want to do on start:
-proj.set_realtime_factor(-1)
-cloe.schedule { on = "time=60", run = "succeed" }
+do
+    local proj = cloe.require("project")
+    proj.configure_all {
+        with_server = false,
+        with_noisy_sensor = true,
+    }
+    proj.set_realtime_factor(-1)
+end
 
 cloe.schedule {
     on = "loop",
@@ -34,7 +27,7 @@ cloe.schedule_test {
     --- @param sync Sync
     run = function(z, sync)
         z:printf("Entering test")
-        z:assert(true)
+        z:expect("string")
 
         z:printf("Asserting something...")
         z:assert_eq(sync:time():s(), 0, "time is 0s at start")

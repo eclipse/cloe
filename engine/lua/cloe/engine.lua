@@ -107,6 +107,15 @@ function engine.log(level, fmt, ...)
     api.log(level, "lua", msg)
 end
 
+--- Alias a set of signals in the Cloe data broker.
+---
+--- @param list table
+--- @return table
+function engine.alias_signals(list)
+    api.initial_input.signal_aliases = luax.tbl_extend("force", api.initial_input.signal_aliases, list)
+    return api.initial_input.signal_aliases
+end
+
 --- Require a set of signals to be made available via the Cloe data broker.
 ---
 --- @param list table signals to merge into main list of required signals
@@ -116,31 +125,40 @@ function engine.require_signals(list)
     return api.initial_input.signal_requires
 end
 
---- Require a set of signals from a signals enum list.
+--- Optionally alias and require a set of signals from a signals enum list.
 ---
 --- This allows you to make an enum somewhere which the language server
 --- can use for autocompletion and which you can use as an alias:
 ---
 ---     ---@enum Sig
 ---     local Sig = {
----         DriverDoorLatch = "vehicle::framework::chassis::driver_door::latch",
+---         DriverDoorLatch = "vehicle::framework::chassis::.*driver_door::latch",
 ---         VehicleMps = "vehicle::sensors::chassis::velocity",
 ---     }
----     cloe.require_signals_enum(Sig)
+---     cloe.require_signals_enum(Sig, true)
 ---
 --- Later, you can use the enum with cloe.signal():
 ---
 ---     cloe.signal(Sig.DriverDoorLatch)
 ---
---- @deprecated EXPERIMENTAL
 --- @param enum table
---- @return table
-function engine.require_signals_enum(enum)
+--- @param alias boolean whether to treat signal names as alias regular expressions
+--- @return nil
+function engine.require_signals_enum(enum, alias)
     local signals = {}
-    for _, v in pairs(enum) do
-        table.insert(signals, v)
+    if alias then
+        local aliases = {}
+        for key, sigregex in pairs(enum) do
+            table.insert(aliases, {sigregex, key})
+            table.insert(signals, key)
+        end
+        engine.alias_signals(aliases)
+    else
+        for _, signame in pairs(enum) do
+            table.insert(signals, signame)
+        end
     end
-    return engine.require_signals(signals)
+    engine.require_signals(signals)
 end
 
 --- Return full list of loaded signals.
