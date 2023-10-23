@@ -44,6 +44,7 @@ struct LuaOptions {
 
   std::vector<std::string> lua_paths;
   bool no_system_lua = false;
+  bool auto_require_cloe = false;
 };
 
 /**

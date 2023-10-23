@@ -261,6 +261,33 @@ void register_cloe_engine_fs(sol::state_view& lua) {
   luat_cloe_engine_fs(lua) = tbl;
 }
 
+/**
+ * Add cloe lazy-loader into Lua global namespace.
+ *
+ * You can just use `cloe`, and it will auto-require the cloe module.
+ * If you don't use it, then it won't be loaded.
+ */
+void register_cloe(sol::state_view& lua) {
+  // This takes advantage of the `__index` function for metatables, which is called
+  // when a key can't be found in the original table, here an empty table
+  // assigned to cloe. It then loads the cloe module, and returns the key
+  // requested. The next access will no longer trigger this method, because we
+  // swapped tables.
+  //
+  // Effectively, this lazy-loads the cloe library. This allows us to not
+  // load it and all the other modules it pulls in, which allows us to for
+  // example, configure those libraries before cloe does.
+  auto result = lua.safe_script(R"==(
+    cloe = setmetatable({}, {
+        __index = function(_, k)
+            _G["cloe"] = require("cloe")
+            return _G["cloe"][k]
+        end
+    })
+  )==");
+  assert(result.valid());
+}
+
 }  // anonymous namespace
 
 sol::state new_lua(const LuaOptions& opt, Stack& stack) {
@@ -284,6 +311,9 @@ sol::state new_lua(const LuaOptions& opt, Stack& stack) {
   register_cloe_engine(lua, stack);
   register_cloe_engine_types(lua);
   register_cloe_engine_fs(lua);
+  if (opt.auto_require_cloe) {
+    register_cloe(lua);
+  }
   return lua;
 }
 

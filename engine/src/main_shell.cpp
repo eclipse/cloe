@@ -163,7 +163,9 @@ int shell(const ShellOptions& opt, const std::vector<std::string>& filepaths) {
 
   cloe::StackOptions stack_opt = opt.stack_options;
   cloe::Stack stack = cloe::new_stack(stack_opt);
-  sol::state lua = cloe::new_lua(opt.lua_options, stack);
+  auto lopt = opt.lua_options;
+  lopt.auto_require_cloe = true;
+  sol::state lua = cloe::new_lua(lopt, stack);
 
   // Collect input files and strings to execute
   std::vector<std::string> actions{};
