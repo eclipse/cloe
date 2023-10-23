@@ -709,6 +709,7 @@ class Signal {
     explicit access_token(int /*unused*/){};
   };
 
+ public:
   /**
    * Getter-function types
    *
@@ -747,6 +748,7 @@ class Signal {
       std::function<void(databroker::signal_type_cref_t<T>)>;
   using type_erased_on_value_change_event_function_t = std::any;
 
+ private:
   /// Name(s) of the signal
   std::vector<std::string> names_{};
   /// std::type_info of the signal
@@ -1472,9 +1474,7 @@ class DataBroker {
     parent[signals_name] = &(*signals_object_);
   }
 
-  void bind(std::string_view signals_name) {
-    (*lua_)[signals_name] = &(*signals_object_);
-  }
+  void bind(std::string_view signals_name) { (*lua_)[signals_name] = &(*signals_object_); }
 
  public:
   /**
