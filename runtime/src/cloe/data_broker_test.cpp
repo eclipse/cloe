@@ -758,6 +758,15 @@ TEST(databroker, to_lua_3) {
   EXPECT_EQ(tau, CustomEnum::Unexpected);
 }
 
+//         Test Scenario: positive-test
+// Test Case Description: Implement a custom datatype and manipulate a member from Lua
+//            Test Steps: 1) Implement a signal
+//                        2) Stimulate the signal from Lua
+//          Prerequisite: -
+//             Test Data: -
+//       Expected Result: I) The value of the member changed
+//                        II) The value-changed event was received
+
 template <typename T, typename Tag>
 struct Quantity {
   T value_;
@@ -783,14 +792,6 @@ void to_lua(sol::state_view view, km * /* value */) {
 }
 
 TEST(databroker, to_lua_4) {
-  //         Test Scenario: positive-test
-  // Test Case Description: Implement a custom datatype and manipulate a member from Lua
-  //            Test Steps: 1) Implement a signal
-  //                        2) Stimulate the signal from Lua
-  //          Prerequisite: -
-  //             Test Data: -
-  //       Expected Result: I) The value of the member changed
-  //                        II) The value-changed event was received
   sol::state state;
   sol::state_view view(state);
   DataBroker db{view};
@@ -974,23 +975,51 @@ TEST(metainformations, metainformation_4) {
 // Test Case Description: Statically declare & obtain a signal via a descriptor
 //            Test Steps: 1) Create a signal via a SignalDescriptor
 //                        2) Obtain a signal via a SignalDescriptor
+//                        3) Obtain another signal via a SignalDescriptor
 //          Prerequisite: -
 //             Test Data: -
-//       Expected Result: I) The value of the tag is unchanged
+//       Expected Result: I) The declared signal can be obtained via a SignalDescriptor
+//                        II) The non-existing signal cannot be obtained via a SignalDescriptor
 
 using signal_type = int;
-// using signal_type = std::optional<int>;
-char int1_name[] = "int_1";
-struct signal_int1 : ::cloe::databroker::SignalDescriptor<signal_type, int1_name> {};
-char int2_name[] = "int_2";
-struct signal_int2 : ::cloe::databroker::SignalDescriptor<signal_type, int2_name> {};
+char descriptors_1_signal1_name[] = "descriptors_1_signal1";
+struct descriptors_1_signal1
+    : ::cloe::databroker::SignalDescriptor<signal_type, descriptors_1_signal1_name> {};
+char descriptors_1_signal2_name[] = "descriptors_1_signal2";
+struct descriptors_1_signal2
+    : ::cloe::databroker::SignalDescriptor<signal_type, descriptors_1_signal2_name> {};
 
 TEST(descriptors, descriptors_1) {
   DataBroker db;
 
   // step 1
-  signal_int1::declare(db);
+  descriptors_1_signal1::declare(db);
   // step 2
-  auto signal1 = signal_int1::signal(db);
-  EXPECT_THROW(signal_int2::signal(db), std::out_of_range);
+  EXPECT_NO_THROW(descriptors_1_signal1::signal(db));
+  // step 3
+  EXPECT_THROW(descriptors_1_signal2::signal(db), std::out_of_range);
+}
+
+//         Test Scenario: positive-test
+// Test Case Description: Statically declare & obtain a signal via a template-descriptor
+//            Test Steps: 1) Create a signal via a TemplateSignalDescriptor
+//                        2) Obtain a signal via a TemplateSignalDescriptor
+//          Prerequisite: -
+//             Test Data: -
+//       Expected Result: I) The declared signal can be obtained via a TemplateSignalDescriptor
+//                        II) The non-existing signal cannot be obtained via a TemplateSignalDescriptor
+
+using descriptors_2_type = int;
+char descriptors_2_signal_name[] = "descriptors_2_signal{}";
+struct descriptors_2_signal_template
+    : ::cloe::databroker::SignalTemplate<descriptors_2_type, descriptors_2_signal_name> {};
+
+TEST(descriptors, descriptors_2) {
+  DataBroker db;
+
+  // step 1
+  descriptors_2_signal_template::specialize("1").declare(db);
+  // step 2
+  EXPECT_NO_THROW(descriptors_2_signal_template::specialize("1").signal(db));
+  EXPECT_THROW(descriptors_2_signal_template::specialize("2").signal(db), std::out_of_range);
 }

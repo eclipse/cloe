@@ -1761,87 +1761,79 @@ class DataBroker {
 
 namespace databroker {
 
+struct DynamicName {
+  static constexpr bool STATIC = false;
+
+ private:
+  std::string name_;
+
+ public:
+  DynamicName(std::string name) : name_{name} {}
+  const std::string& name() const { return name_; }
+};
+
+template <const char* NAME>
+struct StaticName {
+  static constexpr bool STATIC = true;
+  static constexpr const char* name() { return NAME; }
+};
+
 /**
- * Tags a signal
- */
-template <typename T>
-struct SignalDescriptorBase {
-  using type = T;
-};
-template <typename T, const char*...>
-struct SignalDescriptorImpl : public SignalDescriptorBase<T> {
-  using type = typename SignalDescriptorBase<T>::type;
+  * SignalDescriptorBase implements a SignalDescriptor
+  *
+  * \tparam T Type of the signal
+  * \tparam TNAME Name of the signal
+  * \tparam bool true for names, false otherwise
+  */
+template <typename T, typename TNAME, bool = TNAME::STATIC>
+struct SignalDescriptorBase {};
 
-  template <typename TFirstName, typename... TNames>
-  static auto implement(DataBroker& db, TFirstName firstName, TNames... names) {
-    auto signal = TypedSignal<T>(db.implement<type>(firstName));
-    ((db.alias(signal, names)), ...);
-    return signal;
-  }
-  template <typename TFirstName, typename... TNames>
-  static auto declare(DataBroker& db, TFirstName firstName, TNames... names) {
-    auto signal = TypedSignal<T>(db.declare<type>(firstName));
-    ((db.alias(signal, names)), ...);
-    return signal;
-  }
-};
-
-template <typename T, const char* FIRSTNAME, const char*... NAMES>
-struct SignalDescriptorImpl<T, FIRSTNAME, NAMES...> : public SignalDescriptorBase<T> {
-  using type = typename SignalDescriptorBase<T>::type;
-
-  static constexpr const char* Name() { return FIRSTNAME; }
-
+/**
+  * SignalDescriptorBase implements a SignalDescriptor, specialization for statically determined signal names
+  *
+  * \tparam T Type of the signal
+  * \tparam TNAME Name of the signal
+  */
+template <typename T, typename TNAME>
+struct SignalDescriptorBase<T, TNAME, true> : public TNAME {
+  using TNAME::name;
+  using TNAME::TNAME;
   /**
    * Implements the signal
    *
    * \param db Instance of the DataBroker
    * \return Container<type>, the container of the signal
    */
-  static auto implement(DataBroker& db) {
-    auto container = db.implement<type>(Name());
-    auto signal = db.signal(Name());
-    ((db.alias(signal, NAMES)), ...);
-    return container;
-  }
+  static auto implement(DataBroker& db) { return db.implement<T>(name()); }
   /**
    * Declares the signal
    *
    * \param db Instance of the DataBroker
    * \return TypeSignal<type>, the signal
    */
-  static auto declare(DataBroker& db) {
-    auto signal = TypedSignal<T>(db.declare<type>(Name()));
-    ((db.alias(signal, NAMES)), ...);
-    return TypedSignal<type>(std::move(signal));
-  }
-
+  static void declare(DataBroker& db) { db.declare<T>(name()); }
+  /**
+   * Returns the instance of a signal.
+   *
+   * \param db Instance of the DataBroker
+   * \return TypedSignal<T>, instance of the signal
+   */
+  static auto signal(DataBroker& db) { return TypedSignal<T>(db.signal(name())); }
   /**
    * Return the getter-function of a signal.
    *
    * \param db Instance of the DataBroker
-   * \return TypeSignal<type>, the signal
+   * \return const Signal::typed_get_value_function_t<T>&, getter-function of the signal
    */
-  static auto signal(DataBroker& db) {
-    auto signal = db.signal(Name());
-    return TypedSignal<type>(std::move(signal));
-  }
-
-  /**
-   * Return the getter-function of a signal.
-   *
-   * \param db Instance of the DataBroker
-   * \return const Signal::typed_get_value_function_t<type>&, getter-function of the signal
-   */
-  static auto getter(DataBroker& db) { return db.getter<type>(Name()); }
+  static auto getter(DataBroker& db) { return db.getter<T>(name()); }
   /**
    * Sets the getter-function of a signal.
    *
    * \param db Instance of the DataBroker
    * \param get_value_fn getter-function of the signal
    */
-  static void set_getter(DataBroker& db, Signal::typed_get_value_function_t<type> get_value_fn) {
-    db.set_getter<type>(Name(), std::move(get_value_fn));
+  static void set_getter(DataBroker& db, Signal::typed_get_value_function_t<T> get_value_fn) {
+    db.set_getter<T>(name(), std::move(get_value_fn));
   }
   /**
    * Return the setter-function of a signal.
@@ -1849,15 +1841,15 @@ struct SignalDescriptorImpl<T, FIRSTNAME, NAMES...> : public SignalDescriptorBas
    * \param db Instance of the DataBroker
    * \return const Signal::typed_set_value_function_t<type>&, setter-function of the signal
    */
-  static auto setter(DataBroker& db) { return db.setter<type>(Name()); }
+  static auto setter(DataBroker& db) { return db.setter<T>(name()); }
   /**
    * Sets the setter-function of a signal.
    *
    * \param db Instance of the DataBroker
    * \param set_value_fn setter-function of the signal
    */
-  static void set_setter(DataBroker& db, Signal::typed_set_value_function_t<type> set_value_fn) {
-    db.set_setter<type>(Name(), std::move(set_value_fn));
+  static void set_setter(DataBroker& db, Signal::typed_set_value_function_t<T> set_value_fn) {
+    db.set_setter<T>(name(), std::move(set_value_fn));
   }
 
   /**
@@ -1866,38 +1858,164 @@ struct SignalDescriptorImpl<T, FIRSTNAME, NAMES...> : public SignalDescriptorBas
    * \param db Instance of the DataBroker
    * \return Pointer to the value of the signal, nullptr if the signal does not exist
    */
-  static auto value(DataBroker& db) { return db.value<type>(Name()); }
+  static auto value(DataBroker& db) { return db.value<T>(name()); }
   /**
    * Set the value of a signal.
    *
    * \param db Instance of the DataBroker
    * \param value Value to be assigned to the signal
    */
-  static auto set_value(DataBroker& db, const T& value) { db.set_value<type>(value); }
+  static auto set_value(DataBroker& db, const T& value) { db.set_value<T>(name(), value); }
 };
 
 /**
-  * SignalDescriptor reflects properties of a signal at compile-time
+  * SignalDescriptorBase implements a SignalDescriptor, specialization for dynamically determined signal names
   *
+  * \tparam T Type of the signal
+  */
+template <typename T, typename TNAME>
+struct SignalDescriptorBase<T, TNAME, false> : public TNAME {
+  using TNAME::name;
+  using TNAME::TNAME;
+  /**
+   * Implements the signal
+   *
+   * \param db Instance of the DataBroker
+   * \return Container<type>, the container of the signal
+   */
+  auto implement(DataBroker& db) { return db.implement<T>(name()); }
+  /**
+   * Declares the signal
+   *
+   * \param db Instance of the DataBroker
+   * \return TypeSignal<type>, the signal
+   */
+  void declare(DataBroker& db) { db.declare<T>(name()); }
+  /**
+   * Returns the instance of a signal.
+   *
+   * \param db Instance of the DataBroker
+   * \return TypedSignal<T>, instance of the signal
+   */
+  auto signal(DataBroker& db) { return TypedSignal<T>(db.signal(name())); }
+  /**
+   * Return the getter-function of a signal.
+   *
+   * \param db Instance of the DataBroker
+   * \return const Signal::typed_get_value_function_t<T>&, getter-function of the signal
+   */
+  auto getter(DataBroker& db) { return db.getter<T>(name()); }
+  /**
+   * Sets the getter-function of a signal.
+   *
+   * \param db Instance of the DataBroker
+   * \param get_value_fn getter-function of the signal
+   */
+  void set_getter(DataBroker& db, Signal::typed_get_value_function_t<T> get_value_fn) {
+    db.set_getter<T>(name(), std::move(get_value_fn));
+  }
+  /**
+   * Return the setter-function of a signal.
+   *
+   * \param db Instance of the DataBroker
+   * \return const Signal::typed_set_value_function_t<type>&, setter-function of the signal
+   */
+  auto setter(DataBroker& db) { return db.setter<T>(name()); }
+  /**
+   * Sets the setter-function of a signal.
+   *
+   * \param db Instance of the DataBroker
+   * \param set_value_fn setter-function of the signal
+   */
+  void set_setter(DataBroker& db, Signal::typed_set_value_function_t<T> set_value_fn) {
+    db.set_setter<T>(name(), std::move(set_value_fn));
+  }
+
+  /**
+   * Return the value of a signal.
+   *
+   * \param db Instance of the DataBroker
+   * \return Pointer to the value of the signal, nullptr if the signal does not exist
+   */
+  auto value(DataBroker& db) { return db.value<T>(name()); }
+  /**
+   * Set the value of a signal.
+   *
+   * \param db Instance of the DataBroker
+   * \param value Value to be assigned to the signal
+   */
+  auto set_value(DataBroker& db, const T& value) { db.set_value<T>(name(), value); }
+};
+
+/**
+  * SignalDescriptorImpl implements a SignalDescriptor for names
+  *
+  * \tparam T Type of the signal
+  */
+template <typename T, const char* NAME>
+struct SignalDescriptorImpl : public SignalDescriptorBase<T, StaticName<NAME>> {
+  using SignalDescriptorBase<T, StaticName<NAME>>::SignalDescriptorBase;
+};
+/**
+  * SignalDescriptorImpl implements a SignalDescriptor for dynamic names
+  *
+  * \tparam T Type of the signal
+  */
+template <typename T>
+struct SignalDescriptorImpl<T, nullptr> : public SignalDescriptorBase<T, DynamicName> {
+  using SignalDescriptorBase<T, DynamicName>::SignalDescriptorBase;
+};
+
+/**
+  * SignalDescriptor reflects properties of a signal at compile-/run-time
+  *
+  * \tparam T Type of the signal
+  * \tparam NAME compile-time name, nullptr otherwise
   * \note: Design-Goals:
   * - Design-#1: Datatype of a signal shall be available at compile time
   * \note: Remarks:
   * - The declaration of a descriptor does not imply the availability of the coresponding signal at runtime.
   *   Likewise a C/C++ header does not imply that the coresponding symbols can be resolved at runtime.
   */
-template <typename T, const char*... NAMES>
-struct SignalDescriptor : public SignalDescriptorImpl<T, NAMES...> {
-  using type = typename SignalDescriptorImpl<T, NAMES...>::type;
+template <typename T, const char* NAME = nullptr>
+struct SignalDescriptor : public SignalDescriptorImpl<T, NAME> {
+  using SignalDescriptorImpl<T, NAME>::SignalDescriptorImpl;
 };
 
-template <typename T>
-struct IsSignalDescriptor : std::false_type {};
-template <typename T, const char*... NAMES>
-struct IsSignalDescriptor<SignalDescriptor<T, NAMES...>> : std::true_type {};
-template <typename T>
-constexpr bool is_signal_descriptor_v() {
-  return IsSignalDescriptor<T>::value;
-}
+template <typename T, const char* NAME>
+struct SignalTemplate : public StaticName<NAME> {
+ private:
+  template <template <typename> class TARGET, typename... ARGS>
+  static auto format(ARGS&&... args) {
+    auto name = fmt::format(StaticName<NAME>::name(), std::forward<ARGS>(args)...);
+    return TARGET<T>(name);
+  }
+
+ public:
+  template <typename... ARGS>
+  static auto specialize(ARGS&&... args) {
+    return format<SignalDescriptor>(std::forward<ARGS>(args)...);
+  }
+
+  template <typename... ARGS>
+  static auto partial(ARGS&&... args) {
+    return format<SignalTemplate>(std::forward<ARGS>(args)...);
+  }
+};
+
+// template <typename T, const char* NAME>
+// struct SignalDescriptor : public SignalDescriptor<T, StaticName<NAME>> {
+//using type = typename SignalDescriptorImpl<T, NAME>::type;
+// };
+
+// template <typename T>
+// struct IsSignalDescriptor : std::false_type {};
+// template <typename T, const char* NAME>
+// struct IsSignalDescriptor<SignalDescriptor<T, NAME>> : std::true_type {};
+// template <typename T>
+// constexpr bool is_signal_descriptor_v() {
+//   return IsSignalDescriptor<T>::value;
+// }
 
 }  // namespace databroker
 
