@@ -20,10 +20,9 @@
  * \see  main.cpp
  */
 
+#include <optional>
 #include <string>
 #include <vector>
-
-#include <boost/optional.hpp>  // for optional<>
 
 #include "lua_setup.hpp"
 #include "stack_factory.hpp"
