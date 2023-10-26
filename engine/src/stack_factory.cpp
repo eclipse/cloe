@@ -106,7 +106,7 @@ Stack new_stack(const StackOptions& opt) {
 
   // Interpolate known variables, if requested.
   if (opt.interpolate_vars) {
-    auto interpolate_path = [&opt](boost::optional<boost::filesystem::path>& p) {
+    auto interpolate_path = [&opt](std::optional<boost::filesystem::path>& p) {
       p = fable::interpolate_vars(p->native(), opt.environment.get());
     };
     interpolate_path(s.engine.registry_path);

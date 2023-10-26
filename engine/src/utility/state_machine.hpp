@@ -26,9 +26,8 @@
 #include <map>               // for map<>
 #include <memory>            // for shared_ptr<>
 #include <mutex>             // for mutex, lock_guard<>
+#include <optional>          // for optional<>
 #include <utility>           // for move
-
-#include <boost/optional.hpp>  // for optional<>
 
 #include <cloe/core.hpp>                // for Json
 #include <cloe/utility/statistics.hpp>  // for Accumulator
@@ -195,10 +194,10 @@ class StateMachine {
     interrupt_ = id;
   }
 
-  boost::optional<StateId> pop_interrupt() {
+  std::optional<StateId> pop_interrupt() {
     std::lock_guard<std::mutex> guard(interrupt_mtx_);
     if (interrupt_ == nullptr) {
-      return boost::none;
+      return std::nullopt;
     } else {
       auto tmp = interrupt_;
       interrupt_ = nullptr;

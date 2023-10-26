@@ -24,11 +24,11 @@
 
 #pragma once
 
+#include <optional>      // for optional<>
 #include <string>        // for string
 #include <system_error>  // for system_error
 #include <vector>        // for vector<>
 
-#include <boost/optional.hpp>        // for optional<>
 #include <boost/process/child.hpp>   // for child
 #include <cloe/core.hpp>             // for Logger, Json, Conf, ...
 #include <cloe/trigger.hpp>          // for Action, ActionFactory, ...
@@ -39,9 +39,9 @@ namespace engine {
 struct CommandResult {
   std::string name;
   std::string command;
-  boost::optional<boost::process::child> child;
-  boost::optional<int> exit_code;
-  boost::optional<std::system_error> error;
+  std::optional<boost::process::child> child;
+  std::optional<int> exit_code;
+  std::optional<std::system_error> error;
   std::vector<std::string> output;
 };
 
