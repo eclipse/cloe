@@ -150,7 +150,7 @@ class SimulationMachine
       try {
         // Handle interrupts that have been inserted via push_interrupt.
         // Only one interrupt is stored.
-        boost::optional<StateId> interrupt;
+        std::optional<StateId> interrupt;
         while ((interrupt = pop_interrupt())) {
           id = handle_interrupt(id, *interrupt, ctx);
         }

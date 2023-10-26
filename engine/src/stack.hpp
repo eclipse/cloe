@@ -29,9 +29,9 @@
 #include <string>   // for string
 #include <utility>  // for move
 #include <vector>   // for vector<>
+#include <optional> // for optional<>
 
 #include <boost/filesystem/path.hpp>        // for path
-#include <boost/optional.hpp>               // for optional<>
 #include <fable/schema/boost_optional.hpp>  // for Optional<>
 #include <fable/schema/boost_path.hpp>      // for Path
 #include <fable/schema/custom.hpp>          // for CustomDeserializer
@@ -140,8 +140,8 @@ using IncludesSchema = schema::Vector<IncludeConf, IncludeSchema>;
  */
 struct LoggingConf : public Confable {
   std::string name;
-  boost::optional<std::string> pattern;
-  boost::optional<LogLevel> level;
+  std::optional<std::string> pattern;
+  std::optional<LogLevel> level;
 
  public:  // Special
   void apply() const;
@@ -205,20 +205,20 @@ struct PluginConf : public PersistentConfable {
   boost::filesystem::path plugin_path{};
 
   /** Name to give plugin if path is to a single file. */
-  boost::optional<std::string> plugin_name{};
+  std::optional<std::string> plugin_name{};
 
   /** Prefix for plugin name(s). */
-  boost::optional<std::string> plugin_prefix{};
+  std::optional<std::string> plugin_prefix{};
 
   /** Do not fail if path does not exist. */
-  boost::optional<bool> ignore_missing{};
+  std::optional<bool> ignore_missing{};
 
   /**
    * Do not fail if path exists but plugin cannot be loaded.
    * This is especially useful if trying to load from several directories,
    * such as /usr/lib/cloe/plugins.
    */
-  boost::optional<bool> ignore_failure{};
+  std::optional<bool> ignore_failure{};
 
   /**
    * If a plugin with the same name exists, replace it with this one.
@@ -226,7 +226,7 @@ struct PluginConf : public PersistentConfable {
    * This is dependent on the order of plugin loading, which is determined by
    * the order of configuration files.
    */
-  boost::optional<bool> allow_clobber{};
+  std::optional<bool> allow_clobber{};
 
  public:  // Constructors
   PluginConf() = default;
@@ -309,15 +309,15 @@ struct EngineConf : public Confable {
   bool triggers_ignore_source{false};
 
   // Output:
-  boost::optional<boost::filesystem::path> registry_path{CLOE_DATA_HOME "/registry"};
-  boost::optional<boost::filesystem::path> output_path{"${CLOE_SIMULATION_UUID}"};
-  boost::optional<boost::filesystem::path> output_file_config{"config.json"};
-  boost::optional<boost::filesystem::path> output_file_result{"result.json"};
-  boost::optional<boost::filesystem::path> output_file_triggers{"triggers.json"};
-  boost::optional<boost::filesystem::path> output_file_signals{"signals.json"};
-  boost::optional<boost::filesystem::path> output_file_signals_autocompletion{
+  std::optional<boost::filesystem::path> registry_path{CLOE_DATA_HOME "/registry"};
+  std::optional<boost::filesystem::path> output_path{"${CLOE_SIMULATION_UUID}"};
+  std::optional<boost::filesystem::path> output_file_config{"config.json"};
+  std::optional<boost::filesystem::path> output_file_result{"result.json"};
+  std::optional<boost::filesystem::path> output_file_triggers{"triggers.json"};
+  std::optional<boost::filesystem::path> output_file_signals{"signals.json"};
+  std::optional<boost::filesystem::path> output_file_signals_autocompletion{
       "signals_autocompletion.lua"};
-  boost::optional<boost::filesystem::path> output_file_data_stream;
+  std::optional<boost::filesystem::path> output_file_data_stream;
   bool output_clobber_files{true};
 
   /**
@@ -372,7 +372,7 @@ struct EngineConf : public Confable {
    * The states with an asterisk are given defaults that are not affected by
    * the default timeout as these typically take longer due to I/O operations.
    */
-  std::map<std::string, boost::optional<std::chrono::milliseconds>> watchdog_state_timeouts{
+  std::map<std::string, std::optional<std::chrono::milliseconds>> watchdog_state_timeouts{
       {"CONNECT", std::chrono::milliseconds{300'000}},
       {"ABORT", std::chrono::milliseconds{90'000}},
       {"STOP", std::chrono::milliseconds{300'000}},
@@ -452,8 +452,8 @@ using EngineSchema = schema_type<EngineConf>::type;
  * good idea!
  */
 struct DefaultConf : public Confable {
-  boost::optional<std::string> name;
-  boost::optional<std::string> binding;
+  std::optional<std::string> name;
+  std::optional<std::string> binding;
   Conf args;
 
  public:  // Confable Overrides
@@ -494,7 +494,7 @@ class FactoryPlugin : public fable::schema::FactoryPointerless<C> {
  */
 struct SimulatorConf : public Confable {
   const std::string binding;
-  boost::optional<std::string> name;
+  std::optional<std::string> name;
   std::shared_ptr<SimulatorFactory> factory;
   Conf args;
 
@@ -526,7 +526,7 @@ class SimulatorSchema : public FactoryPlugin<SimulatorConf, SimulatorFactory> {
  */
 struct ControllerConf : public Confable {
   const std::string binding;
-  boost::optional<std::string> name;
+  std::optional<std::string> name;
   std::string vehicle;
   std::shared_ptr<ControllerFactory> factory;
   Conf args;
@@ -610,7 +610,7 @@ struct FromSimulator : public Confable {
 
 struct ComponentConf : public Confable {
   const std::string binding;
-  boost::optional<std::string> name;
+  std::optional<std::string> name;
   std::vector<std::string> from;
   std::shared_ptr<ComponentFactory> factory;
   Conf args;
@@ -773,7 +773,7 @@ class VehicleSchema : public fable::schema::Base<VehicleSchema> {
 // --------------------------------------------------------------------------------------------- //
 
 struct TriggerConf : public PersistentConfable {
-  boost::optional<std::string> label{boost::none};
+  std::optional<std::string> label{};
   Source source{Source::FILESYSTEM};
   Conf action{};
   Conf event{};
@@ -816,7 +816,7 @@ struct SimulationConf : public Confable {
   /**
    * Optional namespace for simulation events and actions.
    */
-  boost::optional<std::string> name{boost::none};
+  std::optional<std::string> name{};
 
   /**
    * Nominal model time step.
@@ -880,7 +880,7 @@ using ConfReader = std::function<Conf(const std::string&)>;
 class Stack : public Confable {
  private:  // Constants (1)
   std::vector<std::string> reserved_ids_;
-  boost::optional<std::string> schema_ref_;
+  std::optional<std::string> schema_ref_;
 
  public:  // Configuration (13)
   std::string version;
