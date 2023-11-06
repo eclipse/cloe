@@ -22,9 +22,6 @@ cloe.schedule_test {
     info = { hello = "test", rqm = "big number" },
     desc = "this is a long text for test",
     terminate = false,
-
-    --- @param z TestFixture
-    --- @param sync Sync
     run = function(z, sync)
         -- If we want to use the Lust
         local lust = require("lust")

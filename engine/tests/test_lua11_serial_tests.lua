@@ -33,9 +33,6 @@ cloe.schedule_test {
         cloe.log("debug", "Waiting on TRIGGER_NEXT = %s", TRIGGER_NEXT)
         return TRIGGER_NEXT
     end,
-
-    --- @param z TestFixture
-    --- @param sync Sync
     run = function(z, sync)
         z:printf("Entering TEST-B")
         z:assert(sync:time() == (dur("5s") + sync:step_width()), "TEST-B should start after TEST-A completed, at 5s")
