@@ -179,6 +179,15 @@ function engine.signal(name)
     return api.signals[name]
 end
 
+--- Set the specified signal with a value.
+---
+--- @param name string signal name
+--- @param value any signal value
+--- @return nil
+function engine.set_signal(name, value)
+    api.signals[name] = value
+end
+
 --- Schedule a trigger.
 ---
 --- It is not recommended to use this low-level function, as it is viable to change.
