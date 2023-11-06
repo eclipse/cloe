@@ -602,6 +602,9 @@ end
 --- @return nil
 function TestFixture:describe(name, fn)
     local lust = require("lust")
+    lust.nocolor()
+
+    local lust_describe_activity = { name = "", evaluation = {} }
 
     -- Lust uses print(), so we hijack the function temporarily to capture
     -- its output.
@@ -610,8 +613,7 @@ function TestFixture:describe(name, fn)
     -- such a describe block, we may not re-install the original print
     -- function and all further output may be suppressed!
     local oldprint = _G.print
-    local lust_describe_activity = { name = "", evaluation = {} }
-    _G.print = function(msg)
+    _ENV.print = function(msg)
         local tab_count = count_leading_tabs(msg)
         msg = luax.trim(msg) -- remove leading tab
         if tab_count == 0 then
@@ -620,11 +622,10 @@ function TestFixture:describe(name, fn)
             table.insert(lust_describe_activity.evaluation, msg)
         end
     end
-
-    lust.nocolor()
     lust.describe(name, fn)
+    _ENV.print = oldprint
+
     self:report_data(lust_describe_activity)
-    _G.print = oldprint
 end
 
 return {
