@@ -19,6 +19,8 @@
 local api = require("cloe-engine")
 local engine = require("cloe.engine")
 
+--- Let the language-server know we are importing cloe.engine into cloe:
+---@module 'cloe.engine'
 local cloe = {
     --- Table of functions for dealing with file paths.
     fs = require("cloe-engine.fs"),

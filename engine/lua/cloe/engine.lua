@@ -22,6 +22,8 @@ local luax = require("cloe.luax")
 
 local validate = require("cloe.typecheck").validate
 
+--- Let the language-server know we are importing cloe-engine.types into engine:
+---@module 'cloe-engine.types'
 local engine = {}
 
 -- Import all types from cloe-engine into this namespace.
@@ -217,7 +219,7 @@ end
 
 --- @class ScheduleSpec
 --- @field on string|function|table
---- @field run fun(Sync)|string|table
+--- @field run string|table|fun(sync: Sync):boolean
 --- @field desc? string
 --- @field enable? boolean|fun():boolean
 --- @field group? ScheduleGroup
@@ -231,8 +233,8 @@ end
 --- @field desc? string
 --- @field info? table
 --- @field enable? boolean|fun():boolean
---- @field on? string|fun():boolean
---- @field run fun(TestFixture, Sync):boolean
+--- @field on? string|fun(sync: Sync):boolean
+--- @field run fun(z: TestFixture, sync: Sync)
 --- @field report? function
 --- @field terminate boolean|fun():boolean
 
@@ -245,7 +247,7 @@ local function is_spec_enabled(spec)
     if spec.enable == nil then
         return default
     elseif type(spec.enable) == "boolean" then
-        return spec.enable
+        return spec.enable --[[@as boolean]]
     elseif type(spec.enable) == "function" then
         return spec.enable()
     else

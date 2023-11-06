@@ -48,9 +48,6 @@ cloe.schedule_test {
     id = "e03fc31f-586b-4e57-80fa-ff2cba5ff9dd",
     on = "start",
     terminate = false,
-
-    --- @param z TestFixture
-    --- @param sync Sync
     run = function(z, sync)
         cloe.log("info", "Entering test")
         z:assert(true)
