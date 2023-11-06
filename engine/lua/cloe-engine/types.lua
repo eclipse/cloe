@@ -134,7 +134,7 @@ function Sync:achievable_realtime_factor() end
 
 --- @class TriggerSchema
 --- @field event string|table
---- @field action string|table|function
+--- @field action string|table|fun(sync: Sync):(boolean?)
 --- @field label? string
 --- @field action_source? string
 --- @field sticky? boolean

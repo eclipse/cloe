@@ -24,37 +24,43 @@ local validate = require("cloe.typecheck").validate
 local inspect = require("inspect").inspect
 
 --- @class TestFixture
---- @field _test table
---- @field _id string
---- @field _report table
---- @field _coroutine thread
---- @field _source string
---- @field _sync userdata
---- @field _asserts integer
---- @field _failures integer
+--- @field private _test table
+--- @field private _id string
+--- @field private _report table
+--- @field private _coroutine thread
+--- @field private _source string
+--- @field private _sync Sync
+--- @field private _asserts integer
+--- @field private _failures integer
 local TestFixture = {}
 
 --- @class SchedulerInterface
---- @field log fun(string, string, ...)
---- @field schedule fun(table)
---- @field execute_action fun(table)
+---
+--- Interface to scheduler to support dependency injection and
+--- so we can avoid cyclic dependency to/from cloe.engine.
+---
+--- @field log fun(level: string, fmt: string, ...: any)
+--- @field schedule fun(trigger: ScheduleSpec)
+--- @field execute_action fun(action: string|table)
 
 --- @enum TestStatus
 local TestStatus = {
-    PENDING = "pending",
-    RUNNING = "running",
-    ABORTED = "aborted",
-    FAILED = "failed",
-    PASSED = "passed",
+    PENDING = "pending", --- Waiting to be scheduled
+    RUNNING = "running", --- Currently running
+    ABORTED = "aborted", --- Aborted because of error
+    STOPPED = "stopped", --- Stopped without explicit pass/fail
+    FAILED = "failed", --- Stopped with >=1 asserts failed
+    PASSED = "passed", --- Stopped with all asserts passed
 }
 
 --- @enum ReportOutcome
 local ReportOutcome = {
-    FAILURE = "fail",
-    SUCCESS = "pass",
+    FAILURE = "fail", --- >=1 tests failed
+    SUCCESS = "pass", --- all tests passed
 }
 
 --- Return a new test fixture for test
+---
 --- @param test TestSpec
 --- @param scheduler? SchedulerInterface for dependency injection
 --- @return TestFixture
@@ -100,6 +106,7 @@ end
 
 --- Log a message.
 ---
+--- @private
 --- @param level string
 --- @param message string
 --- @param ... any
@@ -110,6 +117,7 @@ end
 
 --- Schedule resumption of test.
 ---
+--- @private
 --- @param spec ScheduleSpec
 function TestFixture:_schedule(spec)
     require("cloe.engine").schedule(spec)
@@ -117,6 +125,7 @@ end
 
 --- Execute an action immediately.
 ---
+--- @private
 --- @param action string|table
 function TestFixture:_execute_action(action)
     require("cloe.engine").execute_action(action)
@@ -127,6 +136,7 @@ end
 --- This is called at the beginning of the test, and any time it
 --- hands control back to the engine to do other work.
 ---
+--- @private
 --- @param ... any
 --- @return nil
 function TestFixture:_resume(...)
@@ -156,6 +166,7 @@ function TestFixture:_resume(...)
     end
 end
 
+--- @private
 function TestFixture:_finish()
     -- After the test completes, update the report
     self._report["asserts"] = {
@@ -172,12 +183,14 @@ function TestFixture:_finish()
     self:_terminate()
 end
 
+--- @private
 --- @param status TestStatus
 function TestFixture:_set_status(status)
     self:_log("debug", "[%s] Status -> %s", self._id, status)
     self._report.status = status
 end
 
+--- @private
 function TestFixture:_terminate()
     local report = api.state.report
     local tests = 0
@@ -239,7 +252,7 @@ end
 --- @param ... any Arguments to format string.
 --- @return nil
 function TestFixture:report_with(field, level, fmt, ...)
-    validate("z:report_with(string, string, string, [?any]...)", self, field, level, fmt, ...)
+    validate("TestFixture:report_with(string, string, string, [?any]...)", self, field, level, fmt, ...)
     local msg = string.format(fmt, ...)
     self:_log(level, "[%s] Report %s: %s", self._id, field, msg)
     self:report_data({ [field] = msg }, true)
@@ -251,8 +264,8 @@ end
 --- @param fmt string Format string.
 --- @param ... any Arguments to format string.
 --- @return nil
-function TestFixture:report_message( level, fmt, ...)
-    validate("z:report_message(string, string, [?any]...)", self, level, fmt, ...)
+function TestFixture:report_message(level, fmt, ...)
+    validate("TestFixture:report_message(string, string, [?any]...)", self, level, fmt, ...)
     self:report_with("message", level, fmt, ...)
 end
 
@@ -300,13 +313,14 @@ end
 --- @param ... any
 --- @return nil
 function TestFixture:stop(fmt, ...)
-    validate("z:stop([string], [?any]...)", self, fmt, ...)
+    validate("TestFixture:stop([string], [?any]...)", self, fmt, ...)
     if fmt then
         self:printf(fmt, ...)
     end
     coroutine.yield(function()
-        if self._report.status == "pending" then
-            self:_set_status("complete")
+        if self._report.status == TestStatus.PENDING then
+            self:_set_status(TestStatus.STOPPED)
+        end
         end
         coroutine.close(self._coroutine)
     end)
@@ -321,7 +335,7 @@ end
 --- @param ... any
 --- @return nil
 function TestFixture:fail(fmt, ...)
-    validate("z:fail([string], [?any]...)", self, fmt, ...)
+    validate("TestFixture:fail([string], [?any]...)", self, fmt, ...)
     if fmt then
         self:errorf(fmt, ...)
     end
@@ -338,7 +352,7 @@ end
 --- @param ... any
 --- @return nil
 function TestFixture:succeed(fmt, ...)
-    validate("z:succeed([string], [?any]...)", self, fmt, ...)
+    validate("TestFixture:succeed([string], [?any]...)", self, fmt, ...)
     if fmt then
         self:printf(fmt, ...)
     end
@@ -354,7 +368,7 @@ end
 --- @param duration string
 --- @return nil
 function TestFixture:wait_duration(duration)
-    validate("z:wait_duration(string)", self, duration)
+    validate("TestFixture:wait_duration(string)", self, duration)
     self:debugf("wait for duration: %s", duration)
     coroutine.yield({
         on = "next=" .. types.Duration.new(duration):s(),
@@ -370,18 +384,31 @@ end
 --- This will yield execution of the test-case back to the simulation
 --- until the function, which is run once every cycle, returns true.
 ---
---- @param condition fun(Sync):boolean
+--- @param condition fun(sync: Sync):boolean
+--- @param timeout? Duration|string
 --- @return nil
-function TestFixture:wait_until(condition)
-    validate("z:wait_until(function)", self, condition)
-    self:debugf("wait until condition: %s", condition)
+function TestFixture:wait_until(condition, timeout)
+    validate("TestFixture:wait_until(function, [string|userdata])", self, condition, timeout)
+    if type(timeout) == "string" then
+        timeout = types.Duration.new(timeout)
+    end
+    if timeout then
+        timeout = self._sync:time() + timeout
+        self:debugf("wait until condition with timeout %s: %s", timeout, condition)
+    else
+        self:debugf("wait until condition: %s", condition)
+    end
     coroutine.yield({
         on = "loop",
         group = self._id,
         pin = true,
         run = function(sync)
             if condition(sync) then
-                self:_resume()
+                self:_resume(true)
+                return false
+            elseif timeout and sync:time() > timeout then
+                self:warnf("condition timed out after %s", timeout)
+                self:_resume(false)
                 return false
             end
         end,
@@ -389,19 +416,22 @@ function TestFixture:wait_until(condition)
 end
 
 function TestFixture:do_action(action)
-    validate("z:do_action(string|table)", self, action)
+    validate("TestFixture:do_action(string|table)", self, action)
     self:report_with("action", "debug", "%s", action)
     self:_execute_action(action)
 end
 
 --- @class Operator
---- @field fn fun(any, any):boolean
+--- @field fn fun(left: any, right: any):boolean
 --- @field repr string
 
---- Expect that left == right.
+--- Expect an operation with op(left, right) == true.
+---
+--- @private
 --- @param op Operator
+--- @return boolean # result of expression
 function TestFixture:_expect_op(op, left, right, fmt, ...)
-    validate("z:_expect_op(table, any, any, [string], [?any]...)", self, op, left, right, fmt, ...)
+    validate("TestFixture:_expect_op(table, any, any, [string], [?any]...)", self, op, left, right, fmt, ...)
     self._asserts = self._asserts + 1
     local msg = nil
     if fmt then
@@ -409,8 +439,8 @@ function TestFixture:_expect_op(op, left, right, fmt, ...)
     end
     local report = {
         assert = string.format("%s %s %s", left, op.repr, right),
-        left = inspect(left, {newline=' ', indent=''}),
-        right = inspect(right, {newline=' ', indent=''}),
+        left = inspect(left, { newline = " ", indent = "" }),
+        right = inspect(right, { newline = " ", indent = "" }),
         value = op.fn(left, right),
         message = msg,
     }
@@ -439,13 +469,12 @@ end
 --- @param ... any
 --- @return any value
 function TestFixture:expect(value, fmt, ...)
-    return self:_expect_op(
-        { fn = function(a) return a end, repr = "is" },
-        value,
-        "truthy",
-        fmt,
-        ...
-    )
+    return self:_expect_op({
+        fn = function(a)
+            return a
+        end,
+        repr = "is",
+    }, value, "truthy", fmt, ...)
 end
 
 --- Assert that the first argument is true.
@@ -468,28 +497,71 @@ function TestFixture:assert(value, fmt, ...)
 end
 
 local Operator = {
-    eq = { fn = function(a, b) return a == b end, repr = "==" }, --- Equal to
-    ne = { fn = function(a, b) return a ~= b end, repr = "~=" }, --- Not equal to
-    lt = { fn = function(a, b) return a < b end,  repr = "<" },  --- Less than
-    le = { fn = function(a, b) return a <= b end, repr = "<=" }, --- Less than or equal to
-    gt = { fn = function(a, b) return a > b end,  repr = ">" },  --- Greater than
-    ge = { fn = function(a, b) return a >= b end, repr = ">=" }, --- Greater than or equal to
+    eq = { fn = function(a, b) return a == b end, repr = "==", }, --- Equal to
+    ne = { fn = function(a, b) return a ~= b end, repr = "~=", }, --- Not equal to
+    lt = { fn = function(a, b) return a < b end, repr = "<", },   --- Less than
+    le = { fn = function(a, b) return a <= b end, repr = "<=", }, --- Less than or equal to
+    gt = { fn = function(a, b) return a > b end, repr = ">", },   --- Greater than
+    ge = { fn = function(a, b) return a >= b end, repr = ">=", }, --- Greater than or equal to
 }
 
--- Add expect_ and assert_ methods for all operators defined above
---
--- TODO: Provide autocompletion for these types somehow.
-for key, op in pairs(Operator) do
-    local expect_fn = "expect_" .. key
-    TestFixture[expect_fn] = function(self, left, right, fmt, ...)
-        return self:_expect_op(op, left, right, fmt, ...)
-    end
+function TestFixture:expect_eq(left, right, fmt, ...)
+    return self:_expect_op(Operator.eq, left, right, fmt, ...)
+end
 
-    local assert_fn = "assert_" .. key
-    TestFixture[assert_fn] = function(self, left, right, fmt, ...)
-        if not self[expect_fn](self, left, right, fmt, ...) then
-            self:fail("[%s] test assertion failed", self._id)
-        end
+function TestFixture:expect_ne(left, right, fmt, ...)
+    return self:_expect_op(Operator.ne, left, right, fmt, ...)
+end
+
+function TestFixture:expect_lt(left, right, fmt, ...)
+    return self:_expect_op(Operator.lt, left, right, fmt, ...)
+end
+
+function TestFixture:expect_le(left, right, fmt, ...)
+    return self:_expect_op(Operator.le, left, right, fmt, ...)
+end
+
+function TestFixture:expect_gt(left, right, fmt, ...)
+    return self:_expect_op(Operator.gt, left, right, fmt, ...)
+end
+
+function TestFixture:expect_ge(left, right, fmt, ...)
+    return self:_expect_op(Operator.ge, left, right, fmt, ...)
+end
+
+function TestFixture:assert_eq(left, right, fmt, ...)
+    if not self:_expect_op(Operator.eq, left, right, fmt, ...) then
+        self:fail("[%s] test assertion failed", self._id)
+    end
+end
+
+function TestFixture:assert_ne(left, right, fmt, ...)
+    if not self:_expect_op(Operator.ne, left, right, fmt, ...) then
+        self:fail("[%s] test assertion failed", self._id)
+    end
+end
+
+function TestFixture:assert_lt(left, right, fmt, ...)
+    if not self:_expect_op(Operator.lt, left, right, fmt, ...) then
+        self:fail("[%s] test assertion failed", self._id)
+    end
+end
+
+function TestFixture:assert_le(left, right, fmt, ...)
+    if not self:_expect_op(Operator.le, left, right, fmt, ...) then
+        self:fail("[%s] test assertion failed", self._id)
+    end
+end
+
+function TestFixture:assert_gt(left, right, fmt, ...)
+    if not self:_expect_op(Operator.gt, left, right, fmt, ...) then
+        self:fail("[%s] test assertion failed", self._id)
+    end
+end
+
+function TestFixture:assert_ge(left, right, fmt, ...)
+    if not self:_expect_op(Operator.ge, left, right, fmt, ...) then
+        self:fail("[%s] test assertion failed", self._id)
     end
 end
 

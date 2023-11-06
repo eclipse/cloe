@@ -41,9 +41,6 @@ cloe.schedule_test {
     -- Note that this is the same ID as used in BATS.
     id = "e03fc31f-586b-4e57-80fa-ff2cba5ff9dd",
     on = "start",
-
-    --- @param z TestFixture
-    --- @param sync Sync
     run = function(z, sync)
         cloe.log("info", "Entering test")
         z:assert(true)
