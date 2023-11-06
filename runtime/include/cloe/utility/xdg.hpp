@@ -27,14 +27,12 @@
 
 #pragma once
 
+#include <filesystem>  // for path
 #include <functional>  // for function
 #include <string>      // for string
 #include <vector>      // for vector<>
 
-#include <boost/filesystem/path.hpp>  // for path, operator/
-
-namespace cloe {
-namespace utility {
+namespace cloe::utility {
 
 /**
  * This enum class contains all the exceptions that can be thrown.
@@ -69,30 +67,28 @@ enum class XdgError {
 // The following xdg_* functions are implementation functions, and aren't meant
 // to be used directly.
 #ifdef __linux__
-boost::filesystem::path xdg_temp_dir();
+std::filesystem::path xdg_temp_dir();
 #endif
 
-boost::filesystem::path xdg_getenv_path(const std::string& env);
-boost::filesystem::path xdg_path(const std::string& env,
-                                 const boost::filesystem::path& default_path);
-std::vector<boost::filesystem::path> xdg_paths(const std::string& env,
-                                               const std::string& default_paths);
+std::filesystem::path xdg_getenv_path(const std::string& env);
+std::filesystem::path xdg_path(const std::string& env, const std::filesystem::path& default_path);
+std::vector<std::filesystem::path> xdg_paths(const std::string& env,
+                                             const std::string& default_paths);
 
 /*
  * Make sure to ask `is_empty()` on the result.
  */
-boost::filesystem::path xdg_find(const boost::filesystem::path& file,
-                                 const std::vector<boost::filesystem::path>& dirs);
+std::filesystem::path xdg_find(const std::filesystem::path& file,
+                               const std::vector<std::filesystem::path>& dirs);
 
-std::vector<boost::filesystem::path> xdg_findall(const boost::filesystem::path& file,
-                                                 const std::vector<boost::filesystem::path>& dirs);
+std::vector<std::filesystem::path> xdg_findall(const std::filesystem::path& file,
+                                               const std::vector<std::filesystem::path>& dirs);
 
-void xdg_merge(const boost::filesystem::path& file,
-               const std::vector<boost::filesystem::path>& dirs, bool reverse,
-               std::function<bool(const boost::filesystem::path&)> mergefn);
+void xdg_merge(const std::filesystem::path& file, const std::vector<std::filesystem::path>& dirs,
+               bool reverse, const std::function<bool(const std::filesystem::path&)>& mergefn);
 
 /// User configuration base directory, e.g., `~./config`.
-inline boost::filesystem::path config_home() {
+inline std::filesystem::path config_home() {
 #ifdef __linux__
   return xdg_path("XDG_CONFIG_HOME", "~/.config");
 #elif WIN32
@@ -101,7 +97,7 @@ inline boost::filesystem::path config_home() {
 }
 
 /// User data files base directory, e.g., `~/.local/share`.
-inline boost::filesystem::path data_home() {
+inline std::filesystem::path data_home() {
 #ifdef __linux__
   return xdg_path("XDG_DATA_HOME", "~/.local/share");
 #elif WIN32
@@ -110,7 +106,7 @@ inline boost::filesystem::path data_home() {
 }
 
 /// User cache files base directory, e.g., `~/.cache`.
-inline boost::filesystem::path cache_home() {
+inline std::filesystem::path cache_home() {
 #ifdef __linux__
   return xdg_path("XDG_CACHE_HOME", "~/.cache");
 #elif WIN32
@@ -119,7 +115,7 @@ inline boost::filesystem::path cache_home() {
 }
 
 /// User runtime files base directory, e.g., `/run/user/1000`
-inline boost::filesystem::path runtime_dir() {
+inline std::filesystem::path runtime_dir() {
 #ifdef __linux__
   return xdg_path("XDG_RUNTIME_DIR", xdg_temp_dir());
 #elif WIN32
@@ -128,7 +124,7 @@ inline boost::filesystem::path runtime_dir() {
 }
 
 /// Global configuration directories, e.g., `/etc/xdg`.
-inline std::vector<boost::filesystem::path> config_dirs() {
+inline std::vector<std::filesystem::path> config_dirs() {
 #ifdef __linux__
   return xdg_paths("XDG_CONFIG_DIRS", "/etc/xdg");
 #elif WIN32
@@ -137,7 +133,7 @@ inline std::vector<boost::filesystem::path> config_dirs() {
 }
 
 /// Global data files directories, e.g., `/usr/local/share`.
-inline std::vector<boost::filesystem::path> data_dirs() {
+inline std::vector<std::filesystem::path> data_dirs() {
 #ifdef __linux__
   return xdg_paths("XDG_DATA_DIRS", "/usr/local/share:/usr/share");
 #elif WIN32
@@ -146,14 +142,14 @@ inline std::vector<boost::filesystem::path> data_dirs() {
 }
 
 /// User and global configuration directories
-inline std::vector<boost::filesystem::path> all_config_dirs() {
+inline std::vector<std::filesystem::path> all_config_dirs() {
   auto xs = config_dirs();
   xs.insert(xs.begin(), config_home());
   return xs;
 }
 
 /// User and global data directories
-inline std::vector<boost::filesystem::path> all_data_dirs() {
+inline std::vector<std::filesystem::path> all_data_dirs() {
   auto xs = data_dirs();
   xs.insert(xs.begin(), data_home());
   return xs;
@@ -164,16 +160,16 @@ inline std::vector<boost::filesystem::path> all_data_dirs() {
  *
  * This is useful if you want to create a file.
  */
-inline boost::filesystem::path user_config(const boost::filesystem::path& file) {
+inline std::filesystem::path user_config(const std::filesystem::path& file) {
   return config_home() / file;
 }
-inline boost::filesystem::path user_data(const boost::filesystem::path& file) {
+inline std::filesystem::path user_data(const std::filesystem::path& file) {
   return data_home() / file;
 }
-inline boost::filesystem::path user_cache(const boost::filesystem::path& file) {
+inline std::filesystem::path user_cache(const std::filesystem::path& file) {
   return cache_home() / file;
 }
-inline boost::filesystem::path user_runtime(const boost::filesystem::path& file) {
+inline std::filesystem::path user_runtime(const std::filesystem::path& file) {
   return runtime_dir() / file;
 }
 
@@ -183,17 +179,17 @@ inline boost::filesystem::path user_runtime(const boost::filesystem::path& file)
  *
  * This is useful if you want to read a file.
  */
-inline boost::filesystem::path find_config(const boost::filesystem::path& file) {
+inline std::filesystem::path find_config(const std::filesystem::path& file) {
   return xdg_find(file, all_config_dirs());
 }
-inline boost::filesystem::path find_data(const boost::filesystem::path& file) {
+inline std::filesystem::path find_data(const std::filesystem::path& file) {
   return xdg_find(file, all_data_dirs());
 }
-inline boost::filesystem::path find_cache(const boost::filesystem::path& file) {
-  return xdg_find(file, std::vector<boost::filesystem::path>{cache_home()});
+inline std::filesystem::path find_cache(const std::filesystem::path& file) {
+  return xdg_find(file, std::vector<std::filesystem::path>{cache_home()});
 }
-inline boost::filesystem::path find_runtime(const boost::filesystem::path& file) {
-  return xdg_find(file, std::vector<boost::filesystem::path>{runtime_dir()});
+inline std::filesystem::path find_runtime(const std::filesystem::path& file) {
+  return xdg_find(file, std::vector<std::filesystem::path>{runtime_dir()});
 }
 
 /*
@@ -202,10 +198,10 @@ inline boost::filesystem::path find_runtime(const boost::filesystem::path& file)
  *
  * This is useful if you can read multiple instances of the config or data.
  */
-inline std::vector<boost::filesystem::path> find_all_config(const boost::filesystem::path& file) {
+inline std::vector<std::filesystem::path> find_all_config(const std::filesystem::path& file) {
   return xdg_findall(file, all_config_dirs());
 }
-inline std::vector<boost::filesystem::path> find_all_data(const boost::filesystem::path& file) {
+inline std::vector<std::filesystem::path> find_all_data(const std::filesystem::path& file) {
   return xdg_findall(file, all_data_dirs());
 }
 
@@ -217,19 +213,16 @@ inline std::vector<boost::filesystem::path> find_all_data(const boost::filesyste
  * Because in merging, the most important file should be loaded last, there
  * is a reverse option. If the function returns false, the merging is aborted.
  */
-inline void merge_config(const boost::filesystem::path& file,
-                         std::function<bool(const boost::filesystem::path&)>
-                             mergefn,
+inline void merge_config(const std::filesystem::path& file,
+                         const std::function<bool(const std::filesystem::path&)>& mergefn,
                          bool reverse = false) {
   xdg_merge(file, all_config_dirs(), reverse, mergefn);
 }
 
-inline void merge_data(const boost::filesystem::path& file,
-                       std::function<bool(const boost::filesystem::path&)>
-                           mergefn,
+inline void merge_data(const std::filesystem::path& file,
+                       const std::function<bool(const std::filesystem::path&)>& mergefn,
                        bool reverse = false) {
   xdg_merge(file, all_data_dirs(), reverse, mergefn);
 }
 
-}  // namespace utility
-}  // namespace cloe
+}  // namespace cloe::utility
