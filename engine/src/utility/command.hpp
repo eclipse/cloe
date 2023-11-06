@@ -27,6 +27,7 @@
 #include <optional>      // for optional<>
 #include <string>        // for string
 #include <system_error>  // for system_error
+#include <utility>       // for move
 #include <vector>        // for vector<>
 
 #include <boost/process/child.hpp>   // for child
@@ -48,12 +49,12 @@ struct CommandResult {
 class CommandExecuter {
  public:
   explicit CommandExecuter(cloe::Logger logger, bool enabled = true)
-      : logger_(logger), enabled_(enabled) {}
+      : logger_(std::move(logger)), enabled_(enabled) {}
 
-  bool is_enabled() const { return enabled_; }
+  [[nodiscard]] bool is_enabled() const { return enabled_; }
   void set_enabled(bool v) { enabled_ = v; }
 
-  CommandResult run_and_release(const cloe::Command&) const;
+  CommandResult run_and_release(const cloe::Command&) const; // NOLINT
 
   void run(const cloe::Command&);
 
@@ -65,7 +66,7 @@ class CommandExecuter {
 
   std::vector<CommandResult> release_all();
 
-  cloe::Logger logger() const { return logger_; }
+  [[nodiscard]] cloe::Logger logger() const { return logger_; }
 
  private:
   std::vector<CommandResult> handles_;
@@ -77,8 +78,8 @@ namespace actions {
 
 class Command : public cloe::Action {
  public:
-  Command(const std::string& name, const cloe::Command& cmd, CommandExecuter* exec)
-      : Action(name), command_(cmd), executer_(exec) {
+  Command(const std::string& name, cloe::Command  cmd, CommandExecuter* exec)
+      : Action(name), command_(std::move(cmd)), executer_(exec) {
     assert(executer_ != nullptr);
   }
 
@@ -86,7 +87,7 @@ class Command : public cloe::Action {
     return std::make_unique<Command>(name(), command_, executer_);
   }
 
-  cloe::CallbackResult operator()(const cloe::Sync&, cloe::TriggerRegistrar&) override;
+  cloe::CallbackResult operator()(const cloe::Sync& sync, cloe::TriggerRegistrar& registrar) override;
 
  protected:
   void to_json(cloe::Json& j) const override;
@@ -103,9 +104,9 @@ class CommandFactory : public cloe::ActionFactory {
       : cloe::ActionFactory("command", "run a system command"), executer_(exec) {
     assert(executer_ != nullptr);
   }
-  cloe::TriggerSchema schema() const override;
-  cloe::ActionPtr make(const cloe::Conf& c) const override;
-  cloe::ActionPtr make(const std::string& s) const override;
+  [[nodiscard]] cloe::TriggerSchema schema() const override;
+  [[nodiscard]] cloe::ActionPtr make(const cloe::Conf& c) const override;
+  [[nodiscard]] cloe::ActionPtr make(const std::string& s) const override;
 
  private:
   CommandExecuter* executer_{nullptr};

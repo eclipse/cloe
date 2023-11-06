@@ -49,7 +49,7 @@ struct SimulationResult {
   cloe::Json signals;  // dump of all signals in DataBroker right before the simulation started
   std::vector<std::string>
       signals_autocompletion;  // pseudo lua file used for vscode autocompletion
-  std::optional<boost::filesystem::path> output_dir;
+  std::optional<std::filesystem::path> output_dir;
 
  public:
   /**
@@ -65,8 +65,8 @@ struct SimulationResult {
    * and output path are set automatically. Thus, if they are empty, then
    * that is because the user explicitly set them so.
    */
-  boost::filesystem::path get_output_filepath(const boost::filesystem::path& filename) const {
-    boost::filesystem::path filepath;
+  std::filesystem::path get_output_filepath(const std::filesystem::path& filename) const {
+    std::filesystem::path filepath;
     if (filename.is_absolute()) {
       filepath = filename;
     } else if (output_dir) {
@@ -136,12 +136,12 @@ class Simulation {
   /**
    * Write the given JSON output into the file. Return true if successful.
    */
-  bool write_output_file(const boost::filesystem::path& filepath, const cloe::Json& j) const;
+  bool write_output_file(const std::filesystem::path& filepath, const cloe::Json& j) const;
 
   /**
    * Check if the given filepath may be opened, respecting clobber options.
    */
-  bool is_writable(const boost::filesystem::path& filepath) const;
+  bool is_writable(const std::filesystem::path& filepath) const;
 
   /**
    * Set whether simulation progress should be reported.

@@ -48,7 +48,7 @@ CommandResult CommandExecuter::run_and_release(const cloe::Command& cmd) const {
   }
   try {
     if (!cmd.is_sync()) {
-      r.child = bp::child(cmd.executable(), cmd.args());
+      r.child = bp::child(cmd.executable().native(), cmd.args());
 
       if (cmd.is_detach()) {
         r.child->detach();
@@ -59,7 +59,7 @@ CommandResult CommandExecuter::run_and_release(const cloe::Command& cmd) const {
 
       // The syntax `(bp::std_out & bp::std_err) > is` is valid and works, but
       // was only found by rummaging through the source code. Ridiculous.
-      r.child = bp::child(cmd.executable(), cmd.args(), (bp::std_out & bp::std_err) > is);
+      r.child = bp::child(cmd.executable().native(), cmd.args(), (bp::std_out & bp::std_err) > is);
 
       std::string line;
       // After finished running output the rest of the lines.

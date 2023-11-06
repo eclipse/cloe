@@ -27,8 +27,6 @@
 #include <string>      // for string
 #include <vector>      // for vector<>
 
-#include <boost/filesystem.hpp>                  // for path
-
 #include <cloe/utility/std_extensions.hpp>  // for split_string
 #include <cloe/utility/xdg.hpp>             // for merge_config
 #include <fable/environment.hpp>            // for Environment
@@ -49,7 +47,16 @@ Conf read_conf(const StackOptions& opt, const std::string& filepath) {
   // Prepare environment with extra variables:
   fable::Environment env(*opt.environment);
   if (!filepath.empty() && filepath != "-") {
-    std::string dirpath = boost::filesystem::canonical(filepath).parent_path().native();
+    // We use weakly_canonical() because otherwise
+    // we get an error when calling cloe-engine like:
+    //
+    //    cloe-engine run <(cat file.json)
+    std::string dirpath;
+    if (std::filesystem::is_other(filepath)) {
+      dirpath = std::filesystem::path(filepath).parent_path().native();
+    } else {
+      dirpath = std::filesystem::weakly_canonical(filepath).parent_path().native();
+    }
     env.set("THIS_STACKFILE_FILE", filepath);
     env.set("THIS_STACKFILE_DIR", dirpath);
   }
@@ -106,7 +113,7 @@ Stack new_stack(const StackOptions& opt) {
 
   // Interpolate known variables, if requested.
   if (opt.interpolate_vars) {
-    auto interpolate_path = [&opt](std::optional<boost::filesystem::path>& p) {
+    auto interpolate_path = [&opt](std::optional<std::filesystem::path>& p) {
       p = fable::interpolate_vars(p->native(), opt.environment.get());
     };
     interpolate_path(s.engine.registry_path);
@@ -150,7 +157,7 @@ Stack new_stack(const StackOptions& opt) {
 
   // Merge system configurations:
   if (!opt.no_system_confs) {
-    auto mergefn = [&](const boost::filesystem::path& file) -> bool {
+    auto mergefn = [&](const std::filesystem::path& file) -> bool {
       s.logger()->info("Include conf {}", file.native());
       merge_stack(opt, s, file.native());
       return true;
