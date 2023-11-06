@@ -321,8 +321,11 @@ function TestFixture:stop(fmt, ...)
         if self._report.status == TestStatus.PENDING then
             self:_set_status(TestStatus.STOPPED)
         end
+        if coroutine.close then
+            coroutine.close(self._coroutine)
+        else
+            self._coroutine = nil
         end
-        coroutine.close(self._coroutine)
     end)
 end
 
