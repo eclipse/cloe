@@ -23,18 +23,18 @@
 
 #include "stack.hpp"
 
-#include <algorithm>  // for transform, swap
-#include <map>        // for map<>
-#include <memory>     // for shared_ptr<>
-#include <set>        // for set<>
-#include <string>     // for string
+#include <algorithm>   // for transform, swap
+#include <filesystem>  // for filesystem
+#include <map>         // for map<>
+#include <memory>      // for shared_ptr<>
+#include <set>         // for set<>
+#include <string>      // for string
 
-#include <boost/algorithm/string/predicate.hpp>  // for starts_with
-#include <boost/filesystem.hpp>                  // for path
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 #include <cloe/utility/std_extensions.hpp>  // for join_vector
-#include <fable/utility.hpp> // for indent_string
+#include <fable/utility.hpp>                // for indent_string
+#include <fable/utility/string.hpp>         // for starts_with
 
 namespace cloe {
 
@@ -87,7 +87,7 @@ void LoggingConf::apply() const {
 
 std::string PluginConf::canonical() const {
   // Handle builtins specially, these are in a URI form.
-  if (boost::starts_with(plugin_path.string(), "builtin://")) {
+  if (fable::starts_with(plugin_path.string(), "builtin://")) {
     return plugin_path.string();
   }
 
