@@ -22,11 +22,12 @@
 
 #include <cloe/utility/command.hpp>
 
-#include <cstdlib>  // for getenv
-#include <string>   // for string
+#include <cstdlib>     // for getenv
+#include <filesystem>  // for path
+#include <optional>    // for optional<>
+#include <string>      // for string
 
-#include <boost/filesystem/path.hpp>      // for path
-#include <boost/process/search_path.hpp>  // for search_path
+#include <fable/utility/path.hpp>  // for search_path
 
 namespace cloe {
 namespace {
@@ -39,22 +40,22 @@ namespace {
  * quickly lead to errors if the user starting Cloe makes use of an alternative
  * shell.
  */
-boost::filesystem::path shell_executable() {
-  for (auto shell : {"bash", "dash", "sh", "zsh"}) {
-    auto result = boost::process::search_path(shell);
-    if (!result.empty()) {
-      return result;
+std::filesystem::path shell_executable() {
+  for (const auto* shell : {"sh", "bash", "dash", "zsh"}) {
+    auto result = fable::search_path(shell);
+    if (result) {
+      return *result;
     }
   }
 
   if (std::getenv("SHELL") != nullptr) {
-    auto result = boost::process::search_path(std::getenv("SHELL"));
-    if (!result.empty()) {
-      return result;
+    auto result = fable::search_path(std::getenv("SHELL"));
+    if (result) {
+      return *result;
     }
   }
 
-  return boost::filesystem::path{};
+  return {""};
 }
 
 }  // namespace
