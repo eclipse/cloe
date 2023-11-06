@@ -55,14 +55,15 @@ end
 --- Try to load (merge) stackfile.
 ---
 --- @param file string File path, possibly relative to calling file
---- @return nil
+--- @return Stack
 function engine.load_stackfile(file)
     validate("cloe.engine.load_stackfile(string)", file)
-    assert(api.state.current_script_dir)
+    local cwd = api.state.current_script_dir or "."
     if fs.is_relative(file) then
-        file = api.state.current_script_dir .. "/" .. file
+        file = cwd .. "/" .. file
     end
     api.state.stack:merge_stackfile(file)
+    return api.state.stack
 end
 
 --- Read stackfile JSON file as Lua table.
