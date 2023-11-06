@@ -23,17 +23,15 @@
 
 #pragma once
 
-#include <map>      // for map<>
-#include <memory>   // for shared_ptr<>
-#include <set>      // for set<>
-#include <string>   // for string
-#include <utility>  // for move
-#include <vector>   // for vector<>
-#include <optional> // for optional<>
+#include <filesystem>  // for filesystem::path
+#include <map>         // for map<>
+#include <memory>      // for shared_ptr<>
+#include <optional>    // for optional<>
+#include <set>         // for set<>
+#include <string>      // for string
+#include <utility>     // for move
+#include <vector>      // for vector<>
 
-#include <boost/filesystem/path.hpp>        // for path
-#include <fable/schema/boost_optional.hpp>  // for Optional<>
-#include <fable/schema/boost_path.hpp>      // for Path
 #include <fable/schema/custom.hpp>          // for CustomDeserializer
 #include <fable/schema/factory.hpp>         // for Factory
 
@@ -83,7 +81,7 @@ inline auto id_path_prototype(std::string desc = "") {
  * IncludeConf is a relative or absolute filepath that should be included in
  * the stack configuration.
  */
-using IncludeConf = boost::filesystem::path;
+using IncludeConf = std::filesystem::path;
 using IncludeSchema = decltype(schema::make_schema(static_cast<IncludeConf*>(nullptr), ""));
 using IncludesSchema = schema::Vector<IncludeConf, IncludeSchema>;
 
@@ -202,7 +200,7 @@ struct ServerConf : public Confable {
  */
 struct PluginConf : public PersistentConfable {
   /** Filesystem path to file or directory. */
-  boost::filesystem::path plugin_path{};
+  std::filesystem::path plugin_path{};
 
   /** Name to give plugin if path is to a single file. */
   std::optional<std::string> plugin_name{};
@@ -309,15 +307,15 @@ struct EngineConf : public Confable {
   bool triggers_ignore_source{false};
 
   // Output:
-  std::optional<boost::filesystem::path> registry_path{CLOE_DATA_HOME "/registry"};
-  std::optional<boost::filesystem::path> output_path{"${CLOE_SIMULATION_UUID}"};
-  std::optional<boost::filesystem::path> output_file_config{"config.json"};
-  std::optional<boost::filesystem::path> output_file_result{"result.json"};
-  std::optional<boost::filesystem::path> output_file_triggers{"triggers.json"};
-  std::optional<boost::filesystem::path> output_file_signals{"signals.json"};
-  std::optional<boost::filesystem::path> output_file_signals_autocompletion{
+  std::optional<std::filesystem::path> registry_path{CLOE_DATA_HOME "/registry"};
+  std::optional<std::filesystem::path> output_path{"${CLOE_SIMULATION_UUID}"};
+  std::optional<std::filesystem::path> output_file_config{"config.json"};
+  std::optional<std::filesystem::path> output_file_result{"result.json"};
+  std::optional<std::filesystem::path> output_file_triggers{"triggers.json"};
+  std::optional<std::filesystem::path> output_file_signals{"signals.json"};
+  std::optional<std::filesystem::path> output_file_signals_autocompletion{
       "signals_autocompletion.lua"};
-  std::optional<boost::filesystem::path> output_file_data_stream;
+  std::optional<std::filesystem::path> output_file_data_stream;
   bool output_clobber_files{true};
 
   /**
@@ -391,8 +389,8 @@ struct EngineConf : public Confable {
   CONFABLE_SCHEMA(EngineConf) {
     // clang-format off
     using namespace schema;  // NOLINT(build/namespaces)
-    auto dir_proto = []() { return make_prototype<boost::filesystem::path>().not_file(); };
-    auto file_proto = []() { return make_prototype<boost::filesystem::path>().not_dir().resolve(false); };
+    auto dir_proto = []() { return make_prototype<std::filesystem::path>().not_file(); };
+    auto file_proto = []() { return make_prototype<std::filesystem::path>().not_dir().resolve(false); };
     return Struct{
         {"ignore", make_schema(&ignore_sections, "JSON pointers to sections that should be ignored").extend(true)},
         {"security", Struct{

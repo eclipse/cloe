@@ -75,14 +75,13 @@
 
 #include "simulation.hpp"
 
-#include <cstdint>  // for uint64_t
-#include <fstream>  // for ofstream
-#include <future>   // for future<>, async
-#include <sstream>  // for stringstream
-#include <string>   // for string
-#include <thread>   // for sleep_for
-
-#include <boost/filesystem.hpp>  // for is_directory, is_regular_file, ...
+#include <cstdint>     // for uint64_t
+#include <filesystem>  // for filesystem::path
+#include <fstream>     // for ofstream
+#include <future>      // for future<>, async
+#include <sstream>     // for stringstream
+#include <string>      // for string
+#include <thread>      // for sleep_for
 
 #include <cloe/controller.hpp>                // for Controller
 #include <cloe/core/abort.hpp>                // for AsyncAbort
@@ -1604,7 +1603,7 @@ size_t Simulation::write_output(const SimulationResult& r) const {
       return;
     }
 
-    boost::filesystem::path filepath = r.get_output_filepath(*filename);
+    std::filesystem::path filepath = r.get_output_filepath(*filename);
     if (write_output_file(filepath, output)) {
       files_written++;
     }
@@ -1620,7 +1619,7 @@ size_t Simulation::write_output(const SimulationResult& r) const {
   return files_written;
 }
 
-bool Simulation::write_output_file(const boost::filesystem::path& filepath,
+bool Simulation::write_output_file(const std::filesystem::path& filepath,
                                    const cloe::Json& j) const {
   if (!is_writable(filepath)) {
     return false;
@@ -1637,15 +1636,15 @@ bool Simulation::write_output_file(const boost::filesystem::path& filepath,
   return true;
 }
 
-bool Simulation::is_writable(const boost::filesystem::path& filepath) const {
+bool Simulation::is_writable(const std::filesystem::path& filepath) const {
   // Make sure we're not clobbering anything if we shouldn't.
   auto native = filepath.native();
-  if (boost::filesystem::exists(filepath)) {
+  if (std::filesystem::exists(filepath)) {
     if (!config_.engine.output_clobber_files) {
       logger()->error("Will not clobber file: {}", native);
       return false;
     }
-    if (!boost::filesystem::is_regular_file(filepath)) {
+    if (!std::filesystem::is_regular_file(filepath)) {
       logger()->error("Cannot clobber non-regular file: {}", native);
       return false;
     }
@@ -1653,8 +1652,8 @@ bool Simulation::is_writable(const boost::filesystem::path& filepath) const {
 
   // Make sure the directory exists.
   auto dirpath = filepath.parent_path();
-  if (!boost::filesystem::is_directory(dirpath)) {
-    bool ok = boost::filesystem::create_directories(dirpath);
+  if (!std::filesystem::is_directory(dirpath)) {
+    bool ok = std::filesystem::create_directories(dirpath);
     if (!ok) {
       logger()->error("Error creating leading directories: {}", dirpath.native());
       return false;
