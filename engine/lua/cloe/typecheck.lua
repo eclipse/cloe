@@ -32,4 +32,20 @@ function m.validate(format, ...)
     fn(...)
 end
 
+--- Validate the shape (from tableshape) of a table or type.
+---
+--- @param signature string function signature for error message
+--- @param shape any shape validator
+--- @param value any value to validate
+--- @return nil # raises an error (level 3) if invalid
+function m.validate_shape(signature, shape, value)
+    if skip_typechecks then
+        return
+    end
+    local ok, msg = shape:check_value(value)
+    if not ok then
+        error(signature .. ": " .. msg, 3)
+    end
+end
+
 return m

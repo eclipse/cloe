@@ -21,7 +21,7 @@ cloe.apply_stack {
 }
 
 cloe.schedule_these {
-    on = "start",
+    on = cloe.events.start(),
     {
         -- Resume from outside
         run = {
@@ -44,11 +44,10 @@ cloe.schedule_these {
     }
 }
 
-
 -- Alternate implementation wih Lua API
 local system = require("cloe.system")
 cloe.schedule_these {
-    on = "time=0.5",
+    on = cloe.events.time("500ms"),
     {
         -- Resume from outside
         run = function()
@@ -70,6 +69,6 @@ cloe.schedule_these {
 }
 
 cloe.schedule {
-    on = "time=1",
-    run = "succeed"
+    on = cloe.events.time("1s"),
+    run = cloe.actions.succeed()
 }

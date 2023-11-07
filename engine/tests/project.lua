@@ -18,6 +18,7 @@
 local api = require("cloe-engine")
 local cloe = require("cloe")
 local luax = require("cloe.luax")
+local shapes = require("tableshape").types
 local system = require("cloe.system")
 
 local m = {}
@@ -57,6 +58,10 @@ end
 --- @class ProjectOptions
 --- @field with_server? boolean
 --- @field with_noisy_sensor? boolean
+local ProjectOptions = shapes.shape({
+    with_server = shapes.boolean:is_optional(),
+    with_noisy_sensor = shapes.boolean:is_optional(),
+})
 
 --- Configure all aspects of the simulation.
 ---
@@ -65,12 +70,8 @@ end
 --- @param opts ProjectOptions
 --- @return nil
 m.configure_all = function(opts)
-    cloe.validate("project.configure_all(?table)", opts)
     opts = opts or {}
-    luax.validate({
-        with_server = { opts.with_server, "boolean", true },
-        with_noisy_sensor = { opts.with_noisy_sensor, "boolean", true },
-    })
+    cloe.validate_shape("project.configure_all(ProjectOptions)", ProjectOptions, opts)
 
     local vehname = "default"
     local simname = "nop"
@@ -100,6 +101,9 @@ end
 
 --- @class VehicleOptions
 --- @field with_noisy_sensor? boolean
+local VehicleOptions = shapes.shape({
+    with_noisy_sensor = shapes.boolean:is_optional(),
+})
 
 --- Configure the vehicle.
 ---
@@ -117,9 +121,7 @@ m.configure_vehicle = function(name, simulator, opts)
         }
     end
     opts = opts or {}
-    luax.validate({
-        with_noisy_sensor = { opts.with_noisy_sensor, "boolean", true },
-    })
+    cloe.validate_shape("project.configure_vehicle(string, string|table, VehicleOptions)", VehicleOptions, opts)
 
     local components = {
         ["cloe::speedometer"] = {

@@ -18,6 +18,10 @@
 
 local api = require("cloe-engine")
 local types = require("cloe-engine.types")
+local actions = require("cloe.actions")
+local events = require("cloe.events")
+
+local LogLevel = types.LogLevel
 
 local luax = require("cloe.luax")
 local validate = require("cloe.typecheck").validate
@@ -40,7 +44,7 @@ local TestFixture = {}
 --- so we can avoid cyclic dependency to/from cloe.engine.
 ---
 --- @field log fun(level: string, fmt: string, ...: any)
---- @field schedule fun(trigger: ScheduleSpec)
+--- @field schedule fun(trigger: Task)
 --- @field execute_action fun(action: string|table)
 
 --- @enum TestStatus
@@ -61,9 +65,10 @@ local ReportOutcome = {
 
 --- Return a new test fixture for test
 ---
---- @param test TestSpec
+--- @param test Test
 --- @param scheduler? SchedulerInterface for dependency injection
 --- @return TestFixture
+--- @nodiscard
 function TestFixture.new(test, scheduler)
     scheduler = scheduler or {}
 
@@ -104,10 +109,30 @@ function TestFixture.new(test, scheduler)
     })
 end
 
+--- Schedule the test-case.
+---
+--- @private
+--- @return nil
+function TestFixture:schedule_self()
+    self:_schedule({
+        on = self._test.on,
+        group = self._test.id,
+        pin = false,
+        desc = self._test.desc,
+        enable = true,
+        source = self._source,
+        run = function(sync)
+            self._sync = sync
+            self:_log("info", "Running test: %s", self._id)
+            self:_resume(self, sync)
+        end,
+    })
+end
+
 --- Log a message.
 ---
 --- @private
---- @param level string
+--- @param level LogLevel
 --- @param message string
 --- @param ... any
 --- @return nil
@@ -118,9 +143,9 @@ end
 --- Schedule resumption of test.
 ---
 --- @private
---- @param spec ScheduleSpec
-function TestFixture:_schedule(spec)
-    require("cloe.engine").schedule(spec)
+--- @param task Task
+function TestFixture:_schedule(task)
+    require("cloe.engine").schedule(task)
 end
 
 --- Execute an action immediately.
@@ -140,7 +165,7 @@ end
 --- @param ... any
 --- @return nil
 function TestFixture:_resume(...)
-    self:_log("debug", "Resuming test %s", self._id)
+    self:_log(LogLevel.DEBUG, "Resuming test %s", self._id)
     self:_set_status(TestStatus.RUNNING)
     local ok, result = coroutine.resume(self._coroutine, ...)
     if not ok then
@@ -186,7 +211,7 @@ end
 --- @private
 --- @param status TestStatus
 function TestFixture:_set_status(status)
-    self:_log("debug", "[%s] Status -> %s", self._id, status)
+    self:_log(LogLevel.DEBUG, "[%s] Status -> %s", self._id, status)
     self._report.status = status
 end
 
@@ -217,13 +242,13 @@ function TestFixture:_terminate()
         term = term(self, self._sync)
     end
     if term then
-        self:_log("info", "Terminating simulation (disable with terminate=false)...")
+        self:_log(LogLevel.INFO, "Terminating simulation (disable with terminate=false)...")
         if report.outcome == ReportOutcome.FAILURE then
-            self:_execute_action("fail")
+            self:_execute_action(actions.fail())
         elseif report.outcome == ReportOutcome.SUCCESS then
-            self:_execute_action("succeed")
+            self:_execute_action(actions.succeed())
         else
-            self:_execute_action("stop")
+            self:_execute_action(actions.stop())
         end
     end
 end
@@ -239,7 +264,7 @@ end
 function TestFixture:report_data(data, quiet, level)
     data = luax.tbl_extend("error", { time = tostring(self._sync:time()) }, data)
     if not quiet then
-        self:_log(level or "debug", "[%s] Report: %s", self._id, inspect(data, { indent = " ", newline = "" }))
+        self:_log(level or LogLevel.DEBUG, "[%s] Report: %s", self._id, inspect(data, { indent = " ", newline = "" }))
     end
     table.insert(self._report.activity, data)
 end
@@ -275,7 +300,7 @@ end
 --- @param ... any
 --- @return nil
 function TestFixture:debugf(fmt, ...)
-    self:report_message("debug", fmt, ...)
+    self:report_message(LogLevel.DEBUG, fmt, ...)
 end
 
 --- Log a message to report and console in info severity.
@@ -284,7 +309,7 @@ end
 --- @param ... any
 --- @return nil
 function TestFixture:printf(fmt, ...)
-    self:report_message("info", fmt, ...)
+    self:report_message(LogLevel.INFO, fmt, ...)
 end
 
 --- Log a message to report and console in warn severity.
@@ -293,7 +318,7 @@ end
 --- @param ... any
 --- @return nil
 function TestFixture:warnf(fmt, ...)
-    self:report_message("warn", fmt, ...)
+    self:report_message(LogLevel.WARN, fmt, ...)
 end
 
 --- Log a message to report and console in error severity.
@@ -304,7 +329,7 @@ end
 --- @param ... any
 --- @return nil
 function TestFixture:errorf(fmt, ...)
-    self:report_message("error", fmt, ...)
+    self:report_message(LogLevel.ERROR, fmt, ...)
 end
 
 --- Terminate the execution of the test-case, but not the simulation.
@@ -342,7 +367,7 @@ function TestFixture:fail(fmt, ...)
     if fmt then
         self:errorf(fmt, ...)
     end
-    self:do_action("fail")
+    self:do_action(actions.fail())
     self:stop()
 end
 
@@ -359,7 +384,7 @@ function TestFixture:succeed(fmt, ...)
     if fmt then
         self:printf(fmt, ...)
     end
-    self:do_action("succeed")
+    self:do_action(actions.succeed())
     self:stop()
 end
 
@@ -402,7 +427,7 @@ function TestFixture:wait_until(condition, timeout)
         self:debugf("wait until condition: %s", condition)
     end
     coroutine.yield({
-        on = "loop",
+        on = events.loop(),
         group = self._id,
         pin = true,
         run = function(sync)
@@ -418,6 +443,20 @@ function TestFixture:wait_until(condition, timeout)
     })
 end
 
+--- @class WaitSpec
+--- @field condition? function(Sync):boolean
+--- @field timeout? Duration|string
+--- @field fail_on_timeout? boolean
+
+--- @param spec WaitSpec
+function TestFixture:wait_for(spec)
+    validate("TestFixture:wait_for(table)", spec)
+    if not spec.condition and not spec.timeout then
+        error("TestFixture:wait_for(): require one of condition or timeout to be set")
+    end
+    error("not implemented")
+end
+
 function TestFixture:do_action(action)
     validate("TestFixture:do_action(string|table)", self, action)
     self:report_with("action", "debug", "%s", action)
@@ -431,7 +470,11 @@ end
 --- Expect an operation with op(left, right) == true.
 ---
 --- @private
---- @param op Operator
+--- @param op Operator operator object with comparison function and string representation
+--- @param left any left-hand operand
+--- @param right any right-hand operand
+--- @param fmt? string optional message format string
+--- @param ... any arguments to string.format
 --- @return boolean # result of expression
 function TestFixture:_expect_op(op, left, right, fmt, ...)
     validate("TestFixture:_expect_op(table, any, any, [string], [?any]...)", self, op, left, right, fmt, ...)
@@ -450,27 +493,33 @@ function TestFixture:_expect_op(op, left, right, fmt, ...)
     self:report_data(report, true)
     if report.value then
         self._asserts_passed = self._asserts_passed + 1
-        self:_log("info", "[%s] Check %s: %s (=%s)", self._id, msg or "ok", report.assert, report.value)
+        self:_log(LogLevel.INFO, "[%s] Check %s: %s (=%s)", self._id, msg or "ok", report.assert, report.value)
     else
         self._asserts_failed = self._asserts_failed + 1
-        self:_log("error", "[%s] !! Check %s: %s (=%s)", self._id, msg or "failed", report.assert, report.value)
+        self:_log(LogLevel.ERROR, "[%s] !! Check %s: %s (=%s)", self._id, msg or "failed", report.assert, report.value)
     end
     return report.value
 end
 
---- Assert that the first argument is truthy.
+--- Expect that the first argument is truthy.
+---
+--- On failure, execution continues, but the test-case is marked as failed.
 ---
 --- The message should describe the expectation:
 ---
----     z.assert(var == 1, "var should == 1")
+---     z:expect(var == 1, "var should == 1, is %s", var)
 ---
 --- You should check if a more specific assertion is available first though,
 --- as these provide better messages.
 ---
---- @param value any
---- @param fmt? string
---- @param ... any
---- @return any value
+--- See:
+--- - [string.format](https://www.lua.org/manual/5.3/manual.html#pdf-string.format)
+---   for help on formatting
+---
+--- @param value any expression or value that should be truthy
+--- @param fmt? string human-readable expectation of result
+--- @param ... any arguments to format string
+--- @return any value # input value / expression result
 function TestFixture:expect(value, fmt, ...)
     return self:_expect_op({
         fn = function(a)
@@ -480,23 +529,30 @@ function TestFixture:expect(value, fmt, ...)
     }, value, "truthy", fmt, ...)
 end
 
---- Assert that the first argument is true.
+--- Assert that the first argument is truthy.
+---
+--- On failure, execution is stopped and the test-case is marked as failed.
 ---
 --- The message should describe the expectation:
 ---
----     z.assert(var == 1, "var should == 1")
+---     z:assert(var == 1, "var should == 1, is %s", var)
 ---
 --- You should check if a more specific assertion is available first though,
 --- as these provide better messages.
 ---
---- @param value any
---- @param fmt? string
---- @param ... any
---- @return nil
+--- See:
+--- - [string.format](https://www.lua.org/manual/5.3/manual.html#pdf-string.format)
+---   for help on formatting
+---
+--- @param value any expression or value that should be truthy
+--- @param fmt? string human-readable expectation of result
+--- @param ... any arguments to format string
+--- @return any value # input value / expression result
 function TestFixture:assert(value, fmt, ...)
     if not self:expect(value, fmt, ...) then
         self:fail("[%s] test assertion failed", self._id)
     end
+    return value
 end
 
 local Operator = {
@@ -508,60 +564,192 @@ local Operator = {
     ge = { fn = function(a, b) return a >= b end, repr = ">=", }, --- Greater than or equal to
 }
 
+--- Expect that `left == right` or mark test-case as failed.
+---
+--- See:
+--- - [string.format](https://www.lua.org/manual/5.3/manual.html#pdf-string.format)
+---   for help on formatting
+---
+--- @param left any left-hand operand
+--- @param right any right-hand operand
+--- @param fmt? string optional human-readable string describing expectation
+--- @param ... any optional arguments to string.format
+--- @return any # result of comparison
 function TestFixture:expect_eq(left, right, fmt, ...)
     return self:_expect_op(Operator.eq, left, right, fmt, ...)
 end
 
+--- Expect that `left ~= right` or mark test-case as failed.
+---
+--- See:
+--- - [string.format](https://www.lua.org/manual/5.3/manual.html#pdf-string.format)
+---   for help on formatting
+---
+--- @param left any left-hand operand
+--- @param right any right-hand operand
+--- @param fmt? string optional human-readable string describing expectation
+--- @param ... any optional arguments to string.format
+--- @return any # result of comparison
 function TestFixture:expect_ne(left, right, fmt, ...)
     return self:_expect_op(Operator.ne, left, right, fmt, ...)
 end
 
+--- Expect that `left < right` or mark test-case as failed.
+---
+--- See:
+--- - [string.format](https://www.lua.org/manual/5.3/manual.html#pdf-string.format)
+---   for help on formatting
+---
+--- @param left any left-hand operand
+--- @param right any right-hand operand
+--- @param fmt? string optional human-readable string describing expectation
+--- @param ... any optional arguments to string.format
+--- @return any # result of comparison
 function TestFixture:expect_lt(left, right, fmt, ...)
     return self:_expect_op(Operator.lt, left, right, fmt, ...)
 end
 
+--- Expect that `left <= right` or mark test-case as failed.
+---
+--- See:
+--- - [string.format](https://www.lua.org/manual/5.3/manual.html#pdf-string.format)
+---   for help on formatting
+---
+--- @param left any left-hand operand
+--- @param right any right-hand operand
+--- @param fmt? string optional human-readable string describing expectation
+--- @param ... any optional arguments to string.format
+--- @return any # result of comparison
 function TestFixture:expect_le(left, right, fmt, ...)
     return self:_expect_op(Operator.le, left, right, fmt, ...)
 end
 
+--- Expect that `left > right` or mark test-case as failed.
+---
+--- See:
+--- - [string.format](https://www.lua.org/manual/5.3/manual.html#pdf-string.format)
+---   for help on formatting
+---
+--- @param left any left-hand operand
+--- @param right any right-hand operand
+--- @param fmt? string optional human-readable string describing expectation
+--- @param ... any optional arguments to string.format
+--- @return any # result of comparison
 function TestFixture:expect_gt(left, right, fmt, ...)
     return self:_expect_op(Operator.gt, left, right, fmt, ...)
 end
 
+--- Expect that `left >= right` or mark test-case as failed.
+---
+--- See:
+--- - [string.format](https://www.lua.org/manual/5.3/manual.html#pdf-string.format)
+---   for help on formatting
+---
+--- @param left any left-hand operand
+--- @param right any right-hand operand
+--- @param fmt? string optional human-readable string describing expectation
+--- @param ... any optional arguments to string.format
+--- @return any # result of comparison
 function TestFixture:expect_ge(left, right, fmt, ...)
     return self:_expect_op(Operator.ge, left, right, fmt, ...)
 end
 
+--- Assert that `left == right` or fail simulation.
+---
+--- See:
+--- - [string.format](https://www.lua.org/manual/5.3/manual.html#pdf-string.format)
+---   for help on formatting
+---
+--- @param left any left-hand operand
+--- @param right any right-hand operand
+--- @param fmt? string optional human-readable string describing expectation
+--- @param ... any optional arguments to string.format
+--- @return any # result of comparison, if true
 function TestFixture:assert_eq(left, right, fmt, ...)
     if not self:_expect_op(Operator.eq, left, right, fmt, ...) then
         self:fail("[%s] test assertion failed", self._id)
     end
 end
 
+--- Assert that `left ~= right` or fail simulation.
+---
+--- See:
+--- - [string.format](https://www.lua.org/manual/5.3/manual.html#pdf-string.format)
+---   for help on formatting
+---
+--- @param left any left-hand operand
+--- @param right any right-hand operand
+--- @param fmt? string optional human-readable string describing expectation
+--- @param ... any optional arguments to string.format
+--- @return any # result of comparison, if true
 function TestFixture:assert_ne(left, right, fmt, ...)
     if not self:_expect_op(Operator.ne, left, right, fmt, ...) then
         self:fail("[%s] test assertion failed", self._id)
     end
 end
 
+--- Assert that `left < right` or fail simulation.
+---
+--- See:
+--- - [string.format](https://www.lua.org/manual/5.3/manual.html#pdf-string.format)
+---   for help on formatting
+---
+--- @param left any left-hand operand
+--- @param right any right-hand operand
+--- @param fmt? string optional human-readable string describing expectation
+--- @param ... any optional arguments to string.format
+--- @return any # result of comparison, if true
 function TestFixture:assert_lt(left, right, fmt, ...)
     if not self:_expect_op(Operator.lt, left, right, fmt, ...) then
         self:fail("[%s] test assertion failed", self._id)
     end
 end
 
+--- Assert that `left <= right` or fail simulation.
+---
+--- See:
+--- - [string.format](https://www.lua.org/manual/5.3/manual.html#pdf-string.format)
+---   for help on formatting
+---
+--- @param left any left-hand operand
+--- @param right any right-hand operand
+--- @param fmt? string optional human-readable string describing expectation
+--- @param ... any optional arguments to string.format
+--- @return any # result of comparison, if true
 function TestFixture:assert_le(left, right, fmt, ...)
     if not self:_expect_op(Operator.le, left, right, fmt, ...) then
         self:fail("[%s] test assertion failed", self._id)
     end
 end
 
+--- Assert that `left > right` or fail simulation.
+---
+--- See:
+--- - [string.format](https://www.lua.org/manual/5.3/manual.html#pdf-string.format)
+---   for help on formatting
+---
+--- @param left any left-hand operand
+--- @param right any right-hand operand
+--- @param fmt? string optional human-readable string describing expectation
+--- @param ... any optional arguments to string.format
+--- @return any # result of comparison, if true
 function TestFixture:assert_gt(left, right, fmt, ...)
     if not self:_expect_op(Operator.gt, left, right, fmt, ...) then
         self:fail("[%s] test assertion failed", self._id)
     end
 end
 
+--- Assert that `left >= right` or fail simulation.
+---
+--- See:
+--- - [string.format](https://www.lua.org/manual/5.3/manual.html#pdf-string.format)
+---   for help on formatting
+---
+--- @param left any left-hand operand
+--- @param right any right-hand operand
+--- @param fmt? string optional human-readable string describing expectation
+--- @param ... any optional arguments to string.format
+--- @return any # result of comparison, if true
 function TestFixture:assert_ge(left, right, fmt, ...)
     if not self:_expect_op(Operator.ge, left, right, fmt, ...) then
         self:fail("[%s] test assertion failed", self._id)
@@ -572,6 +760,7 @@ end
 ---
 --- @param str string
 --- @return number
+--- @nodiscard
 local function count_leading_tabs(str)
     local count = 0
     for i = 1, #str do

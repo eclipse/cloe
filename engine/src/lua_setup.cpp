@@ -225,6 +225,19 @@ void register_cloe_engine(sol::state_view& lua, Stack& stack) {
   luat_cloe_engine(lua) = tbl;
 }
 
+void register_enum_loglevel(sol::state_view& lua, sol::table& tbl) {
+  // clang-format off
+  tbl["LogLevel"] = lua.create_table_with(
+    "TRACE",    "trace",
+    "DEBUG",    "debug",
+    "INFO",     "info",
+    "WARN",     "warn",
+    "ERROR",    "error",
+    "CRITICAL", "critical"
+  );
+  // clang-format on
+}
+
 /**
  * Load "cloe-engine.types" library into Lua.
  *
@@ -241,6 +254,7 @@ void register_cloe_engine_types(sol::state_view& lua) {
   register_usertype_duration(tbl);
   register_usertype_sync(tbl);
   register_usertype_stack(tbl);
+  register_enum_loglevel(lua, tbl);
   luat_cloe_engine_types(lua) = tbl;
 }
 

@@ -13,7 +13,7 @@ cloe.apply_stack [[{
 
 -- All the conditions we want to fail on:
 cloe.schedule_these {
-    run = "fail",
+    run = cloe.actions.fail(),
     { on = "virtue/failure" },
     { on = "default_speed/kmph=>0.0" },
     { on = "time=5" },
@@ -21,18 +21,24 @@ cloe.schedule_these {
 
 -- All the things we want to do on start:
 cloe.schedule_these {
-    on = "start",
+    on = cloe.events.start(),
     { run = "log=info: Running nop/basic smoketest." },
     { run = "realtime_factor=-1" },
 }
 
-cloe.schedule { on = "time=60", run = "succeed" }
-
 cloe.schedule {
-    on = "loop",
+    on = cloe.events.loop(),
     pin = true,
     run = function(sync)
-        cloe.log("info", "Current time is %s", sync:time())
+        cloe.log(cloe.LogLevel.INFO, "Current time is %s", sync:time())
+    end
+}
+
+cloe.schedule_test {
+    id = "precondition",
+    on = cloe.events.start(),
+    run = function(z)
+        z:printf("hello there")
     end
 }
 
@@ -40,20 +46,22 @@ cloe.schedule {
 cloe.schedule_test {
     -- Note that this is the same ID as used in BATS.
     id = "e03fc31f-586b-4e57-80fa-ff2cba5ff9dd",
-    on = "start",
+    on = cloe.events.start(),
+    terminate = false,
     run = function(z, sync)
-        cloe.log("info", "Entering test")
-        z:assert(true)
+        z:printf("Entering test")
+        z:assert(true, "true is truthy")
 
-        cloe.log("info", "Asserting something...")
-        z:assert(sync:time():s() == 0, "time at start is 0s")
+        z:printf("Asserting something...")
+        z:assert_eq(sync:time():s(), 0, "time at start is 0s")
 
-        cloe.log("info", "Waiting 1s...")
+        z:printf("Waiting 1s...")
         z:wait_duration("1s")
 
-        z:assert(sync:time() >= cloe.Duration.new("1s"), "yield does not work and the time has not advanced")
-        z:assert(sync:time() == cloe.Duration.new("1s"), "time has advanced the wrong amount")
+        z:assert_ge(sync:time(), cloe.Duration.new("1s"), "yield works and the time has advanced")
+        z:assert_eq(sync:time(), cloe.Duration.new("1s"), "time has advanced the right amount")
 
-        cloe.log("info", "We're good here.")
+        z:printf("We're good here.")
+        z:succeed()
     end
 }

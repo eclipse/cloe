@@ -1,11 +1,12 @@
 -- This example shows that you don't actually need any plugins at
 -- all to have a simulation. You can simple schedule some tasks.
 local cloe = require("cloe")
+local events = cloe.events
 
 cloe.load_stackfile("config_nop_smoketest.json")
 
 cloe.schedule {
-    on = "loop",
+    on = events.loop(),
     priority = 101, -- higher than the default
     pin = false,
     run = function(_)
@@ -14,15 +15,12 @@ cloe.schedule {
 }
 
 cloe.schedule {
-    on = "loop",
+    on = events.every("1s"),
     pin = true,
     run = function(sync)
-        if sync:time():s() % 1 == 0.0 then
-            -- Print this every second
-            cloe.log("info", "Current time is %s", sync:time())
-        end
+        cloe.log("info", "Current time is %s", sync:time())
         if sync:time():s() > 30 then
-            -- Unpin
+            -- FIXME: Unpin is not working
             return false
         end
     end

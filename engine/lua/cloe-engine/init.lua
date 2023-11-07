@@ -26,28 +26,68 @@
 ---
 
 local engine = {
-    -- Contains data that will be processed at simulation start,
-    -- but will not be considered afterward.
+    --- Contains data that will be processed at simulation start,
+    --- but will not be considered afterward.
     initial_input = {
+        --- @type TriggerConf[] Initial set of triggers to insert into simulation.
         triggers = {},
+
+        --- @type number Number of triggers processed from the initial input.
         triggers_processed = 0,
+
+        --- @type table<string, string> Map of signal names to regular expression matches.
         signal_aliases = {},
+
+        --- @type string[] List of signals to make available during simulation.
         signal_requires = {},
     },
 
-    -- Contains engine state for a simulation.
+    --- Contains engine state for a simulation.
     state = {
-        features = {},
+        --- @type StackConf The current active stack configuration (volatile).
+        config = {},
+
+        --- @type table<string, boolean> A table of feature flags.
+        features = {
+            ["cloe-0.18.0"] = true,
+            ["cloe-0.18"] = true,
+            ["cloe-0.19.0"] = true,
+            ["cloe-0.19"] = true,
+            ["cloe-0.20.0"] = true,
+            ["cloe-0.20"] = true,
+
+            ["cloe-stackfile"] = true,
+            ["cloe-stackfile-4"] = true,
+            ["cloe-stackfile-4.0"] = true,
+            ["cloe-stackfile-4.1"] = true,
+
+            ["cloe-server"] = false,
+            ["cloe-lrdb"] = false,
+        },
+
+        --- @type table Lua table dumped as JSON report at end of simulation.
         report = {},
+
+        --- @type Coordinator|nil Reference to simulation trigger coordinator type.
         scheduler = nil,
+
+        --- @type Stack Reference to simulation stack type.
         stack = nil,
+
+        --- @type string|nil Path to currently executing Lua script file.
         current_script_file = nil,
+
+        --- @type string|nil Path to directory containing currently executing Lua script file.
         current_script_dir = nil,
+
+        --- @type string[] List of Lua scripts that have so far been processed.
         scripts_loaded = {},
     },
 
+    --- @type table<string, table> Namespaced Lua interfaces of instantiated plugins.
     plugins = {},
 
+    --- @type table<string, userdata> Table of required signals.
     signals = {},
 }
 
