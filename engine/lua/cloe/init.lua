@@ -19,46 +19,63 @@
 local api = require("cloe-engine")
 local engine = require("cloe.engine")
 
---- Let the language-server know we are importing cloe.engine into cloe:
 ---@module 'cloe.engine'
-local cloe = {
-    --- Table of functions for dealing with file paths.
-    fs = require("cloe-engine.fs"),
+local cloe = {}
 
-    --- Validate input arguments of a function in a single line.
-    ---
-    --- This is basically a specialized version of the typecheck.argscheck
-    --- function, in that it does not wrap the original function,
-    --- thereby preserving the type data that the Lua language server
-    --- uses to provide hints and autocompletion.
-    validate = require("cloe.typecheck").validate,
-
-    --- Return a human-readable representation of a Lua object.
-    ---
-    --- This is primarily used for debugging and should not be used
-    --- when performance is important. It is a table, but acts as a
-    --- function.
-    ---
-    --- For more details, see: https://github.com/kikito/inspect.lua
-    inspect = require("inspect").inspect,
-
-    --- Print a human-readable representation of a Lua object.
-    ---
-    --- This just prints the output of inspect.
-    ---
-    --- For more details, see: https://github.com/kikito/inspect.lua
-    ---
-    --- @param root any
-    --- @param options? table
-    --- @return nil
-    describe = function(root, options)
-        print(require("inspect").inspect(root, options))
-    end,
-}
-
--- Import cloe.engine into cloe namespace.
+-- Re-export everything from cloe.engine into cloe.
 for k, v in pairs(engine) do
+    if cloe[k] then
+        error("duplicate function definition in cloe.engine")
+    end
     cloe[k] = v
+end
+
+--- Table of functions for dealing with file paths.
+cloe.fs = require("cloe-engine.fs")
+
+--- Table of common events for use with tasks and tests.
+cloe.events = require("cloe.events")
+
+--- Table of common actions for use with tasks.
+cloe.actions = require("cloe.actions")
+
+--- Validate input arguments of a function in a single line.
+---
+--- This is basically a specialized version of the typecheck.argscheck
+--- function, in that it does not wrap the original function,
+--- thereby preserving the type data that the Lua language server
+--- uses to provide hints and autocompletion.
+---
+--- @see cloe.typecheck.validate
+cloe.validate = require("cloe.typecheck").validate
+
+--- Validate the shape (from tableshape) of a table or type.
+---
+--- @see cloe.typecheck.validate_shape
+cloe.validate_shape = require("cloe.typecheck").validate_shape
+
+--- Return a human-readable representation of a Lua object.
+---
+--- This is primarily used for debugging and should not be used
+--- when performance is important. It is a table, but acts as a
+--- function.
+---
+--- For more details, see: https://github.com/kikito/inspect.lua
+---
+--- @see inspect.inspect
+cloe.inspect = require("inspect").inspect
+
+--- Print a human-readable representation of a Lua object.
+---
+--- This just prints the output of inspect.
+---
+--- For more details, see: https://github.com/kikito/inspect.lua
+---
+--- @param root any
+--- @param options? table
+--- @return nil
+function cloe.describe(root, options)
+    print(require("inspect").inspect(root, options))
 end
 
 --- Require a module, prioritizing modules relative to the script
