@@ -1449,8 +1449,8 @@ cloe::Json dump_signals(cloe::DataBroker& db) {
 
 std::vector<std::string> dump_signals_autocompletion(cloe::DataBroker& db) {
   auto result = std::vector<std::string>{};
-  result.emplace_back("---@meta");
-  result.emplace_back("---@class signals");
+  result.emplace_back("--- @meta");
+  result.emplace_back("--- @class signals");
 
   const auto& signals = db.signals();
   for (const auto& [key, signal] : signals) {
@@ -1458,14 +1458,13 @@ std::vector<std::string> dump_signals_autocompletion(cloe::DataBroker& db) {
     if (tag) {
       const auto lua_type = to_string(tag->datatype);
       const auto& lua_helptext = tag->text;
-      auto line = fmt::format("---@field {} {} {}", key, lua_type, lua_helptext);
+      auto line = fmt::format("--- @field {} {} {}", key, lua_type, lua_helptext);
       result.emplace_back(std::move(line));
     } else {
-      auto line = fmt::format("---@field {}", key);
+      auto line = fmt::format("--- @field {}", key);
       result.emplace_back(std::move(line));
     }
   }
-  //
   return result;
 }
 
@@ -1585,8 +1584,13 @@ SimulationResult Simulation::run() {
   r.elapsed = ctx.progress.elapsed();
   r.triggers = ctx.coordinator->history();
   r.report = sol::object(cloe::luat_cloe_engine_state(ctx.lua)["report"]);
-  r.signals = dump_signals(*ctx.db);
-  r.signals_autocompletion = dump_signals_autocompletion(*ctx.db);
+  // Don't create output file data unless the output files are being written
+  if (ctx.config.engine.output_file_signals) {
+    r.signals = dump_signals(*ctx.db);
+  }
+  if (ctx.config.engine.output_file_signals_autocompletion) {
+    r.signals_autocompletion = dump_signals_autocompletion(*ctx.db);
+  }
 
   abort_fn_ = nullptr;
   return r;
@@ -1598,7 +1602,7 @@ size_t Simulation::write_output(const SimulationResult& r) const {
   }
 
   size_t files_written = 0;
-  auto write_file = [&](auto filename, cloe::Json output) {
+  auto write_file = [&](auto filename, const cloe::Json& output) {
     if (!filename) {
       return;
     }
