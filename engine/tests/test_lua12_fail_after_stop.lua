@@ -11,7 +11,7 @@ proj.set_realtime_factor(-1)
 -- Check that schedule_test works as intended.
 cloe.schedule_test {
     id = "TEST-A",
-    on = "time=1",
+    on = cloe.events.time("1s"),
     run = function(z)
         z:expect(false, "This has been a bad test!")
     end
@@ -19,9 +19,10 @@ cloe.schedule_test {
 
 cloe.schedule_test {
     id = "TEST-B",
-    on = "time=5",
+    on = cloe.events.time("5s"),
     run = function(z)
         z:expect(true, "TEST-B has been a good test!")
+        z:assert
     end
 }
 
