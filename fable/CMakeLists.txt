@@ -76,6 +76,8 @@ if(BUILD_TESTING)
         src/fable/schema/factory_advanced_test.cpp
         src/fable/schema/factory_test.cpp
         src/fable/schema/ignore_test.cpp
+        src/fable/schema/map_nested_test.cpp
+        src/fable/schema/map_test.cpp
         src/fable/schema/number_test.cpp
         src/fable/schema/optional_test.cpp
         src/fable/schema/path_test.cpp

@@ -40,7 +40,7 @@ class FromConfable : public Base<FromConfable<T>> {
 
   explicit FromConfable(std::string desc = "")
       : Base<FromConfable<T>>(std::move(desc)), schema_(Type().schema()) {
-    schema_.reset_ptr(); // type was temporary
+    schema_.reset_ptr();  // type was temporary
     this->type_ = schema_.type();
   }
 
@@ -91,7 +91,10 @@ class FromConfable : public Base<FromConfable<T>> {
 
   void deserialize_into(const Conf& c, Type& x) const { x.from_conf(c); }
 
-  void reset_ptr() override { ptr_ = nullptr; }
+  void reset_ptr() override {
+    ptr_ = nullptr;
+    schema_.reset_ptr();
+  }
 
  private:
   Box schema_;
