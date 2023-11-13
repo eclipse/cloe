@@ -93,7 +93,10 @@ class FromConfable : public Base<FromConfable<T>> {
     return tmp;
   }
 
-  void reset_ptr() override { ptr_ = nullptr; }
+  void reset_ptr() override {
+    ptr_ = nullptr;
+    schema_.reset_ptr();
+  }
 
  private:
   Box schema_;
