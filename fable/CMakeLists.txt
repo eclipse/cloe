@@ -4,6 +4,8 @@ project(fable LANGUAGES CXX)
 
 # NOTE: The variable FABLE_VERSION is used throughout this CMakeLists file
 # and is supplied from Conan or by hand on the command line.
+set(FABLE_VERSION "0.0.0-undefined" CACHE STRING "Fable version as MAJOR.MINOR.PATCH string")
+set(FABLE_VERSION_U32 0 CACHE STRING "Fable version as (MAJOR<<16)|(MINOR<<8)|PATCH integer")
 
 include(GNUInstallDirs)
 
@@ -40,9 +42,11 @@ set_target_properties(${target} PROPERTIES
     CXX_STANDARD_REQUIRED ON
     VERSION ${FABLE_VERSION}
 )
+configure_file(src/fable/version.hpp.in include/fable/version.hpp @ONLY)
 target_include_directories(${target}
   PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 target_link_libraries(${target}
@@ -68,6 +72,7 @@ if(BUILD_TESTING)
 
     add_executable(test-fable
         # find src -type f -name "*_test.cpp"
+        src/fable/version_test.cpp
         src/fable/environment_test.cpp
         src/fable/schema/const_test.cpp
         src/fable/schema/custom_test.cpp
@@ -102,6 +107,9 @@ install(TARGETS ${target}
     RUNTIME
 )
 install(DIRECTORY include/
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 install(EXPORT ${namespace}Targets
