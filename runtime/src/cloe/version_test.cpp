@@ -15,10 +15,25 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-/**
- * \file version.hpp
-*/
 
-#define CLOE_VERSION_MAJOR 0
-#define CLOE_VERSION_MINOR 22
-#define CLOE_VERSION_PATCH 0
+#include <gtest/gtest.h>
+
+#include <fable/version.hpp>
+#include <cloe/version.hpp>
+
+TEST(fable_version, check_valid) {
+  // Ensure we can access the fable version information.
+  ASSERT_NE(FABLE_VERSION_U32, 0);
+  ASSERT_NE(FABLE_VERSION, "0.0.0-undefined");
+}
+
+TEST(cloe_version, check_valid) {
+  // Ensure we can access the cloe version, and it isn't undefined
+  ASSERT_NE(CLOE_VERSION_U32, 0);
+  ASSERT_NE(CLOE_VERSION, "0.0.0-undefined");
+}
+
+TEST(cloe_version, check_identical_to_fable_version) {
+  ASSERT_EQ(FABLE_VERSION_U32, CLOE_VERSION_U32);
+  ASSERT_EQ(FABLE_VERSION, CLOE_VERSION);
+}

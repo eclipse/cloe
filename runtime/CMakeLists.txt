@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 
 project(cloe-runtime LANGUAGES CXX)
 
+# NOTE: The variable FABLE_VERSION is used throughout this CMakeLists file
+# and is supplied from Conan or by hand on the command line.
+set(CLOE_VERSION "0.0.0-undefined" CACHE STRING "Cloe version as MAJOR.MINOR.PATCH string")
+set(CLOE_VERSION_U32 0 CACHE STRING "Cloe version as (MAJOR<<16)|(MINOR<<8)|PATCH integer")
+
 include(GNUInstallDirs)
 include(cmake/TargetLinting.cmake)
 
@@ -47,12 +52,14 @@ add_library(cloe::runtime ALIAS cloe-runtime)
 set_target_properties(cloe-runtime PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
-    VERSION ${CLOE_PROJECT_VERSION}
+    VERSION ${CLOE_VERSION}
 )
 set_target_linting(cloe-runtime)
+configure_file(src/cloe/version.hpp.in include/cloe/version.hpp @ONLY)
 target_include_directories(cloe-runtime
   PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 target_link_libraries(cloe-runtime
@@ -84,6 +91,7 @@ if(BUILD_TESTING)
 
     add_executable(test-cloe
         # find src -type f -name "*_test.cpp"
+        src/cloe/version_test.cpp
         src/cloe/core/duration_test.cpp
         src/cloe/utility/statistics_test.cpp
         src/cloe/utility/uid_tracker_test.cpp
@@ -126,5 +134,8 @@ install(
 )
 install(
     DIRECTORY include/
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
