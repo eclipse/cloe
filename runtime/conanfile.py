@@ -3,6 +3,7 @@
 
 import os
 from pathlib import Path
+from semver import SemVer
 
 from conan import ConanFile
 from conan.tools import cmake, files, scm
@@ -54,11 +55,22 @@ class CloeRuntime(ConanFile):
 
     def layout(self):
         cmake.cmake_layout(self)
+        self.cpp.source.includedirs.append(os.path.join(self.folders.build, "include"))
 
     def generate(self):
+        # The version as a single 32-bit number takes the format:
+        #
+        #   (EPOCH << 24) | (MAJOR_VERSION << 16) | (MINOR_VERSION << 8) | PATCH_VERSION
+        #
+        # Each version consists of at most 8 bits, so 256 potential values, including 0.
+        # The epoch starts with 0, and is bumped after each version naming scheme.
+        semver = SemVer(self.version, True)
+        version_u32 = (0<<24) | (semver.major << 16) | (semver.minor << 8) | semver.patch
+
         tc = cmake.CMakeToolchain(self)
         tc.cache_variables["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
-        tc.cache_variables["CLOE_PROJECT_VERSION"] = self.version
+        tc.cache_variables["CLOE_VERSION"] = self.version
+        tc.cache_variables["CLOE_VERSION_U32"] = version_u32
         tc.cache_variables["TargetLintingExtended"] = self.options.pedantic
         tc.generate()
 
@@ -90,6 +102,7 @@ class CloeRuntime(ConanFile):
         # mode and in the normal package mode:
         if not self.in_local_cache:
             self.cpp_info.builddirs.append(os.path.join(self.source_folder, "cmake"))
+            self.cpp_info.includedirs.append(os.path.join(self.build_folder, "include"))
             self.cpp_info.libs = ["cloe-runtime"]
         else:
             self.cpp_info.builddirs.append(os.path.join("lib", "cmake", "cloe"))
