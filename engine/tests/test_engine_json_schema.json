@@ -700,6 +700,30 @@
                     }
                   ]
                 },
+                "signals": {
+                  "description": "file to store signals in",
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "comment": "path should either not exist or be a file",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "signals_autocompletion": {
+                  "description": "file to store signal autocompletion in",
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "comment": "path should either not exist or be a file",
+                      "type": "string"
+                    }
+                  ]
+                },
                 "triggers": {
                   "description": "file to store triggers in",
                   "oneOf": [
