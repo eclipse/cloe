@@ -502,13 +502,19 @@ class Engine:
         print(f"source {self.runtime_dir / 'activate_all.sh'}")
         print(f"source {self.runtime_dir / 'prompt.sh'}")
 
-    def prepare(self, build_policy: str = "outdated") -> None:
+    def _set_build_policy(self, build_policy: Optional[List[str]]):
+        if build_policy is None:
+            build_policy = ["outdated", "cascade"]
+        for policy in build_policy:
+            if policy == "":
+                self.conan_args.append("--build")
+            else:
+                self.conan_args.append(f"--build={policy}")
+
+    def prepare(self, build_policy: Optional[List[str]] = None) -> None:
         """Prepare (by downloading or building) dependencies for the profile."""
         self.capture_output = False
-        if build_policy == "":
-            self.conan_args.append("--build")
-        else:
-            self.conan_args.append(f"--build={build_policy}")
+        self._set_build_policy(build_policy)
         self._prepare_runtime_env(use_cache=False)
 
     def deploy(
@@ -517,14 +523,11 @@ class Engine:
         wrapper: Optional[Path] = None,
         wrapper_target: Optional[Path] = None,
         patch_rpath: bool = True,
-        build_policy: str = "outdated",
+        build_policy: Optional[List[str]] = None,
     ) -> None:
         """Deploy dependencies for the profile."""
         self.capture_output = False
-        if build_policy == "":
-            self.conan_args.append("--build")
-        else:
-            self.conan_args.append(f"--build={build_policy}")
+        self._set_build_policy(build_policy)
         self._prepare_runtime_env(use_cache=False, with_json=True)
 
         # Ensure destination exists:
@@ -561,9 +564,9 @@ class Engine:
 
         for dep in build_data["dependencies"]:
             for src in dep["bin_paths"]:
-                copy_tree(src, dest/"bin", ignore=["bzip2"])
+                copy_tree(src, dest / "bin", ignore=["bzip2"])
             for src in dep["lib_paths"]:
-                copy_tree(src, dest/"lib", ignore=["cmake", "*.a"])
+                copy_tree(src, dest / "lib", ignore=["cmake", "*.a"])
 
         # Patching RPATH of all the binaries lets everything run
         # fine without any extra steps, like setting LD_LIBRARY_PATH.
