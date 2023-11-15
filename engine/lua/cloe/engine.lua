@@ -53,6 +53,16 @@ function engine.require_feature(id)
     end
 end
 
+--- Return the active stack configuration as a table.
+---
+--- Modifying the values here have no effect. It is simply a dump
+--- of the JSON representation of a stack configuration.
+---
+--- @return StackConf
+function engine.config()
+    return api.state.config
+end
+
 --- Try to load (merge) stackfile.
 ---
 --- @param file string file path, possibly relative to calling file
@@ -91,9 +101,9 @@ function engine.apply_stack(stack)
     validate("cloe.apply_stack(string|table)", stack)
     local file = api.state.current_script_file or ""
     if type(stack) == "table" then
-        api.state.stack:merge_stacktable(stack, file)
+        api.state.stack:merge_stacktable(stack --[[ @as table ]], file)
     else
-        api.state.stack:merge_stackjson(stack, file)
+        api.state.stack:merge_stackjson(stack --[[ @as string ]], file)
     end
 end
 

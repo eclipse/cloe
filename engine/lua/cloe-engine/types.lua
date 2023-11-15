@@ -32,6 +32,7 @@ local Stack = {}
 --- @field version string version of stack (should be "4")
 --- @field include? string[] list of files to include
 --- @field engine? EngineConf engine configuration
+--- @field simulation? SimulationConf simulation configuration
 --- @field server? ServerConf server configuration
 --- @field plugins? PluginConf[] list of plugin configurations
 --- @field defaults? DefaultsConf default arguments to apply to plugins

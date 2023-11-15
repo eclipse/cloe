@@ -26,23 +26,21 @@ local events = {}
 ---
 --- Example:
 ---
----     local events = require("cloe.testing").events
----
 ---     cloe.schedule_test {
 ---         id = "TEST-A",
----         on = "start",
+---         on = cloe.events.start(),
 ---         -- ...
 ---     }
 ---
 ---     cloe.schedule_test {
 ---         id = "TEST-B",
----         on = events.after_tests("TEST-A"),
+---         on = cloe.events.after_tests("TEST-A"),
 ---         -- ...
 ---     }
 ---
 ---     cloe.schedule_test {
 ---         id = "FINAL",
----         on = events.after_tests("TEST-A", "TEST-B"),
+---         on = cloe.events.after_tests("TEST-A", "TEST-B"),
 ---         -- ...
 ---     }
 ---
@@ -80,7 +78,7 @@ function events.every(duration)
     if type(duration) == "string" then
         duration = types.Duration.new(duration)
     end
-    if duration:ms() % api.state.stack.simulation.model_step_width:ms() ~= 0 then
+    if duration:ns() % api.state.config.simulation.model_step_width ~= 0 then
         error("interval duration is not a multiple of nominal step width")
     end
     return function(sync)
