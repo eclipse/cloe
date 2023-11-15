@@ -226,3 +226,20 @@ struct adl_serializer<sol::object> {
 };
 
 }  // namespace nlohmann
+
+namespace fable {
+
+inline sol::object into_sol_object(sol::state_view& lua, const nlohmann::json& json) {
+  auto tmp = sol::object(lua, sol::in_place, nullptr);
+  nlohmann::adl_serializer<sol::object>::from_json(json, tmp);
+  return tmp;
+}
+
+inline sol::object into_sol_object(sol::this_state& state, const nlohmann::json& json) {
+  auto lua = sol::state_view(state);
+  auto tmp = sol::object(lua, sol::in_place, nullptr);
+  nlohmann::adl_serializer<sol::object>::from_json(json, tmp);
+  return tmp;
+}
+
+} // namespace fable

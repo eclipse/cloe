@@ -47,17 +47,11 @@ TEST(fable_utility_sol, to_json) {
   assert_xeq("x = {}", "[]");
 }
 
-void json_to_lua(sol::state_view& lua, std::string_view field, const fable::Json& json) {
-  auto tmp = sol::object(lua, sol::in_place, nullptr);
-  nlohmann::adl_serializer<sol::object>::from_json(json, tmp);
-  lua[field] = tmp;
-}
-
 TEST(fable_utility_sol, from_json_bool) {
   auto lua = sol::state();
   lua.open_libraries(sol::lib::base);
 
-  json_to_lua(lua, "json", Json(true));
+  lua["json"] = fable::into_sol_object(lua, Json(true));
   lua.script(
   R"(
     assert(type(json) == "boolean")
@@ -69,7 +63,7 @@ TEST(fable_utility_sol, from_json_int) {
   auto lua = sol::state();
   lua.open_libraries(sol::lib::base);
 
-  json_to_lua(lua, "json", Json(42));
+  lua["json"] = fable::into_sol_object(lua, Json(42));
   lua.script(
   R"(
     assert(type(json) == "number")
@@ -81,7 +75,7 @@ TEST(fable_utility_sol, from_json_float) {
   auto lua = sol::state();
   lua.open_libraries(sol::lib::base);
 
-  json_to_lua(lua, "json", Json(3.14159));
+  lua["json"] = fable::into_sol_object(lua, Json(3.14159));
   lua.script(
   R"(
     assert(type(json) == "number")
@@ -93,7 +87,7 @@ TEST(fable_utility_sol, from_json_string) {
   auto lua = sol::state();
   lua.open_libraries(sol::lib::base);
 
-  json_to_lua(lua, "json", Json("hello world!"));
+  lua["json"] = fable::into_sol_object(lua, Json("hello world!"));
   lua.script(
   R"(
     assert(type(json) == "string")
@@ -105,7 +99,7 @@ TEST(fable_utility_sol, from_json_array) {
   auto lua = sol::state();
   lua.open_libraries(sol::lib::base);
 
-  json_to_lua(lua, "json", Json({1, 2, 3}));
+  lua["json"] = fable::into_sol_object(lua, Json({1, 2, 3}));
   lua.script(
   R"(
     assert(type(json) == "table")
