@@ -502,7 +502,7 @@ class Engine:
         print(f"source {self.runtime_dir / 'activate_all.sh'}")
         print(f"source {self.runtime_dir / 'prompt.sh'}")
 
-    def prepare(self, build_policy: str = "outdated") -> None:
+    def prepare(self, build_policy: str = "cascade") -> None:
         """Prepare (by downloading or building) dependencies for the profile."""
         self.capture_output = False
         if build_policy == "":
@@ -517,7 +517,7 @@ class Engine:
         wrapper: Optional[Path] = None,
         wrapper_target: Optional[Path] = None,
         patch_rpath: bool = True,
-        build_policy: str = "outdated",
+        build_policy: str = "cascade",
     ) -> None:
         """Deploy dependencies for the profile."""
         self.capture_output = False
