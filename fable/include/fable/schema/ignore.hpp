@@ -60,7 +60,7 @@ class Ignore : public Base<Ignore> {
   void from_conf(const Conf& /*unused*/) override {}
   void reset_ptr() override {}
 
-  [[nodiscard]] Json serialize(const Type& /*unused*/) const { return nullptr; }
+  [[nodiscard]] Json serialize(const Type& /*unused*/) const { return nullptr; } // NOLINT(readability-convert-member-functions-to-static)
   [[nodiscard]] Type deserialize(const Conf& /*unused*/) const { return {}; }
   void serialize_into(Json& /*unused*/, const Type& /*unused*/) const {}
   void deserialize_into(const Conf& /*unused*/, Type& /*unused*/) const {}
