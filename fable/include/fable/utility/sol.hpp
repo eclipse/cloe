@@ -33,6 +33,7 @@
 
 #include <nlohmann/json.hpp>
 
+#include <sol/state_view.hpp>
 #include <sol/object.hpp>    // for object
 #include <sol/optional.hpp>  // for optional
 #include <sol/table.hpp>     // for table
@@ -58,6 +59,7 @@ namespace nlohmann {
  */
 template <>
 struct adl_serializer<sol::object> {
+  // NOLINTNEXTLINE(misc-no-recursion)
   static void to_json_array(json& j, const sol::table& tbl) {
     if (j.type() != json::value_t::array) {
       j = json::array();
@@ -76,6 +78,7 @@ struct adl_serializer<sol::object> {
     }
   }
 
+  // NOLINTNEXTLINE(misc-no-recursion)
   static void to_json_object(json& j, const sol::table& tbl) {
     if (j.type() != json::value_t::object) {
       j = json::object();
@@ -86,6 +89,7 @@ struct adl_serializer<sol::object> {
     }
   }
 
+  // NOLINTNEXTLINE(misc-no-recursion)
   static void to_json(json& j, const sol::table& tbl) {
     if (tbl.pairs().begin() == tbl.pairs().end()) {
       // We don't know whether this is an empty array or an empty object,
@@ -108,6 +112,7 @@ struct adl_serializer<sol::object> {
     }
   }
 
+  // NOLINTNEXTLINE(misc-no-recursion)
   static void to_json(json& j, const sol::object& obj) {
     switch (obj.get_type()) {
       case sol::type::table: {
@@ -153,6 +158,69 @@ struct adl_serializer<sol::object> {
       case sol::type::lightuserdata:
         j = "<userdata>";
         break;
+    }
+  }
+
+  // NOLINTNEXTLINE(misc-no-recursion)
+  static void from_json(const json& j, sol::object& obj) {
+    auto* L = obj.lua_state();
+    if (L == nullptr) {
+      throw std::logic_error("can only deserialize to existing sol::object");
+    }
+    auto lua = sol::state_view(L);
+    switch (j.type()) {
+      case json::value_t::object: {
+        auto tbl = lua.create_table();
+        for (const auto& it : j.items()) {
+          auto tmp = sol::object(L, sol::in_place, nullptr);
+          from_json(it.value(), tmp);
+          tbl[it.key()] = tmp;
+        }
+        obj = tbl;
+        break;
+      }
+      case json::value_t::null: {
+        obj = sol::object(L, sol::in_place, nullptr);
+        break;
+      }
+      case json::value_t::array: {
+        auto tbl = lua.create_table();
+        for (const auto& el : j) {
+          auto tmp = sol::object(L, sol::in_place, nullptr);
+          from_json(el, tmp);
+          tbl.add(tmp);
+        }
+        obj = tbl;
+        break;
+      }
+      case json::value_t::binary: {
+        obj = sol::object(L, sol::in_place, nullptr);
+        break;
+      }
+      case json::value_t::string: {
+        obj = sol::object(L, sol::in_place, j.get<std::string>());
+        break;
+      }
+      case json::value_t::boolean: {
+        obj = sol::object(L, sol::in_place, j.get<bool>());
+        break;
+      }
+      case json::value_t::number_float: {
+        obj = sol::object(L, sol::in_place, j.get<double>());
+        break;
+      }
+      case json::value_t::number_unsigned: {
+        obj = sol::object(L, sol::in_place, j.get<unsigned long>());
+        break;
+      }
+      case json::value_t::number_integer: {
+        obj = sol::object(L, sol::in_place, j.get<signed long>());
+        break;
+      }
+      case json::value_t::discarded: {
+        obj = sol::object(L, sol::in_place, nullptr);
+        break;
+      }
     }
   }
 };

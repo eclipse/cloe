@@ -46,3 +46,125 @@ TEST(fable_utility_sol, to_json) {
   assert_xeq("x = { extra = true, 1, 2, 3 }", R"([ 1, 2, 3, { "extra": true } ])");
   assert_xeq("x = {}", "[]");
 }
+
+void json_to_lua(sol::state_view& lua, std::string_view field, const fable::Json& json) {
+  auto tmp = sol::object(lua, sol::in_place, nullptr);
+  nlohmann::adl_serializer<sol::object>::from_json(json, tmp);
+  lua[field] = tmp;
+}
+
+TEST(fable_utility_sol, from_json_bool) {
+  auto lua = sol::state();
+  lua.open_libraries(sol::lib::base);
+
+  json_to_lua(lua, "json", Json(true));
+  lua.script(
+  R"(
+    assert(type(json) == "boolean")
+    assert(json == true)
+  )");
+}
+
+TEST(fable_utility_sol, from_json_int) {
+  auto lua = sol::state();
+  lua.open_libraries(sol::lib::base);
+
+  json_to_lua(lua, "json", Json(42));
+  lua.script(
+  R"(
+    assert(type(json) == "number")
+    assert(json == 42)
+  )");
+}
+
+TEST(fable_utility_sol, from_json_float) {
+  auto lua = sol::state();
+  lua.open_libraries(sol::lib::base);
+
+  json_to_lua(lua, "json", Json(3.14159));
+  lua.script(
+  R"(
+    assert(type(json) == "number")
+    assert(json == 3.14159)
+  )");
+}
+
+TEST(fable_utility_sol, from_json_string) {
+  auto lua = sol::state();
+  lua.open_libraries(sol::lib::base);
+
+  json_to_lua(lua, "json", Json("hello world!"));
+  lua.script(
+  R"(
+    assert(type(json) == "string")
+    assert(json == "hello world!")
+  )");
+}
+
+TEST(fable_utility_sol, from_json_array) {
+  auto lua = sol::state();
+  lua.open_libraries(sol::lib::base);
+
+  json_to_lua(lua, "json", Json({1, 2, 3}));
+  lua.script(
+  R"(
+    assert(type(json) == "table")
+    assert(#json == 3)
+    assert(json[1] == 1)
+    assert(json[2] == 2)
+    assert(json[3] == 3)
+  )");
+}
+
+TEST(fable_utility_sol, from_json_object) {
+  auto lua = sol::state();
+  lua.open_libraries(sol::lib::base);
+
+  auto json = Json{
+    {"xbool", true},
+    {"xstring", "hello world!"},
+    {"xint", -42}, // NOLINT
+    {"xunsigned", 42u}, // NOLINT
+    {"xdouble", 42.0}, // NOLINT
+    {"xarray", {1, 2, 3}},
+    {"xobject", {
+      {"foo", "bar"},
+    }},
+    {"xnull", nullptr},
+  };
+
+  auto tmp = sol::object(lua["json"]);
+  nlohmann::adl_serializer<sol::object>::from_json(json, tmp);
+  lua["json"] = tmp;
+  lua.script(
+  R"(
+    print(json)
+    assert(json)
+
+    print(json.xbool)
+    assert(json.xbool == true)
+
+    print(json.xstring)
+    assert(json.xstring == "hello world!")
+
+    print(json.xint)
+    assert(json.xint == -42)
+
+    print(json.xunsigned)
+    assert(json.xunsigned == 42)
+
+    print(json.xdouble)
+    assert(json.xdouble == 42.0)
+
+    assert(type(json.xarray) == "table")
+    assert(json.xarray[1] == 1)
+    assert(json.xarray[3] == 3)
+    assert(json.xarray[4] == nil)
+
+    print(json.xobject)
+    assert(json.xobject)
+    assert(json.xobject.foo == "bar")
+
+    assert(not json.xnull)
+  )");
+}
