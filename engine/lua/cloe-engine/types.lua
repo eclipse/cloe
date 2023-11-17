@@ -28,6 +28,10 @@
 --- @class Stack
 local Stack = {}
 
+--- @class InputConf applied input stack configuration
+--- @field file string source of stack, can be "" if unknown or "-" if stdin
+--- @field data StackConf the contents of the input stack configuration
+
 --- @class StackConf stack configuration
 --- @field version string version of stack (should be "4")
 --- @field include? string[] list of files to include
@@ -181,6 +185,20 @@ function Stack:merge_stackjson(json, source_filepath) end
 --- @param source_filepath string Filepath to use for error messages
 --- @return nil
 function Stack:merge_stacktable(tbl, source_filepath) end
+
+--- Return the current active configuration of the stack file.
+---
+--- This is not the same thing as the input configuration!
+---
+--- @return StackConf
+function Stack:active_config() end
+
+--- Return an array of input configuration of the stack file.
+---
+--- This is not the same thing as the active configuration!
+---
+--- @return InputConf[]
+function Stack:input_config() end
 
 --- @class Duration
 local Duration = {}

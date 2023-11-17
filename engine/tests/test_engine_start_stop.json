@@ -1,0 +1,26 @@
+{
+  "version": "4",
+  "controllers": [
+    {
+      "binding": "basic",
+      "vehicle": "default"
+    }
+  ],
+  "simulators": [
+    {
+      "binding": "nop"
+    }
+  ],
+  "vehicles": [
+    {
+      "name": "default",
+      "from": {
+        "simulator": "nop",
+        "index": 0
+      }
+    }
+  ],
+  "triggers": [
+    { "event": "start", "action": "succeed" }
+  ]
+}

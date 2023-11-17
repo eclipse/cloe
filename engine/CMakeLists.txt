@@ -56,6 +56,7 @@ if(BUILD_TESTING)
 
     add_executable(test-stacklib
         src/stack_test.cpp
+        src/stack_component_test.cpp
     )
     set_target_properties(test-stacklib PROPERTIES
         CXX_STANDARD 17
