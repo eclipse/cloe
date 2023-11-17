@@ -145,7 +145,7 @@ class Struct : public Base<Struct> {
   }
 
   template <typename T>
-  Struct properties_from(const T x) {
+  Struct properties_from(const T x) && {
     set_properties_from(x);
     return std::move(*this);
   }
