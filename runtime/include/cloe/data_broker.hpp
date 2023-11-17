@@ -1683,7 +1683,7 @@ class DataBroker {
    * \note databroker::compatible_base_t<T> == T, if the function compiles
    */
   template <typename T>
-  databroker::signal_type_cref_t<T> value(std::string_view name) {
+  databroker::signal_type_cref_t<T> value(std::string_view name) const {
     assert_static_type<T>();
     using compatible_type = databroker::compatible_base_t<T>;
 
@@ -1698,7 +1698,7 @@ class DataBroker {
    * \return getter-function of the signal
    */
   template <typename T>
-  const Signal::typed_get_value_function_t<T>& getter(std::string_view name) {
+  const Signal::typed_get_value_function_t<T>& getter(std::string_view name) const {
     assert_static_type<T>();
     using compatible_type = databroker::compatible_base_t<T>;
 
@@ -1732,7 +1732,7 @@ class DataBroker {
    * \return const Signal::typed_set_value_function_t<T>&, setter-function of the signal
    */
   template <typename T>
-  const Signal::typed_set_value_function_t<T>& setter(std::string_view name) {
+  const Signal::typed_set_value_function_t<T>& setter(std::string_view name) const {
     assert_static_type<T>();
     using compatible_type = databroker::compatible_base_t<T>;
 
@@ -1818,14 +1818,14 @@ struct SignalDescriptorBase<T, TNAME, true> : public TNAME {
    * \param db Instance of the DataBroker
    * \return TypedSignal<T>, instance of the signal
    */
-  static auto signal(DataBroker& db) { return TypedSignal<T>(db.signal(name())); }
+  static auto signal(const DataBroker& db) { return TypedSignal<T>(db.signal(name())); }
   /**
    * Return the getter-function of a signal.
    *
    * \param db Instance of the DataBroker
    * \return const Signal::typed_get_value_function_t<T>&, getter-function of the signal
    */
-  static auto getter(DataBroker& db) { return db.getter<T>(name()); }
+  static auto getter(const DataBroker& db) { return db.getter<T>(name()); }
   /**
    * Sets the getter-function of a signal.
    *
@@ -1841,7 +1841,7 @@ struct SignalDescriptorBase<T, TNAME, true> : public TNAME {
    * \param db Instance of the DataBroker
    * \return const Signal::typed_set_value_function_t<type>&, setter-function of the signal
    */
-  static auto setter(DataBroker& db) { return db.setter<T>(name()); }
+  static auto setter(const DataBroker& db) { return db.setter<T>(name()); }
   /**
    * Sets the setter-function of a signal.
    *
@@ -1897,14 +1897,14 @@ struct SignalDescriptorBase<T, TNAME, false> : public TNAME {
    * \param db Instance of the DataBroker
    * \return TypedSignal<T>, instance of the signal
    */
-  auto signal(DataBroker& db) { return TypedSignal<T>(db.signal(name())); }
+  auto signal(const DataBroker& db) const { return TypedSignal<T>(db.signal(name())); }
   /**
    * Return the getter-function of a signal.
    *
    * \param db Instance of the DataBroker
    * \return const Signal::typed_get_value_function_t<T>&, getter-function of the signal
    */
-  auto getter(DataBroker& db) { return db.getter<T>(name()); }
+  auto getter(const DataBroker& db) const { return db.getter<T>(name()); }
   /**
    * Sets the getter-function of a signal.
    *
@@ -1920,7 +1920,7 @@ struct SignalDescriptorBase<T, TNAME, false> : public TNAME {
    * \param db Instance of the DataBroker
    * \return const Signal::typed_set_value_function_t<type>&, setter-function of the signal
    */
-  auto setter(DataBroker& db) { return db.setter<T>(name()); }
+  auto setter(const DataBroker& db) const { return db.setter<T>(name()); }
   /**
    * Sets the setter-function of a signal.
    *
@@ -1937,7 +1937,7 @@ struct SignalDescriptorBase<T, TNAME, false> : public TNAME {
    * \param db Instance of the DataBroker
    * \return Pointer to the value of the signal, nullptr if the signal does not exist
    */
-  auto value(DataBroker& db) { return db.value<T>(name()); }
+  auto value(const DataBroker& db) const { return db.value<T>(name()); }
   /**
    * Set the value of a signal.
    *
