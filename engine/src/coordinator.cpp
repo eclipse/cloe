@@ -195,7 +195,7 @@ cloe::CallbackResult Coordinator::execute_trigger(TriggerPtr&& t, const Sync& sy
 void Coordinator::execute_action_from_lua(const Sync& sync, const sol::object& obj) {
   // TODO: Make this trackable by making it a proper trigger and using execute trigger
   // instead of calling the action here directly.
-  auto ap = make_action(Json(obj));
+  auto ap = make_action(obj);
   (*ap)(sync, *executer_registrar_);
 }
 
