@@ -107,7 +107,7 @@ class Coordinator {
   void register_event(const std::string& key, cloe::EventFactoryPtr&& ef,
                       std::shared_ptr<cloe::Callback> storage);
 
-  sol::table register_lua_table(const std::string& key);
+  sol::table register_lua_table(const std::string& field);
 
   cloe::DataBroker* data_broker() const { return db_; }
 

@@ -175,6 +175,7 @@ void register_cloe_engine(sol::state_view& lua, Stack& stack) {
   tbl["state"] = lua.create_table();
   tbl["state"]["report"] = lua.create_table();
   tbl["state"]["stack"] = std::ref(stack);
+  tbl["state"]["config"] = fable::into_sol_object(lua, stack.active_config());
   tbl["state"]["scheduler"] = sol::lua_nil;
   tbl["state"]["current_script_file"] = sol::lua_nil;
   tbl["state"]["current_script_dir"] = sol::lua_nil;

@@ -863,8 +863,8 @@ class StackIncompleteError : public Error {
  public:
   explicit StackIncompleteError(std::vector<std::string>&& missing);
 
-  std::string all_sections_missing(const std::string& sep = ", ") const;
-  const std::vector<std::string>& sections_missing() const { return sections_missing_; }
+  [[nodiscard]] std::string all_sections_missing(const std::string& sep = ", ") const;
+  [[nodiscard]] const std::vector<std::string>& sections_missing() const { return sections_missing_; }
 
  private:
   std::vector<std::string> sections_missing_;
@@ -938,6 +938,9 @@ class Stack : public Confable {
     conf_reader_func_ = std::move(fn);
   }
 
+  /**
+   * Open the given JSON file and merge it into the stack.
+   */
   void merge_stackfile(const std::string& filepath);
 
   /**
