@@ -26,6 +26,12 @@ namespace cloe {
 
 void register_usertype_stack(sol::table& lua) {
   auto stack = lua.new_usertype<Stack>("Stack", sol::no_constructor);
+  stack["active_config"] = [](Stack& self, sol::this_state lua) {
+    return fable::into_sol_object(lua, self.active_config());
+  };
+  stack["input_config"] = [](Stack& self, sol::this_state lua) {
+    return fable::into_sol_object(lua, self.input_config());
+  };
   stack["merge_stackfile"] = &Stack::merge_stackfile;
   stack["merge_stackjson"] = [](Stack& self, const std::string& json, std::string file) {
     self.from_conf(Conf{fable::parse_json(json), std::move(file)});

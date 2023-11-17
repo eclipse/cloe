@@ -187,7 +187,7 @@ cloe::CallbackResult Coordinator::execute_trigger(TriggerPtr&& t, const Sync& sy
   logger()->debug("Execute trigger {}", inline_json(*t));
   auto result = (t->action())(sync, *executer_registrar_);
   if (!t->is_conceal()) {
-    history_.emplace_back(HistoryTrigger{sync.time(), std::move(t)});
+    history_.emplace_back(sync.time(), std::move(t));
   }
   return result;
 }
