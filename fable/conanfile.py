@@ -18,11 +18,13 @@ class Fable(ConanFile):
     description = "JSON schema and configuration library"
     settings = "os", "compiler", "build_type", "arch"
     options = {
+        "test": [True, False],
         "allow_comments": [True, False],
         "shared": [True, False],
         "fPIC": [True, False],
     }
     default_options = {
+        "test": True,
         "allow_comments": True,
         "shared": False,
         "fPIC": True,
@@ -50,9 +52,10 @@ class Fable(ConanFile):
         self.requires("nlohmann_json/3.11.2")
 
     def build_requirements(self):
-        self.test_requires("gtest/1.13.0")
-        self.test_requires("boost/[>=1.65.1]")
-        self.test_requires("sol2/3.3.1")
+        if self.options.test:
+            self.test_requires("gtest/1.13.0")
+            self.test_requires("boost/[>=1.65.1]")
+            self.test_requires("sol2/3.3.1")
 
     def layout(self):
         cmake.cmake_layout(self)
@@ -66,7 +69,9 @@ class Fable(ConanFile):
         # Each version consists of at most 8 bits, so 256 potential values, including 0.
         # The epoch starts with 0, and is bumped after each version naming scheme.
         semver = SemVer(self.version, True)
-        version_u32 = (0<<24) | (semver.major << 16) | (semver.minor << 8) | semver.patch
+        version_u32 = (
+            (0 << 24) | (semver.major << 16) | (semver.minor << 8) | semver.patch
+        )
 
         tc = cmake.CMakeToolchain(self)
         tc.cache_variables["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
@@ -99,7 +104,9 @@ class Fable(ConanFile):
         # (GCC compilers with version < 7 have no std::filesystem support.)
         # No consideration has been made yet for other compilers,
         # please add them here as necessary.
-        if self.settings.get_safe("compiler") == "gcc" and self.settings.get_safe("compiler.version") in ["7", "8"]:
+        if self.settings.get_safe("compiler") == "gcc" and self.settings.get_safe(
+            "compiler.version"
+        ) in ["7", "8"]:
             self.cpp_info.system_libs = ["stdc++fs"]
 
         if not self.in_local_cache:
