@@ -176,6 +176,22 @@ this shouldn't need to be performed manually.
 
 See the documentation on testing Cloe for more details.
 
+### Disabling Unit Tests
+
+You can disable running unit tests by setting `CONAN_RUN_TESTS=0`,
+as documented in the [Conan Manual](https://docs.conan.io/1/reference/env_vars.html#conan-run-tests).
+
+Alternatively, you can also prevent the unit tests from being built
+in the first place, by setting `tools.build:skip_test=1` in the
+Conan configuration, as documented
+[here](https://docs.conan.io/1/reference/config_files/global_conf.html?highlight=skip_test)
+and [here](https://docs.conan.io/1/reference/conanfile/tools/cmake/cmaketoolchain.html?highlight=skip_test).
+
+When using `make` to build the project, add this to the command line:
+
+    CONAN_OPTIONS="-c tools.build:skip_test=1"
+
+
 ### Building Docker Images
 
 The `Dockerfile` provided in the repository root can be used to create one
