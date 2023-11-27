@@ -178,6 +178,12 @@ this shouldn't need to be performed manually.
 
 See the documentation on testing Cloe for more details.
 
+### Disabling Unit Tests
+
+When using `make` to build the project, add this to the command line:
+
+    CONAN_OPTIONS="-c tools.build:skip_test=1"
+
 ### Building Docker Images
 
 The `Dockerfile` provided in the repository root can be used to create one
