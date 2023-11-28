@@ -77,24 +77,20 @@ class FromJson : public Base<FromJson<T>> {
   void reset_ptr() override { ptr_ = nullptr; }
 
   [[nodiscard]] Json serialize(const Type& x) const {
-    Json j;
-    serialize_into(j, x);
-    return j;
+    return Json(x);
   }
 
   void serialize_into(Json& j, const Type& x) const {
-    to_json(j, x);
+    ::nlohmann::adl_serializer<Type>::to_json(j, x);
   }
 
   template<typename = std::enable_if<std::is_default_constructible_v<Type>>>
   [[nodiscard]] Type deserialize(const Conf& c) const {
-    Type x;
-    deserialize_into(c, x);
-    return x;
+    return c->get<Type>();
   }
 
   void deserialize_into(const Conf& c, Type& x) const {
-    from_json(*c, x);
+    c->get_to(x);
   }
 
  private:
