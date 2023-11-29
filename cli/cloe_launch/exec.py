@@ -334,7 +334,72 @@ class Engine:
         for arg in self.conan_args:
             conan_cmd.append(arg)
         conan_cmd.append(self.profile_path)
-        self._run_cmd(conan_cmd, must_succeed=True)
+        result = subprocess.run(conan_cmd, check=False, capture_output=True)
+        if result.returncode == 0:
+            # Short-circuit out if everything is fine.
+            return
+
+        logging.error("Error: cannot install virtualenv configuration!")
+        logging.error("Command:")
+        logging.error(f"  {' '.join(conan_cmd)}")
+        logging.error("")
+        logging.error("Output:")
+
+        stderr_lines = result.stderr.decode().splitlines()
+        for line in stderr_lines:
+            logging.error(
+                "\n".join(textwrap.wrap(line, 80, initial_indent="  ", subsequent_indent="    ", break_long_words=False))
+            )
+
+        # Here are some errors that can happen and what to do about them.
+        # NOTE: Tested with conan 1.60.1, may not match with other Conan versions.
+        known_errors = {
+            "^ERROR:.* Version range .* from requirement 'cloe-launch-profile/.* could not be resolved.*$": [
+                "It looks like the cloe-launch-profile package hasn't been exported.",
+                "",
+                "Suggestion:",
+                "  From the cloe repository, try performing the following commands:",
+                "  ",
+                "    cd cli",
+                "    conan export .",
+                "",
+            ],
+            "^ERROR: Failed requirement '([^']+)' from .*$": [
+                "It looks like Conan does not know about one of the packages that",
+                "the input configuration requires.",
+                "",
+                "This may be because:",
+                "  - The specification of the requirement in the input configuration is wrong.",
+                "  - The required package needs to be exported into Conan cache.",
+                "  - The required package needs to be marked editable.",
+                "In the last two cases, the package also needs to be built.",
+                "",
+                "Suggestion:",
+                "  From the cloe repository, look at the output from `make help`.",
+                "  There may be several targets that export the required packages.",
+            ],
+            "^ERROR: Missing prebuilt package for '([^']+)'.*$": [
+                "It looks like Conan knows about all required packages, but they are not built.",
+                "",
+                "If you intend to use the required package in editable mode,",
+                "you need to make this clear to Conan.",
+                "",
+                "Suggestion:",
+                "  Use cloe-launch to build all necessary packages:",
+                "  ",
+                f"    cloe-launch prepare {self.profile_path}",
+                "  ",
+            ],
+        }
+        for error in stderr_lines:
+            for (regex, response) in known_errors.items():
+                if re.match(regex, error):
+                    logging.error("")
+                    logging.error("Note:")
+                    for line in response:
+                        logging.error(f"  {line}")
+        sys.exit(2)
+
 
     def _extract_engine_path(self, env: Environment) -> Path:
         """Return the first cloe-engine we find in the PATH."""
@@ -353,6 +418,10 @@ class Engine:
         logging.error(
             "  However, unconvential or unsupported package configuration may also trigger this."
         )
+        logging.error("")
+        logging.error("Note: PATH contains these directories:")
+        for bindir in env.get_list("PATH", default=[]):
+            logging.error(f"  {bindir}")
         sys.exit(2)
 
     def _extract_plugin_paths(self, env: Environment) -> List[Path]:
