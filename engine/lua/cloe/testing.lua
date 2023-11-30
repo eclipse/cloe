@@ -416,7 +416,7 @@ end
 --- @param timeout? Duration|string
 --- @return nil
 function TestFixture:wait_until(condition, timeout)
-    validate("TestFixture:wait_until(function, [string|userdata])", self, condition, timeout)
+    validate("TestFixture:wait_until(function, [string|userdata|nil])", self, condition, timeout)
     if type(timeout) == "string" then
         timeout = types.Duration.new(timeout)
     end
