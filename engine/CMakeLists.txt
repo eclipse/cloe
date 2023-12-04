@@ -2,9 +2,12 @@ cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 
 project(cloe_engine LANGUAGES CXX)
 
-find_package(cloe-runtime REQUIRED)
-find_package(cloe-models REQUIRED)
-find_package(fable REQUIRED)
+set(CLOE_FIND_PACKAGES ON CACHE BOOL "Call find_package() for cloe packages")
+if(CLOE_FIND_PACKAGES)
+    find_package(fable REQUIRED)
+    find_package(cloe-runtime REQUIRED)
+    find_package(cloe-models REQUIRED)
+endif()
 find_package(Boost REQUIRED)
 find_package(CLI11 REQUIRED)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
@@ -20,7 +23,7 @@ set(CLOE_ENGINE_VERSION ${CLOE_PROJECT_VERSION})
 set(PROJECT_GIT_REF "unknown")
 
 # Library libstack ---------------------------------------------------
-add_library(cloe-stacklib
+add_library(cloe-stacklib STATIC
     src/config.hpp
     src/stack.hpp
     src/stack.cpp
@@ -28,13 +31,18 @@ add_library(cloe-stacklib
     src/stack_factory.cpp
     src/plugin.hpp
     src/plugin.cpp
+
+    # Built-in plugins:
+    src/plugins/nop_controller.cpp
+    src/plugins/nop_controller.hpp
+    src/plugins/nop_simulator.cpp
+    src/plugins/nop_simulator.hpp
 )
 add_library(cloe::stacklib ALIAS cloe-stacklib)
 set_target_properties(cloe-stacklib PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
     OUTPUT_NAME stack
-    LIBRARY_OUTPUT_DIRECTORY "lib"
 )
 target_include_directories(cloe-stacklib
   PRIVATE
@@ -43,6 +51,7 @@ target_include_directories(cloe-stacklib
 target_link_libraries(cloe-stacklib
   PUBLIC
     cloe::runtime
+    cloe::models
     fable::fable
     Boost::headers
     Threads::Threads
@@ -72,8 +81,8 @@ if(BUILD_TESTING)
     gtest_add_tests(TARGET test-stacklib)
 endif()
 
-# Library liblua------------------------------------------------------
-add_library(cloe-lualib
+# Library libengine ----------------------------------------------
+add_library(cloe-enginelib STATIC
     src/lua_api.hpp
     src/lua_api.cpp
     src/lua_setup.hpp
@@ -82,63 +91,11 @@ add_library(cloe-lualib
     src/lua_setup_fs.cpp
     src/lua_setup_stack.cpp
     src/lua_setup_sync.cpp
-)
-add_library(cloe::lualib ALIAS cloe-lualib)
-target_compile_definitions(cloe-lualib
-  PUBLIC
-    SOL_ALL_SAFETIES_ON=1
-    LRDB_USE_BOOST_ASIO=1
-)
-set_target_properties(cloe-lualib PROPERTIES
-    CXX_STANDARD 17
-    CXX_STANDARD_REQUIRED ON
-    OUTPUT_NAME lua
-    LIBRARY_OUTPUT_DIRECTORY "lib"
-)
-target_include_directories(cloe-lualib
-  PRIVATE
-    src
-)
-target_link_libraries(cloe-lualib
-  PUBLIC
-    boost::boost
-    sol2::sol2
-    cloe::stacklib
-    cloe::runtime
-    fable::fable
-    Threads::Threads
-)
-if(BUILD_TESTING)
-    add_executable(test-lualib
-        src/lua_stack_test.cpp
-    )
-    set_target_properties(test-lualib PROPERTIES
-        CXX_STANDARD 17
-        CXX_STANDARD_REQUIRED ON
-    )
-    target_link_libraries(test-lualib
-        GTest::gtest
-        GTest::gtest_main
-        Boost::boost
-        cloe::models
-        cloe::stacklib
-        cloe::lualib
-    )
-    gtest_add_tests(TARGET test-lualib)
-endif()
-
-# Library libengine ----------------------------------------------
-add_library(cloe-enginelib
     src/coordinator.cpp
     src/coordinator.hpp
     src/lua_action.cpp
     src/lua_action.hpp
-    src/plugins/nop_controller.cpp
-    src/plugins/nop_controller.hpp
-    src/plugins/nop_simulator.cpp
-    src/plugins/nop_simulator.hpp
     src/registrar.hpp
-    src/server.hpp
     # These are added below and depend on CLOE_ENGINE_WITH_SERVER:
     # src/server.cpp
     # src/server_mock.cpp
@@ -147,9 +104,6 @@ add_library(cloe-enginelib
     src/simulation_context.cpp
     src/simulation_context.hpp
     src/simulation_progress.hpp
-    # These are added below and depend on CLOE_ENGINE_WITH_SERVER:
-    # src/server.cpp
-    # src/server_mock.cpp
     src/utility/command.cpp
     src/utility/command.hpp
     src/utility/defer.hpp
@@ -162,10 +116,11 @@ set_target_properties(cloe-enginelib PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
     OUTPUT_NAME engine
-    LIBRARY_OUTPUT_DIRECTORY "lib"
 )
 target_compile_definitions(cloe-enginelib
   PUBLIC
+    SOL_ALL_SAFETIES_ON=1
+    LRDB_USE_BOOST_ASIO=1
     CLOE_ENGINE_VERSION="${CLOE_ENGINE_VERSION}"
     CLOE_ENGINE_TIMESTAMP="${CLOE_ENGINE_TIMESTAMP}"
     PROJECT_SOURCE_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}\"
@@ -176,11 +131,11 @@ target_include_directories(cloe-enginelib
 )
 target_link_libraries(cloe-enginelib
   PUBLIC
-    cloe::lualib
     cloe::stacklib
     cloe::models
     cloe::runtime
     fable::fable
+    boost::boost
     sol2::sol2
     Threads::Threads
 )
@@ -188,14 +143,16 @@ target_link_libraries(cloe-enginelib
 option(CLOE_ENGINE_WITH_SERVER "Enable integrated server component?" ON)
 if(CLOE_ENGINE_WITH_SERVER)
   message(STATUS "-> Enable server component")
-  find_package(cloe-oak REQUIRED)
+  if(CLOE_FIND_PACKAGES)
+    find_package(cloe-oak REQUIRED)
+  endif()
   target_sources(cloe-enginelib PRIVATE src/server.cpp)
   target_link_libraries(cloe-enginelib PRIVATE cloe::oak)
-  target_compile_definitions(cloe-lualib PUBLIC CLOE_ENGINE_WITH_SERVER=1)
+  target_compile_definitions(cloe-enginelib PUBLIC CLOE_ENGINE_WITH_SERVER=1)
 else()
   message(STATUS "-> Disable server component")
   target_sources(cloe-enginelib PRIVATE src/server_mock.cpp)
-  target_compile_definitions(cloe-lualib PUBLIC CLOE_ENGINE_WITH_SERVER=0)
+  target_compile_definitions(cloe-enginelib PUBLIC CLOE_ENGINE_WITH_SERVER=0)
 endif()
 
 option(CLOE_ENGINE_WITH_LRDB "Enable LRDB Lua Debugger?" ON)
@@ -204,10 +161,29 @@ if(CLOE_ENGINE_WITH_LRDB)
   add_subdirectory(vendor/lrdb)
   target_sources(cloe-enginelib PRIVATE src/lua_debugger.cpp)
   target_link_libraries(cloe-enginelib PRIVATE lrdb::lrdb)
-  target_compile_definitions(cloe-lualib PUBLIC CLOE_ENGINE_WITH_LRDB=1)
+  target_compile_definitions(cloe-enginelib PUBLIC CLOE_ENGINE_WITH_LRDB=1)
 else()
   message(STATUS "-> Disable LRDB component")
-  target_compile_definitions(cloe-lualib PUBLIC CLOE_ENGINE_WITH_LRDB=0)
+  target_compile_definitions(cloe-enginelib PUBLIC CLOE_ENGINE_WITH_LRDB=0)
+endif()
+
+if(BUILD_TESTING)
+    add_executable(test-enginelib
+        src/lua_stack_test.cpp
+    )
+    set_target_properties(test-enginelib PROPERTIES
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED ON
+    )
+    target_link_libraries(test-enginelib
+        GTest::gtest
+        GTest::gtest_main
+        Boost::boost
+        cloe::models
+        cloe::stacklib
+        cloe::enginelib
+    )
+    gtest_add_tests(TARGET test-enginelib)
 endif()
 
 # Executable ---------------------------------------------------------
@@ -226,9 +202,7 @@ set_target_properties(cloe-engine PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
     OUTPUT_NAME cloe-engine
-    RUNTIME_OUTPUT_DIRECTORY bin
 )
-set_target_linting(cloe-engine)
 target_include_directories(cloe-engine
   PRIVATE
     src
@@ -236,7 +210,6 @@ target_include_directories(cloe-engine
 target_link_libraries(cloe-engine
   PRIVATE
     cloe::stacklib
-    cloe::lualib
     cloe::enginelib
     CLI11::CLI11
     linenoise::linenoise

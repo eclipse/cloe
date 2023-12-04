@@ -1,0 +1,27 @@
+{
+  "version": "4",
+  "include": [
+    "config_minimator_multi_agent_infinite.json",
+    "triggers_multi_agent.json"
+  ],
+  "server": {
+    "listen": false,
+    "listen_port": 23456
+  },
+  "triggers": [
+    {
+      "label": "Vehicle first should never move with the minimator binding.",
+      "event": "first_speed/kmph=>0.0", "action": "fail"
+    },
+    {"event": "virtue_second/failure", "action": "fail"},
+    {
+      "label": "Vehicle second should never move with the minimator binding.",
+      "event": "second_speed/kmph=>0.0", "action": "fail"
+    },
+    {"event": "virtue_third/failure", "action": "fail"},
+    {
+      "label": "Vehicle third should never move with the minimator binding.",
+      "event": "third_speed/kmph=>0.0", "action": "fail"
+    }
+  ]
+}

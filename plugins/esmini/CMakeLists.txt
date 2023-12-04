@@ -2,9 +2,12 @@ cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 
 project(cloe_plugin_esmini LANGUAGES CXX)
 
-find_package(cloe-runtime REQUIRED)
-find_package(cloe-models REQUIRED)
-find_package(cloe-osi REQUIRED)
+set(CLOE_FIND_PACKAGES ON CACHE BOOL "Call find_package() for cloe packages")
+if(CLOE_FIND_PACKAGES)
+    find_package(cloe-runtime REQUIRED)
+    find_package(cloe-models REQUIRED)
+    find_package(cloe-osi REQUIRED)
+endif()
 find_package(esmini REQUIRED)
 
 include(CloePluginSetup)
