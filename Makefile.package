@@ -20,35 +20,35 @@
 # You should also adjust the PACKAGE_CHANNEL variable.
 #
 
-PROJECT_ROOT := $(dir $(abspath $(lastword ${MAKEFILE_LIST})))
-PROJECT_VERSION := $(shell [ -r ${PROJECT_ROOT}/VERSION ] && cat ${PROJECT_ROOT}/VERSION || echo unknown)
+PROJECT_ROOT := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+PROJECT_VERSION := $(shell [ -r $(PROJECT_ROOT)/VERSION ] && cat $(PROJECT_ROOT)/VERSION || echo unknown)
 
-include ${PROJECT_ROOT}/Makefile.help
+include $(PROJECT_ROOT)/Makefile.help
 
 # Command for cloe-launch.
 #
 # This definition could be `cloe-launch`, but then you wouldn't get the
 # version of cloe-launch that is from this repository, but one that is
 # available globally.
-CLOE_LAUNCH := PYTHONPATH="${PROJECT_ROOT}/cli" python3 -m cloe_launch
+CLOE_LAUNCH := PYTHONPATH="$(PROJECT_ROOT)/cli" python3 -m cloe_launch
 
 SHELL := /bin/bash
 DATE := $(shell date +"%Y%m%d")
 TIMESTAMP := $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 
 # Check if we are in a Git repository and try to describe the current
-# state if we are. This is used for setting the ${PACKAGE_VERSION} if
-# it is not set in conanfile or by ${PROJECT_VERSION}.
-HAS_GIT := $(shell [ -e ${PROJECT_ROOT}/.git ] && echo "true")
-ifeq (${PROJECT_VERSION},unknown)
-ifeq (${HAS_GIT},true)
+# state if we are. This is used for setting the $(PACKAGE_VERSION) if
+# it is not set in conanfile or by $(PROJECT_VERSION).
+HAS_GIT := $(shell [ -e $(PROJECT_ROOT)/.git ] && echo "true")
+ifeq ($(PROJECT_VERSION),unknown)
+ifeq ($(HAS_GIT),true)
 GIT_COMMIT_HASH  := $(shell git log -1 --format=%h)
 GIT_COMMIT_DIRTY := $(shell git diff --quiet || echo "-dirty")
 GIT_DESCRIBE := $(shell git describe --dirty="-dirty" | sed -r "s/^v(.*)/\1/")
 else
 GIT_DESCRIBE := "unknown"
 endif
-PROJECT_VERSION := ${GIT_DESCRIBE}
+PROJECT_VERSION := $(GIT_DESCRIBE)
 endif
 
 # Default in-source directory.
@@ -60,12 +60,12 @@ SOURCE_DIR       := .
 
 # Don't change these unless you absolutely have to.
 SOURCE_CONANFILE := conanfile.py
-SOURCE_CMAKELISTS:= ${SOURCE_DIR}/CMakeLists.txt
+SOURCE_CMAKELISTS:= $(SOURCE_DIR)/CMakeLists.txt
 
 LOCKFILE_SOURCE  :=
 LOCKFILE_OPTION  :=
 
-# When running `make clean`, delete the configured ${SOURCE_DIR}?
+# When running `make clean`, delete the configured $(SOURCE_DIR)?
 # Anything other than `true` is taken to be false.
 CLEAN_SOURCE_DIR := false
 
@@ -78,8 +78,8 @@ BUILD_IN_SOURCE  := true
 BUILD_DIR        := build
 
 # Don't change these unless you know what you are doing.
-BUILD_CONANINFO  := ${BUILD_DIR}/conanbuildinfo.txt
-BUILD_LOCKFILE   := ${BUILD_DIR}/conan.lock
+BUILD_CONANINFO  := $(BUILD_DIR)/conanbuildinfo.txt
+BUILD_LOCKFILE   := $(BUILD_DIR)/conan.lock
 
 # Default Conan build policy to use when installing Conan dependencies
 # as well as creating packages. See Conan documentation for possible values.
@@ -94,19 +94,20 @@ BUILD_POLICY     := outdated
 #
 # You probably want to override PACKAGE_CHANNEL, which is actually a USER/CHANNEL
 # combination. See your project for guidance on naming.
-PACKAGE_NAME     := $(shell sed -rn 's/.*name\s*=\s*"([^"]+)"$$/\1/p' ${SOURCE_CONANFILE})
+PACKAGE_NAME     := $(shell sed -rn 's/.*name\s*=\s*"([^"]+)"$$/\1/p' $(SOURCE_CONANFILE))
 PACKAGE_VERSION  := $(or \
-	$(shell sed -rn 's/\s+version\s*=\s*"([^"]+)"$$/\1/p' ${SOURCE_CONANFILE}), \
-	${PROJECT_VERSION}, \
+	$(shell sed -rn 's/\s+version\s*=\s*"([^"]+)"$$/\1/p' $(SOURCE_CONANFILE)), \
+	$(PROJECT_VERSION), \
 	unknown \
 )
 PACKAGE_CHANNEL  := cloe/develop
-PACKAGE_FQN      := ${PACKAGE_NAME}/${PACKAGE_VERSION}@${PACKAGE_CHANNEL}
+PACKAGE_FQN      := $(PACKAGE_NAME)/$(PACKAGE_VERSION)@$(PACKAGE_CHANNEL)
 
 # Which files to consider as smoketest profiles when running targets
 # `smoketest-deps` and `smoketest`. This can be useful to override from the
 # command line if you just want to test one configuration.
 TEST_CONANFILES  := tests/conanfile_*.py
+TEST_DIR         := tests
 
 # It is an order of magnitude faster to parse ~/.conan/editable_packages.json
 # ourselves than to get conan to do it for us. This should only take us 20ms,
@@ -114,16 +115,16 @@ TEST_CONANFILES  := tests/conanfile_*.py
 # or the path to the current conanfile.py is marked as editable. This helps
 # inform the user when they make a package editable, but then check out another
 # state of the tree with a different version.
-SOURCE_CONANFILE_REALPATH := $(realpath ${SOURCE_CONANFILE})
+SOURCE_CONANFILE_REALPATH := $(realpath $(SOURCE_CONANFILE))
 define JQ_PACKAGE_EDITABLE
-	if has(\"${PACKAGE_FQN}\") then
-		if .[\"${PACKAGE_FQN}\"].path == \"${SOURCE_CONANFILE_REALPATH}\" then
+	if has(\"$(PACKAGE_FQN)\") then
+		if .[\"$(PACKAGE_FQN)\"].path == \"$(SOURCE_CONANFILE_REALPATH)\" then
 			\"editable\"
 		else
 			\"editable-elsewhere\"
 		end
 	else
-		if ([.[].path] | any(. == \"${SOURCE_CONANFILE_REALPATH}\")) then
+		if ([.[].path] | any(. == \"$(SOURCE_CONANFILE_REALPATH)\")) then
 			\"editable-other-name\"
 		else
 			\"not-editable\"
@@ -131,14 +132,18 @@ define JQ_PACKAGE_EDITABLE
 	end
 endef
 
+PACKAGE_EDITABLE := $(shell [ -e ~/.conan/editable_packages.json ] \
+					&& jq -r "$(JQ_PACKAGE_EDITABLE)" ~/.conan/editable_packages.json \
+					|| echo "not-editable")
+
 # Normally, you should set this in your profile, but if you just want to build
 # the package in debug mode once, you can do it this way, although it will
 # only apply to local builds.
 #
 # This can be one of: None, Debug, Release, RelWithDebInfo, MinSizeRel
 BUILD_TYPE :=
-ifneq "${BUILD_TYPE}" ""
-BUILD_TYPE_OPTION := -s ${PACKAGE_NAME}:build_type=${BUILD_TYPE}
+ifneq "$(BUILD_TYPE)" ""
+BUILD_TYPE_OPTION := -s $(PACKAGE_NAME):build_type=$(BUILD_TYPE)
 else
 BUILD_TYPE_OPTION :=
 endif
@@ -146,36 +151,36 @@ endif
 # These options can be set to influence package and configure.
 CONAN_OPTIONS :=
 
-ifneq "${LOCKFILE_SOURCE}" ""
-.PHONY: ${BUILD_LOCKFILE}
-ifeq "$(realpath ${LOCKFILE_SOURCE})" "$(realpath ${SOURCE_CONANFILE})"
-$(error "LOCKFILE_SOURCE must contain superset of SOURCE_CONANFILE package and dependencies")
-endif
-LOCKFILE_OPTION := --lockfile="${BUILD_LOCKFILE}"
-override CONAN_OPTIONS :=
-${BUILD_LOCKFILE}: ${LOCKFILE_SOURCE} export
-	# Create lockfile from LOCKFILE_SOURCE.
-	#
-	mkdir -p "${BUILD_DIR}"
-	conan lock create --lockfile-out "${BUILD_LOCKFILE}" ${BUILD_TYPE_OPTION} ${CONAN_OPTIONS} --build -- "${LOCKFILE_SOURCE}" >/dev/null
+ifneq "$(LOCKFILE_SOURCE)" ""
+LOCKFILE_OPTION := --lockfile="$(BUILD_LOCKFILE)"
+
+.PHONY: $(BUILD_LOCKFILE)
+# Create lockfile from LOCKFILE_SOURCE.
+#
+$(BUILD_LOCKFILE): $(LOCKFILE_SOURCE) export
+	mkdir -p "$(BUILD_DIR)"
+	conan lock create --lockfile-out "$(BUILD_LOCKFILE)" $(BUILD_TYPE_OPTION) $(CONAN_OPTIONS) --build -- "$(LOCKFILE_SOURCE)" >/dev/null
 else
 # Lockfile will be created automatically by conan install command.
-${BUILD_LOCKFILE}:
+$(BUILD_LOCKFILE):
 endif
 
 # When using a --lockfile option, we cannot use profile, settings, options, env
 # or conf 'host' Conan options.
-ifneq "${LOCKFILE_OPTION}" ""
-ALL_OPTIONS := ${LOCKFILE_OPTION} ${CONAN_OPTIONS}
+ifneq "$(LOCKFILE_OPTION)" ""
+ALL_OPTIONS := $(LOCKFILE_OPTION) $(CONAN_OPTIONS)
 else
-ALL_OPTIONS := ${BUILD_TYPE_OPTION} ${CONAN_OPTIONS}
+ALL_OPTIONS := $(BUILD_TYPE_OPTION) $(CONAN_OPTIONS)
 endif
 
 # INFORMATIONAL TARGETS -------------------------------------------------------
 .DEFAULT_GOAL := help
 .SILENT: help
 .PHONY: help
-help:: parse-info parse-editable
+help:: parse-info
+
+ifneq ($(DISABLE_HELP_PREAMBLE), true)
+help::
 	$(call print_help_usage)
 	echo
 	echo "The following targets define common operations with this package in"
@@ -183,6 +188,9 @@ help:: parse-info parse-editable
 	echo
 	$(call print_help_section, "Available targets")
 	$(call print_help_target, help, "show this help")
+endif
+
+help::
 	$(call print_help_target, status, "show status of package")
 	$(call print_help_target, info, "show detailed package info")
 	$(call print_help_target, smoketest-deps, "build smoketest dependencies for package")
@@ -196,7 +204,7 @@ help:: parse-info parse-editable
 	$(call print_help_target, list, "list installed package files", "[conan-cache]")
 	$(call print_help_target, purge, "remove package from cache", "[conan-cache]")
 	echo
-ifeq (${BUILD_IN_SOURCE}, true)
+ifeq ($(BUILD_IN_SOURCE), true)
 	$(call print_help_target, editable, "instruct Conan to use in-source build")
 	$(call print_help_target, uneditable, "instruct Conan to use local cache")
 	echo
@@ -204,7 +212,7 @@ ifeq (${BUILD_IN_SOURCE}, true)
 	$(call print_help_target, configure, "install dependencies and configure package", "[in-source]")
 	$(call print_help_target, test, "run CMake tests if they are available", "[in-source]")
 	$(call print_help_target, export-pkg, "export build artifacts to Conan cache", "[in-source]")
-ifeq (${CLEAN_SOURCE_DIR}, true)
+ifeq ($(CLEAN_SOURCE_DIR), true)
 	$(call print_help_target, clean, "remove source and build directories", "[in-source]")
 else
 	$(call print_help_target, clean, "remove build directory", "[in-source]")
@@ -212,49 +220,44 @@ endif
 	echo
 endif
 	$(call print_help_subsection, "Configuration")
-	$(call print_help_define_align, LOCKFILE_SOURCE, ${LOCKFILE_SOURCE})
-ifeq (${BUILD_IN_SOURCE}, true)
-	$(call print_help_define_align, SOURCE_DIR,      ${SOURCE_DIR})
+	$(call print_help_define_align, LOCKFILE_SOURCE, "$(LOCKFILE_SOURCE)")
+ifeq ($(BUILD_IN_SOURCE), true)
+	$(call print_help_define_align, SOURCE_DIR,      "$(SOURCE_DIR)")
 endif
-	$(call print_help_define_align, BUILD_DIR,       ${BUILD_DIR})
-	$(call print_help_define_align, BUILD_POLICY,    ${BUILD_POLICY})
-	$(call print_help_define_align, BUILD_TYPE,      ${BUILD_TYPE})
-	$(call print_help_define_align, CONAN_OPTIONS,   ${CONAN_OPTIONS})
+	$(call print_help_define_align, BUILD_DIR,       "$(BUILD_DIR)")
+	$(call print_help_define_align, BUILD_POLICY,    "$(BUILD_POLICY)")
+	$(call print_help_define_align, BUILD_TYPE,      "$(BUILD_TYPE)")
+	$(call print_help_define_align, CONAN_OPTIONS,   "$(CONAN_OPTIONS)")
 	echo
 	$(call print_help_subsection, "Package information")
-	$(call print_help_define_align, PACKAGE_NAME,    ${PACKAGE_NAME})
-	$(call print_help_define_align, PACKAGE_VERSION, ${PACKAGE_VERSION})
-	$(call print_help_define_align, PACKAGE_CHANNEL, ${PACKAGE_CHANNEL})
-	$(call print_help_define_align, PACKAGE_FQN,     ${PACKAGE_FQN})
-	$(call print_help_define_align, PACKAGE_EDITABLE,${PACKAGE_EDITABLE})
-	$(call print_help_define_align, PACKAGE_ID,      ${PACKAGE_ID})
-	$(call print_help_define_align, PACKAGE_DIR,     ${PACKAGE_DIR})
-	$(call print_help_define_align, PACKAGE_DATE,    ${PACKAGE_DATE})
-	$(call print_help_define_align, GIT_COMMIT_HASH, ${GIT_COMMIT_HASH})
+	$(call print_help_define_align, PACKAGE_NAME,    "$(PACKAGE_NAME)")
+	$(call print_help_define_align, PACKAGE_VERSION, "$(PACKAGE_VERSION)")
+	$(call print_help_define_align, PACKAGE_CHANNEL, "$(PACKAGE_CHANNEL)")
+	$(call print_help_define_align, PACKAGE_FQN,     "$(PACKAGE_FQN)")
+	$(call print_help_define_align, PACKAGE_EDITABLE,"$(PACKAGE_EDITABLE)")
+	$(call print_help_define_align, PACKAGE_ID,      "$(PACKAGE_ID)")
+	$(call print_help_define_align, PACKAGE_DIR,     "$(PACKAGE_DIR)")
+	$(call print_help_define_align, PACKAGE_DATE,    "$(PACKAGE_DATE)")
+	$(call print_help_define_align, GIT_COMMIT_HASH, "$(GIT_COMMIT_HASH)")
 	echo
 
 .PHONY: parse-info
 .SILENT: parse-info
-parse-info: ${BUILD_LOCKFILE}
+parse-info: $(BUILD_LOCKFILE)
 	# Fetch package information from Conan.
 	#
 	#   This command takes long, so we won't run it by default. Instead, if any
 	#   target needs one of these variables, they should depend on this target
 	#   to ensure that these variables are set.
 	#
-	$(eval PACKAGE_INFO := $(shell CONAN_REQUEST_TIMEOUT=0.1 conan info ${ALL_OPTIONS} "${PACKAGE_FQN}" --package-filter "${PACKAGE_FQN}" --paths 2>/dev/null | sed -r 's/$$/\\n/'))
-	$(eval PACKAGE_ID := $(shell echo -e "${PACKAGE_INFO}" | sed -rn 's/^ *ID: *(.*)$$/\1/p'))
-	$(eval PACKAGE_DIR := $(shell echo -e "${PACKAGE_INFO}" | sed -rn 's/^ *package_folder: *(.*)$$/\1/p'))
-	$(eval PACKAGE_DATE := $(shell echo -e "${PACKAGE_INFO}" | sed -rn 's/^ *Creation date: *(.*)$$/\1/p'))
-
-.PHONY: parse-editable
-.SILENT: parse-editable
-parse-editable:
-	$(eval PACKAGE_EDITABLE := $(shell [ -e ~/.conan/editable_packages.json ] && jq -r "${JQ_PACKAGE_EDITABLE}" ~/.conan/editable_packages.json || echo "not-editable"))
+	$(eval PACKAGE_INFO := $(shell CONAN_REQUEST_TIMEOUT=0.1 conan info $(ALL_OPTIONS) "$(PACKAGE_FQN)" --package-filter "$(PACKAGE_FQN)" --paths 2>/dev/null | sed -r 's/$$/\\n/'))
+	$(eval PACKAGE_ID := $(shell echo -e "$(PACKAGE_INFO)" | sed -rn 's/^ *ID: *(.*)$$/\1/p'))
+	$(eval PACKAGE_DIR := $(shell echo -e "$(PACKAGE_INFO)" | sed -rn 's/^ *package_folder: *(.*)$$/\1/p'))
+	$(eval PACKAGE_DATE := $(shell echo -e "$(PACKAGE_INFO)" | sed -rn 's/^ *Creation date: *(.*)$$/\1/p'))
 
 .PHONY: status
 .SILENT: status
-status: parse-info parse-editable
+status: parse-info
 	# Show the *approximate* status of each package in the cloe workspace.
 	#
 	#   This lets you know whether a package is in editable mode or not,
@@ -262,61 +265,62 @@ status: parse-info parse-editable
 	#   directory has been modified more recently than the package in the
 	#   Conan cache.
 	#
-	if [ "${PACKAGE_EDITABLE}" != "not-editable" ] ; then \
-		echo "${PACKAGE_EDITABLE} : ${PACKAGE_FQN}"; \
+	if [ "$(PACKAGE_EDITABLE)" != "not-editable" ] ; then \
+		echo "$(PACKAGE_EDITABLE) : $(PACKAGE_FQN)"; \
 	else \
-		if [ -n "${PACKAGE_DATE}" ] && [ -z "$$(find -type f -newermt "${PACKAGE_DATE}")" ]; then \
-			echo "ok       : ${PACKAGE_FQN}"; \
+		if [ -n "$(PACKAGE_DATE)" ] && [ -z "$$(find -type f -newermt "$(PACKAGE_DATE)")" ]; then \
+			echo "ok       : $(PACKAGE_FQN)"; \
 		else \
-			echo "outdated : ${PACKAGE_FQN}"; \
+			echo "outdated : $(PACKAGE_FQN)"; \
 		fi \
 	fi
 
 .PHONY: info-name
 .SILENT: info-name
 info-name:
-	echo ${PACKAGE_NAME}
+	echo $(PACKAGE_NAME)
 
 .PHONY: info-version
 .SILENT: info-version
 info-version:
-	echo ${PACKAGE_VERSION}
+	echo $(PACKAGE_VERSION)
 
 .PHONY: info-channel
 .SILENT: info-channel
 info-channel:
-	echo ${PACKAGE_CHANNEL}
+	echo $(PACKAGE_CHANNEL)
 
 .PHONY: info-fqn
 .SILENT: info-fqn
 info-fqn:
-	echo ${PACKAGE_FQN}
+	echo $(PACKAGE_FQN)
 
 .PHONY: info
 .SILENT: info
 info: parse-info
-	if [ -z "${PACKAGE_INFO}" ]; then \
+	if [ -z "$(PACKAGE_INFO)" ]; then \
 		echo "Errors occurred, no output available."; \
 	else \
-		echo ${PACKAGE_INFO}; \
+		echo $(PACKAGE_INFO); \
 	fi
 
 .PHONY: smoketest
 smoketest:
 	# Ensure that you have built all smoketest dependencies!
-	@for conanfile in ${TEST_CONANFILES}; do \
+	@for conanfile in $(TEST_CONANFILES); do \
 		test -f "$${conanfile}" || continue; \
 		printf "Running BATS tests with conanfile: $${conanfile}\n\n"; \
-		SHELL=/bin/bash ${CLOE_LAUNCH} shell "$${conanfile}" ${CONAN_OPTIONS} -- -c "source ${PROJECT_ROOT}/tests/setup_testname.bash; bats tests"; \
+		SHELL=/bin/bash $(CLOE_LAUNCH) shell "$${conanfile}" $(CONAN_OPTIONS) -- \
+			-c "source $(PROJECT_ROOT)/tests/setup_testname.bash; bats $(TEST_DIR)"; \
 	done
 
 .PHONY: smoketest-deps
 smoketest-deps:
 	# Ensure that you have exported all relevant packages!
-	@for conanfile in ${TEST_CONANFILES}; do \
+	@for conanfile in $(TEST_CONANFILES); do \
 		test -f "$${conanfile}" || continue; \
 		echo "Building dependencies for conanfile: $${conanfile}"; \
-		${CLOE_LAUNCH} prepare "$${conanfile}" ${CONAN_OPTIONS} || break; \
+		$(CLOE_LAUNCH) prepare "$${conanfile}" $(CONAN_OPTIONS) || break; \
 	done
 
 # CONFIGURATION TARGETS -------------------------------------------------------
@@ -331,7 +335,7 @@ editable:
 	#
 	#   Run `make uneditable` to leave this mode.
 	#
-	conan editable add . ${PACKAGE_FQN}
+	conan editable add $(SOURCE_CONANFILE) $(PACKAGE_FQN)
 
 .PHONY: uneditable
 uneditable:
@@ -340,17 +344,24 @@ uneditable:
 	#   In uneditable mode, Conan will use the package within the Conan cache
 	#   (normally located in ~/.conan/data). This is the default behavior.
 	#
-	conan editable remove ${PACKAGE_FQN}
+	conan editable remove $(PACKAGE_FQN)
 
 # CONAN TARGETS ---------------------------------------------------------------
+.PHONY: lockfile
+lockfile: $(BUILD_LOCKFILE)
+
 .PHONY: export
-export: parse-editable
+export:
+ifneq (,$(filter $(PACKAGE_EDITABLE),not-editable editable-other-name))
 	# Export sources to Conan cache.
 	#
 	#   This does not build this package but provides the sources and the
 	#   build recipe to Conan for on-demand building.
 	#
-	if [ "${PACKAGE_EDITABLE}" = "not-editable" ] || [ "${PACKAGE_EDITABLE}" = "editable-other-name" ]; then conan export . ${PACKAGE_FQN}; fi
+	conan export $(SOURCE_CONANFILE) $(PACKAGE_FQN)
+else
+	# Export sources to Conan cache: skipped (package is $(PACKAGE_EDITABLE))
+endif
 
 .PHONY: download
 download:
@@ -364,11 +375,11 @@ download:
 	#
 	#   See: https://docs.conan.io/en/latest/mastering/policies.html
 	#
-	conan create . ${PACKAGE_FQN} --build=never ${ALL_OPTIONS} || \
-	conan create . ${PACKAGE_FQN} --build=${BUILD_POLICY} --build=${PACKAGE_NAME} ${ALL_OPTIONS}
+	conan create $(SOURCE_CONANFILE) $(PACKAGE_FQN) --build=never $(ALL_OPTIONS) || \
+	conan create $(SOURCE_CONANFILE) $(PACKAGE_FQN) --build=$(BUILD_POLICY) --build=$(PACKAGE_NAME) $(ALL_OPTIONS)
 
 .PHONY: package
-package: ${BUILD_LOCKFILE}
+package: $(BUILD_LOCKFILE)
 	# Build the package in Conan cache unconditionally.
 	#
 	#   Conan will retrieve and build all dependencies based on the build policy.
@@ -376,27 +387,27 @@ package: ${BUILD_LOCKFILE}
 	#
 	#   See: https://docs.conan.io/en/latest/mastering/policies.html
 	#
-	conan create . ${PACKAGE_FQN} \
-		--build=${BUILD_POLICY} --build=${PACKAGE_NAME} ${ALL_OPTIONS}
+	conan create $(SOURCE_CONANFILE) $(PACKAGE_FQN) \
+		--build=$(BUILD_POLICY) --build=$(PACKAGE_NAME) $(ALL_OPTIONS)
 
 .PHONY: package-all
-package-all: ${BUILD_LOCKFILE}
+package-all: $(BUILD_LOCKFILE)
 	# Build the package in Conan cache unconditionally.
 	#
 	#   Conan will retrieve and build all dependencies unconditionally.
 	#   Note that this cannot be called if the package is currently in editable mode.
 	#
-	conan create . ${PACKAGE_FQN} --build ${ALL_OPTIONS}
+	conan create $(SOURCE_CONANFILE) $(PACKAGE_FQN) --build $(ALL_OPTIONS)
 
 .PHONY: package-outdated
-package-outdated: ${BUILD_LOCKFILE}
+package-outdated: $(BUILD_LOCKFILE)
 	# Build the package in Conan cache if it is outdated.
 	#
-	#   Note that this does not take dependencies of ${PACKAGE_NAME} into account.
+	#   Note that this does not take dependencies of $(PACKAGE_NAME) into account.
 	#   Rebuilds will occur if package info has changed or a hash of the source
 	#   code changes. Timestamps are not taken into account.
 	#
-	conan create . ${PACKAGE_FQN} --build=outdated ${ALL_OPTIONS}
+	conan create $(SOURCE_CONANFILE) $(PACKAGE_FQN) --build=outdated $(ALL_OPTIONS)
 
 .PHONY: purge
 purge:
@@ -406,43 +417,39 @@ purge:
 	#   has the same ID. Purging all instances is useful for forcing a rebuild
 	#   of all instances of this package henceforth.
 	#
-	-conan remove -f ${PACKAGE_FQN}
+	-conan remove -f $(PACKAGE_FQN)
 
 .PHONY: list
 list: parse-info
 	# List all files in the Conan cache package directory.
 	#
-	@tree ${PACKAGE_DIR}
+	@tree $(PACKAGE_DIR)
 
 # IN-SOURCE TARGETS -----------------------------------------------------------
 .PHONY: clean
 clean:
 	# Clean the build directory and Python cache files.
 	#
-	rm -rf "${BUILD_DIR}"
-	rm -rf __pycache__
-	rm -f CMakeUserPresets.json
-	rm -f compile_commands.json
-	rm -f graph_info.json
-ifeq (${CLEAN_SOURCE_DIR}, true)
-	[ "${SOURCE_DIR}" != "." ] && rm -rf "${SOURCE_DIR}"
+	rm -rf "$(BUILD_DIR)" __pycache__ CMakeUserPresets.json compile_commands.json graph_info.json
+ifeq ($(CLEAN_SOURCE_DIR), true)
+	[ "$(SOURCE_DIR)" != "." ] && rm -rf "$(SOURCE_DIR)"
 endif
 
-ifeq (${BUILD_IN_SOURCE}, false)
+ifeq ($(BUILD_IN_SOURCE), false)
 .PHONY: all configure test export-pkg
-all configure test export-pkg ${SOURCE_DIR} ${SOURCE_CMAKELISTS} ${BUILD_CONANINFO}:
+all configure test export-pkg $(SOURCE_DIR) $(SOURCE_CMAKELISTS) $(BUILD_CONANINFO):
 	@echo "Error: [in-source] targets are not supported for this package."
 	@echo "Note: please use [conan-cache] targets, such as 'package'."
 	exit 1
 else
 .PHONY: all
-all: ${BUILD_CONANINFO} | ${SOURCE_DIR}
+all: $(BUILD_CONANINFO) | $(SOURCE_DIR)
 	# Build the package in-source.
 	#
-	conan build . --source-folder="${SOURCE_DIR}" --install-folder="${BUILD_DIR}"
+	conan build $(SOURCE_CONANFILE) --source-folder="$(SOURCE_DIR)" --install-folder="$(BUILD_DIR)"
 
 .PHONY: configure
-configure: ${BUILD_CONANINFO}
+configure: $(BUILD_CONANINFO)
 	ln -rsf "$$(dirname $$(dirname $$(jq -r '.include[0]' CMakeUserPresets.json)))/compile_commands.json"
 
 .PHONY: test
@@ -451,8 +458,8 @@ test:
 	#
 	#   If no tests are available, this will simply return true.
 	#
-	@if [ -f "${BUILD_DIR}"/CTestTestfile.cmake ]; then \
-		cd "${BUILD_DIR}" && ctest; \
+	@if [ -f "$(BUILD_DIR)"/CTestTestfile.cmake ]; then \
+		cd "$(BUILD_DIR)" && ctest; \
 	else \
 		true; \
 	fi
@@ -467,24 +474,24 @@ export-pkg:
 	#
 	#   Note that this does not require the package to be editable.
 	#
-	conan export-pkg . ${PACKAGE_FQN} --build-folder="${BUILD_DIR}"
+	conan export-pkg $(SOURCE_CONANFILE) $(PACKAGE_FQN) --build-folder="$(BUILD_DIR)"
 
-${SOURCE_DIR}:
+$(SOURCE_DIR):
 	# Copy source to an external source directory.
 	#
 	#   This usually isn't necessary, and should not be called when
 	#   SOURCE_DIR is identical to the current directory.
 	#
-	[ "$(shell readlink -f "${SOURCE_DIR}")" != "$(shell readlink -f .)" ]
-	conan source . --source-folder="${SOURCE_DIR}"
+	[ "$(shell readlink -f "$(SOURCE_DIR)")" != "$(shell readlink -f .)" ]
+	conan source $(SOURCE_CONANFILE) --source-folder="$(SOURCE_DIR)"
 
-${SOURCE_CMAKELISTS}: | ${SOURCE_DIR}
+$(SOURCE_CMAKELISTS): | $(SOURCE_DIR)
 
-${BUILD_CONANINFO}: ${SOURCE_CONANFILE} ${BUILD_LOCKFILE} ${SOURCE_CMAKELISTS}
+$(BUILD_CONANINFO): $(SOURCE_CONANFILE) $(BUILD_LOCKFILE) $(SOURCE_CMAKELISTS)
 	# Install package dependencies and configure in-source build.
 	#
-	mkdir -p "${BUILD_DIR}"
-	conan install . ${PACKAGE_FQN} --install-folder="${BUILD_DIR}" --build=${BUILD_POLICY} ${ALL_OPTIONS}
-	conan build --configure . --source-folder="${SOURCE_DIR}" --install-folder="${BUILD_DIR}"
-	touch ${BUILD_CONANINFO}
+	mkdir -p "$(BUILD_DIR)"
+	conan install $(SOURCE_CONANFILE) $(PACKAGE_FQN) --install-folder="$(BUILD_DIR)" --build=$(BUILD_POLICY) $(ALL_OPTIONS)
+	conan build --configure $(SOURCE_CONANFILE) --source-folder="$(SOURCE_DIR)" --install-folder="$(BUILD_DIR)"
+	touch $(BUILD_CONANINFO)
 endif
