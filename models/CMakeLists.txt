@@ -6,17 +6,17 @@ include(GNUInstallDirs)
 include(TargetLinting)
 
 # Module -------------------------------------------------------------
-set(target cloe-models)
-set(alias cloe::models)
-
-find_package(cloe-runtime REQUIRED)
+set(CLOE_FIND_PACKAGES ON CACHE BOOL "Call find_package() for cloe packages")
+if(CLOE_FIND_PACKAGES)
+    find_package(cloe-runtime REQUIRED)
+endif()
 find_package(Eigen3 REQUIRED)
 find_package(Boost COMPONENTS headers REQUIRED)
 find_package(sol2 REQUIRED)
 
-message(STATUS "-> Building ${output} library.")
-file(GLOB ${target}_PUBLIC_HEADERS "include/**/*.hpp")
-add_library(${target}
+message(STATUS "-> Building cloe-models library.")
+file(GLOB cloe-models_PUBLIC_HEADERS "include/**/*.hpp")
+add_library(cloe-models
     # find src -type f -name "*.cpp" \! -name "*_test.cpp"
     src/cloe/component/lane_boundary.cpp
     src/cloe/component/utility/ego_sensor_canon.cpp
@@ -25,21 +25,20 @@ add_library(${target}
     src/cloe/utility/lua_types.cpp
 
     # For IDE integration
-    ${${target}_PUBLIC_HEADERS}
+    ${cloe-models_PUBLIC_HEADERS}
 )
-add_library(${alias} ALIAS ${target})
-set_target_properties(${target} PROPERTIES
+add_library(cloe::models ALIAS cloe-models)
+set_target_properties(cloe-models PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
     VERSION ${CLOE_PROJECT_VERSION}
 )
-set_target_linting(${target})
-target_include_directories(${target}
+target_include_directories(cloe-models
   PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
-target_link_libraries(${target}
+target_link_libraries(cloe-models
   PUBLIC
     cloe::runtime
     Boost::headers
@@ -71,13 +70,13 @@ if(BUILD_TESTING)
         GTest::gtest_main
         Boost::boost
         cloe::runtime
-        ${target}
+        cloe-models
     )
     gtest_add_tests(TARGET test-models)
 endif()
 
 # Installation -------------------------------------------------------
-install(TARGETS ${target}
+install(TARGETS cloe-models
     LIBRARY
         DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE

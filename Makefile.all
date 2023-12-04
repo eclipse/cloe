@@ -35,8 +35,8 @@ SHELL := /bin/bash
 GNUMAKEFLAGS := --no-print-directory
 SUBMAKEFLAGS :=
 
-META_PKG := cloe
-PLUGIN_PKGS := $(wildcard plugins/*)
+META_PKG := meta
+PLUGIN_PKGS := plugins/basic plugins/gndtruth_extractor plugins/minimator plugins/mocks plugins/noisy_sensor plugins/speedometer plugins/virtue
 ALL_PKGS := fable runtime models oak engine ${PLUGIN_PKGS} ${META_PKG}
 WITHOUT_PKGS :=
 UNSELECT_PKGS := ${WITHOUT_PKGS}
@@ -62,6 +62,7 @@ models: runtime
 oak: runtime
 engine: models oak
 ${PLUGIN_PKGS}: runtime models
+${META_PKG}: fable runtime models oak engine ${PLUGIN_PKGS}
 
 ## BUILD_POLICY
 ##   Usage: make BUILD_POLICY="missing"
@@ -106,22 +107,13 @@ ${1}-each: ${4}
 endef
 
 REGEX_TARGET := 's/(-vendor|-select)?-each//'
-$(filter-out ${META_PKG}, ${ALL_PKGS} ${ALL_VENDOR}):
+${ALL_PKGS} ${ALL_VENDOR}:
 	${MAKE} -C $@ $(shell echo ${MAKECMDGOALS} | sed -re ${REGEX_TARGET})
 
-# Re-define ${META_PKG} target to use Makefile.package, and only run for targets
-# where it makes sense, since "${META_PKG}" is a Conan meta-package.
-${META_PKG}:
-	for case in export package package-outdated list purge clean smoketest smoketest-deps; do \
-		if [ "$$(echo '${MAKECMDGOALS}' | sed -re ${REGEX_TARGET})" == "$${case}" ]; then \
-			${MAKE} -f Makefile.package CONAN_OPTIONS="${CONAN_OPTIONS}" $${case} || exit 1; \
-		fi \
-	done
-
 # Usage: $(call make_vendor_target, TARGET-NAME, HELP-DESCRIPTION, HELP-CATEGORY)
-# define make_vendor_target
-# $(eval $(call _make_target_rules,${1},${2},${3},${SELECT_VENDOR}))
-# endef
+define make_vendor_target
+$(eval $(call _make_target_rules,${1},${2},${3},${SELECT_VENDOR}))
+endef
 
 # Usage: $(call make_every_target, TARGET-NAME, HELP-DESCRIPTION, HELP-CATEGORY)
 define make_every_target
@@ -139,19 +131,16 @@ endef
 .PHONY: help
 .SILENT: help
 help::
-	$(call print_help_section, "Available build targets")
+	$(call print_help_section, "Available multi-package targets")
 
-# $(call make_vendor_target, export-vendor, "export all vendor packages", "[conan-cache]")
-# $(call make_vendor_target, package-vendor, "create all vendor packages", "[conan-cache]")
-# $(call make_vendor_target, download-vendor, "download or build vendor packages", "[conan-cache]")
-
+ifneq "${ALL_VENDOR}" ""
+help::
+$(call make_vendor_target, export-vendor, "export all vendor packages", "[conan-cache]")
+$(call make_vendor_target, package-vendor, "create all vendor packages", "[conan-cache]")
+$(call make_vendor_target, download-vendor, "download or build vendor packages", "[conan-cache]")
 help::
 	echo
-
-$(call make_every_target, export, "export all package recipes", "[conan-cache]")
-help::
-	$(call print_help_target, package, "create ${META_PKG} package and plugins", "[conan-cache]")
-	echo
+endif
 
 $(call make_select_target, export-select, "export selected packages", "[conan-cache]")
 $(call make_select_target, package-select, "create selected packages with policy", "[conan-cache]")
@@ -179,34 +168,19 @@ $(call make_select_target, clean-select, "remove build artifacts", "[in-source]"
 help::
 	echo
 	$(call print_help_subsection, "Options")
-#	$(call print_help_option, WITH_VENDOR, "", "include optional vendor packages from ${_grn}UNSELECT_VENDOR${_rst}")
+ifneq "${ALL_VENDOR}" ""
+	$(call print_help_option, WITH_VENDOR, "", "include optional vendor packages from ${_grn}UNSELECT_VENDOR${_rst}")
+endif
 	$(call print_help_option, WITH_PKGS, "", "include optional packages from ${_grn}UNSELECT_PKGS${_rst}")
 	$(call print_help_option, LOCKFILE_SOURCE, "", "use specified conanfile as lockfile source for build")
 	echo
 	$(call print_help_subsection, "Defines")
 	$(call print_help_option, BUILD_POLICY, ${BUILD_POLICY})
 	$(call print_help_define, CONAN_OPTIONS, ${CONAN_OPTIONS})
-#	$(call print_help_define_lines, UNSELECT_VENDOR, ${UNSELECT_VENDOR})
-#	$(call print_help_define_lines, SELECT_VENDOR, ${SELECT_VENDOR})
+ifneq "${ALL_VENDOR}" ""
+	$(call print_help_define_lines, UNSELECT_VENDOR, ${UNSELECT_VENDOR})
+	$(call print_help_define_lines, SELECT_VENDOR, ${SELECT_VENDOR})
+endif
 	$(call print_help_define_lines, UNSELECT_PKGS, ${UNSELECT_PKGS})
 	$(call print_help_define_lines, SELECT_PKGS, ${SELECT_PKGS})
 	echo
-
-.PHONY: package
-package: export-select
-	# Build cloe with all targets and options together.
-	#
-	#   This is different from the package target in that it always builds the
-	#   packages from this workspace, the ones in SELECT_PKGS.
-	#   This is different from the package-select target in that it builds them
-	#   all together and thereby uses the correct dependency resolution with
-	#   overrides and options.
-	TARGETS=$$( \
-		for pkg in ${SELECT_PKGS}; do \
-			if [ ! -d $${pkg} ]; then \
-				continue; \
-			fi; \
-			echo -n "--build=$$(make --no-print-directory -C $${pkg} info-name) "; \
-		done; \
-	) && \
-	${MAKE} -f Makefile.package CONAN_OPTIONS="${CONAN_OPTIONS} $$TARGETS" package

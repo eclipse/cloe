@@ -1,6 +1,7 @@
 # mypy: ignore-errors
 # pylint: skip-file
 
+import os
 from pathlib import Path
 
 from conan import ConanFile
@@ -76,3 +77,7 @@ class CloeControllerGndtruthExtractor(ConanFile):
         self.cpp_info.set_property("cmake_find_mode", f"both")
         self.cpp_info.set_property("cmake_file_name", self.name)
         self.cpp_info.set_property("pkg_config_name", self.name)
+
+        if not self.in_local_cache: # editable mode
+            libdir = os.path.join(self.build_folder, "lib");
+            self.runenv_info.append_path("LD_LIBRARY_PATH", libdir)

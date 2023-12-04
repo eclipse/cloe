@@ -69,14 +69,15 @@ Build Cloe Packages
 -------------------
 To build all packages, you should run the following::
 
-    make package
+    make export-all
+    make -C meta package
 
 This will export all Conan recipes from this repository and create the cloe
 package. Conan will download and build all necessary dependencies. Should
 any errors occur during the build, you may have to force Conan to build
 all packages instead of re-using packages it finds::
 
-    make package CONAN_OPTIONS="--build"
+    make -C meta package CONAN_OPTIONS="--build"
 
 .. note::
    Depending on your Conan profile, building the Cloe packages can involve
@@ -88,16 +89,16 @@ all packages instead of re-using packages it finds::
 If you like, you can inspect what a Conan Cloe package looks like by browsing
 the Conan cache directory under ``~/.conan/data/cloe``.
 
-Run ``make help`` to get an overview of the available targets we expect you to
-use. For more details on how this is done, have a look at the Makefiles in the
-repository root.
+Run ``make help`` to get an overview of the available targets we anticipate you
+may want to use. For more details on how this is done, have a look at the
+Makefiles in the repository root.
 
 Run System Tests
 ----------------
 To check that everything is working as it should, we recommend you run the
 included test suite once before commencing with anything else::
 
-    make export smoketest-deps smoketest
+    make export-all smoketest-deps smoketest
 
 .. _Conan: https://conan.io
 .. _Conan documentation: https://docs.conan.io/en/latest/

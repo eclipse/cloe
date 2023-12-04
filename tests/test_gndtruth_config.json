@@ -1,0 +1,28 @@
+{
+  "version": "4",
+  "include": [
+    "${CLOE_ROOT}/tests/just_controller_basic.json"
+  ],
+  "simulators": [
+    {
+      "binding": "minimator"
+    }
+  ],
+  "vehicles": [
+    {
+      "name": "default",
+      "from": {
+        "simulator": "minimator",
+        "index": 0
+      }
+    }
+  ],
+  "server": {
+    "listen": false,
+    "listen_port": 23456
+  },
+  "triggers": [
+    {"event": "start",   "action": "realtime_factor=-1"},
+    {"event": "time=60", "action": "succeed"}
+  ]
+}

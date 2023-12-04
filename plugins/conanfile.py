@@ -11,27 +11,32 @@ from conan.tools import cmake, files, scm, env
 required_conan_version = ">=1.52.0"
 
 
-class CloeSimulatorMinimator(ConanFile):
-    name = "cloe-plugin-minimator"
+class CloeControllerBasic(ConanFile):
+    name = "cloe-plugins-core"
     url = "https://github.com/eclipse/cloe"
-    description = "Cloe simulator plugin that is very minimalistic"
+    description = "Cloe core plugins"
     license = "Apache-2.0"
     settings = "os", "compiler", "build_type", "arch"
-    options = {
-        "pedantic": [True, False],
-    }
-    default_options = {
-        "pedantic": True,
-    }
     generators = "CMakeDeps", "VirtualRunEnv"
     no_copy_source = True
+    provides = [
+        "cloe-plugin-basic",
+        "cloe-plugin-gndtruth-extractor",
+        "cloe-plugin-minimator",
+        "cloe-plugin-mocks",
+        "cloe-plugin-noisy-sensor",
+        "cloe-plugin-speedometer",
+        "cloe-plugin-virtue",
+    ]
     exports_sources = [
-        "src/*",
-        "CMakeLists.txt",
+        "*/src/*",
+        "*/include/*",
+        "*/ui/*",
+        "*/CMakeLists.txt",
     ]
 
     def set_version(self):
-        version_file = Path(self.recipe_folder) / "../../VERSION"
+        version_file = Path(self.recipe_folder) / "../VERSION"
         if version_file.exists():
             self.version = files.load(self, version_file).strip()
         else:
@@ -52,7 +57,7 @@ class CloeSimulatorMinimator(ConanFile):
         tc = cmake.CMakeToolchain(self)
         tc.cache_variables["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
         tc.cache_variables["CLOE_PROJECT_VERSION"] = self.version
-        tc.cache_variables["TargetLintingExtended"] = self.options.pedantic
+        tc.cache_variables["TargetLintingExtended"] = True
         tc.generate()
 
     def build(self):
@@ -61,6 +66,8 @@ class CloeSimulatorMinimator(ConanFile):
             cm.configure()
         if self.should_build:
             cm.build()
+        if self.should_test:
+            cm.test()
 
     def package(self):
         cm = cmake.CMake(self)
@@ -76,6 +83,6 @@ class CloeSimulatorMinimator(ConanFile):
         self.cpp_info.set_property("cmake_file_name", self.name)
         self.cpp_info.set_property("pkg_config_name", self.name)
 
-        if not self.in_local_cache: # editable mode
+        if not self.in_local_cache:
             libdir = os.path.join(self.build_folder, "lib");
             self.runenv_info.append_path("LD_LIBRARY_PATH", libdir)
