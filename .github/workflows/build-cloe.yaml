@@ -28,9 +28,20 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04]
-        build_type: [RelWithDebInfo]
-        package_target: [package]
+        os:
+          - "ubuntu-20.04"
+          - "ubuntu-22.04"
+        conan_profile:
+          - "cloe-normal"
+        package_target:
+          # 1. Build each test configuration in Conan cache and run all tests
+          - "export-all smoketest-deps smoketest"
+
+          # 2. Build cloe super-package in editable mode and run tests
+          - "editable all smoketest TEST_CONANFILES=tests/conanfile_all.py"
+
+          # 3. Build individual packages in editable mode and run tests
+          - "editable-select build-all smoketest TEST_CONANFILES=tests/conanfile_split.py"
     env:
       CONAN_NON_INTERACTIVE: "yes"
       DEBIAN_FRONTEND: noninteractive
@@ -59,12 +70,9 @@ jobs:
       - name: Configure Conan
         run: |
           make setup-conan
-      - name: Build cloe w/ package
+          conan config set general.default_profile=${{ matrix.conan_profile }}
+          conan config set general.default_build_profile=${{ matrix.conan_profile }}
+          make export-cli
+      - name: Build cloe
         run: |
           make ${{ matrix.package_target }}
-      - name: Build smoketest dependencies
-        run: |
-          make smoketest-deps
-      - name: Run smoketests
-        run: |
-          make smoketest

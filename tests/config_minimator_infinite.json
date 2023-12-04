@@ -1,19 +1,29 @@
 {
   "version": "4",
   "include": [
-    "just_controller_virtue.json",
     "just_controller_basic.json"
   ],
+  "defaults": {
+    "controllers": [
+      {
+        "binding": "virtue",
+        "args": {
+          "lane_sensor_components": ["cloe::default_lane_sensor"]
+        }
+      }
+    ]
+  },
   "simulators": [
     {
-      "binding": "nop"
+      "binding": "minimator"
+      // name is automatically "minimator"
     }
   ],
   "vehicles": [
     {
       "name": "default",
       "from": {
-        "simulator": "nop",
+        "simulator": "minimator",
         "index": 0
       },
       "components": {
@@ -40,6 +50,12 @@
           }
         }
       }
+    }
+  ],
+  "controllers": [
+    {
+      "binding": "virtue",
+      "vehicle": "default"
     }
   ]
 }
