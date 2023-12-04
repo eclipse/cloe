@@ -71,7 +71,7 @@ setup-conan:
 	if [ ! -f ${CONAN_PROFILE_PATH} ]; then \
 		conan config init; \
 		conan profile update settings.compiler.libcxx=libstdc++11 ${CONAN_PROFILE}; \
-		conan profile update settings.build_type=RelWithDebInfo ${CONAN_PROFILE}; \
+		conan profile update settings.build_type=Debug ${CONAN_PROFILE}; \
 	fi
 	if ! conan config get general.default_build_profile >/dev/null 2>&1; then \
 		conan config set general.default_build_profile=default; \
@@ -79,8 +79,8 @@ setup-conan:
 	if ! conan config get general.revisions_enabled >/dev/null 2>&1; then \
 		conan config set general.revisions_enabled=True; \
 	fi
-	# Install cloe-debug and cloe-release profiles.
-	for profile in "${PROJECT_ROOT}"/dist/conan/*; do \
+	# Install cloe-{debug,normal,release} profiles.
+	for profile in "${PROJECT_ROOT}"/dist/conan/*.profile; do \
 		export profile_name=$$(basename -s .profile $${profile}); \
 		install -m 644 "$${profile}" "${CONAN_DIR}/profiles/$${profile_name}"; \
 		sed -r -i "s/default/${CONAN_PROFILE}/" "${CONAN_DIR}/profiles/$${profile_name}"; \
