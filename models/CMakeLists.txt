@@ -65,11 +65,6 @@ if(BUILD_TESTING)
         CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
     )
-    target_compile_options(test-models
-        PUBLIC
-        -g
-        -O0
-    )
     target_link_libraries(test-models
       PRIVATE
         GTest::gtest
