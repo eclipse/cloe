@@ -70,7 +70,6 @@ class CloeEngine(ConanFile):
 
     def layout(self):
         cmake.cmake_layout(self)
-        self.cpp.build.bindirs = ["bin"]
 
     def generate(self):
         tc = cmake.CMakeToolchain(self)
@@ -123,8 +122,8 @@ class CloeEngine(ConanFile):
         if self.in_local_cache:
             bindir = os.path.join(self.package_folder, "bin")
             luadir = os.path.join(self.package_folder, "lib/cloe/lua")
-        else:
-            bindir = os.path.join(self.build_folder, "bin")
+        else: # editable mode
+            bindir = os.path.join(self.build_folder)
             luadir = os.path.join(self.source_folder, "lua")
 
         self.output.info(f"Appending PATH environment variable: {bindir}")

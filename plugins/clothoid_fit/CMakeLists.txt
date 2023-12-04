@@ -2,8 +2,11 @@ cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 
 project(cloe_plugin_clothoid_fit LANGUAGES CXX)
 
-find_package(cloe-runtime REQUIRED)
-find_package(cloe-models REQUIRED)
+set(CLOE_FIND_PACKAGES ON CACHE BOOL "Call find_package() for cloe packages")
+if(CLOE_FIND_PACKAGES)
+    find_package(cloe-runtime REQUIRED)
+    find_package(cloe-models REQUIRED)
+endif()
 find_package(Eigen3 REQUIRED)
 
 add_library(g1-fitting-lib STATIC

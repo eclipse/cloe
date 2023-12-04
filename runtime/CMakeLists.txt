@@ -8,10 +8,12 @@ set(CLOE_VERSION "0.0.0-undefined" CACHE STRING "Cloe version as MAJOR.MINOR.PAT
 set(CLOE_VERSION_U32 0 CACHE STRING "Cloe version as (MAJOR<<16)|(MINOR<<8)|PATCH integer")
 
 include(GNUInstallDirs)
-include(cmake/TargetLinting.cmake)
 
 # Library -------------------------------------------------------------
-find_package(fable REQUIRED)
+set(CLOE_FIND_PACKAGES ON CACHE BOOL "Call find_package() for cloe packages")
+if(CLOE_FIND_PACKAGES)
+    find_package(fable REQUIRED)
+endif()
 find_package(Boost COMPONENTS headers filesystem iostreams system REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(inja REQUIRED)
@@ -54,7 +56,6 @@ set_target_properties(cloe-runtime PROPERTIES
     CXX_STANDARD_REQUIRED ON
     VERSION ${CLOE_VERSION}
 )
-set_target_linting(cloe-runtime)
 configure_file(src/cloe/version.hpp.in include/cloe/version.hpp @ONLY)
 target_include_directories(cloe-runtime
   PUBLIC

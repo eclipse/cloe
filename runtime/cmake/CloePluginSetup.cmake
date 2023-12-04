@@ -6,7 +6,7 @@ include(TargetLinting)
 
 function(cloe_add_plugin)
     set(options
-        NO_LINTING
+        LINT
     )
     set(one_value_args
         TARGET              # [required]
@@ -44,7 +44,7 @@ function(cloe_add_plugin)
         message(SEND_ERROR "cloe_add_plugin requires property SOURCES to be set")
     endif()
     if(NOT DEFINED _ARG_OUTPUT_DIRECTORY)
-        set(_ARG_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/cloe)
+        set(_ARG_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/cloe)
     endif()
 
     # Add the cloe plugin target:
@@ -71,7 +71,7 @@ function(cloe_add_plugin)
         OUTPUT_NAME ${_ARG_OUTPUT_NAME}
         PREFIX ""
     )
-    if(NOT ${_ARG_NO_LINTING})
+    if(${_ARG_LINT})
         set_target_linting(${target})
     endif()
     target_compile_options(${target}
