@@ -2,60 +2,60 @@
 #
 # This file defines all Docker targets.
 
-PROJECT_ROOT := $(dir $(abspath $(lastword ${MAKEFILE_LIST})))
-PROJECT_VERSION := $(shell make --no-print-directory -C ${PROJECT_ROOT} -f Makefile.package info-version)
+PROJECT_ROOT := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+PROJECT_VERSION := $(shell make --no-print-directory -C $(PROJECT_ROOT) -f Makefile.package info-version)
 
 UBUNTU_NAME := ubuntu
 UBUNTU_VERSIONS := 18.04 20.04 22.04
 
 DOCKER := DOCKER_BUILDKIT=1 docker
 DOCKER_IMAGE_NAME := cloe/cloe-engine
-DOCKER_IMAGE_VERSION := ${PROJECT_VERSION}
-DOCKER_IMAGE := ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VERSION}
-DOCKER_CONTEXT := ${PROJECT_ROOT}
+DOCKER_IMAGE_VERSION := $(PROJECT_VERSION)
+DOCKER_IMAGE := $(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION)
+DOCKER_CONTEXT := $(PROJECT_ROOT)
 
 DOCKER_USER_ARGS +=
-DOCKER_BUILD_ARGS += --build-arg PROJECT_VERSION=${PROJECT_VERSION}
+DOCKER_BUILD_ARGS += --build-arg PROJECT_VERSION=$(PROJECT_VERSION)
 DOCKER_RUN_ARGS += --rm
 
-ifndef (${https_proxy},)
+ifndef ($(https_proxy),)
 	DOCKER_NETWORK := host
 	DOCKER_BUILD_ARGS += --network=host \
-						 --build-arg https_proxy="${https_proxy}" \
-						 --build-arg http_proxy="${http_proxy}" \
-						 --build-arg no_proxy="${no_proxy}"
+						 --build-arg https_proxy="$(https_proxy)" \
+						 --build-arg http_proxy="$(http_proxy)" \
+						 --build-arg no_proxy="$(no_proxy)"
 	DOCKER_RUN_ARGS += --network=host \
-						 --env https_proxy="${https_proxy}" \
-						 --env http_proxy="${http_proxy}" \
-						 --env no_proxy="${no_proxy}"
+						 --env https_proxy="$(https_proxy)" \
+						 --env http_proxy="$(http_proxy)" \
+						 --env no_proxy="$(no_proxy)"
 else
 	DOCKER_NETWORK := internal
 endif
 
-ifeq ($(shell [ -f ${PROJECT_ROOT}/setup.sh ] && echo "true"),true)
-DOCKER_BUILD_ARGS += --secret id=setup,src=${PROJECT_ROOT}/setup.sh
-DOCKER_RUN_ARGS += -v "${PROJECT_ROOT}/setup.sh:/root/setup.sh"
+ifeq ($(shell [ -f $(PROJECT_ROOT)/setup.sh ] && echo "true"),true)
+DOCKER_BUILD_ARGS += --secret id=setup,src=$(PROJECT_ROOT)/setup.sh
+DOCKER_RUN_ARGS += -v "$(PROJECT_ROOT)/setup.sh:/root/setup.sh"
 endif
 
-ifneq (${CONAN_PROFILE},)
-DOCKER_BUILD_ARGS += --build-arg CONAN_PROFILE="${CONAN_PROFILE}"
+ifneq ($(CONAN_PROFILE),)
+DOCKER_BUILD_ARGS += --build-arg CONAN_PROFILE="$(CONAN_PROFILE)"
 endif
 
-ifneq (${VENDOR_TARGET},)
-DOCKER_BUILD_ARGS += --build-arg VENDOR_TARGET="${VENDOR_TARGET}"
+ifneq ($(VENDOR_TARGET),)
+DOCKER_BUILD_ARGS += --build-arg VENDOR_TARGET="$(VENDOR_TARGET)"
 endif
 
-ifneq (${PACKAGE_TARGET},)
-DOCKER_BUILD_ARGS += --build-arg PACKAGE_TARGET="${PACKAGE_TARGET}"
+ifneq ($(PACKAGE_TARGET),)
+DOCKER_BUILD_ARGS += --build-arg PACKAGE_TARGET="$(PACKAGE_TARGET)"
 endif
 
-ifeq (${KEEP_SOURCES},1)
+ifeq ($(KEEP_SOURCES),1)
 DOCKER_BUILD_ARGS += --build-arg KEEP_SOURCES=1
 endif
 
 # -----------------------------------------------------------------------------
 
-include ${PROJECT_ROOT}/Makefile.help
+include $(PROJECT_ROOT)/Makefile.help
 
 .PHONY: help
 .SILENT: help
@@ -72,25 +72,25 @@ help::
 	$(call print_help_target, run-ubuntu-VERSION, "run the Ubuntu VERSION image")
 	$(call print_help_target, release-all, "release all Ubuntu versions")
 	$(call print_help_target, release-ubuntu-VERSION, "release the Ubuntu VERSION image")
-	$(call print_help_target, remove-current-images, "remove and prune all ${DOCKER_IMAGE} Docker images")
-	$(call print_help_target, remove-all-images, "remove and prune all ${DOCKER_IMAGE_NAME} Docker images")
+	$(call print_help_target, remove-current-images, "remove and prune all $(DOCKER_IMAGE) Docker images")
+	$(call print_help_target, remove-all-images, "remove and prune all $(DOCKER_IMAGE_NAME) Docker images")
 	echo
 	$(call print_help_section, "User configuration")
-	$(call print_help_define, CONAN_PROFILE, ${CONAN_PROFILE})
-	$(call print_help_define, VENDOR_TARGET, ${VENDOR_TARGET})
-	$(call print_help_define, PACKAGE_TARGET, ${PACKAGE_TARGET})
-	$(call print_help_define, KEEP_SOURCES, ${KEEP_SOURCES})
-	$(call print_help_args_lines, DOCKER_USER_ARGS, ${DOCKER_USER_ARGS})
+	$(call print_help_define, CONAN_PROFILE, $(CONAN_PROFILE))
+	$(call print_help_define, VENDOR_TARGET, $(VENDOR_TARGET))
+	$(call print_help_define, PACKAGE_TARGET, $(PACKAGE_TARGET))
+	$(call print_help_define, KEEP_SOURCES, $(KEEP_SOURCES))
+	$(call print_help_args_lines, DOCKER_USER_ARGS, $(DOCKER_USER_ARGS))
 	echo
 	$(call print_help_section, "Docker configuration")
-	$(call print_help_define, UBUNTU_NAME, "${UBUNTU_NAME}")
-	$(call print_help_define_lines, UBUNTU_VERSIONS, ${UBUNTU_VERSIONS})
-	$(call print_help_define, DOCKER, "${DOCKER}")
-	$(call print_help_define, DOCKER_CONTEXT, "${DOCKER_CONTEXT}")
-	$(call print_help_define, DOCKER_NETWORK, "${DOCKER_NETWORK}")
-	$(call print_help_define, DOCKER_IMAGE, "${DOCKER_IMAGE}")
-	$(call print_help_args_lines, DOCKER_BUILD_ARGS, ${DOCKER_BUILD_ARGS})
-	$(call print_help_args_lines, DOCKER_RUN_ARGS, ${DOCKER_RUN_ARGS})
+	$(call print_help_define, UBUNTU_NAME, "$(UBUNTU_NAME)")
+	$(call print_help_define_lines, UBUNTU_VERSIONS, $(UBUNTU_VERSIONS))
+	$(call print_help_define, DOCKER, "$(DOCKER)")
+	$(call print_help_define, DOCKER_CONTEXT, "$(DOCKER_CONTEXT)")
+	$(call print_help_define, DOCKER_NETWORK, "$(DOCKER_NETWORK)")
+	$(call print_help_define, DOCKER_IMAGE, "$(DOCKER_IMAGE)")
+	$(call print_help_args_lines, DOCKER_BUILD_ARGS, $(DOCKER_BUILD_ARGS))
+	$(call print_help_args_lines, DOCKER_RUN_ARGS, $(DOCKER_RUN_ARGS))
 	echo
 
 .SILENT: FORCE
@@ -100,51 +100,51 @@ FORCE:
 	# prerequisites of every target with patterns.
 
 .PHONY: build-all
-build-all: $(addprefix build-ubuntu-,${UBUNTU_VERSIONS})
+build-all: $(addprefix build-ubuntu-,$(UBUNTU_VERSIONS))
 
 .PHONY: test-all
-test-all: $(addprefix test-ubuntu-,${UBUNTU_VERSIONS})
+test-all: $(addprefix test-ubuntu-,$(UBUNTU_VERSIONS))
 
 .PHONY: release-all
-release-all: $(addprefix release-ubuntu-,${UBUNTU_VERSIONS})
+release-all: $(addprefix release-ubuntu-,$(UBUNTU_VERSIONS))
 
 ubuntu-%: FORCE build-ubuntu-% test-ubuntu-%
 	@echo
-	@echo "Completed building and testing: ${DOCKER_IMAGE}-$@"
+	@echo "Completed building and testing: $(DOCKER_IMAGE)-$@"
 
 .PHONY: all
-all: $(addprefix ubuntu-,${UBUNTU_VERSIONS})
+all: $(addprefix ubuntu-,$(UBUNTU_VERSIONS))
 
 build-ubuntu-%: FORCE Dockerfile
-	${DOCKER} build -f Dockerfile ${DOCKER_BUILD_ARGS} ${DOCKER_USER_ARGS} \
+	$(DOCKER) build -f Dockerfile $(DOCKER_BUILD_ARGS) $(DOCKER_USER_ARGS) \
 		--build-arg UBUNTU_VERSION=$* \
-		-t ${DOCKER_IMAGE}-ubuntu-$* \
-		${DOCKER_CONTEXT}
+		-t $(DOCKER_IMAGE)-ubuntu-$* \
+		$(DOCKER_CONTEXT)
 
 test-ubuntu-%: FORCE
-	docker run ${DOCKER_RUN_ARGS} ${DOCKER_USER_ARGS} ${DOCKER_IMAGE}-ubuntu-$* \
+	docker run $(DOCKER_RUN_ARGS) $(DOCKER_USER_ARGS) $(DOCKER_IMAGE)-ubuntu-$* \
 		bash -ec "[ -f /root/setup.sh ] && source /root/setup.sh; make smoketest"
 
 run-ubuntu-%: FORCE
-	docker run -it ${DOCKER_RUN_ARGS} ${DOCKER_USER_ARGS} ${DOCKER_IMAGE}-ubuntu-$*
+	docker run -it $(DOCKER_RUN_ARGS) $(DOCKER_USER_ARGS) $(DOCKER_IMAGE)-ubuntu-$*
 
 release-ubuntu-%: FORCE
 	@test -f setup.sh || echo 'Error: require setup.sh for user authentication'
-	${DOCKER} run ${DOCKER_RUN_ARGS} ${DOCKER_USER_ARGS} ${DOCKER_IMAGE}-ubuntu-$* \
+	$(DOCKER) run $(DOCKER_RUN_ARGS) $(DOCKER_USER_ARGS) $(DOCKER_IMAGE)-ubuntu-$* \
 		bash -ec 'source /root/setup.sh && upload_conan_packages'
 
 .PHONY: require-setup-sh
 require-setup-sh:
-	@if [ ! -f ${PROJECT_ROOT}/setup.sh ]; then \
-		echo "ERROR: require ${PROJECT_ROOT}/setup.sh to proceed"; \
+	@if [ ! -f $(PROJECT_ROOT)/setup.sh ]; then \
+		echo "ERROR: require $(PROJECT_ROOT)/setup.sh to proceed"; \
 		exit 1; \
 	fi
 
 .PHONY: remove-current-images
 remove-current-images:
-	docker rmi $$(docker images --format '{{.Repository}}:{{.Tag}}' | grep '${DOCKER_IMAGE}')
+	docker rmi $$(docker images --format '{{.Repository}}:{{.Tag}}' | grep '$(DOCKER_IMAGE)')
 
 .PHONY: remove-all-images
 remove-all-images:
-	docker rmi $$(docker images --format '{{.Repository}}:{{.Tag}}' | grep '${DOCKER_IMAGE_NAME}:')
+	docker rmi $$(docker images --format '{{.Repository}}:{{.Tag}}' | grep '$(DOCKER_IMAGE_NAME):')
 
