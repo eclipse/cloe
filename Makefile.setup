@@ -13,9 +13,9 @@ SHELL := /bin/bash
 PROJECT_ROOT := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 CONAN_DIR := $(shell conan config home 2>/dev/null || echo "$HOME/.conan")
 CONAN_PROFILE := default
-CONAN_PROFILE_PATH := ${CONAN_DIR}/profiles/${CONAN_PROFILE}
+CONAN_PROFILE_PATH := $(CONAN_DIR)/profiles/$(CONAN_PROFILE)
 
-include ${PROJECT_ROOT}/Makefile.help
+include $(PROJECT_ROOT)/Makefile.help
 
 APT := $(or \
 	$(shell command -v apt 2>/dev/null), \
@@ -28,7 +28,7 @@ PIP := $(or \
 	$(shell command -v pip3 2>/dev/null), \
 	$(shell command -v pip 2>/dev/null) \
 )
-ifeq (${VIRTUAL_ENV}, )
+ifeq ($(VIRTUAL_ENV), )
 PIP_INSTALL_ARGS := --user --upgrade
 else
 PIP_INSTALL_ARGS := --upgrade
@@ -37,8 +37,8 @@ endif
 PIPX := $(shell command -v pipx 2>/dev/null)
 PIPX_INSTALL_ARGS :=
 ifndef PIPX
-PIPX := ${PIP}
-PIPX_INSTALL_ARGS := ${PIP_INSTALL_ARGS}
+PIPX := $(PIP)
+PIPX_INSTALL_ARGS := $(PIP_INSTALL_ARGS)
 endif
 
 .DEFAULT_GOAL := help
@@ -49,9 +49,9 @@ help::
 	$(call print_help_target, setup-git, "perform Git repository setup")
 	$(call print_help_target, setup-conan, "install Conan profile")
 	$(call print_help_target, install-system-deps, "install build (and development) system requirements")
-	$(call print_help_target, install-python-deps, "install Python runtime requirements with ${_dim}${PIP}${_rst}")
-	$(call print_help_target, install-sphinx-deps, "install Sphinx runtime requirements with ${_dim}${PIP}${_rst}")
-	$(call print_help_target, install-python-tools, "install Python development tools with ${_dim}${PIPX}${_rst}")
+	$(call print_help_target, install-python-deps, "install Python runtime requirements with $(_dim)$(PIP)$(_rst)")
+	$(call print_help_target, install-sphinx-deps, "install Sphinx runtime requirements with $(_dim)$(PIP)$(_rst)")
+	$(call print_help_target, install-python-tools, "install Python development tools with $(_dim)$(PIPX)$(_rst)")
 	echo
 
 .PHONY: setup-git
@@ -61,17 +61,17 @@ setup-git:
 .PHONY: setup-conan
 setup-conan:
 	# Install Conan if it is not available.
-	if ! command -v conan >/dev/null 2>&1; then ${PIP} install --user --upgrade "conan<2"; fi
+	if ! command -v conan >/dev/null 2>&1; then $(PIP) install --user --upgrade "conan<2"; fi
 	# Initialize Conan configuration if it doesn't already exist.
 	#
-	# Since running any conan command, even conan --help creates ${CONAN_DIR}
+	# Since running any conan command, even conan --help creates $(CONAN_DIR)
 	# and the default configuration, we rely on the existence of the default
 	# profile as an indication that we have a "fresh" setup where we can
 	# make our override.
-	if [ ! -f ${CONAN_PROFILE_PATH} ]; then \
+	if [ ! -f $(CONAN_PROFILE_PATH) ]; then \
 		conan config init; \
-		conan profile update settings.compiler.libcxx=libstdc++11 ${CONAN_PROFILE}; \
-		conan profile update settings.build_type=Debug ${CONAN_PROFILE}; \
+		conan profile update settings.compiler.libcxx=libstdc++11 $(CONAN_PROFILE); \
+		conan profile update settings.build_type=Debug $(CONAN_PROFILE); \
 	fi
 	if ! conan config get general.default_build_profile >/dev/null 2>&1; then \
 		conan config set general.default_build_profile=default; \
@@ -80,15 +80,15 @@ setup-conan:
 		conan config set general.revisions_enabled=True; \
 	fi
 	# Install cloe-{debug,normal,release} profiles.
-	for profile in "${PROJECT_ROOT}"/dist/conan/*.profile; do \
+	for profile in "$(PROJECT_ROOT)"/dist/conan/*.profile; do \
 		export profile_name=$$(basename -s .profile $${profile}); \
-		install -m 644 "$${profile}" "${CONAN_DIR}/profiles/$${profile_name}"; \
-		sed -r -i "s/default/${CONAN_PROFILE}/" "${CONAN_DIR}/profiles/$${profile_name}"; \
+		install -m 644 "$${profile}" "$(CONAN_DIR)/profiles/$${profile_name}"; \
+		sed -r -i "s/default/$(CONAN_PROFILE)/" "$(CONAN_DIR)/profiles/$${profile_name}"; \
 	done
 	# Ensure we have an up-to-date CMake configured.
 	if [ $$(( cmake --version | head -1 | cut -f3 -d' '; echo "3.14.99" ) | sort -V | tail -1) = "3.14.99" ]; then \
-		if ! grep "cmake/" ${CONAN_PROFILE_PATH} >/dev/null; then \
-			echo -e "[tool_requires]\ncmake/[>=3.15.0]" >> ${CONAN_PROFILE_PATH}; \
+		if ! grep "cmake/" $(CONAN_PROFILE_PATH) >/dev/null; then \
+			echo -e "[tool_requires]\ncmake/[>=3.15.0]" >> $(CONAN_PROFILE_PATH); \
 		fi; \
 	fi
 
@@ -102,8 +102,8 @@ endif
 
 .PHONY: install-ubuntu-deps
 install-ubuntu-deps::
-	command -v ${APT} >/dev/null 2>&1
-	${APT} install ${APT_ARGS} \
+	command -v $(APT) >/dev/null 2>&1
+	$(APT) install $(APT_ARGS) \
 		bats \
 		build-essential \
 		clang-format \
@@ -125,8 +125,8 @@ install-ubuntu-deps::
 		;
 
 	# Require GCC and G++ version >= 8
-	if [ "${UBUNTU_VERSION}" == "18.04" ]; then \
-		${APT} install ${APT_ARGS} gcc-8 g++-8; \
+	if [ "$(UBUNTU_VERSION)" == "18.04" ]; then \
+		$(APT) install $(APT_ARGS) gcc-8 g++-8; \
 		if [ $$(readlink /usr/bin/g++) == "g++-7" ]; then \
 			ln -sf /usr/bin/g++-8 /usr/bin/g++ && \
 			ln -sf /usr/bin/gcc-8 /usr/bin/gcc; \
@@ -136,8 +136,8 @@ install-ubuntu-deps::
 # Python ----------------------------------------------------------------------
 .PHONY: install-python-deps
 install-python-deps::
-	command -v ${PIP} >/dev/null 2>&1
-	${PIP} install ${PIP_INSTALL_ARGS} \
+	command -v $(PIP) >/dev/null 2>&1
+	$(PIP) install $(PIP_INSTALL_ARGS) \
 		click \
 		"conan<2.0.0" \
 		libtmux \
@@ -147,12 +147,12 @@ install-python-deps::
 
 .PHONY: install-sphinx-deps
 install-sphinx-deps:
-	command -v ${PIP} >/dev/null 2>&1
-	${PIP} install ${PIP_INSTALL_ARGS} -r docs/requirements.txt
+	command -v $(PIP) >/dev/null 2>&1
+	$(PIP) install $(PIP_INSTALL_ARGS) -r docs/requirements.txt
 
 .PHONY: install-python-tools
 install-python-tools::
-	command -v ${PIPX} >/dev/null 2>&1
+	command -v $(PIPX) >/dev/null 2>&1
 	for pkg in \
 		black \
 		mypy \
@@ -162,5 +162,5 @@ install-python-tools::
 		yq \
 		; \
 	do \
-		${PIPX} install ${PIPX_INSTALL_ARGS} $${pkg}; \
+		$(PIPX) install $(PIPX_INSTALL_ARGS) $${pkg}; \
 	done

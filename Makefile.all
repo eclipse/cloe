@@ -37,12 +37,12 @@ SUBMAKEFLAGS :=
 
 META_PKG := meta
 PLUGIN_PKGS := plugins/basic plugins/gndtruth_extractor plugins/minimator plugins/mocks plugins/noisy_sensor plugins/speedometer plugins/virtue
-ALL_PKGS := fable runtime models oak engine ${PLUGIN_PKGS} ${META_PKG}
+ALL_PKGS := fable runtime models oak engine $(PLUGIN_PKGS) $(META_PKG)
 WITHOUT_PKGS :=
-UNSELECT_PKGS := ${WITHOUT_PKGS}
+UNSELECT_PKGS := $(WITHOUT_PKGS)
 WITH_PKGS :=
-SELECT_PKGS := $(call uniq, $(filter-out ${UNSELECT_PKGS}, ${ALL_PKGS}) ${WITH_PKGS})
-.PHONY: ${ALL_PKGS}
+SELECT_PKGS := $(call uniq, $(filter-out $(UNSELECT_PKGS), $(ALL_PKGS)) $(WITH_PKGS))
+.PHONY: $(ALL_PKGS)
 
 ## VENDOR PACKAGE SELECTION
 ##
@@ -50,10 +50,10 @@ SELECT_PKGS := $(call uniq, $(filter-out ${UNSELECT_PKGS}, ${ALL_PKGS}) ${WITH_P
 ##
 ALL_VENDOR :=
 WITHOUT_VENDOR :=
-UNSELECT_VENDOR := ${WITHOUT_VENDOR}
+UNSELECT_VENDOR := $(WITHOUT_VENDOR)
 WITH_VENDOR :=
-SELECT_VENDOR := $(call uniq, $(filter-out ${UNSELECT_VENDOR}, ${ALL_VENDOR}) ${WITH_VENDOR})
-.PHONY: ${ALL_VENDOR}
+SELECT_VENDOR := $(call uniq, $(filter-out $(UNSELECT_VENDOR), $(ALL_VENDOR)) $(WITH_VENDOR))
+.PHONY: $(ALL_VENDOR)
 
 # Specify dependencies:
 fable:
@@ -61,8 +61,8 @@ runtime: fable
 models: runtime
 oak: runtime
 engine: models oak
-${PLUGIN_PKGS}: runtime models
-${META_PKG}: fable runtime models oak engine ${PLUGIN_PKGS}
+$(PLUGIN_PKGS): runtime models
+$(META_PKG): fable runtime models oak engine $(PLUGIN_PKGS)
 
 ## BUILD_POLICY
 ##   Usage: make BUILD_POLICY="missing"
@@ -93,36 +93,36 @@ CONAN_OPTIONS :=
 
 # Usage: $(call _make_target_rule, TARGET-NAME, MAKE-TARGET, HELP-DESCRIPTION, MAKE-ARGUMENTS)
 define _make_target_rule
-${1}:
-	$(call print_header, "Proceeding to $(call unquote, ${3})")
-	${MAKE} ${SUBMAKEFLAGS} ${4} ${2}
+$(1):
+	$(call print_header, "Proceeding to $(call unquote, $(3))")
+	$(MAKE) $(SUBMAKEFLAGS) $(4) $(2)
 endef
 
 # Usage: $(call _make_target_rules, TARGET-NAME, HELP-DESCRIPTION, HELP-CATEGORY, PACKAGE-DIRS)
 define _make_target_rules
 help::
-	$(call print_help_target, ${1}, ${2}, ${3})
-$(call _make_target_rule,${1},${1}-each,${2},-f Makefile.all)
-${1}-each: ${4}
+	$(call print_help_target, $(1), $(2), $(3))
+$(call _make_target_rule,$(1),$(1)-each,$(2),-f Makefile.all)
+$(1)-each: $(4)
 endef
 
 REGEX_TARGET := 's/(-vendor|-select)?-each//'
-${ALL_PKGS} ${ALL_VENDOR}:
-	${MAKE} -C $@ $(shell echo ${MAKECMDGOALS} | sed -re ${REGEX_TARGET})
+$(ALL_PKGS) $(ALL_VENDOR):
+	$(MAKE) -C $@ $(shell echo $(MAKECMDGOALS) | sed -re $(REGEX_TARGET))
 
 # Usage: $(call make_vendor_target, TARGET-NAME, HELP-DESCRIPTION, HELP-CATEGORY)
 define make_vendor_target
-$(eval $(call _make_target_rules,${1},${2},${3},${SELECT_VENDOR}))
+$(eval $(call _make_target_rules,$(1),$(2),$(3),$(SELECT_VENDOR)))
 endef
 
 # Usage: $(call make_every_target, TARGET-NAME, HELP-DESCRIPTION, HELP-CATEGORY)
 define make_every_target
-$(eval $(call _make_target_rules,${1},${2},${3},${ALL_PKGS}))
+$(eval $(call _make_target_rules,$(1),$(2),$(3),$(ALL_PKGS)))
 endef
 
 # Usage: $(call make_select_target, TARGET-NAME, HELP-DESCRIPTION, HELP-CATEGORY)
 define make_select_target
-$(eval $(call _make_target_rules,${1},${2},${3},${SELECT_PKGS}))
+$(eval $(call _make_target_rules,$(1),$(2),$(3),$(SELECT_PKGS)))
 endef
 
 # --------------------------------------------------------------------------- #
@@ -133,7 +133,7 @@ endef
 help::
 	$(call print_help_section, "Available multi-package targets")
 
-ifneq "${ALL_VENDOR}" ""
+ifneq "$(ALL_VENDOR)" ""
 help::
 $(call make_vendor_target, export-vendor, "export all vendor packages", "[conan-cache]")
 $(call make_vendor_target, package-vendor, "create all vendor packages", "[conan-cache]")
@@ -168,19 +168,19 @@ $(call make_select_target, clean-select, "remove build artifacts", "[in-source]"
 help::
 	echo
 	$(call print_help_subsection, "Options")
-ifneq "${ALL_VENDOR}" ""
-	$(call print_help_option, WITH_VENDOR, "", "include optional vendor packages from ${_grn}UNSELECT_VENDOR${_rst}")
+ifneq "$(ALL_VENDOR)" ""
+	$(call print_help_option, WITH_VENDOR, "", "include optional vendor packages from $(_grn)UNSELECT_VENDOR$(_rst)")
 endif
-	$(call print_help_option, WITH_PKGS, "", "include optional packages from ${_grn}UNSELECT_PKGS${_rst}")
+	$(call print_help_option, WITH_PKGS, "", "include optional packages from $(_grn)UNSELECT_PKGS$(_rst)")
 	$(call print_help_option, LOCKFILE_SOURCE, "", "use specified conanfile as lockfile source for build")
 	echo
 	$(call print_help_subsection, "Defines")
-	$(call print_help_option, BUILD_POLICY, ${BUILD_POLICY})
-	$(call print_help_define, CONAN_OPTIONS, ${CONAN_OPTIONS})
-ifneq "${ALL_VENDOR}" ""
-	$(call print_help_define_lines, UNSELECT_VENDOR, ${UNSELECT_VENDOR})
-	$(call print_help_define_lines, SELECT_VENDOR, ${SELECT_VENDOR})
+	$(call print_help_option, BUILD_POLICY, $(BUILD_POLICY))
+	$(call print_help_define, CONAN_OPTIONS, $(CONAN_OPTIONS))
+ifneq "$(ALL_VENDOR)" ""
+	$(call print_help_define_lines, UNSELECT_VENDOR, $(UNSELECT_VENDOR))
+	$(call print_help_define_lines, SELECT_VENDOR, $(SELECT_VENDOR))
 endif
-	$(call print_help_define_lines, UNSELECT_PKGS, ${UNSELECT_PKGS})
-	$(call print_help_define_lines, SELECT_PKGS, ${SELECT_PKGS})
+	$(call print_help_define_lines, UNSELECT_PKGS, $(UNSELECT_PKGS))
+	$(call print_help_define_lines, SELECT_PKGS, $(SELECT_PKGS))
 	echo
