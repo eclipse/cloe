@@ -1,0 +1,14 @@
+---
+Checks: >
+    modernize-*,
+    bugprone-*,
+    cppcoreguidelines-*,
+    cert-*,
+    misc-*,
+    performance-*,
+    readability-*,
+    -modernize-use-trailing-return-type,
+    -readability-identifier-length,
+    -readability-redundant-access-specifiers,
+    -readability-else-after-return,
+FormatStyle: file
