@@ -143,12 +143,14 @@ class Simulation {
    * This is used exclusively for handling signals.
    */
   void signal_abort();
+  void signal_reset();
 
  private:
   cloe::Logger logger_;
   cloe::Stack config_;
   std::string uuid_;
   std::function<void()> abort_fn_;
+  std::function<void()> reset_fn_;
 
   // Options:
   bool report_progress_{false};

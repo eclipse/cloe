@@ -111,6 +111,7 @@ inline int run(const RunOptions& opt, const std::vector<std::string>& filepaths)
   Simulation sim(s, uuid);
   GLOBAL_SIMULATION_INSTANCE = &sim;
   std::signal(SIGINT, handle_signal);
+  std::signal(SIGQUIT, handle_signal);
 
   // Set options:
   sim.set_report_progress(opt.report_progress);
@@ -166,6 +167,11 @@ inline void handle_signal(int sig) {
     case SIGSEGV:
     case SIGABRT:
       abort();
+      break;
+    case SIGQUIT:
+      if (GLOBAL_SIMULATION_INSTANCE) {
+        GLOBAL_SIMULATION_INSTANCE->signal_reset();
+      }
       break;
     case SIGINT:
     default:

@@ -1142,14 +1142,64 @@ StateId SimulationMachine::Reset::impl(SimulationContext& ctx) {
     }
     return true;
   });
+  ctx.sync.reset();
+  ctx.vehicles.clear();
+
+  // Create and configure all controllers:
+  for (const auto& c : ctx.config.vehicles) {
+    std::shared_ptr<cloe::Vehicle> v;
+    if (c.is_from_simulator()) {
+      auto& s = ctx.simulators.at(c.from_sim.simulator);
+      if (c.from_sim.is_by_name()) {
+        v = s->get_vehicle(c.from_sim.index_str);
+        if (!v) {
+          throw cloe::ModelError("simulator {} has no vehicle by name {}",
+                                 c.from_sim.simulator, c.from_sim.index_str)
+              .explanation("Simulator {} has following vehicles:\n{}",
+                           c.from_sim.simulator,
+                           enumerate_simulator_vehicles(*s));
+        }
+      } else {
+        v = s->get_vehicle(c.from_sim.index_num);
+        if (!v) {
+          throw cloe::ModelError("simulator {} has no vehicle at index {}",
+                                 c.from_sim.simulator, c.from_sim.index_num)
+              .explanation("Simulator {} has following vehicles:\n{}",
+                           c.from_sim.simulator,
+                           enumerate_simulator_vehicles(*s));
+        }
+      }
+      for (const auto& ctrl : ctx.config.controllers) {
+        if (ctrl.vehicle == c.name) {
+          auto name = ctrl.name.value_or(ctrl.binding);
+          assert(ctx.controllers.count(name) != 0);
+          ctx.controllers[name]->set_vehicle(v);
+        }
+      }
+      for (const auto& veh : ctx.config.vehicles) {
+        (void)veh;
+        // shall we reset ctx.vehicle from carmaker binding?
+      }
+    } else {
+      logger()->info("Shall we reset veh from vehicles ?");
+      //   if (ctx.vehicles.count(c.from_veh)) {
+      //     v = ctx.vehicles.at(c.from_veh);
+      //   } else {
+      //     // This vehicle depends on another that hasn't been create yet.
+      //     return nullptr;
+      //   }
+      // }
+    }
+  }
+
   if (ok) {
-    return CONNECT;
+    return START;
   } else {
     return ABORT;
   }
 }
 
-// KEEP_ALIVE ---------------------------------------------------------------------------------- //
+// KEEP_ALIVE ----------------------------------------------------------------------------------
 
 StateId SimulationMachine::KeepAlive::impl(SimulationContext& ctx) {
   if (state_machine()->previous_state() != KEEP_ALIVE) {
@@ -1212,6 +1262,24 @@ SimulationResult Simulation::run() {
 
   // Abort handler:
   SimulationMachine machine;
+
+  reset_fn_ = [this, &ctx, &machine]() {
+    // static size_t requests = 0;
+
+    logger()->info(
+        R"(Match signal quit(like CTRL+'\') to reset functionality.)");
+
+    // requests += 1;
+    if (ctx.progress.is_init_ended()) {
+      if (!ctx.progress.is_exec_ended()) {
+        logger()->info("Reseting running simulation.");
+      }
+      machine.reset();
+    } else {
+      logger()->info("reset is not needed during initilization.");
+    }
+  };
+
   abort_fn_ = [this, &ctx, &machine]() {
     static size_t requests = 0;
 
@@ -1384,6 +1452,12 @@ bool Simulation::is_writable(const boost::filesystem::path& filepath) const {
 void Simulation::signal_abort() {
   if (abort_fn_) {
     abort_fn_();
+  }
+}
+
+void Simulation::signal_reset() {
+  if (reset_fn_) {
+    reset_fn_();
   }
 }
 
