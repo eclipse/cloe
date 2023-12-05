@@ -134,7 +134,7 @@ class Coordinator {
   cloe::TriggerPtr make_trigger(cloe::Source s, const cloe::Conf& c) const;
   void queue_trigger(cloe::Source s, const cloe::Conf& c) { queue_trigger(make_trigger(s, c)); }
   void queue_trigger(cloe::TriggerPtr&& t);
-  void execute_trigger(cloe::TriggerPtr&& t, const cloe::Sync& s);
+  cloe::CallbackResult execute_trigger(cloe::TriggerPtr&& t, const cloe::Sync& s);
 
   // for access to protected methods
   friend TriggerRegistrar;

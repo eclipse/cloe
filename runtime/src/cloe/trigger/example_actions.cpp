@@ -108,11 +108,16 @@ ActionPtr Bundle::clone() const {
   return std::make_unique<Bundle>(name(), std::move(actions));
 }
 
-void Bundle::operator()(const Sync& sync, TriggerRegistrar& r) {
+CallbackResult Bundle::operator()(const Sync& sync, TriggerRegistrar& r) {
   logger()->trace("Run action bundle");
+  CallbackResult result;
   for (auto& a : actions_) {
-    (*a)(sync, r);
+    auto ar = (*a)(sync, r);
+    if (ar == CallbackResult::Unpin) {
+      result = ar;
+    }
   }
+  return result;
 }
 
 TriggerSchema BundleFactory::schema() const {
@@ -141,11 +146,12 @@ void Insert::to_json(Json& j) const {
   };
 }
 
-void Insert::operator()(const Sync&, TriggerRegistrar& r) {
+CallbackResult Insert::operator()(const Sync&, TriggerRegistrar& r) {
   for (const auto& tc : triggers_.to_array()) {
     auto local = r.make_trigger(tc);
     r.insert_trigger(std::move(local));
   }
+  return CallbackResult::Ok;
 }
 
 TriggerSchema InsertFactory::schema() const {
@@ -170,7 +176,7 @@ ActionPtr InsertFactory::make(const Conf& c) const {
 }
 
 // PushRelease ---------------------------------------------------------------
-void PushRelease::operator()(const Sync&, TriggerRegistrar& r) {
+CallbackResult PushRelease::operator()(const Sync&, TriggerRegistrar& r) {
   // clang-format off
   r.insert_trigger(
     "push down button(s)",
@@ -187,6 +193,7 @@ void PushRelease::operator()(const Sync&, TriggerRegistrar& r) {
     }}),
     std::move(release_)
   );
+  return CallbackResult::Ok;
   // clang-format on
 }
 

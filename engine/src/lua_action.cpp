@@ -22,8 +22,8 @@
 
 #include "lua_action.hpp"
 
-#include <string>
 #include <optional>
+#include <string>
 #include <utility>
 
 #include <sol/optional.hpp>
@@ -60,30 +60,45 @@ cloe::TriggerPtr make_trigger_from_lua(cloe::TriggerRegistrar& r, const sol::tab
 
 namespace actions {
 
-void Lua::operator()(const cloe::Sync&, cloe::TriggerRegistrar&) {
+cloe::CallbackResult LuaFunction::operator()(const cloe::Sync& sync, cloe::TriggerRegistrar&) {
+  logger()->trace("Running lua function.");
+  auto result = func_(std::ref(sync));
+  if (!result.valid()) {
+    throw cloe::Error("error executing Lua function: {}", sol::error{result}.what());
+  }
+  // Return false from a pinned action to remove it.
+  if (result.return_count() > 0 && !result.get<bool>()) {
+    return cloe::CallbackResult::Unpin;
+  }
+  return cloe::CallbackResult::Ok;
+}
+
+cloe::CallbackResult Lua::operator()(const cloe::Sync&, cloe::TriggerRegistrar&) {
+  logger()->trace("Running lua script.");
   auto result = lua_.script(script_);
   if (!result.valid()) {
-    sol::error err = result;
-    throw err;
+    throw cloe::Error("error executing Lua function: {}", sol::error{result}.what());
   }
+  // Return false from a pinned action to remove it.
+  if (result.return_count() > 0 && !result.get<bool>()) {
+    return cloe::CallbackResult::Unpin;
+  }
+  return cloe::CallbackResult::Ok;
 }
 
 void Lua::to_json(cloe::Json& j) const {
   j = cloe::Json{
-    {"script", script_},
+      {"script", script_},
   };
 }
 
 cloe::TriggerSchema LuaFactory::schema() const {
   static const char* desc = "lua script to execute";
   return cloe::TriggerSchema{
-      this->name(),
-      this->description(),
-      cloe::InlineSchema(desc, cloe::JsonType::string, true),
+      this->name(), this->description(), cloe::InlineSchema(desc, cloe::JsonType::string, true),
       cloe::Schema{
-        {"script", cloe::make_prototype<std::string>("lua script to execute")},
-      }
-  };
+          {"script", cloe::make_prototype<std::string>("lua script to execute")},
+      }};
 }
 
 cloe::ActionPtr LuaFactory::make(const cloe::Conf& c) const {

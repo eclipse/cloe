@@ -177,12 +177,13 @@ sol::table Coordinator::register_lua_table(const std::string& field) {
   return tbl;
 }
 
-void Coordinator::execute_trigger(TriggerPtr&& t, const Sync& sync) {
+cloe::CallbackResult Coordinator::execute_trigger(TriggerPtr&& t, const Sync& sync) {
   logger()->debug("Execute trigger {}", inline_json(*t));
-  (t->action())(sync, *executer_registrar_);
+  auto result = (t->action())(sync, *executer_registrar_);
   if (!t->is_conceal()) {
     history_.emplace_back(HistoryTrigger{sync.time(), std::move(t)});
   }
+  return result;
 }
 
 Duration Coordinator::process(const Sync& sync) {

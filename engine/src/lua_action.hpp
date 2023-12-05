@@ -44,13 +44,7 @@ class LuaFunction : public cloe::Action {
     return std::make_unique<LuaFunction>(this->name(), func_);
   }
 
-  void operator()(const cloe::Sync& sync, cloe::TriggerRegistrar&) override {
-    logger()->trace("Running lua function.");
-    auto result = func_(std::ref(sync));
-    if(!result.valid()) {
-      throw cloe::Error("error executing Lua function: {}", sol::error{result}.what());
-    }
-  }
+  cloe::CallbackResult operator()(const cloe::Sync& sync, cloe::TriggerRegistrar&) override;
 
   void to_json(cloe::Json& j) const override { j = cloe::Json{}; }
 
@@ -65,7 +59,7 @@ class Lua : public cloe::Action {
 
   cloe::ActionPtr clone() const override { return std::make_unique<Lua>(name(), script_, lua_); }
 
-  void operator()(const cloe::Sync&, cloe::TriggerRegistrar&) override;
+  cloe::CallbackResult operator()(const cloe::Sync&, cloe::TriggerRegistrar&) override;
 
  protected:
   void to_json(cloe::Json& j) const override;
