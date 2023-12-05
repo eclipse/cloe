@@ -511,10 +511,18 @@ class Event : public Entity {
 using EventFactory = TriggerFactory<Event>;
 using EventFactoryPtr = std::unique_ptr<EventFactory>;
 
+enum class CallbackResult {
+  /// Default, use standard behavior.
+  Ok,
+
+  /// Remove from callback if it was sticky.
+  Unpin,
+};
+
 /**
  * Interface the trigger manager must provide for executing triggers.
  */
-using CallbackExecuter = std::function<void(TriggerPtr&&, const Sync&)>;
+using CallbackExecuter = std::function<CallbackResult(TriggerPtr&&, const Sync&)>;
 
 /**
  * Callback provides the interface with which the global trigger manager,
@@ -559,7 +567,7 @@ class Callback {
    * Execute a trigger in the given sync context by passing it to the
    * executer.
    */
-  void execute(TriggerPtr&& t, const Sync& s);
+  CallbackResult execute(TriggerPtr&& t, const Sync& s);
 
  private:
   CallbackExecuter executer_;
@@ -623,7 +631,7 @@ class Action : public Entity {
   /**
    * Execute the action.
    */
-  virtual void operator()(const Sync&, TriggerRegistrar&) = 0;
+  virtual CallbackResult operator()(const Sync&, TriggerRegistrar&) = 0;
 
   /**
    * Return whether this action is a significant action.
