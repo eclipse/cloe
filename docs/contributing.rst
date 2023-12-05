@@ -43,7 +43,6 @@ certainly require some changes before accepting.
    :maxdepth: 2
 
    contributing/creating-a-new-release
-   contributing/adding-a-new-action
    contributing/recording-with-asciinema
 
    contributing/git-guidelines

@@ -21,5 +21,6 @@ For standard installation instructions please refer to the :doc:`installation gu
    develop/new-controller
    develop/integrating-a-controller
    develop/debugging-a-controller
+   develop/adding-a-new-action
 
    develop/cloe-ui
