@@ -28,6 +28,7 @@ def patch_rpath(file: Path, rpath: List[str]) -> Optional[subprocess.CompletedPr
         logging.error(f"Error running: {' '.join(cmd)}")
         logging.error(result.stderr)
     original = result.stdout.decode().strip()
+    rpath = rpath.copy()
     if original != "":
         rpath.append(original)
 
