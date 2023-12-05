@@ -108,19 +108,20 @@ install-ubuntu-deps::
 		build-essential \
 		clang-format \
 		cmake \
-		doxygen \
 		curl \
+		doxygen \
 		file \
 		git \
 		graphviz \
 		jq \
+		netcat-openbsd \
 		patchelf \
 		psmisc \
-		python3-setuptools \
 		python3-pip \
-        python3-venv \
+		python3-setuptools \
 		time \
 		tmux \
+		python3-venv \
 		;
 
 	# Require GCC and G++ version >= 8
