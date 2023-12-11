@@ -8,8 +8,11 @@ import sys
 from pathlib import Path
 from typing import List
 
-from conans import CMake, ConanFile, tools
-from conans.errors import ConanInvalidConfiguration
+from conan import ConanFile
+from conan.tools import files
+from conan.errors import ConanInvalidConfiguration
+
+required_conan_version = ">=1.52.0"
 
 
 def patch_rpath(file: Path, rpath: List[str]):
@@ -96,7 +99,7 @@ class VtdConan(ConanFile):
 
         def extract_archive(archive):
             print(f"Extracting: {archive}")
-            tools.untargz(src / archive, dst)
+            files.untargz(src / archive, dst)
 
         extract_archive(self._archive_base)
         libdir.mkdir()
@@ -147,8 +150,10 @@ class VtdConan(ConanFile):
     def package_info(self):
         bindir = Path(self.package_folder) / "bin"
         self.output.info(f"Appending PATH environment variable: {bindir}")
-        self.env_info.PATH.append(str(bindir))
-        self.env_info.VTD_ROOT = self.package_folder
+        self.runenv_info.append_path("PATH", str(bindir))
+        self.runenv_info.define("VTD_ROOT", self.package_folder)
+        self.buildenv_info.define("VTD_ROOT", self.package_folder)
+
         if self.options.with_osi:
             osi_path = (
                 Path(self.package_folder)
@@ -156,4 +161,4 @@ class VtdConan(ConanFile):
             )
             if not osi_path.exists():
                 raise ConanInvalidConfiguration("VTD OSI library not found.")
-            self.env_info.VTD_EXTERNAL_MODELS.append(f"{osi_path}")
+            self.runenv_info.append_path("VTD_EXTERNAL_MODELS", f"{osi_path}")
