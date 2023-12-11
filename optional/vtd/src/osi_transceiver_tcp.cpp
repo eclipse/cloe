@@ -21,7 +21,6 @@
 
 #include "osi_transceiver_tcp.hpp"
 
-#include <cassert>  // for assert
 #include <cstdlib>  // for malloc, free
 #include <memory>   // for shared_ptr<>
 

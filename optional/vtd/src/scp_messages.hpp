@@ -31,8 +31,7 @@
 
 #include "scp_transceiver.hpp"  // for ScpMessage
 
-namespace vtd {
-namespace scp {
+namespace vtd::scp {
 
 extern const char* Start;
 extern const char* Stop;
@@ -98,5 +97,4 @@ struct QueryScenario : public ScpMessage {
   std::string to_scp() const override;
 };
 
-}  // namespace scp
-}  // namespace vtd
+}  // namespace vtd::scp

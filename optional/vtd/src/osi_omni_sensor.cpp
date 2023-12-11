@@ -23,9 +23,7 @@
 #include "osi_omni_sensor.hpp"
 
 #include <math.h>     // for atan
-#include <algorithm>  // for max
 #include <cassert>    // for assert
-#include <map>        // for map<>
 
 #include <Eigen/Geometry>  // for Isometry3d, Vector3d
 

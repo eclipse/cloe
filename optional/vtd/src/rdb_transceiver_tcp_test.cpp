@@ -21,7 +21,6 @@
  */
 
 #include <iostream>  // for cout
-#include <vector>    // for vector<>
 
 #include <boost/asio.hpp>  // for error_code, endpoint, io_service, ...
 

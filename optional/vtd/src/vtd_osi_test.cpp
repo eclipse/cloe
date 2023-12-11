@@ -38,7 +38,6 @@
 
 #include "osi_omni_sensor.hpp"
 #include "osi_sensor_component.hpp"  // for transform_...
-#include "osi_transceiver_tcp.hpp"
 
 struct VehicleData {
   uint64_t id;

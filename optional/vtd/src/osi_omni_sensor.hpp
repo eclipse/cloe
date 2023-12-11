@@ -22,10 +22,7 @@
 
 #pragma once
 
-#include <map>      // for map<>
 #include <memory>   // for shared_ptr<>, unique_ptr<>
-#include <string>   // for string
-#include <utility>  // for move
 
 #include <Eigen/Geometry>  // for Isometry3d, Vector3d
 
@@ -43,7 +40,6 @@
 
 #include "osi_ground_truth.hpp"  // for OsiGroundTruth
 #include "osi_transceiver.hpp"   // for OsiTransceiver
-#include "osi_utils.hpp"
 
 namespace osii {
 
