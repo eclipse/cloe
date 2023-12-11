@@ -8,6 +8,7 @@ find_package(cloe-runtime REQUIRED)
 find_package(cloe-models REQUIRED)
 find_package(Boost REQUIRED)
 find_package(open_simulation_interface REQUIRED)
+find_package(Protobuf REQUIRED)
 
 add_library(vtd-object-lib STATIC
     src/omni_sensor_component.cpp
@@ -21,6 +22,10 @@ add_library(vtd-object-lib STATIC
     src/rdb_transceiver_tcp.cpp
     src/scp_messages.cpp
     src/scp_transceiver.cpp
+)
+target_include_directories(vtd-object-lib
+  PRIVATE
+    protobuf::libprotobuf
 )
 target_link_libraries(vtd-object-lib
   PUBLIC
