@@ -18,12 +18,6 @@ class CloeSimulatorVTD(ConanFile):
     description = "Cloe simulator plugin that binds to Vires VTD"
     license = "Apache-2.0"
     settings = "os", "compiler", "build_type", "arch"
-    options = {
-        "pedantic": [True, False],
-    }
-    default_options = {
-        "pedantic": True,
-    }
     generators = "CMakeDeps", "VirtualRunEnv"
     no_copy_source = True
     exports_sources = [
@@ -37,6 +31,8 @@ class CloeSimulatorVTD(ConanFile):
     _setup_folder = "contrib/setups"
 
     def set_version(self):
+        # Check for both VERSION and ../../VERSION because when building inside
+        # Docker only the plugin directory is exported.
         for version_path in ["VERSION", "../../VERSION"]:
             version_file = Path(self.recipe_folder) / version_path
             if version_file.exists():
@@ -73,7 +69,7 @@ class CloeSimulatorVTD(ConanFile):
 
         if not dir.is_dir():
             return
-        # Compressing will add a timestamp to the package and therefore 
+        # Compressing will add a timestamp to the package and therefore
         # leads to different package_hashes everytime we export with conan.
         # To avoid that, changing from .tgz to .tar was necessary
         with tarfile.open(f"{dir.name}.tar", "w:") as tar:
@@ -107,7 +103,6 @@ class CloeSimulatorVTD(ConanFile):
         tc = cmake.CMakeToolchain(self)
         tc.cache_variables["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
         tc.cache_variables["CLOE_PROJECT_VERSION"] = self.version
-        tc.cache_variables["TargetLintingExtended"] = self.options.pedantic
         tc.generate()
 
     def build(self):
@@ -145,8 +140,5 @@ class CloeSimulatorVTD(ConanFile):
         self.cpp_info.set_property("cmake_find_mode", "both")
         self.cpp_info.set_property("cmake_file_name", "cloe-plugin-vtd")
         self.cpp_info.set_property("pkg_config_name", "cloe-plugin-vtd")
-        self.env_info.VTD_LAUNCH = f"{self.package_folder}/bin/vtd-launch"
-        self.env_info.VTD_SETUP_DIR = f"{self.package_folder}/{self._setup_folder}"
-
-    def package_id(self):
-        del self.info.options.pedantic
+        self.runenv_info.define("VTD_LAUNCH", f"{self.package_folder}/bin/vtd-launch")
+        self.runenv_info.define("VTD_SETUP_DIR", f"{self.package_folder}/{self._setup_folder}")
