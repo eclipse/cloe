@@ -27,7 +27,7 @@
 
 #include <cloe/core.hpp>  // for Json, Error
 
-#include <osi_sensordata.pb.h>  // for SensorData
+#include <osi3/osi_sensordata.pb.h>  // for SensorData
 
 namespace osii {
 

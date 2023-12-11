@@ -35,11 +35,11 @@
 #include <cloe/simulator.hpp>                // for ModelError
 #include <cloe/sync.hpp>                     // for Sync
 
-#include "osi_common.pb.h"           // for Timestamp, Identifier, BaseMoving, ..
-#include "osi_detectedobject.pb.h"   // for DetectedMovingObject
-#include "osi_hostvehicledata.pb.h"  // for HostVehicleData
-#include "osi_object.pb.h"           // for MovingObject
-#include "osi_sensordata.pb.h"       // for SensorData, DetectedEntityHeader
+#include <osi3/osi_common.pb.h>           // for Timestamp, Identifier, BaseMoving, ..
+#include <osi3/osi_detectedobject.pb.h>   // for DetectedMovingObject
+#include <osi3/osi_hostvehicledata.pb.h>  // for HostVehicleData
+#include <osi3/osi_object.pb.h>           // for MovingObject
+#include <osi3/osi_sensordata.pb.h>       // for SensorData, DetectedEntityHeader
 
 #include "osi_ground_truth.hpp"  // for OsiGroundTruth
 #include "osi_transceiver.hpp"   // for OsiTransceiver

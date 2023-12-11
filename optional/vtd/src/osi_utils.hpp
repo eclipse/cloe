@@ -29,8 +29,8 @@
 #include <cloe/core.hpp>       // for Logger, get
 #include <cloe/simulator.hpp>  // for ModelError
 
-#include "osi_common.pb.h"      // for Dimension3d, Vector3d, ..
-#include "osi_sensordata.pb.h"  // for SensorData
+#include <osi3/osi_common.pb.h>      // for Dimension3d, Vector3d, ..
+#include <osi3/osi_sensordata.pb.h>  // for SensorData
 
 #undef osi_require
 

@@ -30,8 +30,8 @@
 
 #include <cloe/utility/geometry.hpp>  // for quaternion_from_rpy
 
-#include "osi_common.pb.h"      // for Timestamp, Identifier, BaseMoving, ..
-#include "osi_sensordata.pb.h"  // for SensorData, DetectedEntityHeader
+#include <osi3/osi_common.pb.h>      // for Timestamp, Identifier, BaseMoving, ..
+#include <osi3/osi_sensordata.pb.h>  // for SensorData, DetectedEntityHeader
 
 namespace osii {
 

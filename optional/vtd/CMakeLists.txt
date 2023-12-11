@@ -7,7 +7,7 @@ find_package(vtd-api REQUIRED)
 find_package(cloe-runtime REQUIRED)
 find_package(cloe-models REQUIRED)
 find_package(Boost REQUIRED)
-find_package(open-simulation-interface REQUIRED)
+find_package(open_simulation_interface REQUIRED)
 
 add_library(vtd-object-lib STATIC
     src/omni_sensor_component.cpp
@@ -28,7 +28,7 @@ target_link_libraries(vtd-object-lib
     cloe::runtime
     cloe::models
     Boost::boost
-    open-simulation-interface::open-simulation-interface
+    open_simulation_interface::open_simulation_interface
 )
 
 set_target_properties(vtd-object-lib PROPERTIES

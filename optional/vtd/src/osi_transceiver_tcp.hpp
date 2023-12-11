@@ -31,7 +31,7 @@
 #include <cloe/core.hpp>                     // for Json, Logger
 #include <cloe/utility/tcp_transceiver.hpp>  // for TcpTransceiver
 
-#include "osi_sensordata.pb.h"  // for SensorData
+#include <osi3/osi_sensordata.pb.h>  // for SensorData
 
 #include "osi_transceiver.hpp"  // for OsiTransceiver
 #include "osi_utils.hpp"        // for osi_logger
