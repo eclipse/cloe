@@ -31,7 +31,7 @@
 #include <google/protobuf/io/coded_stream.h>                // for CodedInputStream
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>  // for ArrayInputStream
 
-#include "osi_sensordata.pb.h"  // for SensorData
+#include <osi3/osi_sensordata.pb.h>  // for SensorData
 
 namespace osii {
 

@@ -31,8 +31,8 @@
 #include <cloe/component/object.hpp>  // for Object
 #include <cloe/utility/geometry.hpp>  // for quaternion_from_rpy
 
-#include "osi_common.pb.h"  // for Orientation3D, BaseMoving, ..
-#include "osi_object.pb.h"  // for MovingObject
+#include <osi3/osi_common.pb.h>  // for Orientation3D, BaseMoving, ..
+#include <osi3/osi_object.pb.h>  // for MovingObject
 
 #include "osi_omni_sensor.hpp"  // for transform_ego_coord_from_osi_data, ...
 #include "osi_utils.hpp"        // for pose_to_osi_position_orientation, ...

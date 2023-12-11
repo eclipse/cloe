@@ -24,7 +24,7 @@
 
 #include <cloe/simulator.hpp>  // for ModelError
 
-#include "osi_object.pb.h"  // for MovingObject
+#include <osi3/osi_object.pb.h>  // for MovingObject
 
 namespace osii {
 
