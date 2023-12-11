@@ -1,0 +1,8 @@
+---
+sources:
+  "2.6.1":
+    url: "https://github.com/protocolbuffers/protobuf/releases/download/v2.6.1/protobuf-2.6.1.tar.bz2"
+    sha256: "ee445612d544d885ae240ffbcbf9267faa9f593b7b101f21d58beceb92661910"
+patches:
+  "2.6.1":
+    - patches/protobuf_v2.6.1.patch
