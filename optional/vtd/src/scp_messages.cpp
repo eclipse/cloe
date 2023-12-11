@@ -24,8 +24,7 @@
 
 #include "scp_messages.hpp"  // NOLINT
 
-namespace vtd {
-namespace scp {
+namespace vtd::scp {
 // clang-format off
 
 const char* Start = "<SimCtrl><Start/></SimCtrl>";
@@ -188,5 +187,4 @@ std::string QueryScenario::to_scp() const {
 }
 
 // clang-format on
-}  // namespace scp
-}  // namespace vtd
+}  // namespace vtd::scp

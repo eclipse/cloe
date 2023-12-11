@@ -22,12 +22,12 @@
 
 #pragma once
 
-#include <Eigen/Geometry>  // for Vector3d
-
-#include <cloe/simulator.hpp>  // for ModelError
+#include <Eigen/Geometry>             // for Vector3d
 
 #include <osi3/osi_groundtruth.pb.h>  // for GroundTruth
 #include <osi3/osi_object.pb.h>       // for MovingObject
+
+#include <cloe/simulator.hpp>         // for ModelError
 
 #include "osi_utils.hpp"  // for osi_require, ..
 

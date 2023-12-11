@@ -22,9 +22,6 @@
 
 #pragma once
 
-#include <memory>  // for shared_ptr<>
-#include <vector>  // for vector<>
-
 #include <cloe/core.hpp>  // for Json, Error
 
 #include <osi3/osi_sensordata.pb.h>  // for SensorData

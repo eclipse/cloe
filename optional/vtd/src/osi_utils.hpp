@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <string>
+#include <string>  // for string
 
 #include <Eigen/Geometry>  // for Isometry3d, Vector3d
 

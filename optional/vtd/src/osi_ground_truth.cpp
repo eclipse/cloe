@@ -22,9 +22,8 @@
 
 #include "osi_ground_truth.hpp"  // for OsiGroundTruth
 
-#include <cloe/simulator.hpp>  // for ModelError
-
 #include <osi3/osi_object.pb.h>  // for MovingObject
+#include <cloe/simulator.hpp>    // for ModelError
 
 namespace osii {
 
