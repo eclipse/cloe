@@ -6,6 +6,7 @@ setup.sh
 
 # Standard out-of-source build
 build/
+deploy/
 
 # Documentation
 docs/_build/

@@ -307,7 +307,7 @@ smoketest:
 	@for conanfile in ${TEST_CONANFILES}; do \
 		test -f "$${conanfile}" || continue; \
 		printf "Running BATS tests with conanfile: $${conanfile}\n\n"; \
-		SHELL=/bin/bash ${CLOE_LAUNCH} shell -P "$${conanfile}" -- -c "source ${PROJECT_ROOT}/tests/setup_testname.bash; bats tests"; \
+		SHELL=/bin/bash ${CLOE_LAUNCH} shell "$${conanfile}" ${CONAN_OPTIONS} -- -c "source ${PROJECT_ROOT}/tests/setup_testname.bash; bats tests"; \
 	done
 
 .PHONY: smoketest-deps
@@ -316,7 +316,7 @@ smoketest-deps:
 	@for conanfile in ${TEST_CONANFILES}; do \
 		test -f "$${conanfile}" || continue; \
 		echo "Building dependencies for conanfile: $${conanfile}"; \
-		${CLOE_LAUNCH} prepare -P "$${conanfile}" || break; \
+		${CLOE_LAUNCH} prepare "$${conanfile}" ${CONAN_OPTIONS} || break; \
 	done
 
 # CONFIGURATION TARGETS -------------------------------------------------------

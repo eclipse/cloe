@@ -2,7 +2,7 @@
   // Include to enable the watchdog and set the timeout to 1000 ms.
   // You can do this on the command line:
   //
-  //   # cloe-launch shell -P conanfile_default.py
+  //   # cloe-launch shell conanfile_default.py
   //   # cloe-engine run config_nop_smoketest.json option_watchdog_1s.json
   //
   "version": "4",
