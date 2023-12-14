@@ -71,16 +71,17 @@ int main(int argc, char** argv) {
   run->add_option("-u,--uuid", run_options.uuid, "Override simulation UUID")
       ->envname("CLOE_SIMULATION_UUID");
   run->add_flag("--allow-empty", run_options.allow_empty, "Allow empty simulations");
-  run->add_flag("--write-output,!--no-write-output", run_options.write_output,
+  run->add_flag("-w,--write-output,!--no-write-output", run_options.write_output,
                 "Do (not) write any output files")
       ->envname("CLOE_WRITE_OUTPUT");
+  run->add_option("-o,--output-path", run_options.output_path, "Write output to given directory")
+      ->envname("CLOE_OUTPUT_PATH");
   run->add_flag("--progress,!--no-progress", run_options.report_progress,
                 "Do (not) report progress");
   run->add_flag("--require-success,!--no-require-success", run_options.require_success,
                 "Require simulation success")
       ->envname("CLOE_REQUIRE_SUCCESS");
-  run->add_flag("--debug-lua", run_options.debug_lua,
-                "Debug the Lua simulation");
+  run->add_flag("--debug-lua", run_options.debug_lua, "Debug the Lua simulation");
   run->add_option("--debug-lua-port", run_options.debug_lua_port,
                   "Port to listen on for debugger to attach to")
       ->envname("CLOE_DEBUG_LUA_PORT");
@@ -171,6 +172,7 @@ int main(int argc, char** argv) {
       lua_options.no_system_lua = true;
       run_options.require_success = true;
     }
+
     stack_options.environment->prefer_external(false);
     stack_options.environment->allow_undefined(stack_options.interpolate_undefined);
     stack_options.environment->insert(CLOE_SIMULATION_UUID_VAR, "${" CLOE_SIMULATION_UUID_VAR "}");
