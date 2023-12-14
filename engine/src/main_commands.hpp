@@ -67,6 +67,7 @@ struct RunOptions {
 
   // Options
   std::string uuid;
+  std::string output_path;
 
   // Flags:
   int json_indent = 2;
