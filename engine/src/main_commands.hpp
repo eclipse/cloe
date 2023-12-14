@@ -77,6 +77,7 @@ struct RunOptions {
 
   bool debug_lua = false;
   int debug_lua_port = 21110;
+  std::string output_path;
 };
 
 int run(const RunOptions& opt, const std::vector<std::string>& filepaths);

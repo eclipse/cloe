@@ -91,6 +91,10 @@ int run(const RunOptions& opt, const std::vector<std::string>& filepaths) {
     return EXIT_FAILURE;
   }
 
+  if (opt.output_path != "") {
+    stack.engine.output_path = opt.output_path;
+  }
+
   // Create simulation:
   Simulation sim(std::move(stack), std::move(lua), uuid);
   GLOBAL_SIMULATION_INSTANCE = &sim;
@@ -108,7 +112,7 @@ int run(const RunOptions& opt, const std::vector<std::string>& filepaths) {
   }
 
   // Write results:
-  if (opt.write_output) {
+  if (opt.write_output || opt.output_path != "") {
     sim.write_output(result);
   }
   *opt.output << cloe::Json(result).dump(opt.json_indent) << std::endl;

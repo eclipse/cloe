@@ -74,6 +74,8 @@ int main(int argc, char** argv) {
   run->add_flag("--write-output,!--no-write-output", run_options.write_output,
                 "Do (not) write any output files")
       ->envname("CLOE_WRITE_OUTPUT");
+  run->add_option("-o,--output-folder",run_options.output_path, 
+                "Explicitly provide an optional path for the output files, this also enables the creation of output files");
   run->add_flag("--progress,!--no-progress", run_options.report_progress,
                 "Do (not) report progress");
   run->add_flag("--require-success,!--no-require-success", run_options.require_success,
