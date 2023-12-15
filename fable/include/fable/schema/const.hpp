@@ -37,12 +37,12 @@ template <typename T, typename P>
 class Const : public Base<Const<T, P>> {
  public:  // Types and Constructors
   using Type = T;
-  using PrototypeSchema = P;
+  using PrototypeSchema = std::remove_cv_t<std::remove_reference_t<P>>;
 
   Const(const Type& constant, std::string&& desc);
-  Const(const Type& constant, const PrototypeSchema& prototype, std::string&& desc)
+  Const(const Type& constant, PrototypeSchema prototype, std::string&& desc)
       : Base<Const<T, P>>(prototype.type(), std::move(desc))
-      , prototype_(prototype)
+      , prototype_(std::move(prototype))
       , constant_(constant) {
     prototype_.reset_ptr();
   }
@@ -89,8 +89,8 @@ class Const : public Base<Const<T, P>> {
 };
 
 template <typename T, typename P>
-Const<T, P> make_const_schema(const T& constant, const P& prototype, std::string&& desc) {
-  return Const<T, P>(constant, prototype, std::move(desc));
+Const<T, P> make_const_schema(const T& constant, P&& prototype, std::string&& desc) {
+  return Const<T, P>(constant, std::forward<P>(prototype), std::move(desc));
 }
 
 inline Const<std::string, String> make_const_str(const std::string& constant, std::string&& desc) {

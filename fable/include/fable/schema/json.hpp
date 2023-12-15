@@ -79,10 +79,5 @@ class FromJson : public Base<FromJson<T>> {
   Type* ptr_{nullptr};
 };
 
-template <typename T>
-inline FromJson<T> make_schema(T* ptr, JsonType t, std::string&& desc) {
-  return FromJson<T>(ptr, t, std::move(desc));
-}
-
 }  // namespace schema
 }  // namespace fable

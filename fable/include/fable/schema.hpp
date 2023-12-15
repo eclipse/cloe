@@ -122,29 +122,7 @@
 #include <utility>      // for move
 #include <vector>       // for vector<>
 
-#include <boost/optional.hpp>  // for optional<>
-
-#include <fable/schema/array.hpp>      // for Array<>
-#include <fable/schema/boolean.hpp>    // for Boolean
-#include <fable/schema/confable.hpp>   // for FromConfable
-#include <fable/schema/const.hpp>      // for Const<>
-#include <fable/schema/duration.hpp>   // for Duration<>
-#include <fable/schema/enum.hpp>       // for Enum<>
-#include <fable/schema/ignore.hpp>     // for Ignore
-#include <fable/schema/interface.hpp>  // for Interface, Box
-#include <fable/schema/json.hpp>       // for FromJson<>
-#include <fable/schema/map.hpp>        // for Map<>
-#include <fable/schema/number.hpp>     // for Number<>
-#include <fable/schema/optional.hpp>   // for Optional<>
-#include <fable/schema/passthru.hpp>   // for Passthru
-#include <fable/schema/path.hpp>       // for Path
-#include <fable/schema/string.hpp>     // for String
-#include <fable/schema/struct.hpp>     // for Struct
-#include <fable/schema/variant.hpp>    // for Variant
-
-// It is important that this include comes after all the other ones,
-// so that it has access to ALL the previous definitions.
-#include <fable/schema/magic.hpp>  // for make_prototype, ...
+#include <fable/make_schema.hpp>  // for make_schema
 
 namespace fable {
 
@@ -153,6 +131,7 @@ using schema::make_const_schema;
 using schema::make_const_str;
 using schema::make_prototype;
 using schema::make_schema;
+using schema::make_schema_impl;
 
 /**
  * Define the automatically deduced schema class of a given type.

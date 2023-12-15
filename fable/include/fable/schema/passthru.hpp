@@ -46,12 +46,12 @@ template <typename P>
 class Passthru : public Base<Passthru<P>> {
  public:  // Types and Constructors
   using Type = Conf;
-  using PrototypeSchema = P;
+  using PrototypeSchema = std::remove_cv_t<std::remove_reference_t<P>>;
 
   Passthru(Type* ptr, std::string&& desc)
       : Passthru(ptr, PrototypeSchema(nullptr, ""), std::move(desc)) {}
-  Passthru(Type* ptr, const PrototypeSchema& prototype, std::string&& desc)
-      : Base<Passthru<P>>(prototype.type(), std::move(desc)), prototype_(prototype), ptr_(ptr) {
+  Passthru(Type* ptr, PrototypeSchema prototype, std::string&& desc)
+      : Base<Passthru<P>>(prototype.type(), std::move(desc)), prototype_(std::move(prototype)), ptr_(ptr) {
     prototype_.reset_ptr();
   }
 
@@ -92,13 +92,13 @@ class Passthru : public Base<Passthru<P>> {
   Type* ptr_{nullptr};
 };
 
-inline Passthru<Ignore> make_schema(Conf* ptr, std::string&& desc) {
+inline Passthru<Ignore> make_schema_impl(Conf* ptr, std::string&& desc) {
   return Passthru<Ignore>(ptr, Ignore(), std::move(desc));
 }
 
 template <typename P>
-Passthru<P> make_schema(Conf* ptr, const P& prototype, std::string&& desc) {
-  return Passthru<P>(ptr, prototype, std::move(desc));
+Passthru<P> make_schema_impl(Conf* ptr, P&& prototype, std::string&& desc) {
+  return Passthru<P>(ptr, std::forward<P>(prototype), std::move(desc));
 }
 
 }  // namespace schema

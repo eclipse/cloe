@@ -40,13 +40,13 @@ template <typename T, typename P>
 class Array : public Base<Array<T, P>> {
  public:  // Types and Constructors
   using Type = std::vector<T>;
-  using PrototypeSchema = P;
+  using PrototypeSchema = std::remove_cv_t<std::remove_reference_t<P>>;
 
   Array(Type* ptr, std::string&& desc);
-  Array(Type* ptr, const PrototypeSchema& prototype)
-      : Base<Array<T, P>>(JsonType::array), prototype_(prototype), ptr_(ptr) {}
-  Array(Type* ptr, const PrototypeSchema& prototype, std::string&& desc)
-      : Base<Array<T, P>>(JsonType::array, std::move(desc)), prototype_(prototype), ptr_(ptr) {}
+  Array(Type* ptr, PrototypeSchema prototype)
+      : Base<Array<T, P>>(JsonType::array), prototype_(std::move(prototype)), ptr_(ptr) {}
+  Array(Type* ptr, PrototypeSchema prototype, std::string&& desc)
+      : Base<Array<T, P>>(JsonType::array, std::move(desc)), prototype_(std::move(prototype)), ptr_(ptr) {}
 
 #if 0
   // This is defined in: fable/schema/magic.hpp
@@ -174,8 +174,8 @@ class Array : public Base<Array<T, P>> {
 };
 
 template <typename T, typename P>
-Array<T, P> make_schema(std::vector<T>* ptr, const P& prototype, std::string&& desc) {
-  return Array<T, P>(ptr, prototype, std::move(desc));
+Array<T, P> make_schema_impl(std::vector<T>* ptr, P&& prototype, std::string&& desc) {
+  return Array<T, P>(ptr, std::forward<P>(prototype), std::move(desc));
 }
 
 }  // namespace schema

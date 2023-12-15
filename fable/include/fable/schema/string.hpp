@@ -261,7 +261,7 @@ class String : public Base<String> {
   Type* ptr_{nullptr};
 };
 
-inline String make_schema(std::string* ptr, std::string&& desc) {
+inline String make_schema_impl(std::string* ptr, std::string&& desc) {
   return String(ptr, std::move(desc));
 }
 

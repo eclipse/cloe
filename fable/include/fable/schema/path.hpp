@@ -213,7 +213,7 @@ class Path : public Base<Path> {
   Type* ptr_{nullptr};
 };
 
-inline Path make_schema(boost::filesystem::path* ptr, std::string&& desc) {
+inline Path make_schema_impl(boost::filesystem::path* ptr, std::string&& desc) {
   return Path(ptr, std::move(desc));
 }
 

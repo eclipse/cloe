@@ -103,7 +103,7 @@ class Enum : public Base<Enum<T>> {
 };
 
 template <typename T, std::enable_if_t<std::is_enum<T>::value, int> = 0>
-inline Enum<T> make_schema(T* ptr, std::string&& desc) {
+inline Enum<T> make_schema_impl(T* ptr, std::string&& desc) {
   return Enum<T>(ptr, std::move(desc));
 }
 

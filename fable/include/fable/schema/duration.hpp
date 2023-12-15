@@ -187,7 +187,7 @@ class Duration : public Base<Duration<T, Period>> {
 };
 
 template <typename Rep, typename Period>
-inline Duration<Rep, Period> make_schema(std::chrono::duration<Rep, Period>* ptr,
+inline Duration<Rep, Period> make_schema_impl(std::chrono::duration<Rep, Period>* ptr,
                                          std::string&& desc) {
   return Duration<Rep, Period>(ptr, std::move(desc));
 }

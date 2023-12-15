@@ -50,15 +50,15 @@ template <typename T, typename P>
 class Map : public Base<Map<T, P>> {
  public:  // Types and Constructors
   using Type = std::map<std::string, T>;
-  using PrototypeSchema = P;
+  using PrototypeSchema = std::remove_cv_t<std::remove_reference_t<P>>;
 
   Map(Type* ptr, std::string&& desc);
-  Map(Type* ptr, const PrototypeSchema& prototype)
-      : Base<Map<T, P>>(JsonType::object), prototype_(prototype), ptr_(ptr) {
+  Map(Type* ptr, PrototypeSchema prototype)
+      : Base<Map<T, P>>(JsonType::object), prototype_(std::move(prototype)), ptr_(ptr) {
     prototype_.reset_ptr();
   }
-  Map(Type* ptr, const PrototypeSchema& prototype, std::string&& desc)
-      : Base<Map<T, P>>(JsonType::object, std::move(desc)), prototype_(prototype), ptr_(ptr) {
+  Map(Type* ptr, PrototypeSchema prototype, std::string&& desc)
+      : Base<Map<T, P>>(JsonType::object, std::move(desc)), prototype_(std::move(prototype)), ptr_(ptr) {
     prototype_.reset_ptr();
   }
 
@@ -189,8 +189,8 @@ class Map : public Base<Map<T, P>> {
 };
 
 template <typename T, typename P>
-Map<T, P> make_schema(std::map<std::string, T>* ptr, const P& prototype, std::string&& desc) {
-  return Map<T, P>(ptr, prototype, std::move(desc));
+Map<T, P> make_schema_impl(std::map<std::string, T>* ptr, P&& prototype, std::string&& desc) {
+  return Map<T, P>(ptr, std::forward<P>(prototype), std::move(desc));
 }
 
 }  // namespace schema
