@@ -217,25 +217,5 @@ class Struct : public Base<Struct> {
   bool additional_properties_{false};
 };
 
-template <typename T, typename = enable_if_property_list_t<T>>
-inline Struct make_schema(T&& props) {
-  return Struct(std::forward<T>(props));
-}
-
-template <typename T, typename = enable_if_property_list_t<T>>
-inline Struct make_schema(std::string&& desc, T&& props) {
-  return Struct(std::move(desc), std::forward<T>(props));
-}
-
-template <typename T, typename = enable_if_property_list_t<T>>
-inline Struct make_schema(std::string&& desc, const Box& base, T&& props) {
-  return Struct(std::move(desc), base, std::forward<T>(props));
-}
-
-template <typename T, typename = enable_if_property_list_t<T>>
-inline Struct make_schema(std::string&& desc, const Struct& base, T&& props) {
-  return Struct(std::move(desc), base, std::forward<T>(props));
-}
-
 }  // namespace schema
 }  // namespace fable

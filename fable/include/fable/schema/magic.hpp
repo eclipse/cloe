@@ -21,10 +21,10 @@
  * \see  fable/schema_test.cpp
  *
  * This file defines the `make_prototype` functions that can automatically
- * derive the prototype via the `make_schema` functions. It also contains the
+ * derive the prototype via the `make_schema_impl` functions. It also contains the
  * definitions of constructors that make use of these functions.
  *
- * Unfortunately, all `make_schema` functions need to already be defined at the
+ * Unfortunately, all `make_schema_impl` functions need to already be defined at the
  * point of definition of these constructors, which is why they have to be in
  * this file in the first place.
  *
@@ -58,7 +58,7 @@ Array<T, P>::Array(std::vector<T>* ptr, std::string&& desc)
     : Array<T, P>(ptr, make_prototype<T>(), std::move(desc)) {}
 
 template <typename T>
-Array<T, decltype(make_prototype<T>())> make_schema(std::vector<T>* ptr, std::string&& desc) {
+Array<T, decltype(make_prototype<T>())> make_schema_impl(std::vector<T>* ptr, std::string&& desc) {
   return Array<T, decltype(make_prototype<T>())>(ptr, std::move(desc));
 }
 
@@ -76,7 +76,7 @@ Map<T, P>::Map(std::map<std::string, T>* ptr, std::string&& desc)
     : Map<T, P>(ptr, make_prototype<T>(), std::move(desc)) {}
 
 template <typename T>
-Map<T, decltype(make_prototype<T>())> make_schema(std::map<std::string, T>* ptr,
+Map<T, decltype(make_prototype<T>())> make_schema_impl(std::map<std::string, T>* ptr,
                                                   std::string&& desc) {
   return Map<T, decltype(make_prototype<T>())>(ptr, std::move(desc));
 }
@@ -86,7 +86,7 @@ Optional<T, P>::Optional(boost::optional<T>* ptr, std::string&& desc)
     : Optional<T, P>(ptr, make_prototype<T>(), std::move(desc)) {}
 
 template <typename T>
-Optional<T, decltype(make_prototype<T>())> make_schema(boost::optional<T>* ptr,
+Optional<T, decltype(make_prototype<T>())> make_schema_impl(boost::optional<T>* ptr,
                                                        std::string&& desc) {
   return Optional<T, decltype(make_prototype<T>())>(ptr, std::move(desc));
 }
@@ -98,7 +98,7 @@ auto make_prototype(std::string&& desc) {
 
 template <typename T, std::enable_if_t<!std::is_base_of<Confable, T>::value, int>>
 auto make_prototype(std::string&& desc) {
-  return make_schema(static_cast<T*>(nullptr), std::move(desc));
+  return make_schema_impl(static_cast<T*>(nullptr), std::move(desc));
 }
 
 }  // namespace schema

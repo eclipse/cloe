@@ -104,7 +104,7 @@ class Number : public Base<Number<T>> {
 
 template <typename T,
           std::enable_if_t<std::is_arithmetic<T>::value && !std::is_enum<T>::value, int> = 0>
-inline Number<T> make_schema(T* ptr, std::string&& desc) {
+inline Number<T> make_schema_impl(T* ptr, std::string&& desc) {
   return Number<T>(ptr, std::move(desc));
 }
 

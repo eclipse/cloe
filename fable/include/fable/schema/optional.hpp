@@ -39,11 +39,11 @@ template <typename T, typename P>
 class Optional : public Base<Optional<T, P>> {
  public:  // Types and Constructors
   using Type = boost::optional<T>;
-  using PrototypeSchema = P;
+  using PrototypeSchema = std::remove_cv_t<std::remove_reference_t<P>>;
 
   Optional(Type* ptr, std::string&& desc);
-  Optional(Type* ptr, const PrototypeSchema& prototype, std::string&& desc)
-      : Base<Optional<T, P>>(prototype.type(), std::move(desc)), prototype_(prototype), ptr_(ptr) {
+  Optional(Type* ptr, PrototypeSchema prototype, std::string&& desc)
+      : Base<Optional<T, P>>(prototype.type(), std::move(desc)), prototype_(std::move(prototype)), ptr_(ptr) {
     prototype_.reset_ptr();
   }
 
@@ -113,8 +113,8 @@ class Optional : public Base<Optional<T, P>> {
 };
 
 template <typename T, typename P>
-Optional<T, P> make_schema(boost::optional<T>* ptr, const P& prototype, std::string&& desc) {
-  return Optional<T, P>(ptr, prototype, std::move(desc));
+Optional<T, P> make_schema_impl(boost::optional<T>* ptr, P&& prototype, std::string&& desc) {
+  return Optional<T, P>(ptr, std::forward<P>(prototype), std::move(desc));
 }
 
 }  // namespace schema

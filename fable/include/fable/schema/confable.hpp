@@ -104,7 +104,7 @@ class FromConfable : public Base<FromConfable<T>> {
 };
 
 template <typename T>
-FromConfable<T> make_schema(T* ptr, std::string&& desc) {
+FromConfable<T> make_schema_impl(T* ptr, std::string&& desc) {
   assert(ptr != nullptr);
   return FromConfable<T>(ptr, std::move(desc));
 }

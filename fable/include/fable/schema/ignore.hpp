@@ -60,9 +60,5 @@ class Ignore : public Base<Ignore> {
   void reset_ptr() override {}
 };
 
-inline Ignore make_schema(std::string&& desc, JsonType t = JsonType::object) {
-  return Ignore(std::move(desc), t);
-}
-
 }  // namespace schema
 }  // namespace fable
