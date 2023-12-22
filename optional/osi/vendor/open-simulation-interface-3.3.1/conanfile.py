@@ -9,7 +9,7 @@ from conans import CMake, ConanFile, tools
 
 class OpenSimulationInterfaceConan(ConanFile):
     name = "open-simulation-interface"
-    version = "3.2.0"
+    version = "3.3.1"
     license = "Mozilla Public License 2.0"
     url = "https://github.com/OpenSimulationInterface/open-simulation-interface"
     description = "A generic interface for the environmental perception of automated driving functions in virtual scenarios."
@@ -30,7 +30,7 @@ class OpenSimulationInterfaceConan(ConanFile):
         "CMakeLists.txt",
     ]
     requires = [
-        "protobuf/2.6.1@cloe/stable"
+        "protobuf/[~=3.15.2]",
     ]
 
     _git_url = (
