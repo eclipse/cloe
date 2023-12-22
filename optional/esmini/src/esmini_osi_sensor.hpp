@@ -124,6 +124,7 @@ class ESMiniOsiReceiver : public cloeosi::OsiTransceiver {
       if (!gt.has_timestamp()) {
         throw cloe::ModelError("ESMiniOsiSensor: No timestamp in GroundTruth.");
       }
+      fix_esmini_osi_ground_truth(gt);
       msgs.push_back(std::make_shared<osi3::GroundTruth>(gt));
     }
   }
