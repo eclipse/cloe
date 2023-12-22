@@ -25,7 +25,7 @@
 #include <osi3/osi_object.pb.h>  // for MovingObject
 #include <cloe/simulator.hpp>    // for ModelError
 
-namespace osii {
+namespace cloeosi {
 
 const osi3::MovingObject* OsiGroundTruth::get_moving_object(const uint64_t id) const {
   for (auto osi_obj = gt_ptr_->moving_object().begin(); osi_obj != gt_ptr_->moving_object().end();
@@ -58,4 +58,4 @@ void OsiGroundTruth::set(const osi3::GroundTruth& osi_gt) {
   }
 }
 
-}  // namespace osii
+}  // namespace cloeosi

@@ -31,11 +31,11 @@
 
 #include "osi/utility/osi_utils.hpp"  // for osi_require, ..
 
-namespace osii {
+namespace cloeosi {
 
 /**
  * OsiGroundTruth provides convenient access to auxiliary ground truth
- * information while processing an OSI message.
+ * information while converting an OSI message to Cloe data.
  */
 class OsiGroundTruth {
  public:
@@ -115,4 +115,4 @@ class OsiGroundTruth {
   std::map<int, Eigen::Vector3d> mov_obj_dimensions_;
 };
 
-}  // namespace osii
+}  // namespace cloeosi
