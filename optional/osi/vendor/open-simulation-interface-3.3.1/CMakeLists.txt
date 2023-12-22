@@ -12,8 +12,8 @@ find_package(Protobuf REQUIRED)
 set(Protobuf_IMPORT_DIRS ${Protobuf_INCLUDE_DIRS})
 
 set(VERSION_MAJOR 3)
-set(VERSION_MINOR 2)
-set(VERSION_PATCH 0)
+set(VERSION_MINOR 3)
+set(VERSION_PATCH 1)
 configure_file(osi_version.proto.in ${CMAKE_CURRENT_SOURCE_DIR}/osi_version.proto)
 
 set(OSI_SOURCE_FILES
@@ -31,9 +31,12 @@ set(OSI_SOURCE_FILES
     osi_hostvehicledata.proto
     osi_trafficsign.proto
     osi_trafficlight.proto
+    osi_trafficupdate.proto
+    osi_trafficcommand.proto
     osi_roadmarking.proto
     osi_lane.proto
     osi_featuredata.proto
+    osi_logicaldetectiondata.proto
     osi_object.proto
     osi_occupant.proto
     osi_sensordata.proto
