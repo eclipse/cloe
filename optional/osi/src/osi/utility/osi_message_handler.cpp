@@ -897,7 +897,8 @@ void OsiMsgHandler::detected_static_objects_from_ground_truth() {
 }
 
 void OsiMsgHandler::from_osi_boundary_points(const osi3::LaneBoundary& osi_lb,
-                                             cloe::LaneBoundary& lb) {
+                                             cloe::LaneBoundary& lb,
+                                             bool reverse_pt_order = false) {
   assert(osi_lb.boundary_line_size() > 0);
   for (int i = 0; i < osi_lb.boundary_line_size(); ++i) {
     const auto& osi_pt = osi_lb.boundary_line(i);
@@ -906,6 +907,10 @@ void OsiMsgHandler::from_osi_boundary_points(const osi3::LaneBoundary& osi_lb,
     cloe::utility::transform_point_to_child_frame(osi_ego_pose_, &position);
     cloe::utility::transform_point_to_child_frame(osi_sensor_pose_, &position);
     lb.points.push_back(position);
+  }
+  // Provide points in ascending order.
+  if (reverse_pt_order) {
+    std::reverse(lb.points.begin(), lb.points.end());
   }
   // Compute clothoid segment. TODO(tobias): implement curved segments.
   lb.dx_start = lb.points.front()(0);
@@ -919,8 +924,33 @@ void OsiMsgHandler::from_osi_boundary_points(const osi3::LaneBoundary& osi_lb,
 
 void OsiMsgHandler::detected_lane_boundaries_from_ground_truth() {
   const auto& osi_gt = ground_truth_->get_gt();
-  int lb_id = 0;
+  // Flip lane boundary point order if centerline is not in ascending order.
+  std::map<int, int> lbs_flip_pt_order;
+  for (const auto& osi_lane : osi_gt.lane()) {
+    if (!osi_lane.has_classification()) {
+      continue;
+    }
+    if (osi_lane.classification().centerline_is_driving_direction()) {
+      continue;
+    }
+    int lane_id;
+    osi_identifier_to_int(osi_lane.id(), lane_id);
+    int lb_id;
+    for (const auto& osi_lb_id : osi_lane.classification().right_lane_boundary_id()) {
+      osi_identifier_to_int(osi_lb_id, lb_id);
+      lbs_flip_pt_order[lb_id] = lane_id;
+    }
+    for (const auto& osi_lb_id : osi_lane.classification().left_lane_boundary_id()) {
+      osi_identifier_to_int(osi_lb_id, lb_id);
+      lbs_flip_pt_order[lb_id] = lane_id;
+    }
+    for (const auto& osi_lb_id : osi_lane.classification().free_lane_boundary_id()) {
+      osi_identifier_to_int(osi_lb_id, lb_id);
+      lbs_flip_pt_order[lb_id] = lane_id;
+    }
+  }
   // If some of the OSI data does not have an id, avoid id clashes.
+  int lb_id = 0;
   for (const auto& osi_lb : osi_gt.lane_boundary()) {
     if (osi_lb.has_classification() && osi_lb.has_id()) {
       int id;
@@ -941,7 +971,12 @@ void OsiMsgHandler::detected_lane_boundaries_from_ground_truth() {
       lb.prev_id = -1;  // no concatenated line segments for now
       lb.next_id = -1;
       ++lb_id;
-      from_osi_boundary_points(osi_lb, lb);
+      if (lbs_flip_pt_order.find(lb.id) == lbs_flip_pt_order.end()) {
+        from_osi_boundary_points(osi_lb, lb, false);
+
+      } else {
+        from_osi_boundary_points(osi_lb, lb, true);
+      }
       lb.type = osi_lane_bdry_type_map.at(osi_lb.classification().type());
       lb.color = osi_lane_bdry_color_map.at(osi_lb.classification().color());
       store_lane_boundary(lb);

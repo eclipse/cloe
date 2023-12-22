@@ -88,8 +88,6 @@ void from_osi_mov_obj_type_classification(
 void from_osi_detected_moving_object_alt(const osi3::DetectedMovingObject& osi_mo,
                                          const OsiGroundTruth& ground_truth, cloe::Object& obj);
 
-void from_osi_boundary_points(const osi3::LaneBoundary& osi_lb, cloe::LaneBoundary& lb);
-
 void transform_ego_coord_from_osi_data(const Eigen::Vector3d& dimensions_gt, cloe::Object& obj);
 
 /**
@@ -273,7 +271,8 @@ class OsiMsgHandler {
 
   void detected_lane_boundaries_from_ground_truth();
 
-  void from_osi_boundary_points(const osi3::LaneBoundary& osi_lb, cloe::LaneBoundary& lb);
+  void from_osi_boundary_points(const osi3::LaneBoundary& osi_lb, cloe::LaneBoundary& lb,
+                                bool reverse_pt_order);
 
   /**
    * Store the ego object that should be passed to Cloe.
