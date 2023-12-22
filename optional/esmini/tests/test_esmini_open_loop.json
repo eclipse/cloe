@@ -1,0 +1,6 @@
+{
+  "version": "4",
+  "include": [
+    "config_esmini_open_loop.json"
+  ]
+}

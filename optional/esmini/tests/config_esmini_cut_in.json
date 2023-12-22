@@ -1,0 +1,66 @@
+{
+  "version": "4",
+  "include": [
+    "controller_virtue.json"
+  ],
+  "defaults": {
+    "controllers": [
+      {
+        "binding": "virtue",
+        "args": {
+          "lane_sensor_components": [
+            "cloe::default_lane_sensor"
+          ]
+        }
+      }
+    ]
+  },
+  "simulators": [
+    {
+      "binding": "esmini",
+      "args": {
+        "headless": true,
+        "scenario": "${ESMINI_XOSC_PATH}/cut-in.xosc",
+        "vehicles": {
+          "Ego": {
+            "closed_loop": false,
+            "filter_distance": 200.0
+          }
+        }
+      }
+    }
+  ],
+  "vehicles": [
+    {
+      "name": "default",
+      "from": {
+        "simulator": "esmini",
+        "index": 0
+      },
+      "components": {
+        "cloe::speedometer": {
+          "binding": "speedometer",
+          "name": "default_speed",
+          "from": "cloe::gndtruth_ego_sensor"
+        },
+        "cloe::default_world_sensor": {
+          "binding": "noisy_object_sensor",
+          "name": "noisy_object_sensor",
+          "from": "cloe::default_world_sensor",
+          "args": {
+            "noise": [
+              {
+                "target": "translation",
+                "distribution": {
+                  "binding": "normal",
+                  "mean": 0.0,
+                  "std_deviation": 0.3
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}
