@@ -7,7 +7,7 @@ from conans.tools import SystemPackageTool
 
 class ESMini(ConanFile):
     name = "esmini"
-    version = "2.25.1"
+    version = "2.24.0"
     license = "Mozilla Public License Version 2.0"
     url = "https://github.com/esmini/esmini"
     description = "Basic OpenScenario player."

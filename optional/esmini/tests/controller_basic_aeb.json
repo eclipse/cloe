@@ -1,0 +1,29 @@
+{
+  "version": "4",
+
+  "controllers": [
+    {
+      "binding": "basic",
+      "vehicle": "default",
+      "args": {
+        "aeb": {
+          "always_full_stop": true,
+          "limit_deceleration" : 18.5
+        }
+      }
+    }
+  ],
+
+  "triggers": [
+    {
+      "event": "start",
+      "action": {
+        "name": "bundle",
+        "actions": [
+          "basic/hmi=!enable"
+        ]
+      }
+    },
+    { "event": "next=1",   "action": "basic/hmi=aeb" }
+  ]
+}

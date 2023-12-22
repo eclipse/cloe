@@ -1,0 +1,23 @@
+{
+  "version": "4",
+
+  "include": [
+    "config_esmini_cut_in.json"
+  ],
+
+  "server": {
+    "listen": false,
+    "listen_port": 23456
+  },
+
+  "triggers": [
+    {"event": "virtue/failure", "action": "fail"},
+    {
+      "label": "Ego vehicle speed in cut-in scenario must not exceed 110 km/h.",
+      "event": "default_speed/kmph=>110.0", "action": "fail"
+    },
+    {"event": "start",   "action": "log=info: Running esmini/basic smoketest."},
+    {"event": "start",   "action": "realtime_factor=-1"},
+    {"event": "time=20", "action": "succeed"}
+  ]
+}

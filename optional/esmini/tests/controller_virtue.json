@@ -1,0 +1,10 @@
+{
+  "version": "4",
+
+  "controllers": [
+    {
+      "binding": "virtue",
+      "vehicle": "default"
+    }
+  ]
+}
