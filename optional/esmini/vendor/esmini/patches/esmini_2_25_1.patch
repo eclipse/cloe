@@ -1,0 +1,117 @@
+diff --git a/EnvironmentSimulator/CMakeLists.txt b/EnvironmentSimulator/CMakeLists.txt
+index 005d33e..7cb691d 100644
+--- a/EnvironmentSimulator/CMakeLists.txt
++++ b/EnvironmentSimulator/CMakeLists.txt
+@@ -1,5 +1,5 @@
+
+-set ( FILE_STORAGE "github" ) # "github", "dropbox", "google"  (Dropbox limited GB/Day)
++set ( FILE_STORAGE "dropbox" ) # "github", "dropbox", "google"  (Dropbox limited GB/Day)
+
+ set ( VIEWER_BASE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Modules/ViewerBase" )
+ set ( PLAYER_BASE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Modules/PlayerBase" )
+@@ -17,7 +17,7 @@ set ( CONTROLLERS_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Modules/Controllers")
+ # OpenSceneGraph package adapted for this project
+ set ( OSG_VERSION "osg161" )
+ set ( OSG_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/OpenSceneGraph" )
+-set ( OSI_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/OSI" )
++set ( OSI_BASE_DIR "${CONAN_OPEN-SIMULATION-INTERFACE_ROOT}" )
+ set ( SUMO_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/SUMO" )
+
+ # GoogleTest package
+@@ -117,7 +117,7 @@ set ( MODELS_DIR "${MODELS_BASE_DIR}/models" )
+ set ( MODELS_PACKAGE_FILENAME models.7z)
+
+ set ( OSG_DIR "${OSG_BASE_DIR}/${EXT_DIR_NAME}" )
+-set ( OSI_DIR "${OSI_BASE_DIR}/${EXT_DIR_NAME}" )
++set ( OSI_DIR "${OSI_BASE_DIR}/" )
+ set ( SUMO_DIR "${SUMO_BASE_DIR}/${EXT_DIR_NAME}" )
+ set ( GTEST_DIR "${GTEST_BASE_DIR}/${EXT_DIR_NAME}" )
+
+@@ -132,7 +132,7 @@ set ( OSG_LIBRARIES_PATH
+
+ set ( OSI_INCLUDE_DIR "${OSI_DIR}/include" )
+ if (DYN_PROTOBUF)
+-  set ( OSI_LIBRARIES_PATH "${OSI_DIR}/lib-dyn" )
++  set ( OSI_LIBRARIES_PATH "${OSI_DIR}/lib" )
+ else ()
+   set ( OSI_LIBRARIES_PATH "${OSI_DIR}/lib" )
+ endif (DYN_PROTOBUF)
+@@ -272,13 +272,13 @@ elseif(LINUX)
+
+   if (DYN_PROTOBUF)
+     set ( OSI_LIBRARIES
+-      optimized open_simulation_interface debug open_simulation_interfaced
+-      optimized protobuf debug protobufd
++      optimized open_simulation_interface debug open_simulation_interface
++      optimized protobuf debug protobuf
+     )
+   else ()
+     set ( OSI_LIBRARIES
+-      optimized open_simulation_interface_pic debug open_simulation_interface_picd
+-      optimized protobuf debug protobufd
++      optimized open_simulation_interface_pic debug open_simulation_interface_pic
++      optimized protobuf debug protobuf
+     )
+   endif (DYN_PROTOBUF)
+
+@@ -352,8 +352,8 @@ elseif(MSVC)
+   )
+
+   set ( OSI_LIBRARIES
+-    optimized libprotobuf debug libprotobufd
+-    optimized open_simulation_interface_pic debug open_simulation_interface_picd
++    optimized libprotobuf debug libprotobuf
++    optimized open_simulation_interface_pic debug open_simulation_interface_pic
+   )
+
+   set ( SUMO_LIBRARIES
+@@ -532,9 +532,9 @@ endif()
+
+ # download OSI
+ set ( OSI_PACKAGE_FILENAME "osi.7z" )
+-if (DEFINED OSI_DIR AND (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${OSI_DIR} ))
+-    download_and_extract( ${OSI_PACKAGE_URL} ${OSI_BASE_DIR} ${OSI_PACKAGE_FILENAME} )
+-endif()
++#if (DEFINED OSI_DIR AND (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${OSI_DIR} ))
++#    download_and_extract( ${OSI_PACKAGE_URL} ${OSI_BASE_DIR} ${OSI_PACKAGE_FILENAME} )
++#endif()
+
+ # download SUMO
+ set ( SUMO_PACKAGE_FILENAME "sumo.7z" )
+diff --git a/EnvironmentSimulator/Unittest/ScenarioEngineDll_test.cpp b/EnvironmentSimulator/Unittest/ScenarioEngineDll_test.cpp
+index 5b5edb3..f24c99c 100644
+--- a/EnvironmentSimulator/Unittest/ScenarioEngineDll_test.cpp
++++ b/EnvironmentSimulator/Unittest/ScenarioEngineDll_test.cpp
+@@ -332,7 +332,7 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
+ 	SE_StepDT(0.001f);
+ 	SE_FlushOSIFile();
+ 	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
+-	EXPECT_EQ(fileStatus.st_size, 69228);  // initial OSI size, including static content
++	EXPECT_EQ(fileStatus.st_size, 70779);  // initial OSI size, including static content
+
+ 	int road_lane_size;
+
+@@ -344,12 +344,12 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
+ 	SE_StepDT(0.001f);  // Step for write another frame to osi file
+ 	SE_FlushOSIFile();
+ 	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
+-	EXPECT_EQ(fileStatus.st_size, 69691);  // slight growth due to only dynamic updates
++	EXPECT_EQ(fileStatus.st_size, 71394);  // slight growth due to only dynamic updates
+
+ 	SE_StepDT(0.001f);  // Step for write another frame to osi file
+ 	SE_FlushOSIFile();
+ 	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
+-	EXPECT_EQ(fileStatus.st_size, 70155);  // slight growth due to only dynamic updates
++	EXPECT_EQ(fileStatus.st_size, 72010);  // slight growth due to only dynamic updates
+
+ 	SE_Close();
+ }
+@@ -851,7 +851,7 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
+ 	SE_Close();
+
+ 	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
+-	EXPECT_EQ(fileStatus.st_size, 19471);
++	EXPECT_EQ(fileStatus.st_size, 29760);
+
+ 	// Read OSI file
+ 	FILE* file = fopen("gt.osi", "rb");
