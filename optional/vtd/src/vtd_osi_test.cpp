@@ -36,7 +36,9 @@
 #include <osi3/osi_sensordata.pb.h>      // for SensorData, DetectedEntityHeader
 #include <osi3/osi_sensorview.pb.h>      // for SensorView
 
-#include "osi_omni_sensor.hpp"
+#include <osi/utility/osi_omni_sensor.hpp>
+#include <osi/utility/osi_transceiver_tcp.hpp>
+
 #include "osi_sensor_component.hpp"  // for transform_...
 
 struct VehicleData {
@@ -125,5 +127,5 @@ TEST(vtd_osi, osi_sensor) {
   init_osi_detected_objects(data, vehicles);
 
   ASSERT_GT(data->ByteSizeLong(), 0);
-  ASSERT_NO_THROW(sensor.process(data, sim_time));
+  ASSERT_NO_THROW(sensor.process_received_msg(data, sim_time));
 }

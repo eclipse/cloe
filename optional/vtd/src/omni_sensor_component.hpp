@@ -85,7 +85,7 @@ class VtdOmniSensor : public RdbCodec, public VtdSensorData {
 
   void process(RDB_START_OF_FRAME_t* /*nullptr*/) override {
     vtd_logger()->trace("VtdOmniSensor: start-of-frame");
-    this->clear_cache();
+    VtdSensorData::clear_cache();
   }
 
   void process(RDB_END_OF_FRAME_t* /*nullptr*/) override {
@@ -162,7 +162,7 @@ class VtdOmniSensor : public RdbCodec, public VtdSensorData {
 
   // As defined in `cloe/component.hpp`
   void reset() override {
-    clear_cache();
+    VtdSensorData::clear_cache();
     this->set_reset_state();
   }
 

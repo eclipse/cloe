@@ -6,17 +6,12 @@ project(cloe_plugin_vtd LANGUAGES CXX)
 find_package(vtd-api REQUIRED)
 find_package(cloe-runtime REQUIRED)
 find_package(cloe-models REQUIRED)
+find_package(cloe-osi REQUIRED)
 find_package(Boost REQUIRED)
-find_package(open_simulation_interface REQUIRED)
-find_package(Protobuf REQUIRED)
 
 add_library(vtd-object-lib STATIC
     src/omni_sensor_component.cpp
-    src/osi_ground_truth.cpp
-    src/osi_omni_sensor.cpp
     src/osi_sensor_component.cpp
-    src/osi_transceiver_tcp.cpp
-    src/osi_utils.cpp
     src/rdb_codec.cpp
     src/rdb_transceiver_shm.cpp
     src/rdb_transceiver_tcp.cpp
@@ -32,8 +27,8 @@ target_link_libraries(vtd-object-lib
     vtd::api
     cloe::runtime
     cloe::models
+    cloe::osi
     Boost::boost
-    open_simulation_interface::open_simulation_interface
 )
 
 set_target_properties(vtd-object-lib PROPERTIES
@@ -61,7 +56,6 @@ if(BUILD_TESTING)
 
     add_executable(test-vtd-binding
         src/rdb_transceiver_tcp_test.cpp
-        src/osi_test.cpp
         src/vtd_osi_test.cpp
         src/vtd_data_conversion_test.cpp
     )

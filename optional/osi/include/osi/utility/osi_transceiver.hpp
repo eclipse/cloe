@@ -25,6 +25,7 @@
 #include <cloe/core.hpp>  // for Json, Error
 
 #include <osi3/osi_sensordata.pb.h>  // for SensorData
+#include <osi3/osi_groundtruth.pb.h>  // for GroundTruth
 
 namespace osii {
 
@@ -58,9 +59,42 @@ class OsiTransceiver {
   virtual bool has_sensor_data() const = 0;
 
   /**
-   * Non-blocking function to return all received OSI messages.
+   * Return true when the transceiver has a SensorView message that
+   * can be received.
+   *
+   * That is, if true, then a call to receive() will return a vector
+   * that is not empty.
+   */
+  virtual bool has_sensor_view() const = 0;
+
+  /**
+   * Return true when the transceiver has a GroundTruth message that
+   * can be received.
+   *
+   * That is, if true, then a call to receive() will return a vector
+   * that is not empty.
+   */
+  virtual bool has_ground_truth() const = 0;
+
+  /**
+   * Clear simulator and/or reveiver cache, if applicable.
+   */
+  virtual void clear_cache() {}
+
+  /**
+   * Non-blocking function to return all received osi::SensorData messages.
    */
   virtual std::vector<std::shared_ptr<osi3::SensorData>> receive_sensor_data() = 0;
+
+  /**
+   * Non-blocking function to return all received osi::SensorView messages.
+   */
+  virtual std::vector<std::shared_ptr<osi3::SensorView>> receive_sensor_view() = 0;
+
+  /**
+   * Non-blocking function to return all received osi::GroundTruth messages.
+   */
+  virtual std::vector<std::shared_ptr<osi3::GroundTruth>> receive_ground_truth() = 0;
 
   virtual void to_json(cloe::Json& j) const = 0;
 
