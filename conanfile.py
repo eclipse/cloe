@@ -78,6 +78,7 @@ class Cloe(ConanFile):
             self.version = git.run("describe --dirty=-dirty")[1:]
 
     def requirements(self):
+<<<<<<< HEAD
         self.requires("fmt/9.1.0")
         self.requires("inja/3.4.0")
         self.requires("nlohmann_json/3.11.2")
@@ -120,6 +121,46 @@ class Cloe(ConanFile):
         tc.cache_variables["CLOE_ENGINE_WITH_SERVER"] = self.options.engine_server
         tc.cache_variables["CLOE_ENGINE_WITH_LRDB"] = self.options.engine_lrdb
         tc.generate()
+=======
+        def cloe_requires(dep):
+            self.requires(f"{dep}/{self.version}@cloe/develop")
+
+        cloe_requires("cloe-runtime")
+        cloe_requires("cloe-models")
+        cloe_requires("cloe-plugin-basic")
+        cloe_requires("cloe-plugin-gndtruth-extractor")
+        cloe_requires("cloe-plugin-minimator")
+        cloe_requires("cloe-plugin-mocks")
+        cloe_requires("cloe-plugin-noisy-sensor")
+        cloe_requires("cloe-plugin-speedometer")
+        cloe_requires("cloe-plugin-virtue")
+        if self.options.with_vtd:
+            cloe_requires("cloe-plugin-vtd")
+
+        boost_version = "[>=1.65.0]"
+        if self.options.with_engine:
+            cloe_requires("cloe-engine")
+            if self.options["cloe-engine"].server:
+                boost_version = "[>=1.65.0,<1.70]"
+
+        # Overrides:
+        self.requires("fmt/[~=8.1.1]", override=True)
+        self.requires("inja/[~=3.3.0]", override=True)
+        self.requires("nlohmann_json/[~=3.10.5]", override=True)
+        self.requires("incbin/[~=0.88.0]@cloe/stable", override=True),
+        self.requires(f"boost/{boost_version}", override=True)
+        self.requires("zlib/[~1.2.11]", override=True)
+
+    def _configure_cmake(self):
+        if self._cmake:
+            return self._cmake
+        self._cmake = CMake(self)
+        self._cmake.definitions["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
+        self._cmake.definitions["BuildTests"] = self.options.test
+        self._cmake.definitions["TargetLintingExtended"] = self.options.pedantic
+        self._cmake.configure()
+        return self._cmake
+>>>>>>> e5f4fd2... vendor: Bump OSI to v3.3.1
 
     def build(self):
         cm = cmake.CMake(self)
