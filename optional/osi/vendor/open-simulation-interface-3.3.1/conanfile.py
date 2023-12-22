@@ -44,6 +44,9 @@ class OpenSimulationInterfaceConan(ConanFile):
 
     _cmake = None
 
+    def configure(self):
+        self.options["protobuf"].shared = self.options.shared
+
     def source(self):
         git = tools.Git(folder=self._git_dir)
         git.clone(self._git_url, self._git_ref, shallow=True)
@@ -66,6 +69,9 @@ class OpenSimulationInterfaceConan(ConanFile):
     def package(self):
         cmake = self._configure_cmake()
         cmake.install()
+
+    def package_id(self):
+        self.info.requires["protobuf"].full_package_mode()
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
