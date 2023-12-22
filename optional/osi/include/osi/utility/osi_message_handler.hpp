@@ -16,8 +16,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
- * \file osi_omni_sensor.hpp
- * \see  osi_omni_sensor.cpp
+ * \file osi_message_handler.hpp
+ * \see  osi_message_handler.cpp
  */
 
 #pragma once
@@ -45,7 +45,7 @@
 #include "osi/utility/osi_transceiver.hpp"   // for OsiTransceiver
 #include "osi/utility/osi_utils.hpp"
 
-namespace osii {
+namespace cloeosi {
 
 /**
  * Convert OSI timestamp to Cloe time format.
@@ -174,93 +174,79 @@ struct SensorMockConf : public cloe::Confable {
 /**
  * Base class for an OSI sensor which is connected via TCP.
  */
-class OsiOmniSensor {
+class OsiMsgHandler {
  public:
-  virtual ~OsiOmniSensor() = default;
-  OsiOmniSensor() = delete;
+  virtual ~OsiMsgHandler() = default;
+  OsiMsgHandler() = delete;
 
   /**
-   * Create a new instance of OsiOmniSensor with the given OsiTransceiver.
+   * Create a new instance of OsiMsgHandler with the given OsiTransceiver.
    */
-  OsiOmniSensor(std::unique_ptr<OsiTransceiver>&& osi_transceiver, uint64_t owner_id)
+  OsiMsgHandler(std::unique_ptr<OsiTransceiver>&& osi_transceiver, uint64_t owner_id)
       : osi_comm_(std::move(osi_transceiver)), owner_id_(owner_id) {
     ground_truth_ = std::make_unique<OsiGroundTruth>();
   }
 
   /**
-   * Create a new instance of OsiOmniSensor with the given new OsiTransceiver.
+   * Create a new instance of OsiMsgHandler with the given new OsiTransceiver.
    *
-   * WARNING: If you use this constructor, please realize that OsiOmniSensor
+   * WARNING: If you use this constructor, please realize that OsiMsgHandler
    *          takes ownership of the pointer you pass in.
    */
-  OsiOmniSensor(OsiTransceiver* osi_transceiver, uint64_t owner_id)
+  OsiMsgHandler(OsiTransceiver* osi_transceiver, uint64_t owner_id)
       : osi_comm_(osi_transceiver), owner_id_(owner_id) {
     ground_truth_ = std::make_unique<OsiGroundTruth>();
   }
 
   /**
-   * Receive and process the incoming osi3::SensorData messages.
+   * Receive and process the incoming osi3 messages.
    */
-  void step_sensor_data(const cloe::Sync& s, const bool& restart, cloe::Duration& sim_time);
-
-  /**
-   * Receive and process the incoming osi3::SensorView messages.
-   */
-  void step_sensor_view(const cloe::Sync& s, const bool& restart, cloe::Duration& sim_time);
-
-  /**
-   * Receive and process the incoming osi3::GroundTruth messages.
-   */
-  void step_ground_truth(const cloe::Sync& s, const bool& restart, cloe::Duration& sim_time);
-
-  /**
-   * Receive and process the incoming messages.
-   */
-  //virtual void step(const cloe::Sync& s, const bool& restart, cloe::Duration& sim_time) = 0;
+  template <typename T>
+  void process_osi_msgs(const cloe::Sync& s, const bool& restart, cloe::Duration& osi_time);
 
   /**
    * Store the initial timestamp.
    * Note that the osi time does not necessarily start at zero.
    */
-  virtual void process(const osi3::Timestamp& timestamp);
+  void handle_first_message(const osi3::Timestamp& timestamp);
 
   /**
    * Translate OSI SensorData to Cloe data objects.
    *
    * \param osi_sd SensorData message to be processed.
-   * \param sim_time Simulation time to be set.
+   * \param osi_time Timestamp of the OSI message.
    */
-  virtual void process_received_msg(osi3::SensorData* osi_sd, cloe::Duration& sim_time);
+  virtual void process_received_msg(osi3::SensorData* osi_sd, cloe::Duration& osi_time);
 
   /**
    * Translate OSI SensorView to Cloe data objects.
    *
    * \param osi_sv SensorView message to be processed.
-   * \param sim_time Simulation time to be set.
+   * \param osi_time Timestamp of the OSI message.
    */
-  virtual void process_received_msg(osi3::SensorView* osi_sv, cloe::Duration& sim_time);
+  virtual void process_received_msg(osi3::SensorView* osi_sv, cloe::Duration& osi_time);
 
   /**
    * Translate OSI GroundTruth to Cloe data objects.
    *
    * \param osi_gt GroundTruth message to be processed.
-   * \param sim_time Simulation time to be set.
+   * \param osi_time Timestamp of the OSI message.
    */
-  virtual void process_received_msg(osi3::GroundTruth* osi_gt, cloe::Duration& sim_time);
+  virtual void process_received_msg(osi3::GroundTruth* osi_gt, cloe::Duration& osi_time);
 
   /**
    * Translate OSI GroundTruth to Cloe data objects.
    *
    * \param osi_gt GroundTruth message to be processed.
    */
-  virtual void process(const osi3::GroundTruth& osi_gt);
+  virtual void convert_to_cloe_data(const osi3::GroundTruth& osi_gt);
 
   /**
    * Translate OSI SensorView to Cloe data objects.
    *
    * \param osi_sv SensorView message to be processed, including ground truth.
    */
-  virtual void process(const osi3::SensorView& osi_sv);
+  virtual void convert_to_cloe_data(const osi3::SensorView& osi_sv);
 
   /**
    * Translate OSI ego base information made available to the sensor model
@@ -268,7 +254,8 @@ class OsiOmniSensor {
    * \param osi_mo MovingObject (ground truth) used as fallback.
    * \param osi_hv Pointer to HostVehicleData message to be processed (if available).
    */
-  virtual void process(const osi3::MovingObject& osi_ego, const osi3::HostVehicleData* osi_hv);
+  virtual void convert_to_cloe_data(const osi3::MovingObject& osi_ego,
+                                    const osi3::HostVehicleData* osi_hv);
 
   /**
    * Translate OSI detected moving object information to Cloe data objects.
@@ -276,9 +263,9 @@ class OsiOmniSensor {
    * \param osi_eh DetectedEntityHeader message to be processed (if available).
    * \param osi_mo DetectedMovingObject message to be processed.
    */
-  virtual void process(const bool has_eh,
-                       const osi3::DetectedEntityHeader& osi_eh,
-                       const osi3::DetectedMovingObject& osi_mo);
+  virtual void convert_to_cloe_data(const bool has_eh,
+                                    const osi3::DetectedEntityHeader& osi_eh,
+                                    const osi3::DetectedMovingObject& osi_mo);
 
   void detected_moving_objects_from_ground_truth();
 
@@ -337,7 +324,7 @@ class OsiOmniSensor {
   */
   virtual void clear_cache() { osi_comm_->clear_cache(); }
 
-  friend void to_json(cloe::Json& j, const OsiOmniSensor& c) {
+  friend void to_json(cloe::Json& j, const OsiMsgHandler& c) {
     j = cloe::Json{
         {"osi_connection", *c.osi_comm_},
     };
@@ -366,4 +353,4 @@ class OsiOmniSensor {
   /// Use alternative source for required data or overwrite incoming data, if requested.
   std::shared_ptr<const SensorMockConf> mock_{nullptr};
 };
-}  // namespace osii
+}  // namespace cloeosi

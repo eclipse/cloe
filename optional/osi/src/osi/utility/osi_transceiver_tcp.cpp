@@ -33,7 +33,7 @@
 
 #include "osi_sensordata.pb.h"  // for SensorData
 
-namespace osii {
+namespace cloeosi {
 
 // This method reads a complete SensorData struct from the stream.
 //
@@ -103,12 +103,4 @@ std::shared_ptr<osi3::SensorData> OsiTransceiverTcp::receive_sensor_data_wait() 
   return sensor_data_rcv;
 }
 
-std::shared_ptr<osi3::SensorView> OsiTransceiverTcp::receive_sensor_view_wait() {
-  throw OsiError("OsiTransceiverTcp: receive_sensor_view_wait not yet implemented.");
-}
-
-std::shared_ptr<osi3::GroundTruth> OsiTransceiverTcp::receive_ground_truth_wait() {
-  throw OsiError("OsiTransceiverTcp: receive_ground_truth_wait not yet implemented.");
-}
-
-}  // namespace osii
+}  // namespace cloeosi

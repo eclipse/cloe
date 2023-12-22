@@ -41,7 +41,7 @@
   ((test_expr) ? (void)0 : throw cloe::ModelError("OSI message: {} required!", name))
 #endif
 
-namespace osii {
+namespace cloeosi {
 
 inline cloe::Logger osi_logger() { return cloe::logger::get("vtd/osi"); }
 
@@ -98,4 +98,4 @@ void pose_to_osi_position_orientation(const Eigen::Isometry3d&, osi3::BaseMoving
  */
 void osi_transform_base_moving(const osi3::BaseMoving& base_ref, osi3::BaseMoving& base);
 
-}  // namespace osii
+}  // namespace cloeosi

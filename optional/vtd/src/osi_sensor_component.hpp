@@ -30,8 +30,8 @@
 #include <cloe/component/object.hpp>  // for Object
 #include <cloe/utility/geometry.hpp>  // for quaternion_from_rpy
 
-#include <osi/utility/osi_omni_sensor.hpp>  // for OsiOmniSensor
-#include <osi/utility/osi_transceiver.hpp>  // for OsiTransceiver
+#include <osi/utility/osi_message_handler.hpp>  // for OsiMsgHandler
+#include <osi/utility/osi_transceiver.hpp>      // for OsiTransceiver
 
 #include "vtd_conf.hpp"         // for VtdSensorConfig
 #include "vtd_sensor_data.hpp"  // for VtdSensorData
@@ -45,12 +45,12 @@ namespace vtd {
  * and provided as an object list.
  *
  */
-class VtdOsiSensor : public osii::OsiOmniSensor, public VtdSensorData {
+class VtdOsiSensor : public cloeosi::OsiMsgHandler, public VtdSensorData {
  public:
   virtual ~VtdOsiSensor() = default;
 
-  VtdOsiSensor(std::unique_ptr<osii::OsiTransceiver>&& osi_transceiver, uint64_t owner_id)
-      : OsiOmniSensor(std::move(osi_transceiver), owner_id), VtdSensorData("osi_sensor") {
+  VtdOsiSensor(std::unique_ptr<cloeosi::OsiTransceiver>&& osi_transceiver, uint64_t owner_id)
+      : OsiMsgHandler(std::move(osi_transceiver), owner_id), VtdSensorData("osi_sensor") {
     ego_object_ = std::make_shared<cloe::Object>();  // NOLINT
   }
 
@@ -58,7 +58,15 @@ class VtdOsiSensor : public osii::OsiOmniSensor, public VtdSensorData {
 
   void step(const cloe::Sync& s) override {
     VtdSensorData::clear_cache();
-    OsiOmniSensor::step_sensor_data(s, restart_, simulation_time_);
+    OsiMsgHandler::process_osi_msgs<osi3::SensorData>(s, restart_, sensor_data_time_);
+    if (abs(sensor_data_time_.count() - sensor_data_time_next_.count()) >=
+        s.step_width().count() / 100) {
+      // Sensor data time deviates from expected time by more than 1% of the time step.
+      throw cloe::ModelError(
+          "VtdOsiSensor: Sensor data at wrong timestamp. Expected: {}. Actual: {}.",
+          sensor_data_time_next_.count(), sensor_data_time_.count());
+    }
+    sensor_data_time_next_ = s.time();
   }
 
   void store_object(std::shared_ptr<cloe::Object> obj) override { world_objects_.push_back(obj); }
@@ -99,7 +107,7 @@ class VtdOsiSensor : public osii::OsiOmniSensor, public VtdSensorData {
   /**
    * Set the mock level for different data types according to user request.
    */
-  void set_mock_conf(std::shared_ptr<const osii::SensorMockConf> mock) override {
+  void set_mock_conf(std::shared_ptr<const cloeosi::SensorMockConf> mock) override {
     this->mock_ = mock;
   }
 

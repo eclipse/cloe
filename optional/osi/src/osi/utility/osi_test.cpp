@@ -17,8 +17,8 @@
  */
 /**
  * \file osi_test.cpp
- * \see osi_omni_sensor.hpp
- * \see osi_omni_sensor.cpp
+ * \see osi_message_handler.hpp
+ * \see osi_message_handler.cpp
  * \see osi_utils.hpp
  * \see osi_utils.cpp
  */
@@ -34,7 +34,7 @@
 #include "osi_common.pb.h"  // for Orientation3D, BaseMoving, ..
 #include "osi_object.pb.h"  // for MovingObject
 
-#include "osi/utility/osi_omni_sensor.hpp"  // for transform_ego_coord_from_osi_data, ...
+#include "osi/utility/osi_message_handler.hpp"  // for transform_ego_coord_from_osi_data, ...
 #include "osi/utility/osi_utils.hpp"        // for pose_to_osi_position_orientation, ...
 
 // Sensor mounting position in the vehicle reference frame
@@ -71,10 +71,10 @@ TEST(osi, eigen_pose) {
   init_osi_vec_3d(base.mutable_position(), sens_pos_xyz);
   constexpr double ori[3] = {0.1 * M_PI, 0.2 * M_PI, 0.3 * M_PI};
   init_osi_ori_3d(base.mutable_orientation(), ori);
-  Eigen::Isometry3d pose = osii::osi_position_orientation_to_pose(base);
+  Eigen::Isometry3d pose = cloeosi::osi_position_orientation_to_pose(base);
   // Inverse conversion.
   osi3::BaseMoving base_out;
-  osii::pose_to_osi_position_orientation(pose, base_out);
+  cloeosi::pose_to_osi_position_orientation(pose, base_out);
 
   assert_eq_osi_vec_3d(base.position(), base_out.position());
   assert_eq_osi_ori_3d(base.orientation(), base_out.orientation());
@@ -120,7 +120,7 @@ TEST(osi, transf_base_mov) {
   // Set the target object OSI data.
   osi3::BaseMoving obj_base = init_osi_base(obj_data);
   // Transform the object base into the ego reference frame.
-  osii::osi_transform_base_moving(ego_base, obj_base);
+  cloeosi::osi_transform_base_moving(ego_base, obj_base);
 
   ASSERT_DOUBLE_EQ(obj_base.position().x(), 10.0);
   ASSERT_DOUBLE_EQ(obj_base.position().y(), 10.0);
@@ -158,7 +158,7 @@ TEST(osi, transform_ego_coord) {
   // OSI bbcenter_to_rear in local object reference frame.
   ego.cog_offset = obj_osi_cog;
 
-  osii::transform_ego_coord_from_osi_data(obj_dims, ego);
+  cloeosi::transform_ego_coord_from_osi_data(obj_dims, ego);
 
   // Result: Ego rear axle center on street level, in world frame.
   ASSERT_DOUBLE_EQ(ego.pose.translation()(0), 10.0);
@@ -192,7 +192,7 @@ TEST(osi, transform_obj_coord) {
   Eigen::Vector3d transl{sens_pos_xyz[0], sens_pos_xyz[1], sens_pos_xyz[2]};
   Eigen::Isometry3d sensor_pose = cloe::utility::pose_from_rotation_translation(quat, transl);
 
-  osii::transform_obj_coord_from_osi_data(sensor_pose, obj_dims, obj);
+  cloeosi::transform_obj_coord_from_osi_data(sensor_pose, obj_dims, obj);
 
   // Result: Object rear axle center on street level, in sensor frame.
   ASSERT_DOUBLE_EQ(obj.pose.translation()(0), 7.8);
@@ -222,7 +222,7 @@ TEST(osi, vehicle_classification) {
 
   cloe::Object obj;
 
-  osii::from_osi_mov_obj_type_classification(osi_obj, obj.classification);
+  cloeosi::from_osi_mov_obj_type_classification(osi_obj, obj.classification);
 
   ASSERT_EQ(obj.classification, cloe::Object::Class::Car);
 }

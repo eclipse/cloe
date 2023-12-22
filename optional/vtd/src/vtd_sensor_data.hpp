@@ -54,7 +54,7 @@ class VtdSensorData {
   /**
    * Return the simulation time of the last processed frame.
    */
-  virtual cloe::Duration simulation_time() const { return simulation_time_; }
+  virtual cloe::Duration time() const { return sensor_data_time_; }
 
   /**
    * Set the name of the sensor.
@@ -101,7 +101,7 @@ class VtdSensorData {
 
   friend void to_json(cloe::Json& j, const VtdSensorData& s) {
     j = cloe::Json{
-        {"simulation_time", s.simulation_time_},       {"restart", s.restart_},
+        {"simulation_time", s.sensor_data_time_},      {"restart", s.restart_},
         {"world_objects", s.world_objects_},           {"ego_object", s.ego_object_},
         {"ego_steering_angle", s.ego_steering_angle_}, {"lane_boundaries", s.lanes_},
     };
@@ -115,7 +115,10 @@ class VtdSensorData {
   bool restart_ = false;
 
   /// Simulation time from last processed sensor message.
-  cloe::Duration simulation_time_ = cloe::Duration(0);
+  cloe::Duration sensor_data_time_ = cloe::Duration(0);
+
+  /// Expected simulation time for next sensor message.
+  cloe::Duration sensor_data_time_next_ = cloe::Duration(0);
 
   /// Sensor mounting position and orientation.
   Eigen::Isometry3d mount_;

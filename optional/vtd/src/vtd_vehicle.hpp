@@ -164,9 +164,9 @@ class VtdVehicle : public cloe::Vehicle {
     for (auto kv : sensors_) {
       auto sensor = kv.second;
       sensor->step(s);
-      d = std::min(sensor->simulation_time(), d);
+      d = std::min(sensor->time(), d);
     }
-    return this->sensors_[DEFAULT_SENSOR_NAME]->simulation_time();
+    return this->sensors_[DEFAULT_SENSOR_NAME]->time();
   }
 
   /**
@@ -395,7 +395,7 @@ class VtdVehicleFactory {
   std::vector<std::string> remaining_vehicles_;
   std::shared_ptr<TaskControl> task_control_{nullptr};
   RdbTransceiverTcpFactory rdb_factory_{};
-  osii::OsiTransceiverTcpFactory osi_factory_{};
+  cloeosi::OsiTransceiverTcpFactory osi_factory_{};
   std::string sensor_host_{"localhost"};
   uint16_t sensor_port_{0};
   std::map<std::string, VtdVehicleConfig> vehicles_;

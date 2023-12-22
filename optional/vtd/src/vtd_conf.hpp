@@ -28,7 +28,7 @@
 
 #include <cloe/core.hpp>                            // for Conf, Schema
 #include <cloe/utility/tcp_transceiver_config.hpp>  // for TcpTransceiverConfiguration, ...
-#include <osi/utility/osi_omni_sensor.hpp>          // for SensorMockLevel
+#include <osi/utility/osi_message_handler.hpp>          // for SensorMockLevel
 
 // Connection / Initialization
 #define VTD_DEFAULT_SCP_PORT 48179
@@ -98,7 +98,7 @@ struct VtdSensorConfig : public cloe::Confable {
    * Overwrite data by ground truth.
    * Currently supported for OSI protocol only.
    */
-  std::shared_ptr<osii::SensorMockConf> sensor_mock_conf = std::make_shared<osii::SensorMockConf>();
+  std::shared_ptr<cloeosi::SensorMockConf> sensor_mock_conf = std::make_shared<cloeosi::SensorMockConf>();
 
  public:
   CONFABLE_SCHEMA(VtdSensorConfig) {

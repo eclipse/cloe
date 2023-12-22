@@ -37,7 +37,7 @@
 #include "osi/utility/osi_transceiver.hpp"  // for OsiTransceiver
 #include "osi/utility/osi_utils.hpp"        // for osi_logger
 
-namespace osii {
+namespace cloeosi {
 
 /**
  * OsiTransceiverTcp implements an OsiTransceiver via TCP.
@@ -58,31 +58,23 @@ class OsiTransceiverTcp : public OsiTransceiver, public cloe::utility::TcpTransc
     return this->tcp_available_data() >= static_cast<std::streamsize>(sizeof(osi3::GroundTruth));
   }
 
-  std::vector<std::shared_ptr<osi3::SensorData>> receive_sensor_data() override {
-    std::vector<std::shared_ptr<osi3::SensorData>> msgs;
+  void receive_osi_msgs(std::vector<std::shared_ptr<osi3::SensorData>>& msgs) override {
+    if (msgs.size() > 0) {
+      osi_logger()->warn(
+          "OsiTransceiverTcp: Non-zero length of message vector before retrieval: {}", msgs.size());
+    }
     while (this->has_sensor_data()) {
       num_received_++;
       msgs.push_back(this->receive_sensor_data_wait());
     }
-    return msgs;
   }
 
-  std::vector<std::shared_ptr<osi3::SensorView>> receive_sensor_view() override {
-    std::vector<std::shared_ptr<osi3::SensorView>> msgs;
-    while (this->has_sensor_view()) {
-      num_received_++;
-      msgs.push_back(this->receive_sensor_view_wait());
-    }
-    return msgs;
+  void receive_osi_msgs(std::vector<std::shared_ptr<osi3::SensorView>>& /*msgs*/) override {
+    throw OsiError("OsiTransceiverTcp: Retrieval of osi3::SensorView not yet implemented.");
   }
 
-  std::vector<std::shared_ptr<osi3::GroundTruth>> receive_ground_truth() override {
-    std::vector<std::shared_ptr<osi3::GroundTruth>> msgs;
-    while (this->has_ground_truth()) {
-      num_received_++;
-      msgs.push_back(this->receive_ground_truth_wait());
-    }
-    return msgs;
+  void receive_osi_msgs(std::vector<std::shared_ptr<osi3::GroundTruth>>& /*msgs*/) override {
+    throw OsiError("OsiTransceiverTcp: Retrieval of osi3::GroundTruth not yet implemented.");
   }
 
   void to_json(cloe::Json& j) const override {
@@ -102,9 +94,6 @@ class OsiTransceiverTcp : public OsiTransceiver, public cloe::utility::TcpTransc
    * Synchronous (blocking) method to receive a SensorData message.
    */
   std::shared_ptr<osi3::SensorData> receive_sensor_data_wait();
-  std::shared_ptr<osi3::SensorView> receive_sensor_view_wait();
-  std::shared_ptr<osi3::GroundTruth>
-  receive_ground_truth_wait();  // TODO(tobias): change to template function
 
  private:
   // Statistics for interest's sake
@@ -122,4 +111,4 @@ class OsiTransceiverTcpFactory : public cloe::utility::TcpTransceiverFactory<Osi
   const char* instance_name() const override { return "OsiTransceiverTcp"; }
 };
 
-}  // namespace osii
+}  // namespace cloeosi

@@ -30,7 +30,7 @@
 #include <osi_groundtruth.pb.h>  // for GroundTruth
 #include <osi_sensordata.pb.h>   // for SensorData
 
-namespace osii {
+namespace cloeosi {
 
 /**
  * OsiError may be thrown when an error is detected in the OSI protocol.
@@ -46,7 +46,7 @@ class OsiError : public cloe::Error {
 };
 
 /**
- * OsiTransceiver is an interface for a OSI connection via TCP.
+ * OsiTransceiver is an interface for OSI message exchange, e.g. via TCP.
  */
 class OsiTransceiver {
  public:
@@ -87,21 +87,21 @@ class OsiTransceiver {
   /**
    * Non-blocking function to return all received osi::SensorData messages.
    */
-  virtual std::vector<std::shared_ptr<osi3::SensorData>> receive_sensor_data() = 0;
+  virtual void receive_osi_msgs(std::vector<std::shared_ptr<osi3::SensorData>>& msgs) = 0;
 
   /**
    * Non-blocking function to return all received osi::SensorView messages.
    */
-  virtual std::vector<std::shared_ptr<osi3::SensorView>> receive_sensor_view() = 0;
+  virtual void receive_osi_msgs(std::vector<std::shared_ptr<osi3::SensorView>>& msgs) = 0;
 
   /**
    * Non-blocking function to return all received osi::GroundTruth messages.
    */
-  virtual std::vector<std::shared_ptr<osi3::GroundTruth>> receive_ground_truth() = 0;
+  virtual void receive_osi_msgs(std::vector<std::shared_ptr<osi3::GroundTruth>>& msgs) = 0;
 
   virtual void to_json(cloe::Json& j) const = 0;
 
   friend void to_json(cloe::Json& j, const OsiTransceiver& t) { t.to_json(j); }
 };
 
-}  // namespace osii
+}  // namespace cloeosi

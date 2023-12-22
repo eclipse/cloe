@@ -33,7 +33,7 @@
 #include "osi_common.pb.h"      // for Timestamp, Identifier, BaseMoving, ..
 #include "osi_sensordata.pb.h"  // for SensorData, DetectedEntityHeader
 
-namespace osii {
+namespace cloeosi {
 
 template <typename OSI_T>
 void osi_to_json(const OSI_T& msg, std::string* json_string) {
@@ -153,4 +153,4 @@ void osi_transform_base_moving(const osi3::BaseMoving& base_ref, osi3::BaseMovin
   vector3d_to_osi_orientation_rpy(vec, base.mutable_orientation_rate());
 }
 
-}  // namespace osii
+}  // namespace cloeosi
