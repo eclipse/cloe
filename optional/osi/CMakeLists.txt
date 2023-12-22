@@ -17,7 +17,7 @@ file(GLOB cloe-osi_PUBLIC_HEADERS "include/**/*.hpp")
 add_library(cloe-osi
     # find src -type f -name "*.cpp" \! -name "*_test.cpp"
     src/osi/utility/osi_ground_truth.cpp
-    src/osi/utility/osi_omni_sensor.cpp
+    src/osi/utility/osi_message_handler.cpp
     src/osi/utility/osi_transceiver_tcp.cpp
     src/osi/utility/osi_utils.cpp
 

@@ -79,7 +79,7 @@ class VtdOmniSensor : public RdbCodec, public VtdSensorData {
     ego_object_ = std::make_shared<cloe::Object>();  // NOLINT
   }
 
-  void step(const cloe::Sync& s) override { RdbCodec::step(s.step(), restart_, simulation_time_); }
+  void step(const cloe::Sync& s) override { RdbCodec::step(s.step(), restart_, sensor_data_time_); }
 
   using RdbCodec::process;
 
