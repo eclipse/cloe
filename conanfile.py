@@ -134,6 +134,7 @@ class Cloe(ConanFile):
         cloe_requires("cloe-plugin-noisy-sensor")
         cloe_requires("cloe-plugin-speedometer")
         cloe_requires("cloe-plugin-virtue")
+        cloe_requires("cloe-osi")
         if self.options.with_vtd:
             cloe_requires("cloe-plugin-vtd")
 

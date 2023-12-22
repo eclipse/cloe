@@ -29,7 +29,7 @@
 #include "osi_groundtruth.pb.h"  // for GroundTruth
 #include "osi_object.pb.h"       // for MovingObject
 
-#include "osi_utils.hpp"  // for osi_require, ..
+#include "osi/utility/osi_utils.hpp"  // for osi_require, ..
 
 namespace osii {
 
@@ -47,7 +47,7 @@ class OsiGroundTruth {
    * Store address of the GroundTruth object belonging to the OSI message
    * that is to be processed.
    */
-  void set(const osi3::GroundTruth& osi_gt) { gt_ptr_ = &osi_gt; }
+  void set(const osi3::GroundTruth& osi_gt);
 
   const osi3::GroundTruth& get_gt() const {
     if (!gt_ptr_) error();

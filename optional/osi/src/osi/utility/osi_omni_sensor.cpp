@@ -20,11 +20,12 @@
  * \see  osi_omni_sensor.hpp
  */
 
-#include "osi_omni_sensor.hpp"
+#include "osi/utility/osi_omni_sensor.hpp"
 
 #include <math.h>     // for atan
 #include <algorithm>  // for max
 #include <cassert>    // for assert
+#include <limits>     // for numeric_limits<>
 #include <map>        // for map<>
 
 #include <Eigen/Geometry>  // for Isometry3d, Vector3d
@@ -42,8 +43,8 @@
 #include "osi_sensordata.pb.h"       // for SensorData, DetectedEntityHeader
 #include "osi_sensorview.pb.h"       // for SensorView
 
-#include "osi_ground_truth.hpp"  // for OsiGroundTruth
-#include "osi_utils.hpp"         // for osi_require, ..
+#include "osi/utility/osi_ground_truth.hpp"  // for OsiGroundTruth
+#include "osi/utility/osi_utils.hpp"         // for osi_require, ..
 
 namespace osii {
 
@@ -151,10 +152,6 @@ cloe::Duration OsiOmniSensor::osi_timestamp_to_simtime(const osi3::Timestamp& ti
   return osi_timestamp_to_time(timestamp) - this->init_time_;
 }
 
-void from_osi_identifier(const osi3::Identifier& osi_id, int& id) {
-  id = static_cast<int>(osi_id.value());
-}
-
 void from_osi_host_vehicle_data(const osi3::HostVehicleData& osi_hv, cloe::Object& obj) {
   from_osi_base_moving(osi_hv.location(), obj);
 }
@@ -164,7 +161,7 @@ void from_osi_detected_item_header(const osi3::DetectedItemHeader& osi_hdr, cloe
   // Multiple ground truth objects melt into one detected item are currently not
   // supported.
   auto osi_obj_gt_id = osi_hdr.ground_truth_id(0);
-  from_osi_identifier(osi_obj_gt_id, obj.id);
+  osi_identifier_to_int(osi_obj_gt_id, obj.id);
   // Existence probability
   if (osi_hdr.has_existence_probability()) {
     obj.exist_prob = osi_hdr.existence_probability();
@@ -299,6 +296,19 @@ void from_osi_mov_obj_type_classification(
   }
 }
 
+void from_osi_base_stationary(const osi3::BaseStationary& osi_bs, cloe::Object& obj) {
+  obj.type = cloe::Object::Type::Static;
+
+  obj.pose = osi_position_orientation_to_pose(osi_bs);
+
+  osi_require("BaseStationary::dimension", osi_bs.has_dimension());
+  obj.dimensions = osi_dimension3d_lwh_to_vector3d(osi_bs.dimension());
+
+  obj.acceleration = Eigen::Vector3d::Zero();
+  obj.velocity = Eigen::Vector3d::Zero();
+  obj.angular_velocity = Eigen::Vector3d::Zero();
+}
+
 void transform_ego_coord_from_osi_data(const Eigen::Vector3d& dimensions_gt, cloe::Object& obj) {
   // obj->pose: Change object position from bbox-center to vehicle reference
   // point (rear axle/street level):
@@ -352,7 +362,9 @@ void transform_obj_coord_from_osi_data(const Eigen::Isometry3d& sensor_pose,
   obj.cog_offset = Eigen::Vector3d(-1.0 * obj.cog_offset(0), 0.0, 0.0);
 }
 
-void OsiOmniSensor::step(const cloe::Sync& s, const bool& restart, cloe::Duration& sim_time) {
+void OsiOmniSensor::step_sensor_data(const cloe::Sync& s, const bool& restart,
+                                     cloe::Duration& sim_time) {
+  this->clear_cache();
   // Cycle until sensor data has been received.
   int n_msg{0};
   while (n_msg == 0 || restart) {
@@ -364,13 +376,73 @@ void OsiOmniSensor::step(const cloe::Sync& s, const bool& restart, cloe::Duratio
       this->process(osi_msg[0]->timestamp());
     }
     for (auto m : osi_msg) {
-      this->process(m.get(), sim_time);
+      this->process_received_msg(m.get(), sim_time);
       ++n_msg;
     }
   }
 
   if (abs(sim_time.count() - s.time().count()) >= s.step_width().count() / 100) {
     // Sensor data time deviates from cloe time by more than 1% of the time step.
+    osi_logger()->warn("OsiOmniSensor: inconsistent timestamps [t_sensor={}ns, t_cloe={}ns]",
+                       sim_time.count(), s.time().count());
+  }
+
+  osi_logger()->trace("OsiOmniSensor: completed processing messages [frame={}, time={}ns]",
+                      s.step(), s.time().count());
+}
+
+// TODO(tobias): Use template for step_ground_truth/step_sensor_data.
+void OsiOmniSensor::step_sensor_view(const cloe::Sync& s, const bool& restart,
+                                     cloe::Duration& sim_time) {
+  this->clear_cache();
+  // Cycle until sensor view has been received.
+  int n_msg{0};
+  while (n_msg == 0 || restart) {
+    auto osi_msg = osi_comm_->receive_sensor_view();
+    if (osi_msg.size() > 0) {
+      osi_logger()->trace("OsiOmniSensor: processing {} messages at Cloe frame no {}",
+                          osi_msg.size(), s.step());
+      // 1st. timestep: Store the simulation reference (e.g. start) time.
+      this->process(osi_msg[0]->timestamp());
+    }
+    for (auto m : osi_msg) {
+      this->process_received_msg(m.get(), sim_time);
+      ++n_msg;
+    }
+  }
+
+  if (abs(sim_time.count() - s.time().count()) >= s.step_width().count() / 100) {
+    // SensorView time deviates from cloe time by more than 1% of the time step.
+    osi_logger()->warn("OsiOmniSensor: inconsistent timestamps [t_sensor={}ns, t_cloe={}ns]",
+                       sim_time.count(), s.time().count());
+  }
+
+  osi_logger()->trace("OsiOmniSensor: completed processing messages [frame={}, time={}ns]",
+                      s.step(), s.time().count());
+}
+
+// TODO(tobias): Use template for step_ground_truth/step_sensor_data.
+void OsiOmniSensor::step_ground_truth(const cloe::Sync& s, const bool& restart,
+                                      cloe::Duration& sim_time) {
+  this->clear_cache();
+  // Cycle until ground truth has been received.
+  int n_msg{0};
+  while (n_msg == 0 || restart) {
+    auto osi_msg = osi_comm_->receive_ground_truth();
+    if (osi_msg.size() > 0) {
+      osi_logger()->trace("OsiOmniSensor: processing {} messages at Cloe frame no {}",
+                          osi_msg.size(), s.step());
+      // 1st. timestep: Store the simulation reference (e.g. start) time.
+      this->process(osi_msg[0]->timestamp());
+    }
+    for (auto m : osi_msg) {
+      this->process_received_msg(m.get(), sim_time);
+      ++n_msg;
+    }
+  }
+
+  if (abs(sim_time.count() - s.time().count()) >= s.step_width().count() / 100) {
+    // GroundTruth time deviates from cloe time by more than 1% of the time step.
     osi_logger()->warn("OsiOmniSensor: inconsistent timestamps [t_sensor={}ns, t_cloe={}ns]",
                        sim_time.count(), s.time().count());
   }
@@ -387,7 +459,7 @@ void OsiOmniSensor::process(const osi3::Timestamp& timestamp) {
   init_time_ = osi_timestamp_to_time(timestamp);
 }
 
-void OsiOmniSensor::process(osi3::SensorData* osi_sd, cloe::Duration& sim_time) {
+void OsiOmniSensor::process_received_msg(osi3::SensorData* osi_sd, cloe::Duration& sim_time) {
   if (osi_sd == nullptr) {
     return;
   }
@@ -453,17 +525,36 @@ void OsiOmniSensor::process(osi3::SensorData* osi_sd, cloe::Duration& sim_time) 
   }
 
   // Process detected moving objects.
-  for (int i_mo = 0; i_mo < osi_sd->moving_object_size(); ++i_mo) {
-    this->process(osi_sd->has_moving_object_header(), osi_sd->moving_object_header(),
-                  osi_sd->moving_object(i_mo));
+  switch (this->get_mock_level(SensorMockTarget::DetectedMovingObject)) {
+    case SensorMockLevel::OverwriteAll: {
+      detected_moving_objects_from_ground_truth();
+      break;
+    }
+    default: {
+      for (int i_mo = 0; i_mo < osi_sd->moving_object_size(); ++i_mo) {
+        this->process(osi_sd->has_moving_object_header(), osi_sd->moving_object_header(),
+                      osi_sd->moving_object(i_mo));
+      }
+      break;
+    }
   }
 
-  // TODO(tobias): Process detected stationary objects.
+  // Process stationary objects.
+  switch (this->get_mock_level(SensorMockTarget::DetectedStaticObject)) {
+    case SensorMockLevel::OverwriteAll: {
+      detected_static_objects_from_ground_truth();
+      break;
+    }
+    default: {
+      //  TODO(tobias): Detected stationary object handling is not yet available.
+      break;
+    }
+  }
 
   // Process lane boundaries.
   switch (this->get_mock_level(SensorMockTarget::DetectedLaneBoundary)) {
     case SensorMockLevel::OverwriteAll: {
-      mock_detected_lane_boundaries();
+      detected_lane_boundaries_from_ground_truth();
       break;
     }
     default: {
@@ -485,6 +576,129 @@ void OsiOmniSensor::process(osi3::SensorData* osi_sd, cloe::Duration& sim_time) 
   ground_truth_->reset();
 }
 
+void OsiOmniSensor::process_received_msg(osi3::SensorView* osi_sv, cloe::Duration& sim_time) {
+  if (osi_sv == nullptr) {
+    return;
+  }
+
+  if (osi_sv->ByteSizeLong() == 0) {
+    return;
+  }
+
+  osi_require("v3.x.x", !osi_sv->has_version() || osi_sv->version().version_major() > 2);
+
+  // TODO(tobias): handle restart
+
+  // Read the simulation time.
+  if (osi_sv->has_timestamp()) {
+    sim_time = osi_timestamp_to_simtime(osi_sv->timestamp());
+    osi_logger()->trace("OsiOmniSensor: message @ {} ns", sim_time.count());
+    if (sim_time.count() == 0) {
+      // DEBUG(tobias)
+      osi_to_file(*osi_sv, "osi_sensor_view.json");
+    }
+  } else {
+    throw cloe::ModelError("OsiOmniSensor: No timestamp in SensorView.");
+  }
+
+  if (osi_sv->has_global_ground_truth()) {
+    // Store GroundTruth message for coordinate transformations w.r.t. ego vehicle.
+    ground_truth_->set(osi_sv->global_ground_truth());
+  } else {
+    throw cloe::ModelError("OsiOmniSensor: No GroundTruth in SensorView.");
+  }
+
+  // Sensor mounting position is required for detected object and lane boundary
+  // data transormations. Since a GroundTruth message does provide the sensor
+  // mounting position, it must be obtained from the simulator binding.
+  osi_sensor_pose_ = get_static_mounting_position(ground_truth_->get_veh_coord_sys_info(owner_id_),
+                                                  ground_truth_->get_mov_obj_dimensions(owner_id_));
+
+  if (osi_sv->has_mounting_position()) {
+    Eigen::Isometry3d osi_mount_pose =
+        osi_position_orientation_to_pose(osi_sv->mounting_position());
+    if (!osi_mount_pose.isApprox(osi_sensor_pose_)) {
+      osi_logger()->warn(
+          "OsiOmniSensor: mounting positions from OSI message and from simulator do not match.");
+    }
+  }
+
+  if (osi_sv->has_host_vehicle_data()) {
+    osi_logger()->warn("OsiOmniSensor: SensorView HostVehicleData processing not yet implemented.");
+  }
+
+  // Convert GroundTruth ego, object and lane boundary data to Cloe format.
+  process(osi_sv->global_ground_truth());
+
+  store_sensor_meta_data(ground_truth_->get_veh_coord_sys_info(owner_id_),
+                         ground_truth_->get_mov_obj_dimensions(owner_id_));
+
+  // Cleanup
+  ground_truth_->reset();
+}
+
+void OsiOmniSensor::process_received_msg(osi3::GroundTruth* osi_gt, cloe::Duration& sim_time) {
+  if (osi_gt == nullptr) {
+    return;
+  }
+
+  if (osi_gt->ByteSizeLong() == 0) {
+    return;
+  }
+
+  osi_require("v3.x.x", !osi_gt->has_version() || osi_gt->version().version_major() > 2);
+
+  // TODO(tobias): handle restart
+
+  // Read the simulation time.
+  if (osi_gt->has_timestamp()) {
+    sim_time = osi_timestamp_to_simtime(osi_gt->timestamp());
+    osi_logger()->trace("OsiOmniSensor: message @ {} ns", sim_time.count());
+    if (sim_time.count() == 0) {
+      // DEBUG(tobias)
+      osi_to_file(*osi_gt, "esmini_osi_ground_truth.json");
+    }
+  } else {
+    throw cloe::ModelError("OsiOmniSensor: No timestamp in GroundTruth.");
+  }
+
+  // Store GroundTruth message for coordinate transformations w.r.t. ego vehicle.
+  ground_truth_->set(*osi_gt);
+
+  // Sensor mounting position is required for detected object and lane boundary
+  // data transormations. Since a GroundTruth message does not provide the sensor
+  // mounting position, it must be obtained from the simulator binding.
+  osi_sensor_pose_ = get_static_mounting_position(ground_truth_->get_veh_coord_sys_info(owner_id_),
+                                                  ground_truth_->get_mov_obj_dimensions(owner_id_));
+
+  // Convert OSI ego, object and lane boundary data to Cloe format.
+  process(*osi_gt);
+
+  store_sensor_meta_data(ground_truth_->get_veh_coord_sys_info(owner_id_),
+                         ground_truth_->get_mov_obj_dimensions(owner_id_));
+
+  // Cleanup
+  ground_truth_->reset();
+}
+
+void OsiOmniSensor::process(const osi3::GroundTruth& osi_gt) {
+  if (osi_gt.ByteSizeLong() == 0) {
+    return;
+  }
+  // Process ego vehicle info.
+  auto osi_ego = ground_truth_->get_moving_object(owner_id_);
+  process(*osi_ego, nullptr);
+
+  // Process moving objects.
+  detected_moving_objects_from_ground_truth();
+
+  // Process stationary objects.
+  detected_static_objects_from_ground_truth();
+
+  // Process lane boundaries.
+  detected_lane_boundaries_from_ground_truth();
+}
+
 void OsiOmniSensor::process(const osi3::SensorView& osi_sv) {
   if (osi_sv.ByteSizeLong() == 0) {
     return;
@@ -495,43 +709,29 @@ void OsiOmniSensor::process(const osi3::SensorView& osi_sv) {
   const osi3::GroundTruth* osi_gt = &(osi_sv.global_ground_truth());
   ground_truth_->set(*osi_gt);
 
-  for (int i_mo = 0; i_mo < osi_gt->moving_object_size(); ++i_mo) {
-    osi3::MovingObject osi_mo = osi_gt->moving_object(i_mo);
-    int obj_id;
-    from_osi_identifier(osi_mo.id(), obj_id);
-
-    // Store geometric information of different object reference frames.
-    if (osi_mo.has_vehicle_attributes()) {
-      ground_truth_->store_veh_coord_sys_info(obj_id, osi_mo.vehicle_attributes());
-    }
-
-    // Store object bounding box dimensions for cooordinate transformations.
-    osi_require("GroundTruth::MovingObject::base", osi_mo.has_base());
-    if (osi_mo.has_base()) {
-      osi_require("GroundTruth-BaseMoving::dimension", osi_mo.base().has_dimension());
-      ground_truth_->store_mov_obj_dimensions(obj_id, osi_mo.base().dimension());
-    }
-  }
-
   // Process ego vehicle info. For the ego, we may use ground truth information.
   // Note: osi.sv.host_vehicle_id() may not be populated.
   auto osi_ego = ground_truth_->get_moving_object(ground_truth_->get_ego_id());
-  process(osi_sv.has_host_vehicle_data(), osi_sv.host_vehicle_data(), *osi_ego);
+  if (osi_sv.has_host_vehicle_data()) {
+    process(*osi_ego, &osi_sv.host_vehicle_data());
+  } else {
+    process(*osi_ego, nullptr);
+  }
 }
 
-void OsiOmniSensor::process(const bool has_veh_data, const osi3::HostVehicleData& osi_hv,
-                            const osi3::MovingObject& osi_ego) {
+void OsiOmniSensor::process(const osi3::MovingObject& osi_ego,
+                            const osi3::HostVehicleData* osi_hv) {
   auto obj = std::make_shared<cloe::Object>();
   obj->exist_prob = 1.0;
   // Object id
-  from_osi_identifier(osi_ego.id(), obj->id);
+  osi_identifier_to_int(osi_ego.id(), obj->id);
   assert(obj->id == static_cast<int>(owner_id_));
 
   // Ego pose
-  if (has_veh_data) {
+  if (osi_hv != nullptr) {
     // Ego data that was explicitly made available to the sensor (e.g. gps
     // location & rmse).
-    from_osi_host_vehicle_data(osi_hv, *obj);
+    from_osi_host_vehicle_data(*osi_hv, *obj);
   } else {
     // Use ground truth object information
     from_osi_base_moving(osi_ego.base(), *obj);
@@ -545,7 +745,10 @@ void OsiOmniSensor::process(const bool has_veh_data, const osi3::HostVehicleData
 
   // Store ego pose.
   osi_ego_pose_ = obj->pose;
-  osi_ego_pose_.translation() = obj->pose.translation() + obj->pose.rotation() * obj->cog_offset;
+  osi_ego_pose_.translation() =
+      obj->pose.translation() +
+      obj->pose.rotation() *
+          obj->cog_offset;  // FIXME(tobias): for ESMini, no reference point correction needed
 
   // Object attributes are all set:
   //  - 1a) osi3::HostVehicleData: "All coordinates and orientations are relative
@@ -573,9 +776,8 @@ void OsiOmniSensor::process(const bool has_eh, const osi3::DetectedEntityHeader&
   // Get object information. The sensor (model) may not provide all required data.
   if (has_eh) {
     // TODO(tobias): handle entity header, if needed
-    osi_logger()->warn(
-        "VtdOsiSensor: DetectedEntityHeader not yet handled. measurement_time = {}ns",
-        osi_timestamp_to_simtime(osi_eh.measurement_time()).count());
+    osi_logger()->warn("OsiSensor: DetectedEntityHeader not yet handled. measurement_time = {}ns",
+                       osi_timestamp_to_simtime(osi_eh.measurement_time()).count());
   }
   switch (this->get_mock_level(SensorMockTarget::DetectedMovingObject)) {
     case SensorMockLevel::OverwriteNone: {
@@ -620,6 +822,128 @@ void OsiOmniSensor::process(const bool has_eh, const osi3::DetectedEntityHeader&
   store_object(obj);
 }
 
+void OsiOmniSensor::detected_moving_objects_from_ground_truth() {
+  const auto& osi_gt = ground_truth_->get_gt();
+  // Set moving object data.
+  for (const auto& osi_obj : osi_gt.moving_object()) {
+    osi_require("GroundTruth-MovingObject::id", osi_obj.has_id());
+    int id;
+    osi_identifier_to_int(osi_obj.id(), id);
+    if (id != static_cast<int>(owner_id_)) {
+      auto obj = std::make_shared<cloe::Object>();
+      // Set existence probability.
+      obj->exist_prob = 1.0;
+      // Set id.
+      obj->id = id;
+      // Set classification.
+      from_osi_mov_obj_type_classification(osi_obj, obj->classification);
+      // Set type, pose, dimensions, rel. velocity, rel. acceleration, rel. angular_velocity.
+      osi3::BaseMoving base_rel = osi_obj.base();
+      auto osi_ego = ground_truth_->get_moving_object(owner_id_);
+      // Rel. velocity.
+      double delta = base_rel.velocity().x() - osi_ego->base().velocity().x();
+      base_rel.mutable_velocity()->set_x(delta);
+      delta = base_rel.velocity().y() - osi_ego->base().velocity().y();
+      base_rel.mutable_velocity()->set_y(delta);
+      delta = base_rel.velocity().z() - osi_ego->base().velocity().z();
+      base_rel.mutable_velocity()->set_z(delta);
+      // Rel. acceleration.
+      delta = base_rel.acceleration().x() - osi_ego->base().acceleration().x();
+      base_rel.mutable_acceleration()->set_x(delta);
+      delta = base_rel.acceleration().y() - osi_ego->base().acceleration().y();
+      base_rel.mutable_acceleration()->set_y(delta);
+      delta = base_rel.acceleration().z() - osi_ego->base().acceleration().z();
+      base_rel.mutable_acceleration()->set_z(delta);
+      // Rel. angular velocity.
+      delta = base_rel.orientation_rate().roll() - osi_ego->base().orientation_rate().roll();
+      base_rel.mutable_orientation_rate()->set_roll(delta);
+      delta = base_rel.orientation_rate().pitch() - osi_ego->base().orientation_rate().pitch();
+      base_rel.mutable_orientation_rate()->set_pitch(delta);
+      delta = base_rel.orientation_rate().yaw() - osi_ego->base().orientation_rate().yaw();
+      base_rel.mutable_orientation_rate()->set_yaw(delta);
+      // Copy osi data to Cloe object.
+      from_osi_base_moving(base_rel, *obj);
+      // Set center of geometry offset.
+      obj->cog_offset = ground_truth_->get_veh_coord_sys_info(obj->id);
+      // Object attributes are all set:
+      //  - 1a) MovingObject::base: All GroundTruth data is given in the inertial
+      //        frame.
+      //  - 1b) "Reference point for position and orientation: the center (x,y,z)
+      //         of the bounding box."
+      //  - 2 ) osi3::MovingObject::VehicleAttributes::bbcenter_to_rear: "The vector
+      //        pointing from the bounding box center point to the middle of the rear
+      //        axle under neutral load conditions. In object coordinates."
+      // Now transform the data to the Cloe reference frame:
+      //  - 1a) obj->pose/velocity/acceleration/angular_velocity: Transform detected
+      //        object
+      //          - from the inertial frame into the ego vehicle frame,
+      //          - from the ego vehicle frame into the sensor frame.
+      //  - 1b) obj->pose: Change object position from bbox-center to vehicle
+      //        reference point (rear axle/street level).
+      //  - 2 ) obj->cog_offset: cog should be on street level, i.e. only x-offset is
+      //        non-zero. Here, the direction is opposite as defined by OSI.
+
+      // obj->pose/velocity/acceleration/angular_velocity:
+      // Transform the location and orientation of the ground truth object from
+      // the inertial into the ego vehicle frame.
+      Eigen::Vector3d vec = obj->pose.translation();
+      cloe::utility::transform_point_to_child_frame(osi_ego_pose_, &vec);
+      obj->pose.translation() = vec;
+      obj->pose.rotate(osi_ego_pose_.rotation().inverse());
+
+      obj->velocity = osi_ego_pose_.rotation().inverse() * obj->velocity;
+      obj->acceleration = osi_ego_pose_.rotation().inverse() * obj->acceleration;
+      obj->angular_velocity = osi_ego_pose_.rotation().inverse() * obj->angular_velocity;
+
+      // TODO(tobias): can't we simply use obj->dimensions here?
+      transform_obj_coord_from_osi_data(osi_sensor_pose_,
+                                        ground_truth_->get_mov_obj_dimensions(obj->id), *obj);
+      // Fill the object list.
+      store_object(obj);
+    }
+  }
+}
+
+void OsiOmniSensor::detected_static_objects_from_ground_truth() {
+  const auto& osi_gt = ground_truth_->get_gt();
+  // Set static object data.
+  for (const auto& osi_obj : osi_gt.stationary_object()) {
+    osi_require("GroundTruth-StationaryObject::id", osi_obj.has_id());
+    auto obj = std::make_shared<cloe::Object>();
+    // Set existence probability.
+    obj->exist_prob = 1.0;
+    // Set id.
+    int id;
+    osi_identifier_to_int(osi_obj.id(), id);
+    obj->id = std::numeric_limits<int>::max() - id;
+    // Set classification.
+    obj->classification = cloe::Object::Class::Unknown;  // FIXME(tobias): use OSI data
+    // Set type, pose and dimensions (velocity, acceleration, angular_velocity = 0).
+    from_osi_base_stationary(osi_obj.base(), *obj);
+    // Set cog_offset.
+    obj->cog_offset = Eigen::Vector3d::Zero();
+    // Object attributes are all set:
+    //  - 1a) StationaryObject::base: All GroundTruth data is given in the inertial
+    //        frame.
+    // Now transform the data to the Cloe reference frame:
+    //  - 1a) obj->pose: Transform detected object location and orientation
+    //          - from the inertial frame into the ego vehicle frame,
+    //          - from the ego vehicle frame into the sensor frame.
+    Eigen::Vector3d vec = obj->pose.translation();
+    cloe::utility::transform_point_to_child_frame(osi_ego_pose_, &vec);
+    obj->pose.translation() = vec;
+    obj->pose.rotate(osi_ego_pose_.rotation().inverse());
+
+    vec = obj->pose.translation();
+    cloe::utility::transform_point_to_child_frame(osi_sensor_pose_, &vec);
+    obj->pose.translation() = vec;
+    obj->pose.rotate(osi_sensor_pose_.rotation().inverse());
+
+    // Fill the object list.
+    store_object(obj);
+  }
+}
+
 void OsiOmniSensor::from_osi_boundary_points(const osi3::LaneBoundary& osi_lb,
                                              cloe::LaneBoundary& lb) {
   assert(osi_lb.boundary_line_size() > 0);
@@ -641,14 +965,14 @@ void OsiOmniSensor::from_osi_boundary_points(const osi3::LaneBoundary& osi_lb,
   lb.dx_end = lb.points.back()(0);
 }
 
-void OsiOmniSensor::mock_detected_lane_boundaries() {
+void OsiOmniSensor::detected_lane_boundaries_from_ground_truth() {
   const auto& osi_gt = ground_truth_->get_gt();
   int lb_id = 0;
   // If some of the OSI data does not have an id, avoid id clashes.
   for (const auto& osi_lb : osi_gt.lane_boundary()) {
     if (osi_lb.has_classification() && osi_lb.has_id()) {
       int id;
-      from_osi_identifier(osi_lb.id(), id);
+      osi_identifier_to_int(osi_lb.id(), id);
       lb_id = std::max(lb_id, id + 1);
     }
   }
@@ -657,7 +981,7 @@ void OsiOmniSensor::mock_detected_lane_boundaries() {
     if (osi_lb.has_classification()) {
       cloe::LaneBoundary lb;
       if (osi_lb.has_id()) {
-        from_osi_identifier(osi_lb.id(), lb.id);
+        osi_identifier_to_int(osi_lb.id(), lb.id);
       } else {
         lb.id = lb_id;
       }

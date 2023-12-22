@@ -20,7 +20,7 @@
  * \see  osi_ground_truth.cpp
  */
 
-#include "osi_ground_truth.hpp"  // for OsiGroundTruth
+#include "osi/utility/osi_ground_truth.hpp"  // for OsiGroundTruth
 
 #include <cloe/simulator.hpp>  // for ModelError
 
@@ -36,6 +36,27 @@ const osi3::MovingObject* OsiGroundTruth::get_moving_object(const uint64_t id) c
     }
   }
   throw cloe::ModelError("OSI ground truth object not found");
+}
+
+void OsiGroundTruth::set(const osi3::GroundTruth& osi_gt) {
+  this->gt_ptr_ = &osi_gt;
+  for (int i_mo = 0; i_mo < osi_gt.moving_object_size(); ++i_mo) {
+    osi3::MovingObject osi_mo = osi_gt.moving_object(i_mo);
+    int obj_id;
+    osi_identifier_to_int(osi_mo.id(), obj_id);
+
+    // Store geometric information of different object reference frames.
+    if (osi_mo.has_vehicle_attributes()) {
+      this->store_veh_coord_sys_info(obj_id, osi_mo.vehicle_attributes());
+    }
+
+    // Store object bounding box dimensions for cooordinate transformations.
+    osi_require("GroundTruth::MovingObject::base", osi_mo.has_base());
+    if (osi_mo.has_base()) {
+      osi_require("GroundTruth-BaseMoving::dimension", osi_mo.base().has_dimension());
+      this->store_mov_obj_dimensions(obj_id, osi_mo.base().dimension());
+    }
+  }
 }
 
 }  // namespace osii

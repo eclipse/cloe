@@ -19,7 +19,7 @@
  * \file osi_transceiver_tcp.cpp
  */
 
-#include "osi_transceiver_tcp.hpp"
+#include "osi/utility/osi_transceiver_tcp.hpp"
 
 #include <cassert>  // for assert
 #include <cstdlib>  // for malloc, free
@@ -88,7 +88,7 @@ std::shared_ptr<osi3::SensorData> OsiTransceiverTcp::receive_sensor_data_wait() 
   free(data_buf);
 
   // 5. Consistency checks.
-  if (sensor_data_rcv->ByteSizeLong() != static_cast<int>(data_size)) {
+  if (sensor_data_rcv->ByteSizeLong() != static_cast<size_t>(data_size)) {
     this->num_errors_++;
     throw OsiError("OsiTransceiverTcp: inconsistent data size in osi protobuf message");
   }
@@ -101,6 +101,14 @@ std::shared_ptr<osi3::SensorData> OsiTransceiverTcp::receive_sensor_data_wait() 
 
   // 5. Wrap the result in a shared_ptr and return it.
   return sensor_data_rcv;
+}
+
+std::shared_ptr<osi3::SensorView> OsiTransceiverTcp::receive_sensor_view_wait() {
+  throw OsiError("OsiTransceiverTcp: receive_sensor_view_wait not yet implemented.");
+}
+
+std::shared_ptr<osi3::GroundTruth> OsiTransceiverTcp::receive_ground_truth_wait() {
+  throw OsiError("OsiTransceiverTcp: receive_ground_truth_wait not yet implemented.");
 }
 
 }  // namespace osii

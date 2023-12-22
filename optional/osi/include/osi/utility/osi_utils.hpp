@@ -46,9 +46,12 @@ namespace osii {
 inline cloe::Logger osi_logger() { return cloe::logger::get("vtd/osi"); }
 
 /**
- * Write OSI sensor data message to a .json file.
+ * Write OSI message to a .json file.
  */
-void osi_to_file(const osi3::SensorData& data, const std::string& fname);
+template <typename OSI_T>
+void osi_to_file(const OSI_T& msg, const std::string& fname);
+
+void osi_identifier_to_int(const osi3::Identifier& osi_id, int& id);
 
 /**
  * Convert osi3::Vector3d (x, y, z) into Eigen::Vector3d.

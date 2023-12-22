@@ -28,7 +28,7 @@
 
 #include <cloe/core.hpp>                            // for Conf, Schema
 #include <cloe/utility/tcp_transceiver_config.hpp>  // for TcpTransceiverConfiguration, ...
-#include "osi_omni_sensor.hpp"                      // for SensorMockLevel
+#include <osi/utility/osi_omni_sensor.hpp>          // for SensorMockLevel
 
 // Connection / Initialization
 #define VTD_DEFAULT_SCP_PORT 48179

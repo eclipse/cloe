@@ -41,9 +41,9 @@
 #include "osi_object.pb.h"           // for MovingObject
 #include "osi_sensordata.pb.h"       // for SensorData, DetectedEntityHeader
 
-#include "osi_ground_truth.hpp"  // for OsiGroundTruth
-#include "osi_transceiver.hpp"   // for OsiTransceiver
-#include "osi_utils.hpp"
+#include "osi/utility/osi_ground_truth.hpp"  // for OsiGroundTruth
+#include "osi/utility/osi_transceiver.hpp"   // for OsiTransceiver
+#include "osi/utility/osi_utils.hpp"
 
 namespace osii {
 
@@ -51,8 +51,6 @@ namespace osii {
  * Convert OSI timestamp to Cloe time format.
  */
 cloe::Duration osi_timestamp_to_time(const osi3::Timestamp& timestamp);
-
-void from_osi_identifier(const osi3::Identifier& osi_id, int& id);
 
 /**
  * OSI host vehicle coordinates/orientations are relative to the global ground
@@ -74,6 +72,11 @@ void from_osi_base_moving(const osi3::BaseMoving& osi_bm, cloe::Object& obj);
 void from_osi_base_moving_alt(const osi3::BaseMoving& osi_bm,
                               const osi3::BaseMoving& osi_bm_gt,
                               cloe::Object& obj);
+
+/**
+ * As from_osi_base_moving, but for stationary objects.
+ */
+void from_osi_base_stationary(const osi3::BaseStationary& osi_bs, cloe::Object& obj);
 
 template <typename T>
 void from_osi_mov_obj_type_classification(const T& osi_mo, cloe::Object::Class& oc);
@@ -109,7 +112,12 @@ Eigen::Vector3d osi_vehicle_attrib_rear_offset_to_vector3d(
  * OSI messages of the listed data types may be overwritten by ground truth
  * information, if requested by the user.
  */
-enum class SensorMockTarget { MountingPosition, DetectedMovingObject, DetectedLaneBoundary };
+enum class SensorMockTarget {
+  MountingPosition,
+  DetectedMovingObject,
+  DetectedStaticObject,
+  DetectedLaneBoundary
+};
 
 /**
  * SensorMockLevel determines to which degree an OSI message of a certain data type
@@ -141,6 +149,7 @@ struct SensorMockConf : public cloe::Confable {
 
   std::map<Target, Level> level = {{Target::MountingPosition, Level::OverwriteNone},
                                    {Target::DetectedMovingObject, Level::OverwriteNone},
+                                   {Target::DetectedStaticObject, Level::OverwriteNone},
                                    {Target::DetectedLaneBoundary, Level::OverwriteNone}};
 
   CONFABLE_SCHEMA(SensorMockConf) {
@@ -148,6 +157,7 @@ struct SensorMockConf : public cloe::Confable {
         // clang-format off
         {"mounting_position", cloe::Schema(&level[Target::MountingPosition], "mock level for sensor mounting position")},
         {"detected_moving_objects", cloe::Schema(&level[Target::DetectedMovingObject], "mock level for detected moving objects")},
+        {"detected_static_objects", cloe::Schema(&level[Target::DetectedStaticObject], "mock level for detected stationary objects")},
         {"detected_lane_boundaries", cloe::Schema(&level[Target::DetectedLaneBoundary], "mock level for detected lane boundaries")},
         // clang-format on
     };
@@ -156,6 +166,7 @@ struct SensorMockConf : public cloe::Confable {
   void to_json(cloe::Json& j) const override {
     j["mounting_position"] = level.at(SensorMockTarget::MountingPosition);
     j["detected_moving_objects"] = level.at(SensorMockTarget::DetectedMovingObject);
+    j["detected_static_objects"] = level.at(SensorMockTarget::DetectedStaticObject);
     j["detected_lane_boundaries"] = level.at(SensorMockTarget::DetectedLaneBoundary);
   }
 };
@@ -188,9 +199,24 @@ class OsiOmniSensor {
   }
 
   /**
+   * Receive and process the incoming osi3::SensorData messages.
+   */
+  void step_sensor_data(const cloe::Sync& s, const bool& restart, cloe::Duration& sim_time);
+
+  /**
+   * Receive and process the incoming osi3::SensorView messages.
+   */
+  void step_sensor_view(const cloe::Sync& s, const bool& restart, cloe::Duration& sim_time);
+
+  /**
+   * Receive and process the incoming osi3::GroundTruth messages.
+   */
+  void step_ground_truth(const cloe::Sync& s, const bool& restart, cloe::Duration& sim_time);
+
+  /**
    * Receive and process the incoming messages.
    */
-  virtual void step(const cloe::Sync& s, const bool& restart, cloe::Duration& sim_time);
+  //virtual void step(const cloe::Sync& s, const bool& restart, cloe::Duration& sim_time) = 0;
 
   /**
    * Store the initial timestamp.
@@ -204,7 +230,30 @@ class OsiOmniSensor {
    * \param osi_sd SensorData message to be processed.
    * \param sim_time Simulation time to be set.
    */
-  virtual void process(osi3::SensorData* osi_sd, cloe::Duration& sim_time);
+  virtual void process_received_msg(osi3::SensorData* osi_sd, cloe::Duration& sim_time);
+
+  /**
+   * Translate OSI SensorView to Cloe data objects.
+   *
+   * \param osi_sv SensorView message to be processed.
+   * \param sim_time Simulation time to be set.
+   */
+  virtual void process_received_msg(osi3::SensorView* osi_sv, cloe::Duration& sim_time);
+
+  /**
+   * Translate OSI GroundTruth to Cloe data objects.
+   *
+   * \param osi_gt GroundTruth message to be processed.
+   * \param sim_time Simulation time to be set.
+   */
+  virtual void process_received_msg(osi3::GroundTruth* osi_gt, cloe::Duration& sim_time);
+
+  /**
+   * Translate OSI GroundTruth to Cloe data objects.
+   *
+   * \param osi_gt GroundTruth message to be processed.
+   */
+  virtual void process(const osi3::GroundTruth& osi_gt);
 
   /**
    * Translate OSI SensorView to Cloe data objects.
@@ -216,12 +265,10 @@ class OsiOmniSensor {
   /**
    * Translate OSI ego base information made available to the sensor model
    * from other components, or use ground truth.
-   * \param osi_hv HostVehicleData message to be processed (if available).
    * \param osi_mo MovingObject (ground truth) used as fallback.
+   * \param osi_hv Pointer to HostVehicleData message to be processed (if available).
    */
-  virtual void process(const bool has_veh_data,
-                       const osi3::HostVehicleData& osi_hv,
-                       const osi3::MovingObject& osi_ego);
+  virtual void process(const osi3::MovingObject& osi_ego, const osi3::HostVehicleData* osi_hv);
 
   /**
    * Translate OSI detected moving object information to Cloe data objects.
@@ -233,7 +280,11 @@ class OsiOmniSensor {
                        const osi3::DetectedEntityHeader& osi_eh,
                        const osi3::DetectedMovingObject& osi_mo);
 
-  void mock_detected_lane_boundaries();
+  void detected_moving_objects_from_ground_truth();
+
+  void detected_static_objects_from_ground_truth();
+
+  void detected_lane_boundaries_from_ground_truth();
 
   void from_osi_boundary_points(const osi3::LaneBoundary& osi_lb, cloe::LaneBoundary& lb);
 
@@ -280,6 +331,11 @@ class OsiOmniSensor {
   SensorMockLevel get_mock_level(SensorMockTarget trg_type) const {
     return mock_->level.at(trg_type);
   }
+
+  /**
+  * Clear sensor and transceiver cache, if applicable.
+  */
+  virtual void clear_cache() { osi_comm_->clear_cache(); }
 
   friend void to_json(cloe::Json& j, const OsiOmniSensor& c) {
     j = cloe::Json{

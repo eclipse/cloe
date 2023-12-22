@@ -30,8 +30,8 @@
 #include <cloe/component/object.hpp>  // for Object
 #include <cloe/utility/geometry.hpp>  // for quaternion_from_rpy
 
-#include "osi_omni_sensor.hpp"  // for OsiOmniSensor
-#include "osi_transceiver.hpp"  // for OsiTransceiver
+#include <osi/utility/osi_omni_sensor.hpp>  // for OsiOmniSensor
+#include <osi/utility/osi_transceiver.hpp>  // for OsiTransceiver
 
 #include "vtd_conf.hpp"         // for VtdSensorConfig
 #include "vtd_sensor_data.hpp"  // for VtdSensorData
@@ -57,8 +57,8 @@ class VtdOsiSensor : public osii::OsiOmniSensor, public VtdSensorData {
   void configure(const VtdSensorConfig& cfg);
 
   void step(const cloe::Sync& s) override {
-    this->clear_cache();
-    OsiOmniSensor::step(s, restart_, simulation_time_);
+    VtdSensorData::clear_cache();
+    OsiOmniSensor::step_sensor_data(s, restart_, simulation_time_);
   }
 
   void store_object(std::shared_ptr<cloe::Object> obj) override { world_objects_.push_back(obj); }
@@ -105,7 +105,7 @@ class VtdOsiSensor : public osii::OsiOmniSensor, public VtdSensorData {
 
   // As defined in `cloe/component.hpp`
   void reset() override {
-    clear_cache();
+    VtdSensorData::clear_cache();
     this->set_reset_state();
   }
 

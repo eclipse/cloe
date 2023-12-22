@@ -31,10 +31,11 @@
 #include <cloe/core.hpp>                     // for Json, Logger
 #include <cloe/utility/tcp_transceiver.hpp>  // for TcpTransceiver
 
-#include "osi_sensordata.pb.h"  // for SensorData
+#include "osi_groundtruth.pb.h"  // for GroundTruth
+#include "osi_sensordata.pb.h"   // for SensorData
 
-#include "osi_transceiver.hpp"  // for OsiTransceiver
-#include "osi_utils.hpp"        // for osi_logger
+#include "osi/utility/osi_transceiver.hpp"  // for OsiTransceiver
+#include "osi/utility/osi_utils.hpp"        // for osi_logger
 
 namespace osii {
 
@@ -49,11 +50,37 @@ class OsiTransceiverTcp : public OsiTransceiver, public cloe::utility::TcpTransc
     return this->tcp_available_data() >= static_cast<std::streamsize>(sizeof(osi3::SensorData));
   }
 
+  bool has_sensor_view() const override {
+    return this->tcp_available_data() >= static_cast<std::streamsize>(sizeof(osi3::SensorView));
+  }
+
+  bool has_ground_truth() const override {
+    return this->tcp_available_data() >= static_cast<std::streamsize>(sizeof(osi3::GroundTruth));
+  }
+
   std::vector<std::shared_ptr<osi3::SensorData>> receive_sensor_data() override {
     std::vector<std::shared_ptr<osi3::SensorData>> msgs;
     while (this->has_sensor_data()) {
       num_received_++;
       msgs.push_back(this->receive_sensor_data_wait());
+    }
+    return msgs;
+  }
+
+  std::vector<std::shared_ptr<osi3::SensorView>> receive_sensor_view() override {
+    std::vector<std::shared_ptr<osi3::SensorView>> msgs;
+    while (this->has_sensor_view()) {
+      num_received_++;
+      msgs.push_back(this->receive_sensor_view_wait());
+    }
+    return msgs;
+  }
+
+  std::vector<std::shared_ptr<osi3::GroundTruth>> receive_ground_truth() override {
+    std::vector<std::shared_ptr<osi3::GroundTruth>> msgs;
+    while (this->has_ground_truth()) {
+      num_received_++;
+      msgs.push_back(this->receive_ground_truth_wait());
     }
     return msgs;
   }
@@ -75,6 +102,9 @@ class OsiTransceiverTcp : public OsiTransceiver, public cloe::utility::TcpTransc
    * Synchronous (blocking) method to receive a SensorData message.
    */
   std::shared_ptr<osi3::SensorData> receive_sensor_data_wait();
+  std::shared_ptr<osi3::SensorView> receive_sensor_view_wait();
+  std::shared_ptr<osi3::GroundTruth>
+  receive_ground_truth_wait();  // TODO(tobias): change to template function
 
  private:
   // Statistics for interest's sake
