@@ -19,7 +19,7 @@
  * \file osi_utils.cpp
  */
 
-#include "osi_utils.hpp"
+#include "osi/utility/osi_utils.hpp"
 
 #include <fstream>  // for ofstream
 #include <string>
@@ -35,19 +35,28 @@
 
 namespace osii {
 
-void osi_to_json(const osi3::SensorData& data, std::string* json_string) {
+template <typename OSI_T>
+void osi_to_json(const OSI_T& msg, std::string* json_string) {
   google::protobuf::util::JsonPrintOptions options;
   options.add_whitespace = true;
   options.always_print_primitive_fields = true;
-  google::protobuf::util::MessageToJsonString(data, json_string, options);
+  google::protobuf::util::MessageToJsonString(msg, json_string, options);
 }
 
-void osi_to_file(const osi3::SensorData& data, const std::string& fname) {
+template <typename OSI_T>
+void osi_to_file(const OSI_T& msg, const std::string& fname) {
   std::string json;
-  osi_to_json(data, &json);
+  osi_to_json(msg, &json);
   std::ofstream out(fname);
   out << json;
   out.close();
+}
+template void osi_to_file(const osi3::SensorData& msg, const std::string& fname);
+template void osi_to_file(const osi3::SensorView& msg, const std::string& fname);
+template void osi_to_file(const osi3::GroundTruth& msg, const std::string& fname);
+
+void osi_identifier_to_int(const osi3::Identifier& osi_id, int& id) {
+  id = static_cast<int>(osi_id.value());
 }
 
 Eigen::Vector3d osi_vector3d_xyz_to_vector3d(const osi3::Vector3d osi_coord) {
@@ -93,6 +102,8 @@ Eigen::Isometry3d osi_position_orientation_to_pose(const T& osi_T) {
 
 template Eigen::Isometry3d osi_position_orientation_to_pose<osi3::BaseMoving>(
     const osi3::BaseMoving& osi_T);
+template Eigen::Isometry3d osi_position_orientation_to_pose<osi3::BaseStationary>(
+    const osi3::BaseStationary& osi_T);
 template Eigen::Isometry3d osi_position_orientation_to_pose<osi3::MountingPosition>(
     const osi3::MountingPosition& osi_T);
 

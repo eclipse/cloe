@@ -31,8 +31,8 @@
 
 #include <cloe/simulator.hpp>  // for ModelError
 
-#include "osi_omni_sensor.hpp"  // for SensorMockTarget
-#include "vtd_conf.hpp"         // for VtdSensorConfig
+#include <osi/utility/osi_omni_sensor.hpp>  // for SensorMockTarget
+#include "vtd_conf.hpp"                     // for VtdSensorConfig
 
 namespace vtd {
 
