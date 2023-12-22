@@ -1,0 +1,8 @@
+src/
+build/
+
+# Conan
+conan.lock
+conaninfo.txt
+conanbuildinfo.txt
+graph_info.json

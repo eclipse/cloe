@@ -1,0 +1,74 @@
+diff --git a/EnvironmentSimulator/CMakeLists.txt b/EnvironmentSimulator/CMakeLists.txt
+index 12e7b75..20b3ed1 100644
+--- a/EnvironmentSimulator/CMakeLists.txt
++++ b/EnvironmentSimulator/CMakeLists.txt
+@@ -27,7 +27,7 @@ set ( GTEST_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/googletest" )
+ set( CMAKE_VERBOSE_MAKEFILE true )
+ 
+ if ( ${FILE_STORAGE} STREQUAL "github" )
+-    set ( MODELS_PACKAGE_URL https://github.com/esmini/resources/raw/main/models/models.7z )
++    set ( MODELS_PACKAGE_URL  https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=0 )
+     if (APPLE)
+         set ( OSG_PACKAGE_URL https://github.com/esmini/resources/raw/main/libs/OpenSceneGraph_mac.7z )
+         set ( OSI_PACKAGE_URL https://github.com/esmini/resources/raw/main/libs/osi_mac.7z )
+diff --git a/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/OSIReporter.cpp b/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/OSIReporter.cpp
+index 5eee886..a246b2f 100644
+--- a/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/OSIReporter.cpp
++++ b/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/OSIReporter.cpp
+@@ -613,9 +613,9 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
+ 	obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_driver_id()->set_value((uint64_t)objectState->state_.info.ctrl_type);
+ 
+ 	// Set OSI Moving Object Boundingbox
+-	obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_x((double)(objectState->state_.info.boundingbox.center_.x_));
+-	obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_y((double)(objectState->state_.info.boundingbox.center_.y_));
+-	obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_z((double)(objectState->state_.info.boundingbox.center_.z_));
++	obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_x((double)(-1.0*objectState->state_.info.boundingbox.center_.x_));
++	obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_y((double)(-1.0*objectState->state_.info.boundingbox.center_.y_));
++	obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_z((double)(-1.0*objectState->state_.info.boundingbox.center_.z_));
+ 	obj_osi_internal.mobj->mutable_base()->mutable_dimension()->set_height(objectState->state_.info.boundingbox.dimensions_.height_);
+ 	obj_osi_internal.mobj->mutable_base()->mutable_dimension()->set_width(objectState->state_.info.boundingbox.dimensions_.width_);
+ 	obj_osi_internal.mobj->mutable_base()->mutable_dimension()->set_length(objectState->state_.info.boundingbox.dimensions_.length_);
+diff --git a/EnvironmentSimulator/Unittest/ScenarioEngineDll_test.cpp b/EnvironmentSimulator/Unittest/ScenarioEngineDll_test.cpp
+index 5bfc170..79798dc 100644
+--- a/EnvironmentSimulator/Unittest/ScenarioEngineDll_test.cpp
++++ b/EnvironmentSimulator/Unittest/ScenarioEngineDll_test.cpp
+@@ -265,7 +265,7 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
+ 	SE_StepDT(0.001f);
+ 	SE_FlushOSIFile();
+ 	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
+-	EXPECT_EQ(fileStatus.st_size, 68925);  // initial OSI size, including static content
++	EXPECT_EQ(fileStatus.st_size, 70214);  // initial OSI size, including static content
+ 
+ 	int road_lane_size;
+ 
+@@ -277,12 +277,12 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
+ 	SE_StepDT(0.001f);  // Step for write another frame to osi file
+ 	SE_FlushOSIFile();
+ 	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
+-	EXPECT_EQ(fileStatus.st_size, 69388);  // slight growth due to only dynamic updates
++	EXPECT_EQ(fileStatus.st_size, 70829);  // slight growth due to only dynamic updates
+ 
+ 	SE_StepDT(0.001f);  // Step for write another frame to osi file
+ 	SE_FlushOSIFile();
+ 	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
+-	EXPECT_EQ(fileStatus.st_size, 69852);  // slight growth due to only dynamic updates
++	EXPECT_EQ(fileStatus.st_size, 71445);  // slight growth due to only dynamic updates
+ 
+ 	SE_Close();
+ }
+@@ -784,13 +784,13 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
+ 	SE_Close();
+ 
+ 	ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
+-	EXPECT_EQ(fileStatus.st_size, 19831);
++	EXPECT_EQ(fileStatus.st_size, 30282);
+ 
+ 	// Read OSI file
+ 	FILE* file = fopen("gt.osi", "rb");
+ 	ASSERT_NE(file, nullptr);
+ 
+-	const int max_msg_size = 10000;
++	const int max_msg_size = 10091;
+ 	int msg_size;
+ 	char msg_buf[max_msg_size];
+ 

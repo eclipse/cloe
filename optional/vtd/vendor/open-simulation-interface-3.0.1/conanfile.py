@@ -58,6 +58,9 @@ class OpenSimulationInterfaceConan(ConanFile):
     def build_requirements(self):
         self.tool_requires("protobuf/<host_version>")
 
+    def configure(self):
+        self.options["protobuf"].shared = self.options.shared
+
     def source(self):
         files.get(self, **self.conan_data["sources"][self.version], strip_root=True)
 
@@ -79,6 +82,9 @@ class OpenSimulationInterfaceConan(ConanFile):
             files.rmdir(self, os.path.join(self.package_folder, "CMake"))
         else:
             files.rmdir(self, os.path.join(self.package_folder, "lib", "cmake"))
+
+    def package_id(self):
+        self.info.requires["protobuf"].full_package_mode()
 
     def package_info(self):
         self.cpp_info.set_property("cmake_file_name", "open_simulation_interface")
