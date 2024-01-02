@@ -22,11 +22,9 @@
 
 #pragma once
 
-#include <osi_groundtruth.pb.h>  // for GroundTruth
-#include <osi_sensordata.pb.h>   // for SensorData
-#include <osi_sensorview.pb.h>   // for SensorView
+#include <osi_sensordata.pb.h>  // for SensorData
 
-namespace cloe {
+namespace cloe_osi {
 
 class OsiSensor : public cloe::Component {
  public:
@@ -37,7 +35,8 @@ class OsiSensor : public cloe::Component {
   /**
    * Return OSI-SensorData
    */
-  virtual const osi3::SensorData& get() const = 0;
+  virtual const std::shared_ptr<osi3::SensorData>& get() const = 0;
+  virtual std::shared_ptr<osi3::SensorData>& get() = 0;
 };
 
-}  // namespace cloe
+}  // namespace cloe_osi
