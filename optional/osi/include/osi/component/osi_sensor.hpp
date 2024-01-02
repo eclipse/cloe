@@ -24,6 +24,8 @@
 
 #include <osi_sensordata.pb.h>  // for SensorData
 
+#include <cloe/component.hpp>  // for Component
+
 namespace cloe_osi {
 
 class OsiSensor : public cloe::Component {
