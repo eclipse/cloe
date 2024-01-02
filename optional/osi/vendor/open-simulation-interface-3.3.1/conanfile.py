@@ -29,9 +29,6 @@ class OpenSimulationInterfaceConan(ConanFile):
     exports_sources = [
         "CMakeLists.txt",
     ]
-    build_requires = [
-        "protoc/[~=3.15.2]",
-    ]
     requires = [
         "protobuf/[~=3.15.2]",
     ]
