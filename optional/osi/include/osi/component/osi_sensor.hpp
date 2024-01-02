@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Robert Bosch GmbH
+ * Copyright 2023 Robert Bosch GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,18 +21,12 @@
  */
 
 #pragma once
-#ifndef CLOE_COMPONENT_OSI_SENSOR_HPP_
-#define CLOE_COMPONENT_OSI_SENSOR_HPP_
 
-#include <memory>  // for shared_ptr
+#include <osi_groundtruth.pb.h>  // for GroundTruth
+#include <osi_sensordata.pb.h>   // for SensorData
+#include <osi_sensorview.pb.h>   // for SensorView
 
-#include "osi_groundtruth.pb.h"  // for GroundTruth
-#include "osi_sensordata.pb.h"   // for SensorData
-#include "osi_sensorview.pb.h"   // for SensorView
-
-#include <cloe/component.hpp>  // for Component, Json
-
-namespace cloe_osi {
+namespace cloe {
 
 class OsiSensor : public cloe::Component {
  public:
@@ -41,64 +35,9 @@ class OsiSensor : public cloe::Component {
   virtual ~OsiSensor() noexcept = default;
 
   /**
-   * Return OSI data, if available.
+   * Return OSI-SensorData
    */
-
-  virtual std::shared_ptr<osi3::GroundTruth> ground_truth() = 0;
-
-  virtual std::shared_ptr<osi3::SensorView> sensor_view() = 0;
-
-  virtual std::shared_ptr<osi3::SensorData> sensor_data() = 0;
-
-  /**
-   * Writes JSON representation into j.
-   */
-  cloe::Json active_state() const override {
-    return cloe::Json{
-        /*{"ground_truth", this->ground_truth()},
-        {"sensor_view", this->sensor_view()},
-        {"sensor_data", this->sensor_data()},*/
-    };
-  }
+  virtual const osi3::SensorData& get() const = 0;
 };
 
-class NopOsiSensor : public OsiSensor {
- public:
-  using OsiSensor::OsiSensor;
-  NopOsiSensor() : OsiSensor("nop_osi_sensor") {}
-  virtual ~NopOsiSensor() noexcept = default;
-
-  std::shared_ptr<osi3::GroundTruth> ground_truth() override { return ground_truth_; }
-
-  std::shared_ptr<osi3::SensorView> sensor_view() override { return sensor_view_; }
-
-  std::shared_ptr<osi3::SensorData> sensor_data() override { return sensor_data_; }
-
-  void set_ground_truth(const osi3::GroundTruth& gt) {
-    ground_truth_ = std::make_shared<osi3::GroundTruth>(gt);
-  }
-
-  void set_sensor_view(const osi3::SensorView& view) {
-    sensor_view_ = std::make_shared<osi3::SensorView>(view);
-  }
-
-  void set_sensor_data(const osi3::SensorData& data) {
-    sensor_data_ = std::make_shared<osi3::SensorData>(data);
-  }
-
-  void reset() override {
-    OsiSensor::reset();
-    ground_truth_.reset();
-    sensor_view_.reset();
-    sensor_data_.reset();
-  }
-
- protected:
-  std::shared_ptr<osi3::GroundTruth> ground_truth_{nullptr};
-  std::shared_ptr<osi3::SensorView> sensor_view_{nullptr};
-  std::shared_ptr<osi3::SensorData> sensor_data_{nullptr};
-};
-
-}  // namespace cloe_osi
-
-#endif  // CLOE_COMPONENT_OSI_SENSOR_HPP_
+}  // namespace cloe
