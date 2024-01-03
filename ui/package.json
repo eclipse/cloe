@@ -18,7 +18,7 @@
     "mathjs": "^7.5.1",
     "node-gyp": "9.3.0",
     "sass": "^1.56.1",
-    "plotly.js": "^2.2.1",
+    "plotly.js": "^2.25.2",
     "randomcolor": "^0.5.4",
     "react": "^16.8.6",
     "react-beautiful-dnd": "^11.0.4",
