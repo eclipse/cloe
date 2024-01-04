@@ -75,7 +75,7 @@ endif()
 # Installation -------------------------------------------------------
 install(TARGETS cloe-osi
     LIBRARY
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/osi
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cloe
     ARCHIVE
         DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )

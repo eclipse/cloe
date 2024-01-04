@@ -89,7 +89,7 @@ class CloeOsi(ConanFile):
 
         # Make sure we can find the library, both in editable mode and in the
         # normal package mode:
-        self.cpp_info.libdirs = [f"lib/osi"]
+        self.cpp_info.libdirs = [f"lib/cloe"]
         if not self.in_local_cache:
             self.cpp_info.libs = ["cloe-osi"]
         else:
