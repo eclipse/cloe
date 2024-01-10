@@ -100,4 +100,24 @@ auto make_schema(T* ptr, P proto, std::string&& desc) {
   return details::make_schema_wrapper2<T, P>::make_schema(ptr, std::move(proto), std::move(desc));
 }
 
+// Pre-Instantiate above templates for relevant datatypes
+
+#define FABLE_TYPES()     \
+  FABLE_TYPES_X(bool)     \
+  FABLE_TYPES_X(int8_t)   \
+  FABLE_TYPES_X(uint8_t)  \
+  FABLE_TYPES_X(int16_t)  \
+  FABLE_TYPES_X(uint16_t) \
+  FABLE_TYPES_X(int32_t)  \
+  FABLE_TYPES_X(uint32_t) \
+  FABLE_TYPES_X(int64_t)  \
+  FABLE_TYPES_X(uint64_t) \
+  FABLE_TYPES_X(float)    \
+  FABLE_TYPES_X(double)
+
+#define FABLE_TYPES_X(TYPE) \
+  extern template struct ::fable::schema::details::make_schema_wrapper1<TYPE>;
+
+FABLE_TYPES()
+
 }  // namespace fable::schema
