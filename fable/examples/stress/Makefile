@@ -16,12 +16,14 @@ TOOLCHAIN_FILE := ${BUILD_DIR}/${BUILD_TYPE}/generators/conan_toolchain.cmake
 # How many variables should the "Large" struct have?
 LARGE_STRUCT_SIZE := 1000
 
+FABLE_VERSION := $(shell make --quiet -C ../.. info-fqn)
+
 .PHONY: all clean
 all: ${TOOLCHAIN_FILE}
 	cmake --build --preset=${CMAKE_BUILD_TYPE}
 
 ${TOOLCHAIN_FILE}:
-	conan install . --build=missing --install-folder=${BUILD_DIR} -s:h build_type=${BUILD_TYPE}
+	conan install . --build=missing --install-folder=${BUILD_DIR} -s:h build_type=${BUILD_TYPE} --require-override ${FABLE_VERSION}
 	cmake --preset=${CMAKE_BUILD_TYPE} -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -DLARGE_STRUCT_SIZE=${LARGE_STRUCT_SIZE}
 
 clean:
