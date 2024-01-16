@@ -91,7 +91,7 @@ int run(const RunOptions& opt, const std::vector<std::string>& filepaths) {
     return EXIT_FAILURE;
   }
 
-  if (opt.output_path != "") {
+  if (!opt.output_path.empty()) {
     stack.engine.output_path = opt.output_path;
   }
 
@@ -112,7 +112,7 @@ int run(const RunOptions& opt, const std::vector<std::string>& filepaths) {
   }
 
   // Write results:
-  if (opt.write_output || opt.output_path != "") {
+  if (opt.write_output) {
     sim.write_output(result);
   }
   *opt.output << cloe::Json(result).dump(opt.json_indent) << std::endl;

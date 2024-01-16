@@ -67,7 +67,7 @@ struct RunOptions {
 
   // Options
   std::string uuid;
-
+  std::string output_path;
   // Flags:
   int json_indent = 2;
   bool allow_empty = false;
@@ -77,7 +77,6 @@ struct RunOptions {
 
   bool debug_lua = false;
   int debug_lua_port = 21110;
-  std::string output_path;
 };
 
 int run(const RunOptions& opt, const std::vector<std::string>& filepaths);
