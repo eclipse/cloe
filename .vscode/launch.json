@@ -4,10 +4,10 @@
             "name": "Debug cloe",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/RelWithDebInfo/bin/cloe-engine",
+            "program": "${input:get_executable_path}",
             "args": [
                 "run",
-                "--write-output",
+                "--no-write-output",
                 //example below shows how to use a specific test-case
                 //"${workspaceFolder}/tests/test_lua04_schedule_test.lua",
                 "${workspaceFolder}/${input:get_test_case}",
@@ -55,6 +55,17 @@
                 "useSingleResult": "true"
             }
         },
+        {
+            "type": "command",
+            "id": "get_executable_path",
+            "command": "shellCommand.execute",
+            //bash magic to set CLOE_ENGINE variable and get the value of it
+            "args": {
+                "command": "bash -c \"source <(cloe-launch activate tests/conanfile_all.py) && printenv CLOE_ENGINE\"",
+                "cwd": "${workspaceFolder}",
+                "useSingleResult": "true"
+            }
+        }
     ],
     "version": "2.0.0"
 }
