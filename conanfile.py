@@ -38,7 +38,8 @@ class Cloe(ConanFile):
         "fPIC": [True, False],
         "fable_allow_comments": [True, False],
         "engine_server": [True, False],
-        "engine_lrdb": [True, False]
+        "engine_lrdb": [True, False],
+        "python_api": [True, False]
     }
     default_options = {
         "shared": True,
@@ -46,6 +47,7 @@ class Cloe(ConanFile):
         "fable_allow_comments": True,
         "engine_server": True,
         "engine_lrdb": True,
+        "python_api": True
     }
     generators = "CMakeDeps", "VirtualRunEnv"
     no_copy_source = True
@@ -89,6 +91,8 @@ class Cloe(ConanFile):
         self.requires("boost/[>=1.65.1]")
         if self.options.engine_server:
             self.requires("oatpp/1.3.0")
+        if self.options.python_api:
+            self.requires("pybind11/2.10.1")
 
     def build_requirements(self):
         self.test_requires("gtest/1.13.0")
@@ -112,13 +116,14 @@ class Cloe(ConanFile):
         tc.cache_variables["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
         tc.cache_variables["CMAKE_MODULE_PATH"] = self.source_folder + "/runtime/cmake"
         tc.cache_variables["FABLE_VERSION"] = self.version
-        tc.cache_variables["FABLE_VERSION_U32"] = version_u32
+        tc.cache_variables["FABLE_VERSION_U32"] = str(version_u32)
         tc.cache_variables["FABLE_ALLOW_COMMENTS"] = self.options.fable_allow_comments
         tc.cache_variables["CLOE_PROJECT_VERSION"] = self.version
         tc.cache_variables["CLOE_VERSION"] = self.version
-        tc.cache_variables["CLOE_VERSION_U32"] = version_u32
+        tc.cache_variables["CLOE_VERSION_U32"] = str(version_u32)
         tc.cache_variables["CLOE_ENGINE_WITH_SERVER"] = self.options.engine_server
         tc.cache_variables["CLOE_ENGINE_WITH_LRDB"] = self.options.engine_lrdb
+        tc.cache_variables["CLOE_PYTHON_API"] = self.options.python_api
         tc.generate()
 
     def build(self):

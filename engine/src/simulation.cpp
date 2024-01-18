@@ -1401,6 +1401,9 @@ StateId SimulationMachine::Abort::impl(SimulationContext& ctx) {
 
 // --------------------------------------------------------------------------------------------- //
 
+Simulation::Simulation(const std::string& uuid)
+    : Simulation({}, {}, uuid) {}
+
 Simulation::Simulation(cloe::Stack&& config, sol::state&& lua, const std::string& uuid)
     : config_(std::move(config))
     , lua_(std::move(lua))

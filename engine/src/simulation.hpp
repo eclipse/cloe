@@ -112,6 +112,7 @@ struct SimulationResult {
 
 class Simulation {
  public:
+  Simulation(const std::string& uuid);
   Simulation(cloe::Stack&& config, sol::state&& lua, const std::string& uuid);
   ~Simulation() = default;
 
