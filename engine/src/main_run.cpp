@@ -91,6 +91,10 @@ int run(const RunOptions& opt, const std::vector<std::string>& filepaths) {
     return EXIT_FAILURE;
   }
 
+  if (!opt.output_path.empty()) {
+    stack.engine.output_path = opt.output_path;
+  }
+
   // Create simulation:
   Simulation sim(std::move(stack), std::move(lua), uuid);
   GLOBAL_SIMULATION_INSTANCE = &sim;
