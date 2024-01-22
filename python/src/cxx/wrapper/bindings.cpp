@@ -16,6 +16,7 @@ PYBIND11_MODULE(_cloe_bindings, m) {
       cloe::StackOptions stackOptions{};
       stackOptions.environment = std::make_unique<fable::Environment>();
       stackOptions.environment->set(CLOE_SIMULATION_UUID_VAR, "123"); // todo :( doesn't work without
+      stackOptions.plugin_paths.emplace_back("/home/ohf4fe/dev/sil/cloe/build/linux-x86_64-gcc-8/Debug/lib/cloe"); // todo remove
       // stackOptions.environment->set("CLOE_LOG_LEVEL", "trace"); // todo :( doesn't work without
       // todo why can't i just create a new stack with its default c'tor?
       cloe::Stack s = cloe::new_stack(stackOptions);
@@ -23,11 +24,11 @@ PYBIND11_MODULE(_cloe_bindings, m) {
       s.reset_schema();
       return s;
     }));
-    stack.def("merge", [](cloe::Stack &self, const py::dict &d, const std::string &file) {
+    stack.def("merge", [](cloe::Stack &self, const py::dict &d, const std::string &file = "") {
       const auto json = cloe::py::dict2json(d);
       fable::Conf conf (json, file);
       self.from_conf(conf);
-    });
+    }, py::arg("d"), py::arg("file") = "");
   }
   {
     m.def("create_sim", [](cloe::Stack stack, const std::string &uuid){
@@ -38,7 +39,7 @@ PYBIND11_MODULE(_cloe_bindings, m) {
       opts.environment->set("CLOE_LUA_PATH", ""); // todo: mandatory, otherwise segfault
       sol::state lua = cloe::new_lua(opts, stack);
       return std::make_unique<engine::Simulation>(std::move(stack), std::move(lua), uuid);
-    });
+    }, py::arg("stack"), py::arg("uuid"));
     py::class_<engine::Simulation> sim (m, "Simulation");
     // todo hooks!, store in ptr
     // todo is sim arg uuid == stack options uuid?
