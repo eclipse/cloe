@@ -1,0 +1,1 @@
+install(DIRECTORY cloe/ DESTINATION ${CMAKE_INSTALL_PREFIX}/python)
