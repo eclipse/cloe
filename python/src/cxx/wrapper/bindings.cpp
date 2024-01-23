@@ -41,6 +41,13 @@ PYBIND11_MODULE(_cloe_bindings, m) {
     });
   }
   {
+    py::class_<engine::SimulationResult>(m, "SimulationResult")
+        .def_readonly("uuid", &engine::SimulationResult::uuid)
+        .def_readonly("sync", &engine::SimulationResult::sync)
+        .def_readonly("elapsed", &engine::SimulationResult::elapsed);
+    // todo expose remaining members
+  }
+  {
     py::class_<cloe::Sync> sync (m, "Sync");
     sync.def_property_readonly("step", &cloe::Sync::step);
     sync.def_property_readonly("step_width", &cloe::Sync::step_width);

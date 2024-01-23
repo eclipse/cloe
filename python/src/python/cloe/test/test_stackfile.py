@@ -1,6 +1,6 @@
 import sys
-from pathlib import Path
 sys.path.append('/home/ohf4fe/dev/sil/cloe/build/linux-x86_64-gcc-8/Debug/lib')
+from pathlib import Path
 import _cloe_bindings as cloe
 
 stack = cloe.Stack()
@@ -11,5 +11,5 @@ conf = dict(
 )
 stack.merge(conf)
 
-sim = cloe.create_sim(stack, uuid="123")
+sim = cloe.Simulation(stack, uuid="123")
 sim.run()
