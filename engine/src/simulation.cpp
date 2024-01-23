@@ -94,6 +94,7 @@
 #include <cloe/vehicle.hpp>                   // for Vehicle
 #include <fable/utility.hpp>                  // for pretty_print
 #include <fable/utility/sol.hpp>              // for sol::object to_json
+#include <utility>
 
 #include "coordinator.hpp"            // for register_usertype_coordinator
 #include "lua_action.hpp"             // for LuaAction,
@@ -1401,11 +1402,11 @@ StateId SimulationMachine::Abort::impl(SimulationContext& ctx) {
 
 // --------------------------------------------------------------------------------------------- //
 
-Simulation::Simulation(cloe::Stack&& config, sol::state&& lua, const std::string& uuid)
+Simulation::Simulation(cloe::Stack&& config, std::unique_ptr<sol::state> lua, std::string uuid)
     : config_(std::move(config))
     , lua_(std::move(lua))
     , logger_(cloe::logger::get("cloe"))
-    , uuid_(uuid) {}
+    , uuid_(std::move(uuid)) {}
 
 struct SignalReport {
   std::string name;
@@ -1470,7 +1471,7 @@ std::vector<std::string> dump_signals_autocompletion(cloe::DataBroker& db) {
 
 SimulationResult Simulation::run() {
   // Input:
-  SimulationContext ctx{lua_.lua_state()};
+  SimulationContext ctx{lua_->lua_state()};
   ctx.db = std::make_unique<cloe::DataBroker>(ctx.lua);
   ctx.server = make_server(config_.server);
   ctx.coordinator = std::make_unique<Coordinator>(ctx.lua, ctx.db.get());

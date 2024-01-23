@@ -112,7 +112,9 @@ struct SimulationResult {
 
 class Simulation {
  public:
-  Simulation(cloe::Stack&& config, sol::state&& lua, const std::string& uuid);
+  Simulation(cloe::Stack&& config, std::unique_ptr<sol::state> lua, std::string uuid);
+  Simulation(Simulation&&) = default;
+  Simulation &operator=(Simulation&&) = default;
   ~Simulation() = default;
 
   /**
@@ -157,7 +159,7 @@ class Simulation {
 
  private:
   cloe::Stack config_;
-  sol::state lua_;
+  std::unique_ptr<sol::state> lua_;
   cloe::Logger logger_;
   std::string uuid_;
   std::function<void()> abort_fn_;

@@ -56,7 +56,7 @@ struct LuaOptions {
  * \see stack_factory.hpp
  * \see lua_setup.cpp
  */
-sol::state new_lua(const LuaOptions& opt, Stack& s);
+std::unique_ptr<sol::state> new_lua(const LuaOptions& opt, Stack& s);
 
 #if CLOE_ENGINE_WITH_LRDB
 /**

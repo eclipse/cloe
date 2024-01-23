@@ -63,11 +63,11 @@ int run(const RunOptions& opt, const std::vector<std::string>& filepaths) {
 
   // Load the stack file:
   cloe::Stack stack = cloe::new_stack(opt.stack_options);
-  sol::state lua = cloe::new_lua(opt.lua_options, stack);
+  auto lua = cloe::new_lua(opt.lua_options, stack);
 #if CLOE_ENGINE_WITH_LRDB
   if (opt.debug_lua) {
     log->info("Lua debugger listening at port: {}", opt.debug_lua_port);
-    cloe::start_lua_debugger(lua, opt.debug_lua_port);
+    cloe::start_lua_debugger(*lua, opt.debug_lua_port);
   }
 #else
   if (opt.debug_lua) {
@@ -78,7 +78,7 @@ int run(const RunOptions& opt, const std::vector<std::string>& filepaths) {
     cloe::conclude_error(*opt.stack_options.error, [&]() {
       for (const auto& file : filepaths) {
         if (boost::algorithm::ends_with(file, ".lua")) {
-          cloe::merge_lua(lua, file);
+          cloe::merge_lua(*lua, file);
         } else {
           cloe::merge_stack(opt.stack_options, stack, file);
         }

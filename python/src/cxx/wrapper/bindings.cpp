@@ -26,15 +26,12 @@ PYBIND11_MODULE(_cloe_bindings, m) {
     }, py::arg("d"), py::arg("file") = "");
   }
   {
-    m.def("create_sim", [](cloe::Stack stack, const std::string &uuid){
-      // todo argh, engine isn't movable so i have to do it like this instead of defining python ctor
-      //    (fix: lua state is unique ptr)
+    py::class_<engine::Simulation> sim (m, "Simulation");
+    sim.def(py::init([](cloe::Stack stack, const std::string &uuid) {
       cloe::LuaOptions opts {};
       opts.environment = std::make_unique<fable::Environment>();
-      sol::state lua = cloe::new_lua(opts, stack);
-      return std::make_unique<engine::Simulation>(std::move(stack), std::move(lua), uuid);
-    }, py::arg("stack"), py::arg("uuid"));
-    py::class_<engine::Simulation> sim (m, "Simulation");
+      return engine::Simulation(std::move(stack), cloe::new_lua(opts, stack), uuid);
+    }), py::arg("stack"), py::arg("uuid"));
     // todo hooks!, store in ptr
     // todo is sim arg uuid == stack options uuid?
     sim.def("run", &engine::Simulation::run);
