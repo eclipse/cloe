@@ -3,26 +3,21 @@
 #include "simulation.hpp"
 #include "stack_factory.hpp"
 
+#include <pybind11/chrono.h>
 #include <pybind11/pybind11.h>
 
 PYBIND11_MODULE(_cloe_bindings, m) {
   namespace py = pybind11;
   m.doc() = "the cloe python binding";
-  auto engine = m.def_submodule("engine", "this module contains cloe-engine stuff");
   {
     py::class_<cloe::Stack> stack(m, "Stack");
     stack.def(py::init([]() {
-      // blergh!
       cloe::StackOptions stackOptions{};
       stackOptions.environment = std::make_unique<fable::Environment>();
       stackOptions.environment->set(CLOE_SIMULATION_UUID_VAR, "123"); // todo :( doesn't work without
       stackOptions.plugin_paths.emplace_back("/home/ohf4fe/dev/sil/cloe/build/linux-x86_64-gcc-8/Debug/lib/cloe"); // todo remove
-      // stackOptions.environment->set("CLOE_LOG_LEVEL", "trace"); // todo :( doesn't work without
       // todo why can't i just create a new stack with its default c'tor?
-      cloe::Stack s = cloe::new_stack(stackOptions);
-      // todo why do i have to call reset schema here, i get segfault otherwise :(
-      s.reset_schema();
-      return s;
+      return cloe::new_stack(stackOptions);
     }));
     stack.def("merge", [](cloe::Stack &self, const py::dict &d, const std::string &file = "") {
       const auto json = cloe::py::dict2json(d);
@@ -36,15 +31,26 @@ PYBIND11_MODULE(_cloe_bindings, m) {
       //    (fix: lua state is unique ptr)
       cloe::LuaOptions opts {};
       opts.environment = std::make_unique<fable::Environment>();
-      opts.environment->set("CLOE_LUA_PATH", ""); // todo: mandatory, otherwise segfault
       sol::state lua = cloe::new_lua(opts, stack);
       return std::make_unique<engine::Simulation>(std::move(stack), std::move(lua), uuid);
     }, py::arg("stack"), py::arg("uuid"));
     py::class_<engine::Simulation> sim (m, "Simulation");
     // todo hooks!, store in ptr
     // todo is sim arg uuid == stack options uuid?
-    sim.def("run", [](engine::Simulation &self) {
-      self.run();
+    sim.def("run", &engine::Simulation::run);
+    sim.def("wait_until", [](engine::Simulation &self,
+                             const std::function<bool(const cloe::Sync&)> &condition) {
+      // todo impl, add timeout parameter
     });
+  }
+  {
+    py::class_<cloe::Sync> sync (m, "Sync");
+    sync.def_property_readonly("step", &cloe::Sync::step);
+    sync.def_property_readonly("step_width", &cloe::Sync::step_width);
+    sync.def_property_readonly("time", &cloe::Sync::time);
+    sync.def_property_readonly("eta", &cloe::Sync::eta);
+    sync.def_property_readonly("realtime_factor", &cloe::Sync::realtime_factor);
+    sync.def_property_readonly("is_realtime_factor_unlimited", &cloe::Sync::is_realtime_factor_unlimited);
+    sync.def_property_readonly("achievable_realtime_factor", &cloe::Sync::achievable_realtime_factor);
   }
 }
