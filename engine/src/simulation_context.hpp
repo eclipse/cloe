@@ -39,84 +39,18 @@
 #include <cloe/utility/statistics.hpp>  // for Accumulator
 #include <cloe/utility/timer.hpp>       // for DurationTimer
 
-#include "coordinator.hpp"              // for Coordinator
-#include "registrar.hpp"                // for Registrar
-#include "server.hpp"                   // for Server
-#include "simulation_progress.hpp"      // for SimulationProgress
-#include "stack.hpp"                    // for Stack
-#include "utility/command.hpp"          // for CommandExecuter
-#include "utility/time_event.hpp"       // for TimeCallback
+#include "coordinator.hpp"  // for Coordinator
+#include "registrar.hpp"    // for Registrar
+#include "server.hpp"       // for Server
+#include "simulation_driver.hpp"
+#include "simulation_progress.hpp"  // for SimulationProgress
+#include "stack.hpp"                // for Stack
+#include "utility/command.hpp"      // for CommandExecuter
+#include "utility/time_event.hpp"   // for TimeCallback
 
 namespace engine {
 
-/**
- * SimulationSync is the synchronization context of the simulation.
- */
-class SimulationSync : public cloe::Sync {
- public:  // Overrides
-  SimulationSync() = default;
-  explicit SimulationSync(const cloe::Duration& step_width) : step_width_(step_width) {}
 
-  uint64_t step() const override { return step_; }
-  cloe::Duration step_width() const override { return step_width_; }
-  cloe::Duration time() const override { return time_; }
-  cloe::Duration eta() const override { return eta_; }
-
-  /**
-   * Return the target simulation factor, with 1.0 being realtime.
-   *
-   * - If target realtime factor is <= 0.0, then it is interpreted to be unlimited.
-   * - Currently, the floating INFINITY value is not handled specially.
-   */
-  double realtime_factor() const override { return realtime_factor_; }
-
-  /**
-   * Return the maximum theorically achievable simulation realtime factor,
-   * with 1.0 being realtime.
-   */
-  double achievable_realtime_factor() const override {
-    return static_cast<double>(step_width().count()) / static_cast<double>(cycle_time_.count());
-  }
-
- public:  // Modification
-  /**
-   * Increase the step number for the simulation.
-   *
-   * - It increases the step by one.
-   * - It moves the simulation time forward by the step width.
-   * - It stores the real time difference from the last time IncrementStep was called.
-   */
-  void increment_step() {
-    step_ += 1;
-    time_ += step_width_;
-  }
-
-  /**
-   * Set the target realtime factor, with any value less or equal to zero
-   * unlimited.
-   */
-  void set_realtime_factor(double s) { realtime_factor_ = s; }
-
-  void set_eta(cloe::Duration d) { eta_ = d; }
-
-  void reset() {
-    time_ = cloe::Duration(0);
-    step_ = 0;
-  }
-
-  void set_cycle_time(cloe::Duration d) { cycle_time_ = d; }
-
- private:
-  // Simulation State
-  uint64_t step_{0};
-  cloe::Duration time_{0};
-  cloe::Duration eta_{0};
-  cloe::Duration cycle_time_;
-
-  // Simulation Configuration
-  double realtime_factor_{1.0};            // realtime
-  cloe::Duration step_width_{20'000'000};  // should be 20ms
-};
 
 struct SimulationStatistics {
   cloe::utility::Accumulator engine_time_ms;
@@ -197,9 +131,9 @@ DEFINE_NIL_EVENT(Loop, "loop", "begin of inner simulation loop each cycle")
  * performed in the simulation states in the `simulation.cpp` file.
  */
 struct SimulationContext {
-  SimulationContext(sol::state_view&& l) : lua(l) {}
+  SimulationContext(SimulationDriver* driver) : simulationDriver(driver) {}
 
-  sol::state_view lua;
+  SimulationDriver* simulationDriver;
 
   // Setup
   std::unique_ptr<cloe::DataBroker> db;

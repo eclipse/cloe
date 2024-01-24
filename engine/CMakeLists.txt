@@ -101,6 +101,11 @@ add_library(cloe-enginelib STATIC
     # src/server_mock.cpp
     src/simulation.cpp
     src/simulation.hpp
+    src/simulation_driver.cpp
+    src/simulation_driver.hpp
+    src/lua_simulation_driver.cpp
+    src/lua_simulation_driver.hpp
+    src/simulation_sync.hpp
     src/simulation_context.cpp
     src/simulation_context.hpp
     src/simulation_progress.hpp

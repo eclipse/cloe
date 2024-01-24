@@ -30,11 +30,10 @@
 #include <string>              // for string
 #include <vector>              // for vector<>
 
-#include <sol/state_view.hpp>  // for state_view
-#include <sol/table.hpp>       // for table
-
 #include <cloe/cloe_fwd.hpp>   // for DataBroker
 #include <cloe/trigger.hpp>    // for Trigger, Action, Event, ...
+
+#include "simulation_driver.hpp"
 
 namespace engine {
 
@@ -98,7 +97,7 @@ struct HistoryTrigger {
  */
 class Coordinator {
  public:
-  Coordinator(sol::state_view lua, cloe::DataBroker* db);
+  Coordinator(SimulationDriver* simulation_driver, cloe::DataBroker* db);
 
   const std::vector<HistoryTrigger>& history() const { return history_; }
 
@@ -107,7 +106,7 @@ class Coordinator {
   void register_event(const std::string& key, cloe::EventFactoryPtr&& ef,
                       std::shared_ptr<cloe::Callback> storage);
 
-  sol::table register_lua_table(const std::string& field);
+  sol::table register_lua_table(const std::string& field); // todo
 
   cloe::DataBroker* data_broker() const { return db_; }
 
@@ -150,7 +149,7 @@ class Coordinator {
   // Factories:
   std::map<std::string, cloe::ActionFactoryPtr> actions_;
   std::map<std::string, cloe::EventFactoryPtr> events_;
-  sol::state_view lua_;
+  SimulationDriver* simulation_driver_;
   cloe::DataBroker* db_;  // non-owning
 
   // Execution:

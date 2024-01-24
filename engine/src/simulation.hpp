@@ -31,6 +31,7 @@
 #include <sol/state.hpp>   // for state
 
 #include "simulation_context.hpp"
+#include "simulation_driver.hpp"
 #include "stack.hpp"  // for Stack
 
 namespace engine {
@@ -112,7 +113,7 @@ struct SimulationResult {
 
 class Simulation {
  public:
-  Simulation(cloe::Stack&& config, std::unique_ptr<sol::state> lua, std::string uuid);
+  Simulation(cloe::Stack&& config, std::unique_ptr<SimulationDriver> simulation_driver, std::string uuid);
   Simulation(Simulation&&) = default;
   Simulation &operator=(Simulation&&) = default;
   ~Simulation() = default;
@@ -159,7 +160,7 @@ class Simulation {
 
  private:
   cloe::Stack config_;
-  std::unique_ptr<sol::state> lua_;
+  std::unique_ptr<SimulationDriver> simulation_driver_;
   cloe::Logger logger_;
   std::string uuid_;
   std::function<void()> abort_fn_;

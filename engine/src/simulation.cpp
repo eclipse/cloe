@@ -337,11 +337,8 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
     }
   }
 
-  {  // 3. Initialize Lua
-    auto types_tbl = sol::object(cloe::luat_cloe_engine_types(ctx.lua)).as<sol::table>();
-    register_usertype_coordinator(types_tbl, ctx.sync);
-
-    cloe::luat_cloe_engine_state(ctx.lua)["scheduler"] = std::ref(*ctx.coordinator);
+  {  // 3. Initialize simulation driver
+    ctx.simulationDriver->initialize(ctx.sync, *ctx.coordinator);
   }
 
   {  // 4. Enroll endpoints and triggers for the server
@@ -438,7 +435,7 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
     r.register_action<actions::RealtimeFactorFactory>(&ctx.sync);
     r.register_action<actions::ResetStatisticsFactory>(&ctx.statistics);
     r.register_action<actions::CommandFactory>(ctx.commander.get());
-    r.register_action<actions::LuaFactory>(ctx.lua);
+    ctx.simulationDriver->register_action_factories(r);
 
     // From: cloe/trigger/example_actions.hpp
     auto tr = ctx.coordinator->trigger_registrar(cloe::Source::TRIGGER);
@@ -773,192 +770,13 @@ StateId SimulationMachine::Start::impl(SimulationContext& ctx) {
   {
     // Bind lua state_view to databroker
     auto* dbPtr = ctx.coordinator->data_broker();
-    if (!dbPtr) {
+    if (dbPtr == nullptr) {
       throw std::logic_error("Coordinator did not provide a DataBroker instance");
     }
-    auto& db = *dbPtr;
     // Alias signals via lua
-    {
-      bool aliasing_failure = false;
-      // Read cloe.alias_signals
-      sol::object signal_aliases = cloe::luat_cloe_engine_initial_input(ctx.lua)["signal_aliases"];
-      auto type = signal_aliases.get_type();
-      switch (type) {
-        // cloe.alias_signals: expected is a list (i.e. table) of 2-tuple each strings
-        case sol::type::table: {
-          sol::table alias_signals = signal_aliases.as<sol::table>();
-          auto tbl_size = std::distance(alias_signals.begin(), alias_signals.end());
-          //for (auto& kv : alias_signals)
-          for (int i = 0; i < tbl_size; i++) {
-            //sol::object value = kv.second;
-            sol::object value = alias_signals[i + 1];
-            sol::type type = value.get_type();
-            switch (type) {
-              // cloe.alias_signals[i]: expected is a 2-tuple (i.e. table) each strings
-              case sol::type::table: {
-                sol::table alias_tuple = value.as<sol::table>();
-                auto tbl_size = std::distance(alias_tuple.begin(), alias_tuple.end());
-                if (tbl_size != 2) {
-                  // clang-format off
-                  logger()->error(
-                      "One or more entries in 'cloe.alias_signals' does not consist out of a 2-tuple. "
-                      "Expected are entries in this format { \"regex\" , \"short-name\" }"
-                      );
-                  // clang-format on
-                  aliasing_failure = true;
-                  continue;
-                }
-
-                sol::object value;
-                sol::type type;
-                std::string old_name;
-                std::string alias_name;
-                value = alias_tuple[1];
-                type = value.get_type();
-                if (sol::type::string != type) {
-                  // clang-format off
-                  logger()->error(
-                      "One or more parts in a tuple in 'cloe.alias_signals' has an unexpected datatype '{}'. "
-                      "Expected are entries in this format { \"regex\" , \"short-name\" }",
-                      static_cast<int>(type));
-                  // clang-format on
-                  aliasing_failure = true;
-                } else {
-                  old_name = value.as<std::string>();
-                }
-
-                value = alias_tuple[2];
-                type = value.get_type();
-                if (sol::type::string != type) {
-                  // clang-format off
-                  logger()->error(
-                      "One or more parts in a tuple in 'cloe.alias_signals' has an unexpected datatype '{}'. "
-                      "Expected are entries in this format { \"regex\" , \"short-name\" }",
-                      static_cast<int>(type));
-                  // clang-format on
-                  aliasing_failure = true;
-                } else {
-                  alias_name = value.as<std::string>();
-                }
-                try {
-                  db.alias(old_name, alias_name);
-                  // clang-format off
-                  logger()->info(
-                      "Aliasing signal '{}' as '{}'.",
-                      old_name, alias_name);
-                  // clang-format on
-                } catch (const std::logic_error& ex) {
-                  // clang-format off
-                  logger()->error(
-                      "Aliasing signal specifier '{}' as '{}' failed with this error: {}",
-                      old_name, alias_name, ex.what());
-                  // clang-format on
-                  aliasing_failure = true;
-                } catch (...) {
-                  // clang-format off
-                  logger()->error(
-                      "Aliasing signal specifier '{}' as '{}' failed.",
-                      old_name, alias_name);
-                  // clang-format on
-                  aliasing_failure = true;
-                }
-              } break;
-              // cloe.alias_signals[i]: is not a table
-              default: {
-                // clang-format off
-                logger()->error(
-                    "One or more entries in 'cloe.alias_signals' has an unexpected datatype '{}'. "
-                    "Expected are entries in this format { \"regex\" , \"short-name\" }",
-                    static_cast<int>(type));
-                // clang-format on
-                aliasing_failure = true;
-              } break;
-            }
-          }
-
-        } break;
-        case sol::type::none:
-        case sol::type::lua_nil: {
-          // not defined -> nop
-        } break;
-        default: {
-          // clang-format off
-          logger()->error(
-              "Expected symbol 'cloe.alias_signals' has unexpected datatype '{}'. "
-              "Expected is a list of 2-tuples in this format { \"regex\" , \"short-name\" }",
-              static_cast<int>(type));
-          // clang-format on
-          aliasing_failure = true;
-        } break;
-      }
-      if (aliasing_failure) {
-        throw cloe::ModelError("Aliasing signals failed with above error. Aborting.");
-      }
-    }
-
+    ctx.simulationDriver->alias_signals(*dbPtr);
     // Inject requested signals into lua
-    {
-      auto& signals = db.signals();
-      bool binding_failure = false;
-      // Read cloe.require_signals
-      sol::object value = cloe::luat_cloe_engine_initial_input(ctx.lua)["signal_requires"];
-      auto type = value.get_type();
-      switch (type) {
-        // cloe.require_signals expected is a list (i.e. table) of strings
-        case sol::type::table: {
-          sol::table require_signals = value.as<sol::table>();
-          auto tbl_size = std::distance(require_signals.begin(), require_signals.end());
-
-          for (int i = 0; i < tbl_size; i++) {
-            sol::object value = require_signals[i + 1];
-
-            sol::type type = value.get_type();
-            if (type != sol::type::string) {
-              logger()->warn(
-                  "One entry of cloe.require_signals has a wrong data type: '{}'. "
-                  "Expected is a list of strings.",
-                  static_cast<int>(type));
-              binding_failure = true;
-              continue;
-            }
-            std::string signal_name = value.as<std::string>();
-
-            // virtually bind signal 'signal_name' to lua
-            auto iter = db[signal_name];
-            if (iter != signals.end()) {
-              try {
-                db.bind_signal(signal_name);
-                logger()->info("Binding signal '{}' as '{}'.", signal_name, signal_name);
-              } catch (const std::logic_error& ex) {
-                logger()->error("Binding signal '{}' failed with error: {}", signal_name,
-                                ex.what());
-              }
-            } else {
-              logger()->warn("Requested signal '{}' does not exist in DataBroker.", signal_name);
-              binding_failure = true;
-            }
-          }
-          // actually bind all virtually bound signals to lua
-          db.bind("signals", cloe::luat_cloe_engine(ctx.lua));
-        } break;
-        case sol::type::none:
-        case sol::type::lua_nil: {
-          logger()->warn(
-              "Expected symbol 'cloe.require_signals' appears to be undefined. "
-              "Expected is a list of string.");
-        } break;
-        default: {
-          logger()->error(
-              "Expected symbol 'cloe.require_signals' has unexpected datatype '{}'. "
-              "Expected is a list of string.",
-              static_cast<int>(type));
-          binding_failure = true;
-        } break;
-      }
-      if (binding_failure) {
-        throw cloe::ModelError("Binding signals to Lua failed with above error. Aborting.");
-      }
-    }
+    ctx.simulationDriver->bind_signals(*dbPtr);
   }
 
   // Process initial trigger list
@@ -1402,9 +1220,9 @@ StateId SimulationMachine::Abort::impl(SimulationContext& ctx) {
 
 // --------------------------------------------------------------------------------------------- //
 
-Simulation::Simulation(cloe::Stack&& config, std::unique_ptr<sol::state> lua, std::string uuid)
+Simulation::Simulation(cloe::Stack&& config, std::unique_ptr<SimulationDriver> simulation_driver, std::string uuid)
     : config_(std::move(config))
-    , lua_(std::move(lua))
+    , simulation_driver_(std::move(simulation_driver))
     , logger_(cloe::logger::get("cloe"))
     , uuid_(std::move(uuid)) {}
 
@@ -1471,7 +1289,7 @@ std::vector<std::string> dump_signals_autocompletion(cloe::DataBroker& db) {
 
 SimulationResult Simulation::run() {
   // Input:
-  SimulationContext ctx{lua_->lua_state()};
+  SimulationContext ctx{simulation_driver_.get()};
   ctx.db = std::make_unique<cloe::DataBroker>(ctx.lua);
   ctx.server = make_server(config_.server);
   ctx.coordinator = std::make_unique<Coordinator>(ctx.lua, ctx.db.get());
@@ -1584,7 +1402,7 @@ SimulationResult Simulation::run() {
   r.statistics = ctx.statistics;
   r.elapsed = ctx.progress.elapsed();
   r.triggers = ctx.coordinator->history();
-  r.report = sol::object(cloe::luat_cloe_engine_state(ctx.lua)["report"]);
+  r.report = ctx.simulationDriver->produce_report();
   // Don't create output file data unless the output files are being written
   if (ctx.config.engine.output_file_signals) {
     r.signals = dump_signals(*ctx.db);
