@@ -2,10 +2,13 @@
 
 #include "coordinator.hpp"
 
+#include "lua_bindings.hpp"
+
 #include "lua_action.hpp"
 #include "lua_api.hpp"
 
 #include <cloe/model.hpp>
+#include <fable/conf.hpp>
 #include <fable/utility/sol.hpp>
 
 namespace engine {
@@ -203,6 +206,39 @@ void LuaSimulationDriver::bind_signals(cloe::DataBroker& dataBroker) {
 }
 nlohmann::json LuaSimulationDriver::produce_report() const {
   return nlohmann::json{sol::object(cloe::luat_cloe_engine_state(*lua_)["report"])};
+}
+cloe::TriggerPtr LuaSimulationDriver::make_trigger(TriggerFactory& factory, const sol::table& tbl) {
+  sol::optional<std::string> label = tbl["label"];
+  auto ep = factory.make_event(fable::Conf{nlohmann::json(tbl["event"])});
+  auto ap = make_action(factory, sol::object(tbl["action"]));
+  sol::optional<std::string> action_source = tbl["action_source"];
+  if (!label && action_source) {
+    label = *action_source;
+  } else {
+    label = "";
+  }
+  sol::optional<bool> sticky = tbl["sticky"];
+  auto tp = std::make_unique<cloe::Trigger>(*label, cloe::Source::LUA, std::move(ep), std::move(ap));
+  tp->set_sticky(sticky.value_or(false));
+  return tp;
+}
+cloe::ActionPtr LuaSimulationDriver::make_action(TriggerFactory& factory, const sol::object& lua) {
+  if (lua.get_type() == sol::type::function) {
+    return std::make_unique<actions::LuaFunction>("luafunction", lua);
+  } else {
+    return factory.make_action(cloe::Conf{nlohmann::json(lua)});
+  }
+}
+std::vector<cloe::TriggerPtr> LuaSimulationDriver::yield_pending_triggers(engine::TriggerFactory& triggerFactory){
+  std::vector<cloe::TriggerPtr> result;
+  auto triggers = sol::object(cloe::luat_cloe_engine_initial_input(*lua_)["triggers"]);
+  size_t count = 0;
+  for (auto& kv : triggers.as<sol::table>()) {
+    result.push_back(make_trigger(triggerFactory, kv.second));
+    count++;
+  }
+  cloe::luat_cloe_engine_initial_input(*lua_)["triggers_processed"] = count;
+  return result;
 }
 
 }

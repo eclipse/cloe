@@ -20,7 +20,12 @@ class LuaSimulationDriver final : public SimulationDriver {
   void alias_signals(cloe::DataBroker& dataBroker) override;
   void bind_signals(cloe::DataBroker& dataBroker) override;
 
-  nlohmann::json produce_report() const override;
+  [[nodiscard]] nlohmann::json produce_report() const override;
+
+  std::vector<cloe::TriggerPtr> yield_pending_triggers(TriggerFactory &triggerFactory) override;
+
+  static cloe::ActionPtr make_action(TriggerFactory& factory, const sol::object& lua);
+  static cloe::TriggerPtr make_trigger(TriggerFactory& factory, const sol::table& tbl);
 
  private:
   std::unique_ptr<sol::state> lua_;

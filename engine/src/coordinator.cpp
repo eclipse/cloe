@@ -63,10 +63,10 @@ class TriggerRegistrar : public cloe::TriggerRegistrar {
  public:
   TriggerRegistrar(Coordinator& m, Source s) : cloe::TriggerRegistrar(s), manager_(m) {}
 
-  ActionPtr make_action(const Conf& c) const override { return manager_.make_action(c); }
-  EventPtr make_event(const Conf& c) const override { return manager_.make_event(c); }
+  ActionPtr make_action(const Conf& c) const override { return manager_.trigger_factory().make_action(c); }
+  EventPtr make_event(const Conf& c) const override { return manager_.trigger_factory().make_event(c); }
   TriggerPtr make_trigger(const Conf& c) const override {
-    return manager_.make_trigger(source_, c);
+    return manager_.trigger_factory().make_trigger(source_, c);
   }
 
   // TODO: Should these queue_trigger becomes inserts? Because if they are coming from
@@ -87,7 +87,7 @@ void Coordinator::enroll(Registrar& r) {
   r.register_api_handler("/triggers/actions", HandlerType::STATIC,
     [this](const Request&, Response& r) {
       Json j;
-      for (const auto& a : actions_) {
+      for (const auto& a : trigger_factory_->actions()) {
         j[a.first] = a.second->json_schema();
       }
       r.write(j);
@@ -96,7 +96,7 @@ void Coordinator::enroll(Registrar& r) {
   r.register_api_handler("/triggers/events", HandlerType::STATIC,
     [this](const Request&, Response& r) {
       Json j;
-      for (const auto& a : events_) {
+      for (const auto& a : trigger_factory_->events()) {
         j[a.first] = a.second->json_schema();
       }
       r.write(j);
@@ -156,31 +156,15 @@ void Coordinator::enroll(Registrar& r) {
 }
 
 void Coordinator::register_action(const std::string& key, ActionFactoryPtr&& af) {
-  if (actions_.count(key) != 0) {
-    throw Error("duplicate action name not allowed");
-  }
-  logger()->debug("Register action: {}", key);
-  af->set_name(key);
-  actions_[key] = std::move(af);
+  trigger_factory_->register_action(key, std::move(af));
 }
 
 void Coordinator::register_event(const std::string& key, EventFactoryPtr&& ef,
                                  std::shared_ptr<Callback> storage) {
-  if (events_.count(key) != 0) {
-    throw Error("duplicate event name not allowed");
-  }
-  logger()->debug("Register event: {}", key);
-  ef->set_name(key);
-  events_[key] = std::move(ef);
+  trigger_factory_->register_event(key, std::move(ef));
   storage_[key] = storage;
   storage->set_executer(
       std::bind(&Coordinator::execute_trigger, this, std::placeholders::_1, std::placeholders::_2));
-}
-
-sol::table Coordinator::register_lua_table(const std::string& field) {
-  auto tbl = lua_.create_table();
-  luat_cloe_engine_plugins(lua_)[field] = tbl;
-  return tbl;
 }
 
 cloe::CallbackResult Coordinator::execute_trigger(TriggerPtr&& t, const Sync& sync) {
@@ -192,26 +176,8 @@ cloe::CallbackResult Coordinator::execute_trigger(TriggerPtr&& t, const Sync& sy
   return result;
 }
 
-void Coordinator::execute_action_from_lua(const Sync& sync, const sol::object& obj) {
-  // TODO: Make this trackable by making it a proper trigger and using execute trigger
-  // instead of calling the action here directly.
-  auto ap = make_action(obj);
-  (*ap)(sync, *executer_registrar_);
-}
-
-void Coordinator::insert_trigger_from_lua(const Sync& sync, const sol::object& obj) {
-  store_trigger(make_trigger(obj), sync);
-}
-
-size_t Coordinator::process_pending_lua_triggers(const Sync& sync) {
-  auto triggers = sol::object(luat_cloe_engine_initial_input(lua_)["triggers"]);
-  size_t count = 0;
-  for (auto& kv : triggers.as<sol::table>()) {
-    store_trigger(make_trigger(kv.second), sync);
-    count++;
-  }
-  luat_cloe_engine_initial_input(lua_)["triggers_processed"] = count;
-  return count;
+void Coordinator::insert_trigger(const cloe::Sync& sync, cloe::TriggerPtr trigger) {
+  store_trigger(std::move(trigger), sync);
 }
 
 size_t Coordinator::process_pending_web_triggers(const Sync& sync) {
@@ -255,104 +221,6 @@ Duration Coordinator::process(const Sync& sync) {
   return sync.time();
 }
 
-namespace {
-template <typename T, typename M>
-std::unique_ptr<T> make_some(const Conf& c, const M& m) {
-  bool alternate = (*c).type() == Json::value_t::string;
-
-  auto get_factory = [&](const std::string& key) -> const auto& {
-    if (m.count(key) == 0) {
-      if (std::is_same<T, Action>::value) {
-        throw TriggerUnknownAction(key, c);
-      }
-      if (std::is_same<T, Event>::value) {
-        throw TriggerUnknownEvent(key, c);
-      }
-    } else {
-      return m.at(key);
-    }
-  };
-
-  if (alternate) {
-    // This section tries to create a new action/event by using the alternate
-    // string description. Not every event/action supports this though!
-    auto input = c.get<std::string>();
-
-    std::string name;
-    std::string argument;
-    auto found = input.find("=");
-    if (found == std::string::npos) {
-      name = input;
-    } else {
-      name = input.substr(0, found);
-      argument = input.substr(found + 1);
-    }
-
-    const auto& factory = get_factory(name);
-    try {
-      return factory->make(argument);
-    } catch (TriggerError& e) {
-      c.throw_error(e.what());
-    }
-  } else {
-    auto name = c.get<std::string>("name");
-    const auto& factory = get_factory(name);
-    return factory->make(c);
-  }
-}
-
-}  // anonymous namespace
-
-ActionPtr Coordinator::make_action(const Conf& c) const { return make_some<Action>(c, actions_); }
-
-EventPtr Coordinator::make_event(const Conf& c) const { return make_some<Event>(c, events_); }
-
-TriggerPtr Coordinator::make_trigger(Source s, const Conf& c) const {
-  EventPtr ep;
-  ActionPtr ap;
-  bool opt = c.get_or("optional", false);
-  try {
-    ep = make_event(c.at("event"));
-    ap = make_action(c.at("action"));
-  } catch (TriggerError& e) {
-    if (opt) {
-      logger()->warn("Ignoring optional trigger ({}): {}", e.what(), c->dump());
-      return nullptr;
-    } else {
-      throw;
-    }
-  }
-  auto label = c.get_or<std::string>("label", "");
-  auto t = std::make_unique<Trigger>(label, s, std::move(ep), std::move(ap));
-  t->set_sticky(c.get_or("sticky", false));
-  t->set_conceal(c.get_or("conceal", false));
-  return t;
-}
-
-ActionPtr Coordinator::make_action(const sol::object& lua) const {
-  if (lua.get_type() == sol::type::function) {
-    return std::make_unique<actions::LuaFunction>("luafunction", lua);
-  } else {
-    return make_action(Conf{Json(lua)});
-  }
-}
-
-TriggerPtr Coordinator::make_trigger(const sol::table& lua) const {
-  sol::optional<std::string> label = lua["label"];
-  EventPtr ep = make_event(Conf{Json(lua["event"])});
-  ActionPtr ap = make_action(sol::object(lua["action"]));
-  sol::optional<std::string> action_source = lua["action_source"];
-  if (!label && action_source) {
-    label = *action_source;
-  } else {
-    label = "";
-  }
-  sol::optional<bool> sticky = lua["sticky"];
-  auto tp = std::make_unique<Trigger>(*label, Source::LUA, std::move(ep), std::move(ap));
-  tp->set_sticky(sticky.value_or(false));
-  return tp;
-}
-
 void Coordinator::queue_trigger(TriggerPtr&& t) {
   if (t == nullptr) {
     // This only really happens if a trigger is an optional trigger.
@@ -362,18 +230,29 @@ void Coordinator::queue_trigger(TriggerPtr&& t) {
   input_queue_.emplace_back(std::move(t));
 }
 
-void register_usertype_coordinator(sol::table& lua, const Sync& sync) {
-  // clang-format off
-  lua.new_usertype<Coordinator>("Coordinator",
-    sol::no_constructor,
-    "insert_trigger", [&sync](Coordinator& self, const sol::object& obj) {
-      self.insert_trigger_from_lua(sync, obj);
-    },
-    "execute_action", [&sync](Coordinator& self, const sol::object& obj) {
-      self.execute_action_from_lua(sync, obj);
-    }
-  );
-  // clang-format on
+void Coordinator::queue_trigger(cloe::Source s, const Conf& c) {
+  queue_trigger(trigger_factory_->make_trigger(s, c));
+}
+
+size_t Coordinator::process_pending_driver_triggers(const Sync& sync) {
+  auto triggers = simulation_driver_->yield_pending_triggers(*trigger_factory_);
+  const auto count = triggers.size();
+  for(auto &&trigger : triggers) {
+    store_trigger(std::move(trigger), sync);
+  }
+  return count;
+}
+
+sol::table Coordinator::register_lua_table(const std::string& field) {
+  auto tbl = lua_.create_table();
+  luat_cloe_engine_plugins(lua_)[field] = tbl;
+  return tbl;
+}
+TriggerFactory& Coordinator::trigger_factory() { return *trigger_factory_; }
+const TriggerFactory& Coordinator::trigger_factory() const { return *trigger_factory_; }
+SimulationDriver& Coordinator::simulation_driver() { return *simulation_driver_; }
+void Coordinator::execute_action(const Sync& sync, cloe::Action& action) {
+  action(sync, *executer_registrar_);
 }
 
 }  // namespace engine

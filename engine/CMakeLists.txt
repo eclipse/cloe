@@ -91,6 +91,8 @@ add_library(cloe-enginelib STATIC
     src/lua_setup_fs.cpp
     src/lua_setup_stack.cpp
     src/lua_setup_sync.cpp
+    src/lua_bindings.cpp
+    src/lua_bindings.hpp
     src/coordinator.cpp
     src/coordinator.hpp
     src/lua_action.cpp
@@ -109,6 +111,8 @@ add_library(cloe-enginelib STATIC
     src/simulation_context.cpp
     src/simulation_context.hpp
     src/simulation_progress.hpp
+    src/trigger_factory.cpp
+    src/trigger_factory.hpp
     src/utility/command.cpp
     src/utility/command.hpp
     src/utility/defer.hpp

@@ -34,56 +34,18 @@
 #include <cloe/trigger.hpp>    // for Trigger, Action, Event, ...
 
 #include "simulation_driver.hpp"
+#include "trigger_factory.hpp"
 
 namespace engine {
 
 // Forward declarations:
 class TriggerRegistrar;  // from coordinator.cpp
 
-/**
- * TriggerUnknownAction is thrown when an Action cannot be created because the
- * ActionFactory cannot be found.
- */
-class TriggerUnknownAction : public cloe::TriggerInvalid {
- public:
-  TriggerUnknownAction(const std::string& key, const cloe::Conf& c)
-      : TriggerInvalid(c, "unknown action: " + key), key_(key) {}
-  virtual ~TriggerUnknownAction() noexcept = default;
-
-  /**
-   * Return key that is unknown.
-   */
-  const char* key() const { return key_.c_str(); }
-
- private:
-  std::string key_;
-};
-
-/**
- * TriggerUnknownEvent is thrown when an Event cannot be created because the
- * EventFactory cannot be found.
- */
-class TriggerUnknownEvent : public cloe::TriggerInvalid {
- public:
-  TriggerUnknownEvent(const std::string& key, const cloe::Conf& c)
-      : TriggerInvalid(c, "unknown event: " + key), key_(key) {}
-  virtual ~TriggerUnknownEvent() noexcept = default;
-
-  /**
-   * Return key that is unknown.
-   */
-  const char* key() const { return key_.c_str(); }
-
- private:
-  std::string key_;
-};
-
 struct HistoryTrigger {
   HistoryTrigger(cloe::Duration d, cloe::TriggerPtr&& t) : when(d), what(std::move(t)) {}
 
   friend void to_json(cloe::Json& j, const HistoryTrigger& t);
 
- public:
   cloe::Duration when;
   cloe::TriggerPtr what;
 };
@@ -106,7 +68,7 @@ class Coordinator {
   void register_event(const std::string& key, cloe::EventFactoryPtr&& ef,
                       std::shared_ptr<cloe::Callback> storage);
 
-  sol::table register_lua_table(const std::string& field); // todo
+  sol::table register_lua_table(const std::string& field);
 
   cloe::DataBroker* data_broker() const { return db_; }
 
@@ -114,7 +76,7 @@ class Coordinator {
 
   void enroll(cloe::Registrar& r);
 
-  cloe::Logger logger() const { return cloe::logger::get("cloe"); }
+  static cloe::Logger logger() { return cloe::logger::get("cloe"); }
 
   /**
    * Process any incoming triggers, clear the buffer, and trigger time-based
@@ -122,19 +84,19 @@ class Coordinator {
    */
   cloe::Duration process(const cloe::Sync&);
 
-  size_t process_pending_lua_triggers(const cloe::Sync& sync);
+  size_t process_pending_driver_triggers(const cloe::Sync& sync);
   size_t process_pending_web_triggers(const cloe::Sync& sync);
 
-  void insert_trigger_from_lua(const cloe::Sync& sync, const sol::object& obj);
-  void execute_action_from_lua(const cloe::Sync& sync, const sol::object& obj);
+  void insert_trigger(const cloe::Sync& sync, cloe::TriggerPtr trigger);
+  void execute_action(const cloe::Sync& sync, cloe::Action& action);
+
+  TriggerFactory& trigger_factory();
+  const TriggerFactory& trigger_factory() const;
+
+  SimulationDriver& simulation_driver();
 
  protected:
-  cloe::ActionPtr make_action(const sol::object& lua) const;
-  cloe::ActionPtr make_action(const cloe::Conf& c) const;
-  cloe::EventPtr make_event(const cloe::Conf& c) const;
-  cloe::TriggerPtr make_trigger(cloe::Source s, const cloe::Conf& c) const;
-  cloe::TriggerPtr make_trigger(const sol::table& tbl) const;
-  void queue_trigger(cloe::Source s, const cloe::Conf& c) { queue_trigger(make_trigger(s, c)); }
+  void queue_trigger(cloe::Source s, const cloe::Conf& c);
   void queue_trigger(cloe::TriggerPtr&& tp);
   void store_trigger(cloe::TriggerPtr&& tp, const cloe::Sync& sync);
   cloe::CallbackResult execute_trigger(cloe::TriggerPtr&& tp, const cloe::Sync& sync);
@@ -144,11 +106,10 @@ class Coordinator {
 
  private:
   // Options:
-  bool allow_errors_ = false;
+  bool allow_errors_ = false; // todo never written to, always false!
 
   // Factories:
-  std::map<std::string, cloe::ActionFactoryPtr> actions_;
-  std::map<std::string, cloe::EventFactoryPtr> events_;
+  std::unique_ptr<TriggerFactory> trigger_factory_;
   SimulationDriver* simulation_driver_;
   cloe::DataBroker* db_;  // non-owning
 
@@ -165,7 +126,5 @@ class Coordinator {
   // History:
   std::vector<HistoryTrigger> history_;
 };
-
-void register_usertype_coordinator(sol::table& lua, const cloe::Sync& sync);
 
 }  // namespace engine

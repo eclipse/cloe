@@ -19,9 +19,10 @@
 #pragma once
 
 #include "simulation_sync.hpp"
+#include "trigger_factory.hpp"
 
-#include <cloe/registrar.hpp>
 #include <cloe/data_broker.hpp>
+#include <cloe/registrar.hpp>
 
 namespace engine {
 
@@ -42,6 +43,8 @@ class SimulationDriver {
   virtual void register_action_factories(cloe::Registrar& registrar) = 0;
   virtual void alias_signals(cloe::DataBroker &dataBroker) = 0;
   virtual void bind_signals(cloe::DataBroker &dataBroker) = 0;
+
+  virtual std::vector<cloe::TriggerPtr> yield_pending_triggers(TriggerFactory &triggerFactory) = 0;
 
   [[nodiscard]] virtual nlohmann::json produce_report() const = 0;
 };
