@@ -1,0 +1,10 @@
+---
+sources:
+  "1.0.0":
+    url: "https://github.com/OpenSimulationInterface/osi-sensor-model-packaging/archive/refs/tags/v1.0.0.tar.gz"
+    sha256: "6c9617608e815419f5c9b7b3359a0573082e7068dfcfc0f42c059c8094265fd6"
+patches:
+  "1.0.0":
+    - patch_file: "patches/fix-osi-includes.patch"
+    - patch_file: "patches/osmp_vtd_v2.2.patch"
+    - patch_file: "patches/cmakelists.patch"

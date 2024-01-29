@@ -1,0 +1,123 @@
+--- examples/OSMPDummySensor/CMakeLists.txt.original	2018-06-12 18:02:59.000000000 +0200
++++ examples/OSMPDummySensor/CMakeLists.txt	2023-12-11 12:09:32.801215890 +0100
+@@ -1,71 +1,57 @@
+-cmake_minimum_required(VERSION 3.5)
+-project(OSMPDummySensor)
++cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
+
+-set(CMAKE_CXX_STANDARD 11)
+-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+-set(LINK_WITH_SHARED_OSI OFF CACHE BOOL "Link FMU with shared OSI library instead of statically linking")
+-set(PUBLIC_LOGGING OFF CACHE BOOL "Enable logging via FMI logger")
+-set(PRIVATE_LOGGING OFF CACHE BOOL "Enable private logging to file")
+-if(WIN32)
+-	set(PRIVATE_LOG_PATH "C:/TEMP/OSMPDummySensorLog.log" CACHE FILEPATH "Path to write private log file to")
+-else()
+-	set(PRIVATE_LOG_PATH "/tmp/OSMPDummySensorLog.log" CACHE FILEPATH "Path to write private log file to")
++project(OSMPDummySensor LANGUAGES CXX)
++
++# Input Variables
++set(VTD_ROOT "" CACHE STRING "Path to VTD root directory")
++
++# Dependencies
++find_package(open_simulation_interface REQUIRED)
++find_package(Protobuf CONFIG REQUIRED)
++find_library(VTD_OSI_LIBRARY NAME libopen_simulation_interface.so
++    PATHS "${VTD_ROOT}/Data/Setups/Standard.OSI3/Bin/"
++    NO_DEFAULT_PATH
++)
++if(NOT VTD_OSI_LIBRARY)
++    message(WARNING "VTD OSI library not found. Using external package.")
++    set(VTD_OSI_LIBRARY open_simulation_interface::libopen_simulation_interface)
+ endif()
+-set(VERBOSE_FMI_LOGGING OFF CACHE BOOL "Enable detailed FMI function logging")
+-set(DEBUG_BREAKS OFF CACHE BOOL "Enable debugger traps for debug builds of FMU")
+
++# Configuration
+ string(TIMESTAMP FMUTIMESTAMP UTC)
+ string(MD5 FMUGUID modelDescription.in.xml)
+ configure_file(modelDescription.in.xml modelDescription.xml @ONLY)
+
+-find_package(Protobuf 2.6.1 REQUIRED)
+-add_library(OSMPDummySensor SHARED OSMPDummySensor.cpp)
+-set_target_properties(OSMPDummySensor PROPERTIES PREFIX "")
+-target_compile_definitions(OSMPDummySensor PRIVATE "FMU_SHARED_OBJECT")
+-target_compile_definitions(OSMPDummySensor PRIVATE "FMU_GUID=\"${FMUGUID}\"")
+-if(LINK_WITH_SHARED_OSI)
+-	target_link_libraries(OSMPDummySensor open_simulation_interface)
+-else()
+-	target_link_libraries(OSMPDummySensor open_simulation_interface_pic)
+-endif()
+-if(PRIVATE_LOGGING)
+-	file(TO_NATIVE_PATH ${PRIVATE_LOG_PATH} PRIVATE_LOG_PATH_NATIVE)
+-	string(REPLACE "\\" "\\\\" PRIVATE_LOG_PATH_ESCAPED ${PRIVATE_LOG_PATH_NATIVE})
+-	target_compile_definitions(OSMPDummySensor PRIVATE
+-		"PRIVATE_LOG_PATH=\"${PRIVATE_LOG_PATH_ESCAPED}\"")
+-endif()
+-target_compile_definitions(OSMPDummySensor PRIVATE
+-	$<$<BOOL:${PUBLIC_LOGGING}>:PUBLIC_LOGGING>
+-	$<$<BOOL:${VERBOSE_FMI_LOGGING}>:VERBOSE_FMI_LOGGING>
+-	$<$<BOOL:${DEBUG_BREAKS}>:DEBUG_BREAKS>)
+-
+-if(WIN32)
+-	if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+-		set(FMI_BINARIES_PLATFORM "win64")
+-	else()
+-		set(FMI_BINARIES_PLATFORM "win32")
+-	endif()
+-elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+-	if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+-		set(FMI_BINARIES_PLATFORM "linux64")
+-	else()
+-		set(FMI_BINARIES_PLATFORM "linux32")
+-	endif()
+-elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+-	if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+-		set(FMI_BINARIES_PLATFORM "darwin64")
+-	else()
+-		set(FMI_BINARIES_PLATFORM "darwin32")
+-	endif()
+-endif()
++# Library ------------------------------------------------------------
++add_library(${PROJECT_NAME} SHARED
++    OSMPDummySensor.cpp
++)
++set_target_properties(${PROJECT_NAME} PROPERTIES
++    CXX_STANDARD 11
++    CXX_STANDARD_REQUIRED ON
++    PREFIX ""
++)
++target_include_directories(${PROJECT_NAME}
++    PUBLIC
++        ../includes
++        ${open_simulation_interface_INCLUDE_DIRS}
++)
++target_link_libraries(${PROJECT_NAME}
++    PUBLIC
++        protobuf::libprotobuf
++        ${VTD_OSI_LIBRARY}
++)
++target_compile_definitions(${PROJECT_NAME}
++  PRIVATE
++    FMU_SHARED_OBJECT
++    PRIVATE_LOG_PATH="/tmp/OSMPDummySensor.log"
++)
+
+-add_custom_command(TARGET OSMPDummySensor
+-	POST_BUILD
+-	COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/buildfmu"
+-	COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/buildfmu/sources"
+-	COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/buildfmu/binaries/${FMI_BINARIES_PLATFORM}"
+-	COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/modelDescription.xml" "${CMAKE_CURRENT_BINARY_DIR}/buildfmu"
+-	COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/OSMPDummySensor.cpp" "${CMAKE_CURRENT_BINARY_DIR}/buildfmu/sources/"
+-	COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/OSMPDummySensor.h" "${CMAKE_CURRENT_BINARY_DIR}/buildfmu/sources/"
+-	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:OSMPDummySensor> $<$<PLATFORM_ID:Windows>:$<$<CONFIG:Debug>:$<TARGET_PDB_FILE:OSMPDummySensor>>> "${CMAKE_CURRENT_BINARY_DIR}/buildfmu/binaries/${FMI_BINARIES_PLATFORM}"
+-	COMMAND ${CMAKE_COMMAND} -E chdir "${CMAKE_CURRENT_BINARY_DIR}/buildfmu" ${CMAKE_COMMAND} -E tar "cfv" "../OSMPDummySensor.fmu" --format=zip "modelDescription.xml" "${CMAKE_CURRENT_BINARY_DIR}/buildfmu/sources" "${CMAKE_CURRENT_BINARY_DIR}/buildfmu/binaries/${FMI_BINARIES_PLATFORM}")
++# Installation -------------------------------------------------------
++include(GNUInstallDirs)
++install(TARGETS ${PROJECT_NAME}
++    LIBRARY
++        DESTINATION ${CMAKE_INSTALL_LIBDIR}
++    ARCHIVE
++        DESTINATION ${CMAKE_INSTALL_LIBDIR}
++)
