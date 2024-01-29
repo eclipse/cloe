@@ -8,15 +8,44 @@
       {
         "binding": "virtue",
         "args": {
-          "lane_sensor_components": ["cloe::default_lane_sensor"]
+          "lane_sensor_components": [
+            "cloe::default_lane_sensor"
+          ]
         }
       }
     ]
   },
   "simulators": [
     {
-      "binding": "minimator"
-      // name is automatically "minimator"
+      "binding": "minimator",
+      "args": {
+        "vehicles": {
+          "ego1": {
+            "ego_sensor_mockup": {
+              "ego_object": {
+                "velocity": 20.0,
+                "position": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+                }
+              }
+            },
+            "object_sensor_mockup": {
+              "objects": [
+                {
+                  "velocity": 0.0,
+                  "position": {
+                    "x": 10.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
     }
   ],
   "vehicles": [
@@ -24,7 +53,7 @@
       "name": "default",
       "from": {
         "simulator": "minimator",
-        "index": 0
+        "name": "ego1"
       },
       "components": {
         "cloe::speedometer": {

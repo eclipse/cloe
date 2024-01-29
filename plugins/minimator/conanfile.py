@@ -25,6 +25,7 @@ class CloeSimulatorMinimator(ConanFile):
     generators = "CMakeDeps", "VirtualRunEnv"
     no_copy_source = True
     exports_sources = [
+        "include/*",
         "src/*",
         "CMakeLists.txt",
     ]
@@ -60,6 +61,8 @@ class CloeSimulatorMinimator(ConanFile):
             cm.configure()
         if self.should_build:
             cm.build()
+        if self.should_test:
+            cm.test()
 
     def package(self):
         cm = cmake.CMake(self)

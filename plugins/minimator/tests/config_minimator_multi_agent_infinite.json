@@ -4,11 +4,81 @@
     {
       "binding": "minimator",
       "args": {
-        "vehicles": [
-          "first",
-          "second",
-          "third"
-        ]}
+        "vehicles": {
+          "first": {
+            "ego_sensor_mockup": {
+              "ego_object": {
+                "velocity": 0.0,
+                "position": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+                }
+              }
+            },
+            "object_sensor_mockup": {
+              "objects": [
+                {
+                  "velocity": 0.0,
+                  "position": {
+                    "x": 10.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  }
+                }
+              ]
+            }
+          },
+          "second": {
+            "ego_sensor_mockup": {
+              "ego_object": {
+                "velocity": 0.0,
+                "position": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+                }
+              }
+            },
+            "object_sensor_mockup": {
+              "objects": [
+                {
+                  "velocity": 0.0,
+                  "position": {
+                    "x": 10.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  }
+                }
+              ]
+            }
+          },
+          "third": {
+            "ego_sensor_mockup": {
+              "ego_object": {
+                "velocity": 0.0,
+                "position": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+                }
+              }
+            },
+            "object_sensor_mockup": {
+              "objects": [
+                {
+                  "velocity": 0.0,
+                  "position": {
+                    "x": 10.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
     }
   ],
   "vehicles": [
