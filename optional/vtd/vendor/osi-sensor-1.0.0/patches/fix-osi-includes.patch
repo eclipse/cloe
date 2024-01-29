@@ -1,0 +1,26 @@
+diff -wru examples.original/OSMPDummySensor/OSMPDummySensor.h examples/OSMPDummySensor/OSMPDummySensor.h
+--- examples/OSMPDummySensor/OSMPDummySensor.h	2018-06-12 18:02:59.000000000 +0200
++++ examples/OSMPDummySensor/OSMPDummySensor.h	2023-12-11 16:25:17.620048565 +0100
+@@ -80,8 +80,8 @@
+ 
+ #undef min
+ #undef max
+-#include "osi_sensorview.pb.h"
+-#include "osi_sensordata.pb.h"
++#include <osi3/osi_sensorview.pb.h>
++#include <osi3/osi_sensordata.pb.h>
+ 
+ /* FMU Class */
+ class COSMPDummySensor {
+diff -wru examples.original/OSMPDummySource/OSMPDummySource.h examples/OSMPDummySource/OSMPDummySource.h
+--- examples/OSMPDummySource/OSMPDummySource.h	2018-06-12 18:02:59.000000000 +0200
++++ examples/OSMPDummySource/OSMPDummySource.h	2023-12-11 16:25:08.283737538 +0100
+@@ -70,7 +70,7 @@
+ 
+ #undef min
+ #undef max
+-#include "osi_sensorview.pb.h"
++#include <osi3/osi_sensorview.pb.h>
+ 
+ /* FMU Class */
+ class COSMPDummySource {
