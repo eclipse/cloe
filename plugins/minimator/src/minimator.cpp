@@ -53,86 +53,24 @@
 #include <string>      // for string
 #include <vector>      // for vector<>
 
-#include <cloe/component/ego_sensor.hpp>        // for NopEgoSensor
-#include <cloe/component/lane_sensor.hpp>       // for LaneBoundarySensor
-#include <cloe/component/latlong_actuator.hpp>  // for LatLongActuator
-#include <cloe/component/object_sensor.hpp>     // for NopObjectSensor
-#include <cloe/handler.hpp>                     // for ToJson
-#include <cloe/models.hpp>                      // for CloeComponent
-#include <cloe/plugin.hpp>                      // for EXPORT_CLOE_PLUGIN
-#include <cloe/registrar.hpp>                   // for Registrar
-#include <cloe/simulator.hpp>                   // for Simulator
-#include <cloe/sync.hpp>                        // for Sync
-#include <cloe/vehicle.hpp>                     // for Vehicle
+#include <cloe/component/ego_sensor.hpp>                // for NopEgoSensor
+#include <cloe/component/lane_sensor.hpp>               // for LaneBoundarySensor
+#include <cloe/component/latlong_actuator.hpp>          // for LatLongActuator
+#include <cloe/component/object_sensor.hpp>             // for NopObjectSensor
+#include <cloe/component/object_sensor_functional.hpp>  // for ObjectSensorFilter
+#include <cloe/handler.hpp>                             // for ToJson
+#include <cloe/models.hpp>                              // for CloeComponent
+#include <cloe/plugin.hpp>                              // for EXPORT_CLOE_PLUGIN
+#include <cloe/registrar.hpp>                           // for Registrar
+#include <cloe/simulator.hpp>                           // for Simulator
+#include <cloe/sync.hpp>                                // for Sync
+#include <cloe/utility/geometry.hpp>                    // for pose_from_rotation_translation
+#include <cloe/vehicle.hpp>                             // for Vehicle
+#include <minimator.hpp>
 
 namespace minimator {
 
-/**
- * MinimatorConfiguration is what we use to configure `Minimator` from some
- * JSON input.
- *
- * The Cloe runtime takes care of reading the configuration from the stack
- * file and passing it to the `MinimatorFactory`, which can then pass it
- * to `Minimator` during construction.
- *
- * So, the input will be deserialized from `/simulators/N/args`, where `N` is
- * some entry in the `simulators` object:
- *
- *     {
- *       "version": "4",
- *       "simulators": [
- *         {
- *           "binding": "minimator"
- *           "args": {
- *             "vehicles": [
- *               "ego1",
- *               "ego2"
- *             ]
- *           }
- *         }
- *       ]
- *     }
- *
- * Since our minimalistic simulator doesn't do much yet, our configuration
- * is quite simple: a number of names which will each become a vehicle.
- */
-struct MinimatorConfiguration : public cloe::Confable {
-  std::vector<std::string> vehicles{"default"};
-
-  // The `CONFABLE_SCHEMA` is simple enough and is the recommended way to
-  // augment a class that inherits from `Confable` to expose `from_conf`,
-  // `from_json`, and `to_json` methods. The `Schema` type is a sort of
-  // polymorphic type that automatically derives a JSON schema from a set of
-  // pointers. This schema is used to provide serialization and deserialization.
-  //
-  // \see fable/confable.hpp
-  // \see fable/schema.hpp
-  //
-  CONFABLE_SCHEMA(MinimatorConfiguration) {
-    // For us, each `Schema` describing a `Confable` will start with an
-    // initializer list of pairs: this describes a JSON object. Each property in
-    // this object may be another object or another primitive JSON type.
-    // In this configuration, we want to deserialize into a vector of strings.
-    //
-    // `Schema` contains some magic to make it "easy" for you to use.
-    // The following eventually boils down to:
-    //
-    //     fable::schema::Struct{
-    //        {
-    //          "vehicles",
-    //          fable::schema::Array<std::string, fable::schema::String>(
-    //            &vehicles,
-    //            "list of vehicle names to make available"
-    //          )
-    //        }
-    //     }
-    //
-    // You can hopefully see why `Schema` contains the magic it contains.
-    return cloe::Schema{
-        {"vehicles", cloe::Schema(&vehicles, "list of vehicle names to make available")},
-    };
-  }
-};
+using Vehicles = std::vector<std::shared_ptr<cloe::Vehicle>>;
 
 /**
  * MinimatorLaneSensor is a very static lane boundary sensor.
@@ -185,7 +123,150 @@ class MinimatorLaneSensor : public cloe::LaneBoundarySensor {
  private:
   cloe::LaneBoundaries lane_boundaries_;
   cloe::Frustum frustum_;
-  Eigen::Isometry3d mount_pose_ = Eigen::Isometry3d::Identity();
+  Eigen::Isometry3d mount_pose_;
+};
+
+/**
+ * The SimulatorSensorMockup class provides dummy values for the World sensor and Ego sensor.
+ * The Ego Sensor values are provided with respect to the Cloe frame (center of the
+ * rear axle).
+ * The world sensor values are provided relative to the sensor mounting position.
+*/
+class SimulatorSensorMockup {
+ public:
+  SimulatorSensorMockup(const uint16_t& id, const SensorMockupConfig& sensor_mockup_config)
+      : vehicle_id(id), sensor_mockup_config_(sensor_mockup_config) {}
+
+  void process_ego_vehicles() {
+    std::array<double, 3> ori{0.0, 0.0, 0.0};
+    std::array<double, 3> pos{sensor_mockup_config_.ego_sensor_mockup.ego_object.position.x,
+                              sensor_mockup_config_.ego_sensor_mockup.ego_object.position.y,
+                              sensor_mockup_config_.ego_sensor_mockup.ego_object.position.z};
+    if (ego_objects_.empty()) {
+      auto o = std::make_shared<cloe::Object>();
+      o->id = this->vehicle_id;
+      o->dimensions = Eigen::Vector3d(5.0, 2.00, 1.8);
+      Eigen::Quaterniond quaternion = cloe::utility::quaternion_from_rpy(ori[0], ori[1], ori[2]);
+      Eigen::Vector3d translation = Eigen::Vector3d(pos[0], pos[1], pos[2]);
+      o->pose = cloe::utility::pose_from_rotation_translation(quaternion, translation);
+      o->velocity =
+          Eigen::Vector3d(sensor_mockup_config_.ego_sensor_mockup.ego_object.velocity, 0.0, 0.0);
+      ego_objects_.emplace_back(std::move(o));
+    }
+  }
+
+  void process_sensed_objects() {
+    if (world_objects_.empty()) {
+      for (const auto& object : sensor_mockup_config_.object_sensor_mockup.objects) {
+        std::array<double, 3> ori{0.0, 0.0, 0.0};
+        std::array<double, 3> pos{object.position.x, object.position.y, object.position.z};
+        auto o = std::make_shared<cloe::Object>();
+        o->id = this->vehicle_id;
+        o->dimensions = Eigen::Vector3d(5.0, 2.00, 1.8);
+        Eigen::Quaterniond quaternion = cloe::utility::quaternion_from_rpy(ori[0], ori[1], ori[2]);
+        Eigen::Vector3d translation = Eigen::Vector3d(pos[0], pos[1], pos[2]);
+        o->pose = cloe::utility::pose_from_rotation_translation(quaternion, translation);
+        if (object.velocity != 0.0f) {
+          // This plugin is only meant to be a minimalistic implementation to show what is Cloe capable of doing.
+          // This Minimator plugin does not implement yet a proper model to handle different cases.
+          // If desired to implement velocity and acceleration in the traffic object, the logic to calculate the
+          // position of the object should be extended.
+          throw cloe::ModelError(
+              "Unsupported value: {}.\n We don't currently support longitudinal velocity with "
+              "respect to ego vehicle "
+              "different than zero for traffic "
+              "objects.",
+              object.velocity);
+        }
+        o->velocity = Eigen::Vector3d(object.velocity, 0.0, 0.0);
+        world_objects_.emplace_back(std::move(o));
+      }
+    }
+  }
+
+  void process() {
+    process_ego_vehicles();
+    process_sensed_objects();
+  }
+
+  const cloe::Objects& get_world_objects() const { return world_objects_; }
+  const cloe::Objects& get_ego_objects() const { return ego_objects_; }
+  const cloe::Object& get_object(const cloe::Objects& objects) const {
+    auto object_it = std::find_if(objects.begin(), objects.end(),
+                                  [this](std::shared_ptr<cloe::Object> o) -> bool {
+                                    return this->vehicle_id == static_cast<uint16_t>(o->id);
+                                  });
+
+    if (object_it == objects.end()) {
+      throw std::invalid_argument(fmt::format("Unknown vehicle id {}", this->vehicle_id));
+    }
+
+    return **object_it;
+  }
+  const cloe::Object& get_world_object() const { return this->get_object(get_world_objects()); }
+  const cloe::Object& get_ego_object() const { return this->get_object(get_ego_objects()); }
+
+  /**
+   * Serialize World into JSON.
+   *
+   * This is required for the `ToJson` handler that is used in the `enroll`
+   * method.
+   */
+  friend void to_json(cloe::Json& j, const SimulatorSensorMockup& b) {
+    j = cloe::Json{
+        {"vehicles", b.ego_objects_},
+        {"objects", b.world_objects_},
+    };
+  }
+
+ private:
+  uint16_t vehicle_id;
+  cloe::Objects world_objects_;
+  cloe::Objects ego_objects_;
+  SensorMockupConfig sensor_mockup_config_;
+};
+
+class MinimatorObjectSensor : public cloe::ObjectSensor {
+ public:
+  MinimatorObjectSensor(cloe::Objects world_objects)
+      : cloe::ObjectSensor("minimator_object_sensor"), world_objects_(std::move(world_objects)) {
+    mount_pose_.setIdentity();
+  }
+
+  const cloe::Objects& sensed_objects() const override { return world_objects_; }
+
+  const cloe::Frustum& frustum() const override { return frustum_; }
+
+  const Eigen::Isometry3d& mount_pose() const override { return mount_pose_; }
+
+ private:
+  cloe::Frustum frustum_;
+  Eigen::Isometry3d mount_pose_;
+  cloe::Objects world_objects_;
+};
+
+/**
+ * MinimatorEgoSensor is a minimalistic EgoSensor.
+ */
+class MinimatorEgoSensor : public cloe::EgoSensor {
+ public:
+  using cloe::EgoSensor::EgoSensor;
+  MinimatorEgoSensor(uint16_t id, cloe::Object ego_object)
+      : EgoSensor("minimator_ego_sensor"), id_(id), ego_object_(std::move(ego_object)) {}
+  virtual ~MinimatorEgoSensor() noexcept = default;
+  const cloe::Object& sensed_state() const override { return ego_object_; }
+  double wheel_steering_angle() const override { return angle_; }
+  virtual double steering_wheel_speed() const override { return steering_wheel_speed_; }
+  void reset() override {
+    angle_ = 0.0;
+    steering_wheel_speed_ = 0.0;
+  }
+
+ protected:
+  uint16_t id_;
+  cloe::Object ego_object_;
+  double angle_{0.0};
+  double steering_wheel_speed_{0.0};
 };
 
 /**
@@ -214,6 +295,8 @@ class MinimatorVehicle : public cloe::Vehicle {
    *
    * \arg id    unique ID within simulator's set of vehicles
    * \arg name  unique name within simulator's set of vehicles
+   * \arg simulator_sensor_mockup world object containing list of ego vehicles and
+   *      traffic objects, simulating data coming from a simulator.
    *
    * ## Components
    *
@@ -239,7 +322,9 @@ class MinimatorVehicle : public cloe::Vehicle {
    * \see cloe/component/object_sensor.hpp
    * \see cloe/component/latlong_actuator.hpp
    */
-  MinimatorVehicle(uint64_t id, const std::string& name) : Vehicle(id, name) {
+  MinimatorVehicle(uint16_t id, const std::string& name,
+                   SimulatorSensorMockup& simulator_sensor_mockup)
+      : Vehicle(id, name), simulator_sensor_mockup_(simulator_sensor_mockup) {
     // Create a new `EgoSensor` and store it in the vehicle, making it available
     // by the standard names as defined by the enum values `DEFAULT_EGO_SENSOR`
     // and `GROUNDTRUTH_EGO_SENSOR`.
@@ -248,12 +333,13 @@ class MinimatorVehicle : public cloe::Vehicle {
     // If you want more control, use `set_component` or `add_component`.
     //
     // \see Vehicle::new_component
-    this->new_component(new cloe::NopEgoSensor(),
+
+    this->new_component(new MinimatorEgoSensor(id, simulator_sensor_mockup_.get_ego_object()),
                         cloe::CloeComponent::GROUNDTRUTH_EGO_SENSOR,
                         cloe::CloeComponent::DEFAULT_EGO_SENSOR);
 
     // Similarly here.
-    this->new_component(new cloe::NopObjectSensor(),
+    this->new_component(new MinimatorObjectSensor(simulator_sensor_mockup_.get_world_objects()),
                         cloe::CloeComponent::GROUNDTRUTH_WORLD_SENSOR,
                         cloe::CloeComponent::DEFAULT_WORLD_SENSOR);
 
@@ -281,6 +367,9 @@ class MinimatorVehicle : public cloe::Vehicle {
    * \see Vehicle::process
    */
   cloe::Duration process(const cloe::Sync& sync) final { return Vehicle::process(sync); }
+
+ protected:
+  SimulatorSensorMockup& simulator_sensor_mockup_;
 };
 
 /**
@@ -349,8 +438,14 @@ class MinimatorSimulator : public cloe::Simulator {
     // For each of the vehicle names in the configuration, create a new
     // vehicle. We are responsible for ensuring that the vehicles are alive
     // for the duration of a simulation. We use `std::shared_ptr` for this.
-    for (size_t i = 0; i < config_.vehicles.size(); i++) {
-      vehicles_.emplace_back(std::make_shared<MinimatorVehicle>(i, config_.vehicles[i]));
+    uint16_t id{0};
+    for (const auto& [vehicle_name, sensor_mockup] : config_.vehicles) {
+      SimulatorSensorMockup simulator_sensor_mockup_(id, sensor_mockup);
+      simulator_sensor_mockup_.process();
+      vehicles.emplace_back(
+          std::make_shared<MinimatorVehicle>(id, vehicle_name, simulator_sensor_mockup_));
+      vehicles_data.emplace_back(simulator_sensor_mockup_);
+      ++id;
     }
   }
 
@@ -367,7 +462,7 @@ class MinimatorSimulator : public cloe::Simulator {
     assert(!is_operational());
 
     // Empty the list of vehicles.
-    vehicles_.clear();
+    vehicles.clear();
 
     // Also call superclass method.
     Simulator::disconnect();
@@ -447,8 +542,8 @@ class MinimatorSimulator : public cloe::Simulator {
     // deserializing into JSON. This is automatically provided by the
     // `Confable` type, but for `MinimatorSimulator` we have to define it
     // ourself.
-    r.register_api_handler(
-        "/state", cloe::HandlerType::BUFFERED, cloe::handler::ToJson<MinimatorSimulator>(this));
+    r.register_api_handler("/state", cloe::HandlerType::BUFFERED,
+                           cloe::handler::ToJson<MinimatorSimulator>(this));
     r.register_api_handler("/configuration",
                            cloe::HandlerType::BUFFERED,
                            cloe::handler::ToJson<MinimatorConfiguration>(&config_));
@@ -463,7 +558,7 @@ class MinimatorSimulator : public cloe::Simulator {
    */
   size_t num_vehicles() const final {
     assert(is_connected());
-    return vehicles_.size();
+    return vehicles.size();
   }
 
   /**
@@ -473,7 +568,7 @@ class MinimatorSimulator : public cloe::Simulator {
    */
   std::shared_ptr<cloe::Vehicle> get_vehicle(size_t i) const final {
     assert(i < num_vehicles());
-    return vehicles_[i];
+    return vehicles[i];
   }
 
   /**
@@ -482,7 +577,7 @@ class MinimatorSimulator : public cloe::Simulator {
    * \see Simulator::get_vehicle
    */
   std::shared_ptr<cloe::Vehicle> get_vehicle(const std::string& key) const final {
-    for (const auto& v : vehicles_) {
+    for (const auto& v : vehicles) {
       if (v->name() == key) {
         return v;
       }
@@ -509,8 +604,14 @@ class MinimatorSimulator : public cloe::Simulator {
     assert(is_connected());
     assert(is_operational());
 
-    // Our simulator here doesn't really do anything at all, so we can keep
-    // running forever.
+    // Fetch new data and save it in vehicle list.
+    for (auto& d : vehicles_data) {
+      d.process();
+      // Note: Our simulator here doesn't really do anything at all, so we can keep
+      // running forever.
+      // Here there would be the logic to set the vehicle data that is read in this process() call.
+    }
+
     return sync.time();
   }
 
@@ -522,15 +623,17 @@ class MinimatorSimulator : public cloe::Simulator {
    */
   friend void to_json(cloe::Json& j, const MinimatorSimulator& b) {
     j = cloe::Json{
-        {"is_connected", b.connected_}, {"is_operational", b.operational_},
-        {"running", nullptr},           {"num_vehicles", b.num_vehicles()},
-        {"vehicles", b.vehicles_},
+        {"is_connected", b.connected_},
+        {"is_operational", b.operational_},
+        {"running", nullptr},
+        {"num_vehicles", b.num_vehicles()},
     };
   }
 
  private:
   MinimatorConfiguration config_;
-  std::vector<std::shared_ptr<cloe::Vehicle>> vehicles_;
+  Vehicles vehicles;
+  std::vector<SimulatorSensorMockup> vehicles_data;
 };
 
 // The plugin manifest we will define at the end of this file requires

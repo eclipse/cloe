@@ -25,8 +25,54 @@
                "z": 0.0
             }
          },
-         "name": "nop_object_sensor",
-         "sensed_objects": []
+         "name": "minimator_object_sensor",
+         "sensed_objects": [
+            {
+               "acceleration": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+               },
+               "angular_velocity": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+               },
+               "class": "unknown",
+               "cog_offset": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+               },
+               "dimensions": {
+                  "x": 5.0,
+                  "y": 2.0,
+                  "z": 1.8
+               },
+               "exist_prob": 1.0,
+               "id": 0,
+               "pose": {
+                  "rotation": {
+                     "w": 1.0,
+                     "x": 0.0,
+                     "y": 0.0,
+                     "z": 0.0
+                  },
+                  "translation": {
+                     "x": 10.0,
+                     "y": 0.0,
+                     "z": 0.0
+                  }
+               },
+               "type": "unknown",
+               "velocity": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+               },
+               "velocity_norm": 0.0
+            }
+         ]
       },
       "cloe::gndtruth_lane_sensor": {
          "frustum": {
@@ -188,8 +234,54 @@
                "z": 0.0
             }
          },
-         "name": "nop_object_sensor",
-         "sensed_objects": []
+         "name": "minimator_object_sensor",
+         "sensed_objects": [
+            {
+               "acceleration": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+               },
+               "angular_velocity": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+               },
+               "class": "unknown",
+               "cog_offset": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+               },
+               "dimensions": {
+                  "x": 5.0,
+                  "y": 2.0,
+                  "z": 1.8
+               },
+               "exist_prob": 1.0,
+               "id": 0,
+               "pose": {
+                  "rotation": {
+                     "w": 1.0,
+                     "x": 0.0,
+                     "y": 0.0,
+                     "z": 0.0
+                  },
+                  "translation": {
+                     "x": 10.0,
+                     "y": 0.0,
+                     "z": 0.0
+                  }
+               },
+               "type": "unknown",
+               "velocity": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+               },
+               "velocity_norm": 0.0
+            }
+         ]
       },
       "cloe::gndtruth_lane_sensor": {
          "frustum": {
@@ -351,8 +443,54 @@
                "z": 0.0
             }
          },
-         "name": "nop_object_sensor",
-         "sensed_objects": []
+         "name": "minimator_object_sensor",
+         "sensed_objects": [
+            {
+               "acceleration": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+               },
+               "angular_velocity": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+               },
+               "class": "unknown",
+               "cog_offset": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+               },
+               "dimensions": {
+                  "x": 5.0,
+                  "y": 2.0,
+                  "z": 1.8
+               },
+               "exist_prob": 1.0,
+               "id": 0,
+               "pose": {
+                  "rotation": {
+                     "w": 1.0,
+                     "x": 0.0,
+                     "y": 0.0,
+                     "z": 0.0
+                  },
+                  "translation": {
+                     "x": 10.0,
+                     "y": 0.0,
+                     "z": 0.0
+                  }
+               },
+               "type": "unknown",
+               "velocity": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+               },
+               "velocity_norm": 0.0
+            }
+         ]
       },
       "cloe::gndtruth_lane_sensor": {
          "frustum": {
@@ -514,8 +652,54 @@
                "z": 0.0
             }
          },
-         "name": "nop_object_sensor",
-         "sensed_objects": []
+         "name": "minimator_object_sensor",
+         "sensed_objects": [
+            {
+               "acceleration": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+               },
+               "angular_velocity": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+               },
+               "class": "unknown",
+               "cog_offset": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+               },
+               "dimensions": {
+                  "x": 5.0,
+                  "y": 2.0,
+                  "z": 1.8
+               },
+               "exist_prob": 1.0,
+               "id": 0,
+               "pose": {
+                  "rotation": {
+                     "w": 1.0,
+                     "x": 0.0,
+                     "y": 0.0,
+                     "z": 0.0
+                  },
+                  "translation": {
+                     "x": 10.0,
+                     "y": 0.0,
+                     "z": 0.0
+                  }
+               },
+               "type": "unknown",
+               "velocity": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+               },
+               "velocity_norm": 0.0
+            }
+         ]
       },
       "cloe::gndtruth_lane_sensor": {
          "frustum": {
