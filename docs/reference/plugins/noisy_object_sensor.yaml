@@ -1,6 +1,6 @@
 Name: noisy_object_sensor
 Type: component
-Path: ~/.conan/data/cloe-plugin-noisy-sensor/0.20.0/cloe/develop/package/498421a99d2afdb65ec3f6555b924a691c6b5f97/lib/cloe/component_noisy_object_sensor.so
+Path: ~/.conan/data/cloe-plugin-noisy-sensor/0.21.0/cloe/develop/package/6352d57f4a7e8dd08c53120788e741395b18563e/lib/cloe/component_noisy_object_sensor.so
 Usage: {
   "enable": "boolean :: enable or disable component",
   "noise": "array of object :: configure noisy parameters",

@@ -58,6 +58,97 @@ readable perspective on new releases.
 
       Note that the most recent release is at the *top* of the document.
 
+
+0.21.0 (2024-02-02)
+-------------------
+
+This is the fourth public minor release of the Cloe packages.
+Read all about it :doc:`here <news/release-0.21.0>`.
+
+**CLI:**
+
+- cli: Provide better error message when cloe-engine not found `[df14c510] <https://github.com/eclipse/cloe/commit/df14c510951909a0f649d8ce9b88021aeef91a41>`_
+- cli: Use VirtualRunEnv generator `[89703717] <https://github.com/eclipse/cloe/commit/89703717d78506b95cbdbebdf7ddb694c23c506a>`_
+- cli: Fix incorrect prompt setting for Zsh `[56254fb7] <https://github.com/eclipse/cloe/commit/56254fb755828c419e69f956a8a0880fa2552ef1>`_
+
+**Engine:**
+
+- engine: Add loop event `[9a288f7c] <https://github.com/eclipse/cloe/commit/9a288f7cfec8b3bd1533ba33bb8a66f77cc3161a>`_
+- engine: Use C++17 standard for compilation `[63368f7e] <https://github.com/eclipse/cloe/commit/63368f7e8de471c2ad629df93a31c19f83ef0496>`_
+
+**Core Libraries:**
+
+- fable: Add version.hpp `[e70e0361] <https://github.com/eclipse/cloe/commit/e70e036182b4ecc61a4a77a88a99e391f6ef059e>`_
+- fable: Fix critical error using FromConfable as prototype schema `[808ead90] <https://github.com/eclipse/cloe/commit/808ead90b3e0f204d750240f6401089983c9b4ab>`_
+- fable: Instantiate missing Number<signed char> `[475edfc3] <https://github.com/eclipse/cloe/commit/475edfc303d695da28d10c16556649245c0a4eda>`_
+- fable: Fix Conan not finding library in editable mode `[7ec17cc3] <https://github.com/eclipse/cloe/commit/7ec17cc3063763b55a8e6deb9ffb7af9b3d60873>`_
+- fable: Fix compatibility issues with nlohmann_json 3.11 `[52b22257] <https://github.com/eclipse/cloe/commit/52b222574d8fdeb6aefecadc74e2894a8c0cf755>`_
+
+- models: Fix use of uninitialized mount_pose `[38647931] <https://github.com/eclipse/cloe/commit/386479313f1f3e7ef3403e46326390aae021b416>`_
+
+- oak: Replace Boost shared_mutex, filesystem::path with std classes `[1c300b44] <https://github.com/eclipse/cloe/commit/1c300b448e9f1040b8afabf2c7c6406f810094a6>`_
+- oak: Replace cppnetlib with oatpp `[42a42ecb] <https://github.com/eclipse/cloe/commit/42a42ecb0ac21195fdc81b18a01bda53d024943c>`_
+- oak: Add several unit tests for server `[89dc9449] <https://github.com/eclipse/cloe/commit/89dc944940c29b0210d0994d8f6880e8fc3ca201>`_
+- oak: Refactor server.hpp to move impls to source file `[31718370] <https://github.com/eclipse/cloe/commit/3171837093eb18c67dcacb5270df11b6fa6ce6b9>`_
+- oak: Fix bin path invalid for editable mode `[a183df39] <https://github.com/eclipse/cloe/commit/a183df39ff4692d48c02da49b87dd577946c24d7>`_
+- oak: Add header files to CMakeLists.txt for IDE integration `[e850d7de] <https://github.com/eclipse/cloe/commit/e850d7de9f801a849bd7d6cbd62ee6647fc7f156>`_
+- oak: Refactor RequestStub to its own private header file `[3873fe68] <https://github.com/eclipse/cloe/commit/3873fe683d2d500c1cff17c3343abb9dae8c1ad5>`_
+
+- runtime: Add version.hpp `[8d5dbd74] <https://github.com/eclipse/cloe/commit/8d5dbd74f5d070ce8f75d88c37f5d07f182b951f>`_
+- runtime: Propagate failure from BasicFileOutputStream::open_file `[5ba236e5] <https://github.com/eclipse/cloe/commit/5ba236e5da1d697fc76a2d083bb61905f4b19dc7>`_
+
+**Plugins:**
+
+- gndtruth_extractor: Add smoketests with output comparison `[93714f05] <https://github.com/eclipse/cloe/commit/93714f057fada99a540c1b0782b0fdd22340498f>`_
+- gndtruth_extractor: Fix segfault on error opening file `[0821655a] <https://github.com/eclipse/cloe/commit/0821655a10559b98613f7c674ea82b78e5808355>`_
+
+- minimator: Fix use of uninitialized mount_pose `[fcb915b0] <https://github.com/eclipse/cloe/commit/fcb915b0780aa8e360147076821a28d230c1c6e2>`_
+- minimator: Add new schema for minimator `[d15cffc] <https://github.com/eclipse/cloe/commit/d15cffc0cb4b99ea868ee80ddae85d57bb7f1c1b>`_
+
+- vtd: Fix clang-tidy suggestions regarding includes `[ac7b4de4] <https://github.com/eclipse/cloe/commit/ac7b4de4ee2cabcef5fa73e35892b36cabd8ca73>`_
+- vtd: Migrate cloe-plugin-vtd package to Conan 2.0 compatibility `[ca03adeb] <https://github.com/eclipse/cloe/commit/ca03adeb4b623d1d8ba52f030edd5eaaa7c7f9af>`_
+- vtd: Migrate osi-sensor package to Conan 2.0 compatibility `[726fbf64] <https://github.com/eclipse/cloe/commit/726fbf640b5c7c31cab1a66a5be135305f223d40>`_
+- vtd: Migrate vtd-2022.3 package to Conan 2.0 compatibility `[090ff6d3] <https://github.com/eclipse/cloe/commit/090ff6d33b2e9508571a5edd023c20ded32bb3f7>`_
+- vtd: Migrate vtd-2.2.0 package to Conan 2.0 compatibility `[0eceaafb] <https://github.com/eclipse/cloe/commit/0eceaafb649b40c2f31e5ebd1cdebd3504287c16>`_
+- vtd: Migrate protobuf library to Conan 2.0 compatibility `[b89bc756] <https://github.com/eclipse/cloe/commit/b89bc7565f86f240f9d5c14299121f2ec32b83b9>`_
+- vtd: Migrate open-simulation-interface to Conan 2.0 compatibility `[dca0ef83] <https://github.com/eclipse/cloe/commit/dca0ef837995ece4a8b34a696103005955318883>`_
+- vtd: Fix ridiculous mistake from da467430c5 `[7bea95ba] <https://github.com/eclipse/cloe/commit/7bea95bae365d47131f714d42f8a48168184e8ad>`_
+- vtd: Fix potential bug in vehicle creation `[b5fb1006] <https://github.com/eclipse/cloe/commit/b5fb10066bf1b055af1ad25aef781dc298583e7f>`_
+- vtd: Fix typo in README `[f1c5f1f6] <https://github.com/eclipse/cloe/commit/f1c5f1f6e2582884be741818fd2260a343b8dbb3>`_
+- vtd: Change dockerfile to support ubuntu2004 `[58bef791] <https://github.com/eclipse/cloe/commit/58bef7918b348e04ce43a23035cabb3991777d4b>`_
+- vtd: Fix missing f string in conanfiles `[02cec5b8] <https://github.com/eclipse/cloe/commit/02cec5b88c50e4b9e17f75ec0a6fcc4954801716>`_
+- vtd: Update vtd-api packages for 2.0 compatibility `[da467430] <https://github.com/eclipse/cloe/commit/da467430c56e277a80195d9410996076df3e4ba8>`_
+
+**Web UI:**
+
+- ui: Add proper file type for gzip upload `[32ea6fad] <https://github.com/eclipse/cloe/commit/32ea6fadbe16ec746d190cdd4b19490351a3e523>`_
+- ui: Fix fetch interval `[e91e768a] <https://github.com/eclipse/cloe/commit/e91e768a7038539fa6ac1b6314ec724a2f3e8a08>`_
+- ui: Change HMI trigger endpoint to 'next' `[a1c4126f] <https://github.com/eclipse/cloe/commit/a1c4126f879777399c0de468b6f2a308416550c1>`_
+
+**Tooling & Dependencies:**
+
+- all: Remove outdated ifndef-define-endif header guards `[98632840] <https://github.com/eclipse/cloe/commit/9863284041c094c1bfce305f0d0902d81f6fd9a9>`_
+- all: Bump inja, nlohmann_json, spdlog, fmt, gtest, cli11 versions `[5d646b1c] <https://github.com/eclipse/cloe/commit/5d646b1c47d9b99815f4f983bdf3a01995a3dadf>`_
+- all: Bump required C++ standard from 14 to 17 `[fe678bca] <https://github.com/eclipse/cloe/commit/fe678bca4d50cea7b42a044caa07bbf1a487d434>`_
+- all: Remove constraints on Boost version from cppnetlib `[2fabcaa9] <https://github.com/eclipse/cloe/commit/2fabcaa98ab7e7e4299355c561fd523d083b957f>`_
+- ci: Improve performance of Github CI jobs `[b13c7182] <https://github.com/eclipse/cloe/commit/b13c7182fc427ee913e15b9bb6b5d7f57a1b2354>`_ ci: Remove ubuntu-18.04 from Github workflows `[47cec675] <https://github.com/eclipse/cloe/commit/47cec6755752ec62fe2e18f6b080d459c5a046b1>`_
+- tests: Don't fail when *.so glob doesn't match anything `[88a92dca] <https://github.com/eclipse/cloe/commit/88a92dca75c47714ce5c7c2feea966ab49ea21fd>`_
+- tests: Depend on cloe-launch-profile >= 0.20 `[c6aaea2b] <https://github.com/eclipse/cloe/commit/c6aaea2bb731d64414e77552b5cdad26e541dc73>`_
+- tests: Replace testname arg quotes with single quotes `[637f44cf] <https://github.com/eclipse/cloe/commit/637f44cfc5fdd001bb6b20a16665dd0234579e02>`_
+- tooling: Add cloe-normal Conan profile `[1893b91f] <https://github.com/eclipse/cloe/commit/1893b91fe230632fb426791dd1a334791323b355>`_
+- tooling: Fix error in Makefile.setup `[c234f50d] <https://github.com/eclipse/cloe/commit/c234f50dfda9d9b2f0e7fe71db7d377e78bcc61e>`_
+- tooling: Clean up editorconfig `[63190730] <https://github.com/eclipse/cloe/commit/63190730c590e91f90e0008221e1d6b58463c069>`_
+- tooling: Bundle licenses with cloe-engine Conan package `[6b9b419f] <https://github.com/eclipse/cloe/commit/6b9b419f31df8cdba62496cf2292adeb258a0c47>`_
+- tooling: Install conan<2 instead of plain conan `[5400d3c6] <https://github.com/eclipse/cloe/commit/5400d3c692dafb5c914a33282c7e708643aa29b8>`_
+- tooling: Don't warn when using assert() `[d8bbe8a7] <https://github.com/eclipse/cloe/commit/d8bbe8a7e9139abe01426cb954bd63cba6d6e24b>`_
+- tooling: Add clang-tidy configuration `[f7bde820] <https://github.com/eclipse/cloe/commit/f7bde820c223f0f2364505c7d5d298cb18ae3388>`_
+- tooling: Fix configure target from Makefile.package not working `[19dbccaf] <https://github.com/eclipse/cloe/commit/19dbccaf040c0885e822b5351ce80fe3524a39e3>`_
+- tooling: Fix runtime cmake path incorrectly set for editable `[aadfa06a] <https://github.com/eclipse/cloe/commit/aadfa06a0a79b29a46448dbf179b296607efc475>`_
+- tooling: Remove obsolete conan layout file `[f031655d] <https://github.com/eclipse/cloe/commit/f031655de0cd333355ab9a4f37aa7a8ca01e1a0a>`_
+- tooling: Export cloe-launch-profile as part of export and package targets `[0ac5224b] <https://github.com/eclipse/cloe/commit/0ac5224bbdeb5963dd120eeb39529638f40d5b2a>`_
+- tooling: Ensure minimum GCC version of 8 `[4a9bbbfb] <https://github.com/eclipse/cloe/commit/4a9bbbfbd1668c7acab31efc3bd82efbb2423f79>`_
+- vendor: Remove cppnetlib `[b8a75a14] <https://github.com/eclipse/cloe/commit/b8a75a14c7eabf59f9248286bff1bfc9c87902d5>`_
+
 0.20.0 (2023-04-03)
 -------------------
 
