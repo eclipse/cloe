@@ -1,6 +1,6 @@
 Name: demo_stuck
 Type: controller
-Path: ~/.conan/data/cloe-plugin-mocks/0.20.0/cloe/develop/package/498421a99d2afdb65ec3f6555b924a691c6b5f97/lib/cloe/controller_demo_stuck.so
+Path: ~/.conan/data/cloe-plugin-mocks/0.21.0/cloe/develop/package/6352d57f4a7e8dd08c53120788e741395b18563e/lib/cloe/controller_demo_stuck.so
 Usage: {
   "halt_progress_at": "integer :: time in ns at which to halt all progress",
   "progress_per_step": "integer :: progress to make each step"

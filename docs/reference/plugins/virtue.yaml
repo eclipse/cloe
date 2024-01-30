@@ -1,6 +1,6 @@
 Name: virtue
 Type: controller
-Path: ~/.conan/data/cloe-plugin-virtue/0.20.0/cloe/develop/package/498421a99d2afdb65ec3f6555b924a691c6b5f97/lib/cloe/controller_virtue.so
+Path: ~/.conan/data/cloe-plugin-virtue/0.21.0/cloe/develop/package/6352d57f4a7e8dd08c53120788e741395b18563e/lib/cloe/controller_virtue.so
 Usage: {
   "init_phase": "integer :: time during which initialization is performed",
   "lane_sensor_components": "array of string :: array of lane-sensor components to be checked"

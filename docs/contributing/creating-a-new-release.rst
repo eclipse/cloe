@@ -18,8 +18,8 @@ released.
 
 .. highlight:: bash
 
-Update Github Milestone
------------------------
+A. Update Github Milestone
+--------------------------
 
 1. There should be a `milestone <https://github.com/eclipse/cloe/milestones>`_
    named the precise version ``X.Y.Z`` that shall be released.
@@ -45,8 +45,8 @@ Update Github Milestone
    Feel free to create a draft pull request from this branch if you want early
    feedback. Assign this pull request to the milestone.
 
-Build Conan Packages
---------------------
+B. Build Conan Packages
+-----------------------
 
 First, set the ``VERSION`` file to ``X.Y.Z``::
 
@@ -55,9 +55,16 @@ First, set the ``VERSION`` file to ``X.Y.Z``::
 This is fudging the version in order to generate better documentation, so we
 need to be careful to remove this before actually making a release.
 
+In order to isolate the packages from existing ones, it is highly recommended
+to use a separate, temporary Conan data directory::
+
+    export CONAN_USER_HOME=~/.var/cloe-X.Y.Z
+    mkdir $CONAN_USER_HOME
+    make setup-conan
+
 Then, compile the entire project locally::
 
-    make purge-all export-vendor export smoketest-deps smoketest
+    make purge-all export smoketest-deps smoketest
 
 This should run through without errors. Then make sure to do the same with
 the optional packages::
@@ -67,8 +74,8 @@ the optional packages::
 We will not be releasing these packages, they are used for documentation
 generation.
 
-Update the Documentation
-------------------------
+C. Update the Documentation
+---------------------------
 
 Places in the documentation which require attention at every release have
 a ``TODO(release)`` comment which explains what needs to be done.
@@ -80,8 +87,8 @@ This includes the documentation for the following steps:
 2. Update the changelog
 3. Write a release news article
 
-Bump Versions Strings
----------------------
+D. Bump Versions Strings
+------------------------
 
 For now we are releasing all parts of Cloe in lock-step, even though they
 are separate packages sometimes.
@@ -105,3 +112,48 @@ like ripgrep to search the project for strings containing ``0.19``.
    there is example output, it may be better to just leave it as is, unless we
    expect the content to signficantly change, in which case we should regenerate
    the example output.
+
+E. Create and Merge Pull Request
+--------------------------------
+
+From the branch that we created in step A3, create a new pull request to the
+master branch. If you had a draft pull request, convert it to "ready for review".
+
+In addition to the CI checks, run the Docker builds on your local machine::
+
+    make -f Makefile.docker all
+
+Once this has been reviewed and approved and the CI checks have run through,
+rebase and merge.
+
+F. Create New Git Tag
+---------------------
+
+On your local machine, check out the master branch und pull from Github.
+You should now have all the changes from the pull request that got merged in
+step E.
+
+Create a new tag for the release, with the following command::
+
+    git tag -a vX.Y.Z -m "Cloe version X.Y.Z release"
+
+Replace ``X.Y.Z`` with the corresponding values.
+
+Then, push the tag to Github::
+
+    git push vX.Y.Z
+
+G. Trigger Read-the-Docs
+------------------------
+
+.. note::
+   This step should be automatic now, but you should check that
+   everything completed successfully.
+
+Login to `ReadTheDocs <https://readthedocs.org>`_ and goto the
+`Cloe Builds <https://readthedocs.org/projects/cloe/builds/>`_ page.
+
+Trigger the latest build. This should also pick up on the new tag
+and add that to the active versions. Check that this is the case.
+
+Check the generated website and verify that everything is as it should be.

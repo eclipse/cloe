@@ -23,8 +23,31 @@ News
    :hidden:
    :maxdepth: 1
 
+   news/release-0.21.0
    news/release-0.20.0
    news/release-0.19.0
+
+:doc:`Version 0.21.0 Release <news/release-0.21.0>`
+---------------------------------------------------
+
+This version includes fixes and other improvements and represents
+a continuation of the previous releases before breaking changes
+are introduced in the next few releases.
+
+Oat++ replaces the cppnetlib library, which allows us to remove
+any constraints regarding the version of Boost that can be used.
+
+The launcher now provides a better error message when the engine
+cannot be located and issues with the Zsh prompt are fixed.
+
+The web UI can insert triggers again.
+
+Two significant bugs in the fable library have been fixed.
+
+Finally, many small development and tooling changes are included
+in the release, but should not be relevant for end-users.
+
+Read all about it :doc:`here <news/release-0.21.0>`.
 
 :doc:`Version 0.20.0 Release <news/release-0.20.0>`
 ---------------------------------------------------
