@@ -35,7 +35,7 @@ void to_lua(sol::state_view lua) {
 }
 
 /**
-    * Dynamic class which embedds all signals in shape of properties into the Lua-VM
+    * Dynamic class which embeds all signals in shape of properties into the Lua-VM
     */
 class SignalsObject {
  private:
@@ -181,7 +181,19 @@ class LuaDataBrokerBinding : public DataBrokerBinding {
   */
   using lua_signal_adapter_t = std::function<void(const SignalPtr&, sol::state_view, std::string_view)>;
 
-  explicit LuaDataBrokerBinding(sol::state_view lua) : lua_(std::move(lua)), signals_object_(lua_) {}
+  explicit LuaDataBrokerBinding(sol::state_view lua) : lua_(std::move(lua)), signals_object_(lua_) {
+    declare<bool>();
+    declare<int8_t>();
+    declare<uint8_t>();
+    declare<int16_t>();
+    declare<uint16_t>();
+    declare<int32_t>();
+    declare<uint32_t>();
+    declare<int64_t>();
+    declare<uint64_t>();
+    declare<float>();
+    declare<double>();
+  }
 
   void bind(std::string_view signals_name) override {
     lua_[signals_name] = &signals_object_;
@@ -192,10 +204,45 @@ class LuaDataBrokerBinding : public DataBrokerBinding {
     auto iter = bindings_.find(type);
     if (iter == bindings_.end()) {
       throw std::runtime_error(
-          "DataBroker: <internal logic error>: Lua type binding not implemented");
+          fmt::format("DataBroker: <internal logic error>: Lua type binding "
+                      "for type \"{}\" not implemented", signal->type()->name()));
     }
     const lua_signal_adapter_t& adapter = iter->second;
     adapter(signal, lua_, lua_name);
+  }
+
+  /**
+    * \brief Declares a DataType to Lua (if not yet done)
+    * \note: The function can be used independent of a bound Lua instance
+    */
+  template<typename T>
+  void declare() {
+    assert_static_type<T>();
+    using compatible_type = databroker::compatible_base_t<T>;
+
+    // Check whether this type was already processed, if not declare it and store an adapter function in bindings_
+    std::type_index type{typeid(compatible_type)};
+    auto iter = bindings_.find(type);
+    if (iter == bindings_.end()) {
+      // Check whether this type was already declared to the Lua-VM, if not declare it
+      auto declared_types_iter = declared_types().find(type);
+      if (declared_types_iter == declared_types().end()) {
+        declared_types()[type] = true;
+        ::cloe::databroker::detail::to_lua<T>(lua_);
+      }
+
+      // Create adapter for Lua-VM
+      lua_signal_adapter_t adapter = [this](const SignalPtr& signal, sol::state_view state,
+                                            std::string_view lua_name) {
+        //adapter_impl<T>(signal, state, lua_name);
+        // Subscribe to the value-changed event to indicate the signal is used
+        signal->subscribe<T>([](const T&) {});
+        // Implement the signal as a property in Lua
+        signals_object_.bind<T>(signal, lua_name);
+      };
+      // Store adapter function
+      bindings_.emplace(type, std::move(adapter));
+    }
   }
 
   /**
@@ -225,40 +272,6 @@ class LuaDataBrokerBinding : public DataBrokerBinding {
   }
 
  private:
-
-  /**
-    * \brief Declares a DataType to Lua (if not yet done)
-    * \note: The function can be used independent of a bound Lua instance
-    */
-  template <typename T>
-  void declare() {
-    assert_static_type<T>();
-    using compatible_type = databroker::compatible_base_t<T>;
-
-    // Check whether this type was already processed, if not declare it and store an adapter function in bindings_
-    std::type_index type{typeid(compatible_type)};
-    auto iter = bindings_.find(type);
-    if (iter == bindings_.end()) {
-      // Check whether this type was already declared to the Lua-VM, if not declare it
-      auto declared_types_iter = declared_types().find(type);
-      if (declared_types_iter == declared_types().end()) {
-        declared_types()[type] = true;
-        ::cloe::databroker::detail::to_lua<T>(*lua_);
-      }
-
-      // Create adapter for Lua-VM
-      lua_signal_adapter_t adapter = [this](const SignalPtr& signal, sol::state_view state,
-                                            std::string_view lua_name) {
-        //adapter_impl<T>(signal, state, lua_name);
-        // Subscribe to the value-changed event to indicate the signal is used
-        signal->subscribe<T>([](const T&) {});
-        // Implement the signal as a property in Lua
-        signals_object_.bind<T>(signal, lua_name);
-      };
-      // Store adapter function
-      bindings_.emplace(type, std::move(adapter));
-    }
-  }
 
   sol::state_view lua_;
   std::unordered_map<std::type_index, lua_signal_adapter_t> bindings_{};

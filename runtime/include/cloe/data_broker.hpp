@@ -66,7 +66,6 @@ namespace cloe {
 
 // Forward declarations:
 class Signal;
-class DataBroker;
 
 using SignalPtr = std::shared_ptr<Signal>;
 
@@ -105,8 +104,7 @@ class DataBroker {
 
  public:
   DataBroker() = default;
-  explicit DataBroker(std::unique_ptr<databroker::DataBrokerBinding> binding)
-      : binding_(std::move(binding)) {}
+  explicit DataBroker(databroker::DataBrokerBinding* binding) : binding_(binding) {}
   DataBroker(const DataBroker&) = delete;
   DataBroker(DataBroker&&) = delete;
   ~DataBroker() = default;
@@ -114,8 +112,9 @@ class DataBroker {
   DataBroker& operator=(DataBroker&&) = delete;
 
  private:
-  std::unique_ptr<databroker::DataBrokerBinding> binding_{};
+  databroker::DataBrokerBinding* binding_{};
  public:
+
   /**
     * \brief Binds a signal to the Lua-VM
     * \param signal_name Name of the signal
@@ -240,7 +239,7 @@ class DataBroker {
     assert_static_type<T>();
     using compatible_type = databroker::compatible_base_t<T>;
 
-    declare<compatible_type>();
+    // binding_->declare(type_index);
 
     SignalPtr signal = Signal::make<compatible_type>();
     alias(signal, new_name);
@@ -259,7 +258,7 @@ class DataBroker {
     assert_static_type<T>();
     using compatible_type = databroker::compatible_base_t<T>;
 
-    declare<compatible_type>();
+    // binding_->template declare<compatible_type>();
 
     SignalPtr signal = declare<compatible_type>(new_name);
     Container<compatible_type> container = signal->create_container<compatible_type>();

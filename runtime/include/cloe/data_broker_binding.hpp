@@ -16,9 +16,12 @@ class DataBrokerBinding {
   virtual void bind_signal(SignalPtr signal, std::string_view signal_name, std::string_view lua_name) = 0;
   virtual void bind(std::string_view signals_name) = 0;
 
+  virtual ~DataBrokerBinding() = default;
+
  protected:
   auto &declared_types() { return declared_types_; }
   const auto &declared_types() const { return declared_types_; }
+
 
  private:
   std::unordered_map<std::type_index, bool> declared_types_{};
