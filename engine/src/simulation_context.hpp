@@ -131,9 +131,9 @@ DEFINE_NIL_EVENT(Loop, "loop", "begin of inner simulation loop each cycle")
  * performed in the simulation states in the `simulation.cpp` file.
  */
 struct SimulationContext {
-  SimulationContext(SimulationDriver* driver) : simulationDriver(driver) {}
+  SimulationContext(SimulationDriver* driver) : simulation_driver(driver) {}
 
-  SimulationDriver* simulationDriver;
+  SimulationDriver* simulation_driver;
 
   // Setup
   std::unique_ptr<cloe::DataBroker> db;

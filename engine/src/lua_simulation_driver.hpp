@@ -4,6 +4,9 @@
 
 #include <sol/state.hpp>   // for state
 
+#include <unordered_map>
+#include <typeindex>
+
 namespace engine {
 
 class LuaSimulationDriver final : public SimulationDriver {

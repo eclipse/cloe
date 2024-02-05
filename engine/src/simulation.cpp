@@ -338,7 +338,7 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
   }
 
   {  // 3. Initialize simulation driver
-    ctx.simulationDriver->initialize(ctx.sync, *ctx.coordinator);
+    ctx.simulation_driver->initialize(ctx.sync, *ctx.coordinator);
   }
 
   {  // 4. Enroll endpoints and triggers for the server
@@ -435,7 +435,7 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
     r.register_action<actions::RealtimeFactorFactory>(&ctx.sync);
     r.register_action<actions::ResetStatisticsFactory>(&ctx.statistics);
     r.register_action<actions::CommandFactory>(ctx.commander.get());
-    ctx.simulationDriver->register_action_factories(r);
+    ctx.simulation_driver->register_action_factories(r);
 
     // From: cloe/trigger/example_actions.hpp
     auto tr = ctx.coordinator->trigger_registrar(cloe::Source::TRIGGER);
@@ -774,14 +774,14 @@ StateId SimulationMachine::Start::impl(SimulationContext& ctx) {
       throw std::logic_error("Coordinator did not provide a DataBroker instance");
     }
     // Alias signals via lua
-    ctx.simulationDriver->alias_signals(*dbPtr);
+    ctx.simulation_driver->alias_signals(*dbPtr);
     // Inject requested signals into lua
-    ctx.simulationDriver->bind_signals(*dbPtr);
+    ctx.simulation_driver->bind_signals(*dbPtr);
   }
 
   // Process initial trigger list
   insert_triggers_from_config(ctx);
-  ctx.coordinator->process_pending_lua_triggers(ctx.sync);
+  ctx.coordinator->process_pending_driver_triggers(ctx.sync);
   ctx.coordinator->process(ctx.sync);
   ctx.callback_start->trigger(ctx.sync);
 
@@ -1292,7 +1292,7 @@ SimulationResult Simulation::run() {
   SimulationContext ctx{simulation_driver_.get()};
   ctx.db = std::make_unique<cloe::DataBroker>(ctx.lua);
   ctx.server = make_server(config_.server);
-  ctx.coordinator = std::make_unique<Coordinator>(ctx.lua, ctx.db.get());
+  ctx.coordinator = std::make_unique<Coordinator>(ctx.simulation_driver, ctx.db.get());
   ctx.registrar = std::make_unique<Registrar>(ctx.server->server_registrar(), ctx.coordinator.get(),
                                               ctx.db.get());
   ctx.commander = std::make_unique<CommandExecuter>(logger());
@@ -1402,7 +1402,7 @@ SimulationResult Simulation::run() {
   r.statistics = ctx.statistics;
   r.elapsed = ctx.progress.elapsed();
   r.triggers = ctx.coordinator->history();
-  r.report = ctx.simulationDriver->produce_report();
+  r.report = ctx.simulation_driver->produce_report();
   // Don't create output file data unless the output files are being written
   if (ctx.config.engine.output_file_signals) {
     r.signals = dump_signals(*ctx.db);
