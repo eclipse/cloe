@@ -1,4 +1,6 @@
 #include "json.hpp"
+#include "python_simulation_driver.hpp"
+
 #include "lua_setup.hpp"
 #include "simulation.hpp"
 #include "stack_factory.hpp"
@@ -26,18 +28,29 @@ PYBIND11_MODULE(_cloe_bindings, m) {
     }, py::arg("d"), py::arg("file") = "");
   }
   {
+    py::class_<cloe::py::PythonSimulationDriver> clazz (m, "PythonSimulationDriver");
+    clazz.def("add_signal_alias", &cloe::py::PythonSimulationDriver::add_signal_alias);
+  }
+  {
     py::class_<engine::Simulation> sim (m, "Simulation");
-    sim.def(py::init([](cloe::Stack stack, const std::string &uuid) {
+    sim.def(py::init([](cloe::Stack stack, cloe::py::PythonSimulationDriver &driver, const std::string &uuid) {
       cloe::LuaOptions opts {};
       opts.environment = std::make_unique<fable::Environment>();
-      return engine::Simulation(std::move(stack), cloe::new_lua(opts, stack), uuid);
-    }), py::arg("stack"), py::arg("uuid"));
+      return engine::Simulation {std::move(stack), driver, uuid};
+    }), py::arg("stack"), py::arg("driver"), py::arg("uuid"));
     // todo hooks!, store in ptr
     // todo is sim arg uuid == stack options uuid?
-    sim.def("run", &engine::Simulation::run);
+    sim.def("run", [](engine::Simulation &self) {
+      return self.run();
+    });
     sim.def("wait_until", [](engine::Simulation &self,
                              const std::function<bool(const cloe::Sync&)> &condition) {
       // todo impl, add timeout parameter
+      try {
+        py::cast(self); // todo check if (and what) this throws if type can not be cast
+      } catch(...) {
+
+      }
     });
   }
   {
