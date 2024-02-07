@@ -22,7 +22,7 @@ add_library(cloe-models
     src/cloe/component/utility/ego_sensor_canon.cpp
     src/cloe/component/utility/steering_utils.cpp
     src/cloe/utility/actuation_state.cpp
-    src/cloe/utility/lua_types.cpp
+    # src/cloe/utility/lua_types.cpp
 
     # For IDE integration
     ${cloe-models_PUBLIC_HEADERS}
