@@ -1266,7 +1266,7 @@ cloe::Json dump_signals(cloe::DataBroker& db) {
   return json;
 }
 
-std::vector<std::string> dump_signals_autocompletion(cloe::DataBroker& db) {
+/*std::vector<std::string> dump_signals_autocompletion(cloe::DataBroker& db) {
   auto result = std::vector<std::string>{};
   result.emplace_back("--- @meta");
   result.emplace_back("--- @class signals");
@@ -1285,12 +1285,12 @@ std::vector<std::string> dump_signals_autocompletion(cloe::DataBroker& db) {
     }
   }
   return result;
-}
+}*/
 
 SimulationResult Simulation::run() {
   // Input:
   SimulationContext ctx{simulation_driver_.get()};
-  ctx.db = std::make_unique<cloe::DataBroker>(ctx.lua);
+  ctx.db = std::make_unique<cloe::DataBroker>(simulation_driver_->data_broker_binding());
   ctx.server = make_server(config_.server);
   ctx.coordinator = std::make_unique<Coordinator>(ctx.simulation_driver, ctx.db.get());
   ctx.registrar = std::make_unique<Registrar>(ctx.server->server_registrar(), ctx.coordinator.get(),
@@ -1408,7 +1408,8 @@ SimulationResult Simulation::run() {
     r.signals = dump_signals(*ctx.db);
   }
   if (ctx.config.engine.output_file_signals_autocompletion) {
-    r.signals_autocompletion = dump_signals_autocompletion(*ctx.db);
+    // r.signals_autocompletion = dump_signals_autocompletion(*ctx.db);
+    logger()->warn("Autocompletion dumping disabled for the time being.");
   }
 
   abort_fn_ = nullptr;

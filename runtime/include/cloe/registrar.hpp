@@ -204,7 +204,7 @@ class Registrar {
   /**
    * Provide a Lua table for registration of functions and variables.
    */
-  virtual sol::table register_lua_table() = 0;
+  // virtual sol::table register_lua_table() = 0;
 
   /**
    * Register an EventFactory and return a DirectCallback for storage of

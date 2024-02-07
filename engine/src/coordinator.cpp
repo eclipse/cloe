@@ -243,11 +243,11 @@ size_t Coordinator::process_pending_driver_triggers(const Sync& sync) {
   return count;
 }
 
-sol::table Coordinator::register_lua_table(const std::string& field) {
+/*sol::table Coordinator::register_lua_table(const std::string& field) {
   auto tbl = lua_.create_table();
   luat_cloe_engine_plugins(lua_)[field] = tbl;
   return tbl;
-}
+}*/
 TriggerFactory& Coordinator::trigger_factory() { return *trigger_factory_; }
 const TriggerFactory& Coordinator::trigger_factory() const { return *trigger_factory_; }
 SimulationDriver& Coordinator::simulation_driver() { return *simulation_driver_; }

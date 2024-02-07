@@ -13,7 +13,9 @@
 
 namespace engine {
 
-LuaSimulationDriver::LuaSimulationDriver(std::unique_ptr<sol::state> lua) : lua_(std::move(lua)) {}
+LuaSimulationDriver::LuaSimulationDriver(std::unique_ptr<sol::state> lua)
+    : lua_(std::move(lua)),
+    data_broker_binding_(std::make_unique<cloe::databroker::LuaDataBrokerBinding>(*lua_)) {}
 
 void LuaSimulationDriver::initialize(const SimulationSync &sync, Coordinator& scheduler) {
   auto types_tbl = sol::object(cloe::luat_cloe_engine_types(*lua_)).as<sol::table>();
@@ -184,7 +186,7 @@ void LuaSimulationDriver::bind_signals(cloe::DataBroker& dataBroker) {
         }
       }
       // actually bind all virtually bound signals to lua
-      dataBroker.bind("signals", cloe::luat_cloe_engine(*lua_));
+      data_broker_binding_->bind("signals", cloe::luat_cloe_engine(*lua_));
     } break;
     case sol::type::none:
     case sol::type::lua_nil: {
@@ -239,6 +241,9 @@ std::vector<cloe::TriggerPtr> LuaSimulationDriver::yield_pending_triggers(engine
   }
   cloe::luat_cloe_engine_initial_input(*lua_)["triggers_processed"] = count;
   return result;
+}
+cloe::databroker::DataBrokerBinding* LuaSimulationDriver::data_broker_binding() {
+  return data_broker_binding_.get();
 }
 
 }

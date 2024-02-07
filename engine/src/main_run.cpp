@@ -34,6 +34,7 @@
 #include <fable/utility.hpp>  // for read_conf
 
 #include "error_handler.hpp"  // for conclude_error
+#include "lua_simulation_driver.hpp"
 #include "main_commands.hpp"  // for RunOptions, new_stack, new_lua
 #include "simulation.hpp"     // for Simulation, SimulationResult
 #include "stack.hpp"          // for Stack
@@ -92,7 +93,7 @@ int run(const RunOptions& opt, const std::vector<std::string>& filepaths) {
   }
 
   // Create simulation:
-  Simulation sim(std::move(stack), std::move(lua), uuid);
+  Simulation sim(std::move(stack), std::make_unique<engine::LuaSimulationDriver>(std::move(lua)), uuid);
   GLOBAL_SIMULATION_INSTANCE = &sim;
   std::ignore = std::signal(SIGINT, handle_signal);
 

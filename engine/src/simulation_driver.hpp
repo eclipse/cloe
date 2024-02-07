@@ -46,6 +46,8 @@ class SimulationDriver {
 
   virtual std::vector<cloe::TriggerPtr> yield_pending_triggers(TriggerFactory &triggerFactory) = 0;
 
+  virtual cloe::databroker::DataBrokerBinding* data_broker_binding() { return nullptr; };
+
   [[nodiscard]] virtual nlohmann::json produce_report() const = 0;
 };
 

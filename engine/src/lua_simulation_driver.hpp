@@ -1,6 +1,7 @@
 #pragma once
 
 #include "simulation_driver.hpp"
+#include "cloe/data_broker_lua_binding.hpp"
 
 #include <sol/state.hpp>   // for state
 
@@ -30,8 +31,11 @@ class LuaSimulationDriver final : public SimulationDriver {
   static cloe::ActionPtr make_action(TriggerFactory& factory, const sol::object& lua);
   static cloe::TriggerPtr make_trigger(TriggerFactory& factory, const sol::table& tbl);
 
+  cloe::databroker::DataBrokerBinding* data_broker_binding() override;
+
  private:
   std::unique_ptr<sol::state> lua_;
+  std::unique_ptr<cloe::databroker::LuaDataBrokerBinding> data_broker_binding_;
 };
 
 }
