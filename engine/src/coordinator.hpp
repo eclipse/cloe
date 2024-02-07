@@ -109,7 +109,7 @@ class Coordinator {
   bool allow_errors_ = false; // todo never written to, always false!
 
   // Factories:
-  std::unique_ptr<TriggerFactory> trigger_factory_;
+  std::unique_ptr<TriggerFactory> trigger_factory_ {std::make_unique<TriggerFactory>()};
   SimulationDriver* simulation_driver_;
   cloe::DataBroker* db_;  // non-owning
 

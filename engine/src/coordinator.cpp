@@ -39,9 +39,6 @@
 #include <cloe/trigger.hpp>    // for Trigger
 using namespace cloe;          // NOLINT(build/namespaces)
 
-#include "lua_action.hpp"
-#include "lua_api.hpp"
-
 namespace engine {
 
 template <typename T>
