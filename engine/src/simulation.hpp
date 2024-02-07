@@ -113,7 +113,7 @@ struct SimulationResult {
 
 class Simulation {
  public:
-  Simulation(cloe::Stack&& config, std::unique_ptr<SimulationDriver> simulation_driver, std::string uuid);
+  Simulation(cloe::Stack&& config, SimulationDriver &simulation_driver, std::string uuid);
   Simulation(Simulation&&) = default;
   Simulation &operator=(Simulation&&) = default;
   ~Simulation() = default;
@@ -160,7 +160,7 @@ class Simulation {
 
  private:
   cloe::Stack config_;
-  std::unique_ptr<SimulationDriver> simulation_driver_;
+  SimulationDriver* simulation_driver_;
   cloe::Logger logger_;
   std::string uuid_;
   std::function<void()> abort_fn_;

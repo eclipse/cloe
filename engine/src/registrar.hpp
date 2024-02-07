@@ -107,7 +107,7 @@ class Registrar : public cloe::Registrar {
     return coordinator_->register_lua_table(trigger_prefix_);
   }*/
 
-  cloe::DataBroker& data_broker() const override {
+  [[nodiscard]] cloe::DataBroker& data_broker() const override {
     assert(data_broker_ != nullptr);
     return *data_broker_;
   }

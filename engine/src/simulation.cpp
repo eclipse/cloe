@@ -1220,9 +1220,9 @@ StateId SimulationMachine::Abort::impl(SimulationContext& ctx) {
 
 // --------------------------------------------------------------------------------------------- //
 
-Simulation::Simulation(cloe::Stack&& config, std::unique_ptr<SimulationDriver> simulation_driver, std::string uuid)
+Simulation::Simulation(cloe::Stack&& config, SimulationDriver &simulation_driver, std::string uuid)
     : config_(std::move(config))
-    , simulation_driver_(std::move(simulation_driver))
+    , simulation_driver_(&simulation_driver)
     , logger_(cloe::logger::get("cloe"))
     , uuid_(std::move(uuid)) {}
 
@@ -1259,7 +1259,7 @@ cloe::Json dump_signals(cloe::DataBroker& db) {
     std::copy(signal->names().begin(), signal->names().end(),
               std::back_inserter(signalreport.names));
 
-    const auto& meqtadata = signal->metadatas();
+    const auto& metadata = signal->metadatas();
   }
 
   auto json = cloe::Json{report};
@@ -1289,7 +1289,7 @@ cloe::Json dump_signals(cloe::DataBroker& db) {
 
 SimulationResult Simulation::run() {
   // Input:
-  SimulationContext ctx{simulation_driver_.get()};
+  SimulationContext ctx{simulation_driver_};
   ctx.db = std::make_unique<cloe::DataBroker>(simulation_driver_->data_broker_binding());
   ctx.server = make_server(config_.server);
   ctx.coordinator = std::make_unique<Coordinator>(ctx.simulation_driver, ctx.db.get());
