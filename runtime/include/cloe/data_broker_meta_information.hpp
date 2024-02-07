@@ -1,5 +1,9 @@
 #pragma once
 
+#include <typeindex>
+#include <any>
+#include <unordered_map>
+
 namespace cloe {
 /**
  * MetaInformation collects abstract metainformation

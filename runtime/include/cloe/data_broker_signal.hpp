@@ -1,9 +1,13 @@
 #pragma once
 
+#include "data_broker_types.hpp"
 #include "data_broker_event.hpp"
 #include "data_broker_meta_information.hpp"
 
+#include <fmt/format.h>
+
 #include <functional>
+#include <memory>
 
 namespace cloe {
 
