@@ -93,7 +93,8 @@ int run(const RunOptions& opt, const std::vector<std::string>& filepaths) {
   }
 
   // Create simulation:
-  Simulation sim(std::move(stack), std::make_unique<engine::LuaSimulationDriver>(std::move(lua)), uuid);
+  engine::LuaSimulationDriver driver (std::move(lua));
+  Simulation sim(std::move(stack), driver, uuid);
   GLOBAL_SIMULATION_INSTANCE = &sim;
   std::ignore = std::signal(SIGINT, handle_signal);
 
