@@ -3,6 +3,8 @@
 //
 #include "python_function.hpp"
 
+#include <pybind11/pybind11.h>
+
 #include <utility>
 #include <memory>
 
@@ -12,6 +14,7 @@ PythonFunction::PythonFunction(CallbackFunction py_fun, std::string_view name)
 ActionPtr PythonFunction::clone() const { return std::make_unique<PythonFunction>(*this); }
 CallbackResult PythonFunction::operator()(const Sync& sync, TriggerRegistrar& /*registrar*/) {
   try {
+    pybind11::gil_scoped_acquire gil;
     return py_fun_(sync);
   } catch (const std::exception &e) {
     throw cloe::Error("error executing Python function: {}", e.what());

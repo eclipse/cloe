@@ -30,7 +30,7 @@
 namespace cloe {
 namespace utility {
 
-extern void register_lua_types(cloe::DataBroker& db);
+extern void register_lua_types(cloe::DataBroker& db) {}; // todo
 
 extern void register_gaspedal_sensor(DataBroker& db, const std::string& vehicle,
                                      std::function<const double&()> gaspedal_getter);

@@ -438,7 +438,8 @@ class BasicController : public Controller {
       }
     }
 
-    auto lua = r.register_lua_table();
+    // todo
+    /*auto lua = r.register_lua_table();
 
     {
       auto acc = lua.new_usertype<AccConfiguration>("AccConfiguration", sol::no_constructor);
@@ -470,7 +471,7 @@ class BasicController : public Controller {
             // FIXME: Throw an error here
           });
       inst["target_speed"] = &acc_.target_speed;
-    }
+    }*/
 
     r.register_action(std::make_unique<utility::ContactFactory<Duration>>(&hmi_));
 

@@ -22,6 +22,7 @@
 #include <gtest/gtest.h>
 
 #include <cloe/utility/lua_types.hpp>
+#include <cloe/data_broker_lua_binding.hpp>
 
 #include <Eigen/Dense>  // for Eigen
 
@@ -39,7 +40,8 @@ TEST(lua_types_test, object) {
   //       Expected Result: I) The value of the member changed
   sol::state state;
   sol::state_view view(state);
-  DataBroker db{view};
+  cloe::databroker::LuaDataBrokerBinding binding {view};
+  DataBroker db{&binding};
 
   // Register all types
   cloe::utility::register_lua_types(db);
@@ -76,7 +78,8 @@ TEST(lua_types_test, vector3d) {
   //                        II) The value-changed event was received
   sol::state state;
   sol::state_view view(state);
-  DataBroker db{view};
+  cloe::databroker::LuaDataBrokerBinding binding {view};
+  DataBroker db{&binding};
 
   // Register all types
   cloe::utility::register_lua_types(db);

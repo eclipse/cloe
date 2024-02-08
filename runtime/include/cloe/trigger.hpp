@@ -368,6 +368,9 @@ enum class Source {
 
   /// Triggers that originate from a Lua script
   LUA,
+
+  /// Triggers that originate from simulation driver
+  DRIVER
 };
 
 // clang-format off

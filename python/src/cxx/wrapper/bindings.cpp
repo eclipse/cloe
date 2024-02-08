@@ -28,7 +28,12 @@ PYBIND11_MODULE(_cloe_bindings, m) {
     }, py::arg("d"), py::arg("file") = "");
   }
   {
-    py::class_<cloe::py::PythonSimulationDriver> clazz (m, "PythonSimulationDriver");
+    py::class_<cloe::py::PythonDataBrokerAdapter> clazz (m, "DataBrokerAdapter");
+    clazz.def(py::init<>());
+  }
+  {
+    py::class_<cloe::py::PythonSimulationDriver> clazz (m, "SimulationDriver");
+    clazz.def(py::init<cloe::py::PythonDataBrokerAdapter*>());
     clazz.def("add_signal_alias", &cloe::py::PythonSimulationDriver::add_signal_alias);
   }
   {

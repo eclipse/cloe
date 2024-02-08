@@ -34,10 +34,9 @@ void PythonSimulationDriver::bind_signals(DataBroker& dataBroker) {
       throw cloe::ModelError("Binding signals to Lua failed with above error. Aborting.");
     }
   }
-  adapter_->bind("signals", (*lua_)); // todo??
+  //adapter_->bind("signals", (*lua_)); // todo??
 }
-std::vector<cloe::TriggerPtr> PythonSimulationDriver::yield_pending_triggers(
-    engine::TriggerFactory& triggerFactory) {
+std::vector<cloe::TriggerPtr> PythonSimulationDriver::yield_pending_triggers() {
   /*std::vector<cloe::TriggerPtr> result;
   auto triggers = sol::object(cloe::luat_cloe_engine_initial_input(*lua_)["triggers"]);
   size_t count = 0;
@@ -47,6 +46,7 @@ std::vector<cloe::TriggerPtr> PythonSimulationDriver::yield_pending_triggers(
   }
   //cloe::luat_cloe_engine_initial_input(*lua_)["triggers_processed"] = count;*/
   // todo: yield pending triggers & empty the thing
+  return {};
 }
 
 databroker::DataBrokerBinding* PythonSimulationDriver::data_broker_binding() { return adapter_; }
@@ -66,8 +66,15 @@ PythonSimulationDriver::PythonSimulationDriver(PythonDataBrokerAdapter* adapter)
     : adapter_(adapter) {}
 void PythonSimulationDriver::add_trigger(
     std::string_view label, const nlohmann::json& eventDescription,
-    const std::function<void()>& action, bool sticky) {
-  // todo this needs the trigger factory thing
-  auto ep = factory.make_event(fable::Conf{nlohmann::json(tbl["event"])});
+    const PythonFunction::CallbackFunction& action, bool sticky) {
+  // todo this needs to be exported to python
+  // can we have a better api?
+  pending_triggers_.emplace_back(std::make_unique<cloe::Trigger>(
+      std::string(label), cloe::Source::DRIVER,
+      trigger_factory().make_event(fable::Conf{eventDescription}),
+      std::make_unique<PythonFunction>(action, "python_function"))
+  );
+  pending_triggers_.back()->set_sticky(sticky);
 }
+
 }
