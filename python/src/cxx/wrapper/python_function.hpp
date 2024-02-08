@@ -8,7 +8,7 @@ namespace cloe::py {
 
 class PythonFunction : public cloe::Action {
  public:
-  using CallbackFunction = std::function<CallbackResult(const cloe::Sync&)>;
+  using CallbackFunction = std::function<CallbackResult(const cloe::Sync*)>;
   PythonFunction(CallbackFunction py_fun, std::string_view name);
   PythonFunction(const PythonFunction &) = default;
   PythonFunction &operator=(const PythonFunction&) = default;

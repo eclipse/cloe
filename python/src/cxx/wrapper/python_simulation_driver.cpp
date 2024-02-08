@@ -36,7 +36,17 @@ void PythonSimulationDriver::bind_signals(DataBroker& dataBroker) {
 }
 std::vector<cloe::TriggerPtr> PythonSimulationDriver::yield_pending_triggers() {
   std::vector<cloe::TriggerPtr> result {};
-  std::swap(pending_triggers_, result);
+  result.reserve(pending_triggers_.size());
+
+  for(const auto &description : pending_triggers_) {
+    result.emplace_back(std::make_unique<cloe::Trigger>(
+        description.label, cloe::Source::DRIVER,
+        trigger_factory().make_event(fable::Conf{description.eventDescription}),
+        std::make_unique<PythonFunction>(description.action, "python_function"))
+    );
+    result.back()->set_sticky(description.sticky);
+  }
+  pending_triggers_.clear();
   return result;
 }
 
@@ -58,12 +68,12 @@ PythonSimulationDriver::PythonSimulationDriver(PythonDataBrokerAdapter* adapter)
 void PythonSimulationDriver::add_trigger(
     std::string_view label, const nlohmann::json& eventDescription,
     const PythonFunction::CallbackFunction& action, bool sticky) {
-  pending_triggers_.emplace_back(std::make_unique<cloe::Trigger>(
-      std::string(label), cloe::Source::DRIVER,
-      trigger_factory().make_event(fable::Conf{eventDescription}),
-      std::make_unique<PythonFunction>(action, "python_function"))
-  );
-  pending_triggers_.back()->set_sticky(sticky);
+  pending_triggers_.push_back(detail::TriggerDescription {
+      .label = std::string(label),
+      .eventDescription = eventDescription,
+      .action = action,
+      .sticky = sticky
+  });
 }
 
 }

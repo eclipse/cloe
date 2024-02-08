@@ -32,11 +32,21 @@ PYBIND11_MODULE(_cloe_bindings, m) {
   {
     py::class_<cloe::py::PythonDataBrokerAdapter> clazz (m, "DataBrokerAdapter");
     clazz.def(py::init<>());
+    clazz.def_property_readonly("signals", &cloe::py::PythonDataBrokerAdapter::signals);
   }
   {
-    py::class_<cloe::py::PythonSimulationDriver> clazz (m, "SimulationDriver");
+    using Driver = cloe::py::PythonSimulationDriver;
+    py::class_<Driver> clazz (m, "SimulationDriver");
     clazz.def(py::init<cloe::py::PythonDataBrokerAdapter*>());
-    clazz.def("add_signal_alias", &cloe::py::PythonSimulationDriver::add_signal_alias);
+    clazz.def("add_signal_alias", &Driver::add_signal_alias);
+    clazz.def("add_trigger", [](Driver &self, std::string_view label, const py::dict& eventDescription,
+                                const cloe::py::PythonFunction::CallbackFunction& action, bool sticky) {
+      self.add_trigger(label, cloe::py::dict2json(eventDescription), action, sticky);
+    });
+    clazz.def("add_trigger", [](Driver &self, std::string_view label, const std::string_view& eventDescription,
+                                const cloe::py::PythonFunction::CallbackFunction& action, bool sticky) {
+      self.add_trigger(label, nlohmann::json{eventDescription}, action, sticky);
+    });
   }
   {
     py::class_<engine::Simulation> sim (m, "Simulation");
@@ -76,5 +86,10 @@ PYBIND11_MODULE(_cloe_bindings, m) {
     sync.def_property_readonly("realtime_factor", &cloe::Sync::realtime_factor);
     sync.def_property_readonly("is_realtime_factor_unlimited", &cloe::Sync::is_realtime_factor_unlimited);
     sync.def_property_readonly("achievable_realtime_factor", &cloe::Sync::achievable_realtime_factor);
+  }
+  {
+    py::enum_<cloe::CallbackResult> clazz (m, "CallbackResult");
+    clazz.value("Ok", cloe::CallbackResult::Ok);
+    clazz.value("Unpin", cloe::CallbackResult::Unpin);
   }
 }

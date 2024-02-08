@@ -14,7 +14,9 @@ void PythonDataBrokerAdapter::bind_signal(SignalPtr signal, std::string_view sig
   const auto& adapter = iter->second;
   adapter(signal, lua_name);
 }
-void PythonDataBrokerAdapter::bind(std::string_view signals_name) {}
+void PythonDataBrokerAdapter::bind(std::string_view signals_name) {
+  // todo not needed!!
+}
 PythonDataBrokerAdapter::PythonDataBrokerAdapter() {
   declare<bool>();
   declare<int8_t>();

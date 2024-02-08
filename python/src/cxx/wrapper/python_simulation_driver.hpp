@@ -9,6 +9,15 @@
 
 namespace cloe::py {
 
+namespace detail {
+struct TriggerDescription {
+  std::string label;
+  nlohmann::json eventDescription;
+  PythonFunction::CallbackFunction action;
+  bool sticky;
+};
+}
+
 class PythonSimulationDriver final : public engine::SimulationDriver {
  public:
   explicit PythonSimulationDriver(PythonDataBrokerAdapter *adapter);
@@ -33,7 +42,7 @@ class PythonSimulationDriver final : public engine::SimulationDriver {
 
  private:
   PythonDataBrokerAdapter *adapter_;
-  std::vector<cloe::TriggerPtr> pending_triggers_{};
+  std::vector<detail::TriggerDescription> pending_triggers_{};
   std::vector<std::string> require_signals_ {};
   std::vector<std::tuple<std::string, std::string>> signal_aliases_ {};
 };

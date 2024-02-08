@@ -15,7 +15,7 @@ ActionPtr PythonFunction::clone() const { return std::make_unique<PythonFunction
 CallbackResult PythonFunction::operator()(const Sync& sync, TriggerRegistrar& /*registrar*/) {
   try {
     pybind11::gil_scoped_acquire gil;
-    return py_fun_(sync);
+    return py_fun_(&sync);
   } catch (const std::exception &e) {
     throw cloe::Error("error executing Python function: {}", e.what());
   }

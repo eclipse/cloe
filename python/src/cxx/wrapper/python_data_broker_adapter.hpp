@@ -21,7 +21,7 @@ class PythonDataBrokerAdapter : public cloe::databroker::DataBrokerBinding {
   void bind_signal(SignalPtr signal, std::string_view signal_name,
                    std::string_view python_name) override;
   void bind(std::string_view signals_name) override;
-  const Signals &signals () const;
+  const Signals &signals() const;
 
   template<typename T>
   void declare() {

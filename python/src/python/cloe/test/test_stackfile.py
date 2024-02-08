@@ -1,11 +1,19 @@
 import sys
+
 sys.path.append('/home/ohf4fe/dev/sil/cloe/build/linux-x86_64-gcc-8/Debug/lib')
 from pathlib import Path
 import _cloe_bindings as cloe
 
-
 databroker_adapter = cloe.DataBrokerAdapter()
 driver = cloe.SimulationDriver(databroker_adapter)
+
+
+def trigger(sync):
+    print("hello from", sync.time)
+    return cloe.CallbackResult.Ok
+
+
+driver.add_trigger("mytrigger", {"name": "loop"}, trigger, True)
 
 stack = cloe.Stack()
 conf = dict(
@@ -15,11 +23,8 @@ conf = dict(
 )
 stack.merge(conf)
 
-
 sim = cloe.Simulation(stack, driver, uuid="123")
 sim.run()
-
-
 
 # sim.run
 #   -> ctx is created (with coordinator)
