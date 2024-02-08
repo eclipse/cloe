@@ -231,12 +231,12 @@ cloe::ActionPtr LuaSimulationDriver::make_action(TriggerFactory& factory, const 
     return factory.make_action(cloe::Conf{nlohmann::json(lua)});
   }
 }
-std::vector<cloe::TriggerPtr> LuaSimulationDriver::yield_pending_triggers(engine::TriggerFactory& triggerFactory){
+std::vector<cloe::TriggerPtr> LuaSimulationDriver::yield_pending_triggers(){
   std::vector<cloe::TriggerPtr> result;
   auto triggers = sol::object(cloe::luat_cloe_engine_initial_input(*lua_)["triggers"]);
   size_t count = 0;
   for (auto& kv : triggers.as<sol::table>()) {
-    result.push_back(make_trigger(triggerFactory, kv.second));
+    result.push_back(make_trigger(trigger_factory(), kv.second));
     count++;
   }
   cloe::luat_cloe_engine_initial_input(*lua_)["triggers_processed"] = count;

@@ -26,7 +26,7 @@ class LuaSimulationDriver final : public SimulationDriver {
 
   [[nodiscard]] nlohmann::json produce_report() const override;
 
-  std::vector<cloe::TriggerPtr> yield_pending_triggers(TriggerFactory &triggerFactory) override;
+  std::vector<cloe::TriggerPtr> yield_pending_triggers() override;
 
   static cloe::ActionPtr make_action(TriggerFactory& factory, const sol::object& lua);
   static cloe::TriggerPtr make_trigger(TriggerFactory& factory, const sol::table& tbl);

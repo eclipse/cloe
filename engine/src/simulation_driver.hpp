@@ -44,11 +44,17 @@ class SimulationDriver {
   virtual void alias_signals(cloe::DataBroker &dataBroker) = 0;
   virtual void bind_signals(cloe::DataBroker &dataBroker) = 0;
 
-  virtual std::vector<cloe::TriggerPtr> yield_pending_triggers(TriggerFactory &triggerFactory) = 0;
+  virtual std::vector<cloe::TriggerPtr> yield_pending_triggers() = 0;
 
   virtual cloe::databroker::DataBrokerBinding* data_broker_binding() { return nullptr; };
 
   [[nodiscard]] virtual nlohmann::json produce_report() const = 0;
+
+  [[nodiscard]] const TriggerFactory& trigger_factory() const { return *trigger_factory_; }
+  TriggerFactory& trigger_factory() { return *trigger_factory_; }
+
+ private:
+  std::unique_ptr<TriggerFactory> trigger_factory_ {std::make_unique<TriggerFactory>()};
 };
 
 }

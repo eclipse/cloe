@@ -84,7 +84,7 @@ void Coordinator::enroll(Registrar& r) {
   r.register_api_handler("/triggers/actions", HandlerType::STATIC,
     [this](const Request&, Response& r) {
       Json j;
-      for (const auto& a : trigger_factory_->actions()) {
+      for (const auto& a : trigger_factory().actions()) {
         j[a.first] = a.second->json_schema();
       }
       r.write(j);
@@ -93,7 +93,7 @@ void Coordinator::enroll(Registrar& r) {
   r.register_api_handler("/triggers/events", HandlerType::STATIC,
     [this](const Request&, Response& r) {
       Json j;
-      for (const auto& a : trigger_factory_->events()) {
+      for (const auto& a : trigger_factory().events()) {
         j[a.first] = a.second->json_schema();
       }
       r.write(j);
@@ -153,12 +153,12 @@ void Coordinator::enroll(Registrar& r) {
 }
 
 void Coordinator::register_action(const std::string& key, ActionFactoryPtr&& af) {
-  trigger_factory_->register_action(key, std::move(af));
+  trigger_factory().register_action(key, std::move(af));
 }
 
 void Coordinator::register_event(const std::string& key, EventFactoryPtr&& ef,
                                  std::shared_ptr<Callback> storage) {
-  trigger_factory_->register_event(key, std::move(ef));
+  trigger_factory().register_event(key, std::move(ef));
   storage_[key] = storage;
   storage->set_executer(
       std::bind(&Coordinator::execute_trigger, this, std::placeholders::_1, std::placeholders::_2));
@@ -228,11 +228,11 @@ void Coordinator::queue_trigger(TriggerPtr&& t) {
 }
 
 void Coordinator::queue_trigger(cloe::Source s, const Conf& c) {
-  queue_trigger(trigger_factory_->make_trigger(s, c));
+  queue_trigger(trigger_factory().make_trigger(s, c));
 }
 
 size_t Coordinator::process_pending_driver_triggers(const Sync& sync) {
-  auto triggers = simulation_driver_->yield_pending_triggers(*trigger_factory_);
+  auto triggers = simulation_driver_->yield_pending_triggers();
   const auto count = triggers.size();
   for(auto &&trigger : triggers) {
     store_trigger(std::move(trigger), sync);
@@ -245,8 +245,8 @@ size_t Coordinator::process_pending_driver_triggers(const Sync& sync) {
   luat_cloe_engine_plugins(lua_)[field] = tbl;
   return tbl;
 }*/
-TriggerFactory& Coordinator::trigger_factory() { return *trigger_factory_; }
-const TriggerFactory& Coordinator::trigger_factory() const { return *trigger_factory_; }
+TriggerFactory& Coordinator::trigger_factory() { return simulation_driver_->trigger_factory(); }
+const TriggerFactory& Coordinator::trigger_factory() const { return simulation_driver_->trigger_factory(); }
 SimulationDriver& Coordinator::simulation_driver() { return *simulation_driver_; }
 void Coordinator::execute_action(const Sync& sync, cloe::Action& action) {
   action(sync, *executer_registrar_);
