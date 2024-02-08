@@ -9,6 +9,8 @@ pybind11_add_module(_cloe_bindings
         python_data_broker_adapter.cpp
         python_function.hpp
         python_function.cpp
+        signals.hpp
+        signals.cpp
 )
 target_link_libraries(_cloe_bindings PUBLIC cloe::stacklib cloe::enginelib)
 # todo this should be exposed by engine stacklib/enginelib via conan and/or root project

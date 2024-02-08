@@ -11,11 +11,9 @@ void PythonSimulationDriver::alias_signals(DataBroker& dataBroker) {
 
 void PythonSimulationDriver::initialize(const engine::SimulationSync& sync,
                                         engine::Coordinator& scheduler) {
-  // todo required??
-  /*auto types_tbl = sol::object(cloe::luat_cloe_engine_types(*lua_)).as<sol::table>();
-  register_usertype_coordinator(types_tbl, sync);
-  cloe::luat_cloe_engine_state(*lua_)["scheduler"] = std::ref(scheduler);*/
+  // todo not sure if needed in python
 }
+
 void PythonSimulationDriver::register_action_factories(Registrar& registrar) {
   // todo: probably not needed, we don't want to run python scripts from within the engine
 }
@@ -37,16 +35,9 @@ void PythonSimulationDriver::bind_signals(DataBroker& dataBroker) {
   //adapter_->bind("signals", (*lua_)); // todo??
 }
 std::vector<cloe::TriggerPtr> PythonSimulationDriver::yield_pending_triggers() {
-  /*std::vector<cloe::TriggerPtr> result;
-  auto triggers = sol::object(cloe::luat_cloe_engine_initial_input(*lua_)["triggers"]);
-  size_t count = 0;
-  for (auto& kv : triggers.as<sol::table>()) {
-    result.push_back(make_trigger(triggerFactory, kv.second));
-    count++;
-  }
-  //cloe::luat_cloe_engine_initial_input(*lua_)["triggers_processed"] = count;*/
-  // todo: yield pending triggers & empty the thing
-  return {};
+  std::vector<cloe::TriggerPtr> result {};
+  std::swap(pending_triggers_, result);
+  return result;
 }
 
 databroker::DataBrokerBinding* PythonSimulationDriver::data_broker_binding() { return adapter_; }
@@ -67,8 +58,6 @@ PythonSimulationDriver::PythonSimulationDriver(PythonDataBrokerAdapter* adapter)
 void PythonSimulationDriver::add_trigger(
     std::string_view label, const nlohmann::json& eventDescription,
     const PythonFunction::CallbackFunction& action, bool sticky) {
-  // todo this needs to be exported to python
-  // can we have a better api?
   pending_triggers_.emplace_back(std::make_unique<cloe::Trigger>(
       std::string(label), cloe::Source::DRIVER,
       trigger_factory().make_event(fable::Conf{eventDescription}),

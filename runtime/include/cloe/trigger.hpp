@@ -381,6 +381,7 @@ ENUM_SERIALIZATION(Source, ({
   {Source::TRIGGER, "trigger"},
   {Source::INSTANCE, "instance"},
   {Source::LUA, "lua"},
+  {Source::DRIVER, "driver"},
 }))
 // clang-format on
 
@@ -393,7 +394,8 @@ ENUM_SERIALIZATION(Source, ({
  * reproduction.
  */
 inline bool source_is_transient(Source s) {
-  return (s != Source::FILESYSTEM && s != Source::NETWORK && s != Source::LUA);
+  static constexpr auto user = {Source::FILESYSTEM, Source::NETWORK, Source::LUA, Source::DRIVER};
+  return std::find(begin(user), end(user), s) == end(user);
 }
 
 /**

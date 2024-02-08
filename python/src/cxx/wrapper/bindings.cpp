@@ -6,6 +6,8 @@
 #include "stack_factory.hpp"
 
 #include <pybind11/chrono.h>
+#include <pybind11/eigen.h>
+#include <pybind11/functional.h>
 #include <pybind11/pybind11.h>
 
 PYBIND11_MODULE(_cloe_bindings, m) {

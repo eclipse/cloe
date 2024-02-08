@@ -234,7 +234,6 @@ class LuaDataBrokerBinding : public DataBrokerBinding {
       // Create adapter for Lua-VM
       lua_signal_adapter_t adapter = [this](const SignalPtr& signal, sol::state_view state,
                                             std::string_view lua_name) {
-        //adapter_impl<T>(signal, state, lua_name);
         // Subscribe to the value-changed event to indicate the signal is used
         signal->subscribe<T>([](const T&) {});
         // Implement the signal as a property in Lua
