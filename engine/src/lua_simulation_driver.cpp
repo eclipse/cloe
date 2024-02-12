@@ -17,7 +17,7 @@ LuaSimulationDriver::LuaSimulationDriver(std::unique_ptr<sol::state> lua)
     : lua_(std::move(lua)),
     data_broker_binding_(std::make_unique<cloe::databroker::LuaDataBrokerBinding>(*lua_)) {}
 
-void LuaSimulationDriver::initialize(const SimulationSync &sync, Coordinator& scheduler) {
+void LuaSimulationDriver::initialize(const SimulationSync &sync, Coordinator& scheduler, cloe::DataBroker &/*db*/) {
   auto types_tbl = sol::object(cloe::luat_cloe_engine_types(*lua_)).as<sol::table>();
   register_usertype_coordinator(types_tbl, sync);
   cloe::luat_cloe_engine_state(*lua_)["scheduler"] = std::ref(scheduler);

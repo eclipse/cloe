@@ -27,7 +27,7 @@ class PythonSimulationDriver final : public engine::SimulationDriver {
   PythonSimulationDriver& operator=(const PythonSimulationDriver&) = delete;
   ~PythonSimulationDriver() final = default;
 
-  void initialize(const engine::SimulationSync& sync, engine::Coordinator& scheduler) override;
+  void initialize(const engine::SimulationSync& sync, engine::Coordinator& scheduler, cloe::DataBroker &dataBroker) override;
   void register_action_factories(Registrar& registrar) override;
   void alias_signals(DataBroker& dataBroker) override;
   void bind_signals(DataBroker& dataBroker) override;
@@ -43,6 +43,8 @@ class PythonSimulationDriver final : public engine::SimulationDriver {
                    const nlohmann::json &eventDescription,
                    const PythonFunction::CallbackFunction &action, bool sticky);
 
+  [[nodiscard]] std::vector<std::string> available_signals() const;
+
  private:
 
   [[nodiscard]] std::unique_ptr<cloe::Trigger> trigger_description_to_trigger(const detail::TriggerDescription &) const;
@@ -52,6 +54,7 @@ class PythonSimulationDriver final : public engine::SimulationDriver {
   std::vector<std::string> require_signals_ {};
   std::vector<std::tuple<std::string, std::string>> signal_aliases_ {};
   engine::Coordinator* coordinator_ {};
+  cloe::DataBroker* data_broker_ {};
 };
 
 }

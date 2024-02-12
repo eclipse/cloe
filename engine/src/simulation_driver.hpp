@@ -39,7 +39,7 @@ class SimulationDriver {
 
   static cloe::Logger logger() { return cloe::logger::get("cloe"); }
 
-  virtual void initialize(const SimulationSync &sync, Coordinator& scheduler) = 0;
+  virtual void initialize(const SimulationSync &sync, Coordinator& scheduler, cloe::DataBroker& dataBroker) = 0;
   virtual void register_action_factories(cloe::Registrar& registrar) = 0;
   virtual void alias_signals(cloe::DataBroker &dataBroker) = 0;
   virtual void bind_signals(cloe::DataBroker &dataBroker) = 0;

@@ -338,7 +338,7 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
   }
 
   {  // 3. Initialize simulation driver
-    ctx.simulation_driver->initialize(ctx.sync, *ctx.coordinator);
+    ctx.simulation_driver->initialize(ctx.sync, *ctx.coordinator, *ctx.db);
   }
 
   {  // 4. Enroll endpoints and triggers for the server

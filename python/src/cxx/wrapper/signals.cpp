@@ -2,8 +2,8 @@
 
 namespace cloe::py {
 
-std::vector<std::string_view> Signals::bound_signals() const {
-  std::vector<std::string_view> result{};
+std::vector<std::string> Signals::bound_signals() const {
+  std::vector<std::string> result{};
   result.reserve(accessors_.size());
   for (const auto &[key, _] : accessors_) {
     result.emplace_back(key);

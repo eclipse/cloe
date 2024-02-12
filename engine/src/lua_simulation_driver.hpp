@@ -19,7 +19,7 @@ class LuaSimulationDriver final : public SimulationDriver {
   LuaSimulationDriver& operator=(const LuaSimulationDriver&) = delete;
   ~LuaSimulationDriver() final = default;
 
-  void initialize(const SimulationSync &sync, Coordinator& scheduler) override;
+  void initialize(const SimulationSync &sync, Coordinator& scheduler, cloe::DataBroker &db) override;
   void register_action_factories(cloe::Registrar& registrar) override;
   void alias_signals(cloe::DataBroker& dataBroker) override;
   void bind_signals(cloe::DataBroker& dataBroker) override;

@@ -8,6 +8,7 @@
 #include <pybind11/chrono.h>
 #include <pybind11/eigen.h>
 #include <pybind11/functional.h>
+#include <pybind11/stl.h>
 #include <pybind11/pybind11.h>
 
 PYBIND11_MODULE(_cloe_bindings, m) {
@@ -30,6 +31,10 @@ PYBIND11_MODULE(_cloe_bindings, m) {
     }, py::arg("d"), py::arg("file") = "");
   }
   {
+    py::class_<cloe::py::Signals> clazz (m, "Signals");
+    clazz.def("bound_signals", &cloe::py::Signals::bound_signals);
+  }
+  {
     py::class_<cloe::py::PythonDataBrokerAdapter> clazz (m, "DataBrokerAdapter");
     clazz.def(py::init<>());
     clazz.def_property_readonly("signals", &cloe::py::PythonDataBrokerAdapter::signals);
@@ -47,6 +52,9 @@ PYBIND11_MODULE(_cloe_bindings, m) {
                                 const cloe::py::PythonFunction::CallbackFunction& action, bool sticky) {
                 self.add_trigger(sync, label, cloe::py::dict2json(eventDescription), action, sticky);
     });
+    clazz.def("require_signal", &cloe::py::PythonSimulationDriver::add_require_signal);
+    clazz.def("alias_signal", &cloe::py::PythonSimulationDriver::add_signal_alias);
+    clazz.def_property_readonly("available_signals", &cloe::py::PythonSimulationDriver::available_signals);
   }
   {
     py::class_<engine::Simulation> sim (m, "Simulation");

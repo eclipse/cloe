@@ -11,9 +11,11 @@ void PythonSimulationDriver::alias_signals(DataBroker& dataBroker) {
   }
 }
 
-void PythonSimulationDriver::initialize(const engine::SimulationSync& sync,
-                                        engine::Coordinator& scheduler) {
+void PythonSimulationDriver::initialize(const engine::SimulationSync& /*sync*/,
+                                        engine::Coordinator& scheduler,
+                                        cloe::DataBroker &dataBroker) {
   coordinator_ = &scheduler;
+  data_broker_ = &dataBroker;
 }
 
 void PythonSimulationDriver::register_action_factories(Registrar& registrar) {
@@ -31,7 +33,7 @@ void PythonSimulationDriver::bind_signals(DataBroker& dataBroker) {
       }
     } else {
       logger()->warn("Requested signal '{}' does not exist in DataBroker.", signal);
-      throw cloe::ModelError("Binding signals to Lua failed with above error. Aborting.");
+      throw cloe::ModelError("Binding signals to Python failed with above error. Aborting.");
     }
   }
   //adapter_->bind("signals", (*lua_)); // todo??
@@ -98,6 +100,17 @@ void PythonSimulationDriver::add_trigger(const Sync& sync, std::string_view labe
       .sticky = sticky
   };
   coordinator_->insert_trigger(sync, trigger_description_to_trigger(description));
+}
+std::vector<std::string> PythonSimulationDriver::available_signals() const {
+  if(data_broker_ == nullptr){
+    throw std::runtime_error("databroker not yet initialized");
+  }
+  std::vector<std::string> result {};
+  result.reserve(data_broker_->signals().size());
+  for(const auto &[key, _] : data_broker_->signals()) {
+    result.emplace_back(key);
+  }
+  return result;
 }
 
 }

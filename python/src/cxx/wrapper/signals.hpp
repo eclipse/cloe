@@ -14,13 +14,32 @@ class Signals {
   using getter_fn = std::function<pybind11::object()>;
   using setter_fn = std::function<void(const pybind11::object&)>;
 
+  /**
+  * accessors (getter/setter)
+  */
+  struct accessor {
+    getter_fn getter;
+    setter_fn setter;
+  };
+  /**
+  * Signals map (name -> accessors)
+  */
+  using accessors = std::map<std::string, accessor, std::less<>>;
+
   Signals() = default;
 
   [[nodiscard]] const getter_fn &getter(std::string_view name) const;
 
   [[nodiscard]] const setter_fn &setter(std::string_view name) const;
 
-  [[nodiscard]] std::vector<std::string_view> bound_signals() const;
+  [[nodiscard]] std::vector<std::string> bound_signals() const;
+
+  const accessors::value_type& operator[](std::string_view key) const {
+    if(auto it = accessors_.find(key); it != end(accessors_)) {
+     return *it;
+    }
+    throw std::runtime_error(fmt::format("Could not find signal for key {}", key));
+  }
 
   /**
     *  \brief Binds one signal to Lua
@@ -40,17 +59,6 @@ class Signals {
   }
 
  private:
-  /**
-  * accessors (getter/setter)
-  */
-  struct accessor {
-    getter_fn getter;
-    setter_fn setter;
-  };
-  /**
-  * Signals map (name -> accessors)
-  */
-  using accessors = std::map<std::string, accessor, std::less<>>;
   /**
   * Mapped signals
   */
