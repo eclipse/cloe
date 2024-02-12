@@ -91,12 +91,12 @@
 #include <cloe/trigger/example_actions.hpp>   // for CommandFactory, BundleFactory, ...
 #include <cloe/trigger/set_action.hpp>        // for DEFINE_SET_STATE_ACTION, SetDataActionFactory
 #include <cloe/utility/resource_handler.hpp>  // for INCLUDE_RESOURCE, RESOURCE_HANDLER
+#include <cloe/coordinator.hpp>            // for register_usertype_coordinator
 #include <cloe/vehicle.hpp>                   // for Vehicle
 #include <fable/utility.hpp>                  // for pretty_print
 #include <fable/utility/sol.hpp>              // for sol::object to_json
 #include <utility>
 
-#include "coordinator.hpp"            // for register_usertype_coordinator
 #include "lua_action.hpp"             // for LuaAction,
 #include "lua_api.hpp"                // for to_json(json, sol::object)
 #include "simulation_context.hpp"     // for SimulationContext
@@ -1220,7 +1220,7 @@ StateId SimulationMachine::Abort::impl(SimulationContext& ctx) {
 
 // --------------------------------------------------------------------------------------------- //
 
-Simulation::Simulation(cloe::Stack&& config, SimulationDriver &simulation_driver, std::string uuid)
+Simulation::Simulation(cloe::Stack&& config, cloe::SimulationDriver &simulation_driver, std::string uuid)
     : config_(std::move(config))
     , simulation_driver_(&simulation_driver)
     , logger_(cloe::logger::get("cloe"))
@@ -1292,7 +1292,7 @@ SimulationResult Simulation::run() {
   SimulationContext ctx{simulation_driver_};
   ctx.db = std::make_unique<cloe::DataBroker>(simulation_driver_->data_broker_binding());
   ctx.server = make_server(config_.server);
-  ctx.coordinator = std::make_unique<Coordinator>(ctx.simulation_driver, ctx.db.get());
+  ctx.coordinator = std::make_unique<cloe::coordinator::Coordinator>(ctx.simulation_driver, ctx.db.get());
   ctx.registrar = std::make_unique<Registrar>(ctx.server->server_registrar(), ctx.coordinator.get(),
                                               ctx.db.get());
   ctx.commander = std::make_unique<CommandExecuter>(logger());

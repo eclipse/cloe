@@ -93,8 +93,6 @@ add_library(cloe-enginelib STATIC
     src/lua_setup_sync.cpp
     src/lua_bindings.cpp
     src/lua_bindings.hpp
-    src/coordinator.cpp
-    src/coordinator.hpp
     src/lua_action.cpp
     src/lua_action.hpp
     src/registrar.hpp
@@ -103,8 +101,6 @@ add_library(cloe-enginelib STATIC
     # src/server_mock.cpp
     src/simulation.cpp
     src/simulation.hpp
-    src/simulation_driver.cpp
-    src/simulation_driver.hpp
     src/lua_simulation_driver.cpp
     src/lua_simulation_driver.hpp
     src/simulation_sync.hpp

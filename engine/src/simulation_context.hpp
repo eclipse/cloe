@@ -38,15 +38,16 @@
 #include <cloe/trigger/nil_event.hpp>   // for DEFINE_NIL_EVENT
 #include <cloe/utility/statistics.hpp>  // for Accumulator
 #include <cloe/utility/timer.hpp>       // for DurationTimer
+#include <cloe/coordinator.hpp>  // for Coordinator
+#include <cloe/simulation_driver.hpp>
 
-#include "coordinator.hpp"  // for Coordinator
-#include "registrar.hpp"    // for Registrar
-#include "server.hpp"       // for Server
-#include "simulation_driver.hpp"
+#include "registrar.hpp"            // for Registrar
+#include "server.hpp"               // for Server
 #include "simulation_progress.hpp"  // for SimulationProgress
-#include "stack.hpp"                // for Stack
-#include "utility/command.hpp"      // for CommandExecuter
-#include "utility/time_event.hpp"   // for TimeCallback
+#include "simulation_sync.hpp"
+#include "stack.hpp"               // for Stack
+#include "utility/command.hpp"     // for CommandExecuter
+#include "utility/time_event.hpp"  // for TimeCallback
 
 namespace engine {
 
@@ -131,14 +132,14 @@ DEFINE_NIL_EVENT(Loop, "loop", "begin of inner simulation loop each cycle")
  * performed in the simulation states in the `simulation.cpp` file.
  */
 struct SimulationContext {
-  SimulationContext(SimulationDriver* driver) : simulation_driver(driver) {}
+  SimulationContext(cloe::SimulationDriver* driver) : simulation_driver(driver) {}
 
-  SimulationDriver* simulation_driver;
+  cloe::SimulationDriver* simulation_driver;
 
   // Setup
   std::unique_ptr<cloe::DataBroker> db;
   std::unique_ptr<Server> server;
-  std::shared_ptr<Coordinator> coordinator;
+  std::shared_ptr<cloe::coordinator::Coordinator> coordinator;
   std::shared_ptr<Registrar> registrar;
   std::unique_ptr<CommandExecuter> commander;
 

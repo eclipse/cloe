@@ -20,7 +20,7 @@
  * \see  coordinator.hpp
  */
 
-#include "coordinator.hpp"
+#include <cloe/coordinator.hpp>
 
 #include <functional>  // for bind
 #include <memory>      // for unique_ptr<>, shared_ptr<>
@@ -37,13 +37,12 @@
 #include <cloe/registrar.hpp>  // for Registrar
 #include <cloe/sync.hpp>       // for Sync
 #include <cloe/trigger.hpp>    // for Trigger
-using namespace cloe;          // NOLINT(build/namespaces)
 
-namespace engine {
+namespace cloe::coordinator {
 
 template <typename T>
 std::string inline_json(const T& x) {
-  ::Json tmp;
+  nlohmann::json tmp;
   to_json(tmp, x);
   return tmp.dump();
 }
@@ -54,14 +53,20 @@ void to_json(Json& j, const HistoryTrigger& t) {
 }
 
 Coordinator::Coordinator(SimulationDriver* simulation_driver, cloe::DataBroker* db)
-    : simulation_driver_(simulation_driver), db_(db), executer_registrar_(trigger_registrar(Source::TRIGGER)) {}
+    : simulation_driver_(simulation_driver)
+    , db_(db)
+    , executer_registrar_(trigger_registrar(Source::TRIGGER)) {}
 
 class TriggerRegistrar : public cloe::TriggerRegistrar {
  public:
   TriggerRegistrar(Coordinator& m, Source s) : cloe::TriggerRegistrar(s), manager_(m) {}
 
-  ActionPtr make_action(const Conf& c) const override { return manager_.trigger_factory().make_action(c); }
-  EventPtr make_event(const Conf& c) const override { return manager_.trigger_factory().make_event(c); }
+  ActionPtr make_action(const Conf& c) const override {
+    return manager_.trigger_factory().make_action(c);
+  }
+  EventPtr make_event(const Conf& c) const override {
+    return manager_.trigger_factory().make_event(c);
+  }
   TriggerPtr make_trigger(const Conf& c) const override {
     return manager_.trigger_factory().make_trigger(source_, c);
   }
@@ -234,7 +239,7 @@ void Coordinator::queue_trigger(cloe::Source s, const Conf& c) {
 size_t Coordinator::process_pending_driver_triggers(const Sync& sync) {
   auto triggers = simulation_driver_->yield_pending_triggers();
   const auto count = triggers.size();
-  for(auto &&trigger : triggers) {
+  for (auto&& trigger : triggers) {
     store_trigger(std::move(trigger), sync);
   }
   return count;
@@ -245,11 +250,14 @@ size_t Coordinator::process_pending_driver_triggers(const Sync& sync) {
   luat_cloe_engine_plugins(lua_)[field] = tbl;
   return tbl;
 }*/
-TriggerFactory& Coordinator::trigger_factory() { return simulation_driver_->trigger_factory(); }
-const TriggerFactory& Coordinator::trigger_factory() const { return simulation_driver_->trigger_factory(); }
+DriverTriggerFactory& Coordinator::trigger_factory() {
+  return simulation_driver_->trigger_factory();
+}
+const DriverTriggerFactory& Coordinator::trigger_factory() const {
+  return simulation_driver_->trigger_factory();
+}
 SimulationDriver& Coordinator::simulation_driver() { return *simulation_driver_; }
 void Coordinator::execute_action(const Sync& sync, cloe::Action& action) {
   action(sync, *executer_registrar_);
 }
-
-}  // namespace engine
+}

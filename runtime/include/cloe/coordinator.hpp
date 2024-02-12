@@ -34,9 +34,9 @@
 #include <cloe/trigger.hpp>    // for Trigger, Action, Event, ...
 
 #include "simulation_driver.hpp"
-#include "trigger_factory.hpp"
+#include <cloe/simulation_driver_trigger_factory.hpp>
 
-namespace engine {
+namespace cloe::coordinator {
 
 // Forward declarations:
 class TriggerRegistrar;  // from coordinator.cpp
@@ -90,8 +90,8 @@ class Coordinator {
   void insert_trigger(const cloe::Sync& sync, cloe::TriggerPtr trigger);
   void execute_action(const cloe::Sync& sync, cloe::Action& action);
 
-  TriggerFactory& trigger_factory();
-  const TriggerFactory& trigger_factory() const;
+  DriverTriggerFactory& trigger_factory();
+  const DriverTriggerFactory& trigger_factory() const;
 
   SimulationDriver& simulation_driver();
 

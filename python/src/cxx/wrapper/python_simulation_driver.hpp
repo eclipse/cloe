@@ -2,7 +2,7 @@
 
 #include "python_data_broker_adapter.hpp"
 #include "python_function.hpp"
-#include "simulation_driver.hpp"
+#include <cloe/simulation_driver.hpp>
 
 #include <tuple>
 #include <vector>
@@ -18,7 +18,7 @@ struct TriggerDescription {
 };
 }
 
-class PythonSimulationDriver final : public engine::SimulationDriver {
+class PythonSimulationDriver final : public cloe::SimulationDriver {
  public:
   explicit PythonSimulationDriver(PythonDataBrokerAdapter *adapter);
   PythonSimulationDriver(PythonSimulationDriver&&) = default;
@@ -27,7 +27,7 @@ class PythonSimulationDriver final : public engine::SimulationDriver {
   PythonSimulationDriver& operator=(const PythonSimulationDriver&) = delete;
   ~PythonSimulationDriver() final = default;
 
-  void initialize(const engine::SimulationSync& sync, engine::Coordinator& scheduler, cloe::DataBroker &dataBroker) override;
+  void initialize(const cloe::Sync& sync, cloe::coordinator::Coordinator& scheduler, cloe::DataBroker &dataBroker) override;
   void register_action_factories(Registrar& registrar) override;
   void alias_signals(DataBroker& dataBroker) override;
   void bind_signals(DataBroker& dataBroker) override;
@@ -53,7 +53,7 @@ class PythonSimulationDriver final : public engine::SimulationDriver {
   std::vector<detail::TriggerDescription> pending_triggers_{};
   std::vector<std::string> require_signals_ {};
   std::vector<std::tuple<std::string, std::string>> signal_aliases_ {};
-  engine::Coordinator* coordinator_ {};
+  cloe::coordinator::Coordinator* coordinator_ {};
   cloe::DataBroker* data_broker_ {};
 };
 

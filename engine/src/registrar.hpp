@@ -25,15 +25,14 @@
 #include <string>  // for string
 
 #include <cloe/registrar.hpp>  // for cloe::Registrar
-
-#include "coordinator.hpp"  // for Coordinator
+#include <cloe/coordinator.hpp>  // for Coordinator
 #include "server.hpp"       // for Server, ServerRegistrar
 
 namespace engine {
 
 class Registrar : public cloe::Registrar {
  public:
-  Registrar(std::unique_ptr<ServerRegistrar> r, Coordinator* c, cloe::DataBroker* db)
+  Registrar(std::unique_ptr<ServerRegistrar> r, cloe::coordinator::Coordinator* c, cloe::DataBroker* db)
       : server_registrar_(std::move(r)), coordinator_(c), data_broker_(db) {}
 
   Registrar(const Registrar& ar,
@@ -114,7 +113,7 @@ class Registrar : public cloe::Registrar {
 
  private:
   std::unique_ptr<ServerRegistrar> server_registrar_;
-  Coordinator* coordinator_;       // non-owning
+  cloe::coordinator::Coordinator* coordinator_;       // non-owning
   cloe::DataBroker* data_broker_;  // non-owning
   std::string trigger_prefix_;
 };

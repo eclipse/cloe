@@ -1,7 +1,7 @@
 #include "python_simulation_driver.hpp"
 #include "cloe/model.hpp"
 
-#include "coordinator.hpp"
+#include <cloe/coordinator.hpp>
 
 namespace cloe::py {
 
@@ -11,8 +11,8 @@ void PythonSimulationDriver::alias_signals(DataBroker& dataBroker) {
   }
 }
 
-void PythonSimulationDriver::initialize(const engine::SimulationSync& /*sync*/,
-                                        engine::Coordinator& scheduler,
+void PythonSimulationDriver::initialize(const cloe::Sync& /*sync*/,
+                                        cloe::coordinator::Coordinator& scheduler,
                                         cloe::DataBroker &dataBroker) {
   coordinator_ = &scheduler;
   data_broker_ = &dataBroker;

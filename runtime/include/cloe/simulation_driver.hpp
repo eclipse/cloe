@@ -18,15 +18,13 @@
 
 #pragma once
 
-#include "simulation_sync.hpp"
-#include "trigger_factory.hpp"
-
+#include <cloe/simulation_driver_trigger_factory.hpp>
 #include <cloe/data_broker.hpp>
 #include <cloe/registrar.hpp>
 
-namespace engine {
+namespace cloe {
 
-class Coordinator;
+namespace coordinator { class Coordinator; }
 
 class SimulationDriver {
  public:
@@ -39,7 +37,7 @@ class SimulationDriver {
 
   static cloe::Logger logger() { return cloe::logger::get("cloe"); }
 
-  virtual void initialize(const SimulationSync &sync, Coordinator& scheduler, cloe::DataBroker& dataBroker) = 0;
+  virtual void initialize(const cloe::Sync &sync, coordinator::Coordinator& scheduler, cloe::DataBroker& dataBroker) = 0;
   virtual void register_action_factories(cloe::Registrar& registrar) = 0;
   virtual void alias_signals(cloe::DataBroker &dataBroker) = 0;
   virtual void bind_signals(cloe::DataBroker &dataBroker) = 0;
@@ -50,11 +48,11 @@ class SimulationDriver {
 
   [[nodiscard]] virtual nlohmann::json produce_report() const = 0;
 
-  [[nodiscard]] const TriggerFactory& trigger_factory() const { return *trigger_factory_; }
-  TriggerFactory& trigger_factory() { return *trigger_factory_; }
+  [[nodiscard]] const DriverTriggerFactory& trigger_factory() const { return *trigger_factory_; }
+  DriverTriggerFactory& trigger_factory() { return *trigger_factory_; }
 
  private:
-  std::unique_ptr<TriggerFactory> trigger_factory_ {std::make_unique<TriggerFactory>()};
+  std::unique_ptr<DriverTriggerFactory> trigger_factory_ {std::make_unique<DriverTriggerFactory>()};
 };
 
 }

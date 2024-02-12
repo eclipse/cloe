@@ -29,9 +29,9 @@
 
 #include <fable/enum.hpp>  // for ENUM_SERIALIZATION
 #include <sol/state.hpp>   // for state
+#include <cloe/simulation_driver.hpp>
 
 #include "simulation_context.hpp"
-#include "simulation_driver.hpp"
 #include "stack.hpp"  // for Stack
 
 namespace engine {
@@ -113,7 +113,7 @@ struct SimulationResult {
 
 class Simulation {
  public:
-  Simulation(cloe::Stack&& config, SimulationDriver &simulation_driver, std::string uuid);
+  Simulation(cloe::Stack&& config, cloe::SimulationDriver &simulation_driver, std::string uuid);
   Simulation(Simulation&&) = default;
   Simulation &operator=(Simulation&&) = default;
   ~Simulation() = default;
@@ -160,7 +160,7 @@ class Simulation {
 
  private:
   cloe::Stack config_;
-  SimulationDriver* simulation_driver_;
+  cloe::SimulationDriver* simulation_driver_;
   cloe::Logger logger_;
   std::string uuid_;
   std::function<void()> abort_fn_;

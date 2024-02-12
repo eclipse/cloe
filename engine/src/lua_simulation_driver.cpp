@@ -1,13 +1,13 @@
 #include "lua_simulation_driver.hpp"
 
-#include "coordinator.hpp"
-
 #include "lua_bindings.hpp"
 
 #include "lua_action.hpp"
+
 #include "lua_api.hpp"
 
 #include <cloe/model.hpp>
+#include <cloe/coordinator.hpp>
 #include <fable/conf.hpp>
 #include <fable/utility/sol.hpp>
 
@@ -17,7 +17,7 @@ LuaSimulationDriver::LuaSimulationDriver(std::unique_ptr<sol::state> lua)
     : lua_(std::move(lua)),
     data_broker_binding_(std::make_unique<cloe::databroker::LuaDataBrokerBinding>(*lua_)) {}
 
-void LuaSimulationDriver::initialize(const SimulationSync &sync, Coordinator& scheduler, cloe::DataBroker &/*db*/) {
+void LuaSimulationDriver::initialize(const cloe::Sync &sync, cloe::coordinator::Coordinator& scheduler, cloe::DataBroker &/*db*/) {
   auto types_tbl = sol::object(cloe::luat_cloe_engine_types(*lua_)).as<sol::table>();
   register_usertype_coordinator(types_tbl, sync);
   cloe::luat_cloe_engine_state(*lua_)["scheduler"] = std::ref(scheduler);
@@ -209,7 +209,7 @@ void LuaSimulationDriver::bind_signals(cloe::DataBroker& dataBroker) {
 nlohmann::json LuaSimulationDriver::produce_report() const {
   return nlohmann::json{sol::object(cloe::luat_cloe_engine_state(*lua_)["report"])};
 }
-cloe::TriggerPtr LuaSimulationDriver::make_trigger(TriggerFactory& factory, const sol::table& tbl) {
+cloe::TriggerPtr LuaSimulationDriver::make_trigger(cloe::DriverTriggerFactory& factory, const sol::table& tbl) {
   sol::optional<std::string> label = tbl["label"];
   auto ep = factory.make_event(fable::Conf{nlohmann::json(tbl["event"])});
   auto ap = make_action(factory, sol::object(tbl["action"]));
@@ -224,7 +224,7 @@ cloe::TriggerPtr LuaSimulationDriver::make_trigger(TriggerFactory& factory, cons
   tp->set_sticky(sticky.value_or(false));
   return tp;
 }
-cloe::ActionPtr LuaSimulationDriver::make_action(TriggerFactory& factory, const sol::object& lua) {
+cloe::ActionPtr LuaSimulationDriver::make_action(cloe::DriverTriggerFactory& factory, const sol::object& lua) {
   if (lua.get_type() == sol::type::function) {
     return std::make_unique<actions::LuaFunction>("luafunction", lua);
   } else {
