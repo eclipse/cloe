@@ -13,7 +13,7 @@ class TestRunner:
     def sync(self):
         return self._sync
 
-    def wait_until(self, seconds):
+    def wait_duration(self, seconds):
         def wait_until_callback(sync):
             self._sync = sync
             try:
@@ -22,7 +22,22 @@ class TestRunner:
                 pass
             return cloe.CallbackResult.Ok
 
-        self.driver.add_trigger(self._sync, "python_loop", {"name": "time", "time": seconds}, wait_until_callback, False)
+        self.driver.add_trigger(self._sync, "python_loop", {"name": "time", "time": seconds}, wait_until_callback,
+                                False)
+
+    def wait_until(self, condition):
+        def wait_for_callback(sync):
+            self._sync = sync
+            if condition(sync):
+                try:
+                    next(self._the_test_gen)
+                except StopIteration:
+                    ...
+                return cloe.CallbackResult.Unpin
+            else:
+                return cloe.CallbackResult.Ok
+
+        self.driver.add_trigger(self._sync, "wait_for_python_loop", {"name": "loop"}, wait_for_callback, True)
 
     def __call__(self, sync):
         self._sync = sync
@@ -55,4 +70,3 @@ class SimulationContext:
     def __call__(self, sync):
         # print("call", sync.time)
         return cloe.CallbackResult.Ok
-

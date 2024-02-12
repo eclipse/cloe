@@ -55,6 +55,14 @@ PYBIND11_MODULE(_cloe_bindings, m) {
       opts.environment = std::make_unique<fable::Environment>();
       return engine::Simulation {std::move(stack), driver, uuid};
     }), py::arg("stack"), py::arg("driver"), py::arg("uuid"));
+    sim.def_property(
+        "log_level",
+        [](const engine::Simulation &self) {
+          return cloe::logger::to_string(self.logger()->level());
+        },
+        [](engine::Simulation &self, std::string_view level) {
+          self.logger()->set_level(cloe::logger::into_level(std::string(level)));
+        });
     // todo hooks!, store in ptr
     // todo is sim arg uuid == stack options uuid?
     sim.def("run", [](engine::Simulation &self) {

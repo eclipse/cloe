@@ -80,10 +80,12 @@ void PythonSimulationDriver::register_trigger(
 }
 std::unique_ptr<cloe::Trigger> PythonSimulationDriver::trigger_description_to_trigger(
     const detail::TriggerDescription& description) const {
-  return std::make_unique<cloe::Trigger>(
+  auto result = std::make_unique<cloe::Trigger>(
       description.label, cloe::Source::DRIVER,
       trigger_factory().make_event(fable::Conf{description.eventDescription}),
       std::make_unique<PythonFunction>(description.action, "python_function"));
+  result->set_sticky(description.sticky);
+  return result;
 }
 void PythonSimulationDriver::add_trigger(const Sync& sync, std::string_view label,
                                          const nlohmann::json& eventDescription,
