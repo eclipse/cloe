@@ -1,6 +1,8 @@
 #include "python_simulation_driver.hpp"
 #include "cloe/model.hpp"
 
+#include "coordinator.hpp"
+
 namespace cloe::py {
 
 void PythonSimulationDriver::alias_signals(DataBroker& dataBroker) {
@@ -11,7 +13,7 @@ void PythonSimulationDriver::alias_signals(DataBroker& dataBroker) {
 
 void PythonSimulationDriver::initialize(const engine::SimulationSync& sync,
                                         engine::Coordinator& scheduler) {
-  // todo not sure if needed in python
+  coordinator_ = &scheduler;
 }
 
 void PythonSimulationDriver::register_action_factories(Registrar& registrar) {
@@ -39,11 +41,7 @@ std::vector<cloe::TriggerPtr> PythonSimulationDriver::yield_pending_triggers() {
   result.reserve(pending_triggers_.size());
 
   for(const auto &description : pending_triggers_) {
-    result.emplace_back(std::make_unique<cloe::Trigger>(
-        description.label, cloe::Source::DRIVER,
-        trigger_factory().make_event(fable::Conf{description.eventDescription}),
-        std::make_unique<PythonFunction>(description.action, "python_function"))
-    );
+    result.emplace_back(trigger_description_to_trigger(description));
     result.back()->set_sticky(description.sticky);
   }
   pending_triggers_.clear();
@@ -65,15 +63,39 @@ void PythonSimulationDriver::add_require_signal(std::string_view signal_name) {
 
 PythonSimulationDriver::PythonSimulationDriver(PythonDataBrokerAdapter* adapter)
     : adapter_(adapter) {}
-void PythonSimulationDriver::add_trigger(
+
+void PythonSimulationDriver::register_trigger(
     std::string_view label, const nlohmann::json& eventDescription,
     const PythonFunction::CallbackFunction& action, bool sticky) {
-  pending_triggers_.push_back(detail::TriggerDescription {
+  if (coordinator_ != nullptr) {
+    throw std::runtime_error("simulation is already running, use add_trigger.");
+  }
+  detail::TriggerDescription description {
       .label = std::string(label),
       .eventDescription = eventDescription,
       .action = action,
       .sticky = sticky
-  });
+  };
+  pending_triggers_.push_back(description);  // deferred trigger initialization
+}
+std::unique_ptr<cloe::Trigger> PythonSimulationDriver::trigger_description_to_trigger(
+    const detail::TriggerDescription& description) const {
+  return std::make_unique<cloe::Trigger>(
+      description.label, cloe::Source::DRIVER,
+      trigger_factory().make_event(fable::Conf{description.eventDescription}),
+      std::make_unique<PythonFunction>(description.action, "python_function"));
+}
+void PythonSimulationDriver::add_trigger(const Sync& sync, std::string_view label,
+                                         const nlohmann::json& eventDescription,
+                                         const PythonFunction::CallbackFunction& action,
+                                         bool sticky) {
+  detail::TriggerDescription description {
+      .label = std::string(label),
+      .eventDescription = eventDescription,
+      .action = action,
+      .sticky = sticky
+  };
+  coordinator_->insert_trigger(sync, trigger_description_to_trigger(description));
 }
 
 }

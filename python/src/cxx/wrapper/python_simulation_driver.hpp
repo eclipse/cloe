@@ -37,14 +37,21 @@ class PythonSimulationDriver final : public engine::SimulationDriver {
 
   void add_require_signal(std::string_view signal_name);
   void add_signal_alias(std::string_view signal_name, std::string_view alias);
-  void add_trigger(std::string_view label, const nlohmann::json &eventDescription,
+  void register_trigger(std::string_view label, const nlohmann::json &eventDescription,
+                        const PythonFunction::CallbackFunction &action, bool sticky);
+  void add_trigger(const cloe::Sync &sync, std::string_view label,
+                   const nlohmann::json &eventDescription,
                    const PythonFunction::CallbackFunction &action, bool sticky);
 
  private:
+
+  [[nodiscard]] std::unique_ptr<cloe::Trigger> trigger_description_to_trigger(const detail::TriggerDescription &) const;
+
   PythonDataBrokerAdapter *adapter_;
   std::vector<detail::TriggerDescription> pending_triggers_{};
   std::vector<std::string> require_signals_ {};
   std::vector<std::tuple<std::string, std::string>> signal_aliases_ {};
+  engine::Coordinator* coordinator_ {};
 };
 
 }

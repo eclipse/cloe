@@ -39,13 +39,13 @@ PYBIND11_MODULE(_cloe_bindings, m) {
     py::class_<Driver> clazz (m, "SimulationDriver");
     clazz.def(py::init<cloe::py::PythonDataBrokerAdapter*>());
     clazz.def("add_signal_alias", &Driver::add_signal_alias);
-    clazz.def("add_trigger", [](Driver &self, std::string_view label, const py::dict& eventDescription,
+    clazz.def("register_trigger", [](Driver &self, std::string_view label, const py::dict& eventDescription,
                                 const cloe::py::PythonFunction::CallbackFunction& action, bool sticky) {
-      self.add_trigger(label, cloe::py::dict2json(eventDescription), action, sticky);
+                self.register_trigger(label, cloe::py::dict2json(eventDescription), action, sticky);
     });
-    clazz.def("add_trigger", [](Driver &self, std::string_view label, const std::string_view& eventDescription,
+    clazz.def("add_trigger", [](Driver &self, const cloe::Sync &sync, std::string_view label, const py::dict& eventDescription,
                                 const cloe::py::PythonFunction::CallbackFunction& action, bool sticky) {
-      self.add_trigger(label, nlohmann::json{eventDescription}, action, sticky);
+                self.add_trigger(sync, label, cloe::py::dict2json(eventDescription), action, sticky);
     });
   }
   {
@@ -58,6 +58,7 @@ PYBIND11_MODULE(_cloe_bindings, m) {
     // todo hooks!, store in ptr
     // todo is sim arg uuid == stack options uuid?
     sim.def("run", [](engine::Simulation &self) {
+      py::gil_scoped_release release_gil;
       return self.run();
     });
     sim.def("wait_until", [](engine::Simulation &self,
