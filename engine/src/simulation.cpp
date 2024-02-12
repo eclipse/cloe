@@ -1294,7 +1294,7 @@ SimulationResult Simulation::run() {
   ctx.server = make_server(config_.server);
   ctx.coordinator = std::make_unique<cloe::coordinator::Coordinator>(ctx.simulation_driver, ctx.db.get());
   ctx.registrar = std::make_unique<Registrar>(ctx.server->server_registrar(), ctx.coordinator.get(),
-                                              ctx.db.get());
+                                              ctx.db.get(), simulation_driver_);
   ctx.commander = std::make_unique<CommandExecuter>(logger());
   ctx.sync = SimulationSync(config_.simulation.model_step_width);
   ctx.config = config_;

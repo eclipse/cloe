@@ -20,6 +20,6 @@ def the_glorious_test(runner: TestRunner):
 ctx = SimulationContext(the_glorious_test)
 ctx.sim.log_level = "warn"
 # todo this should be replaced w/ a list and require_signals
-# ctx.driver.require_signal("vehicles.default.basic.aeb")
+ctx.driver.require_signal("vehicles.default.basic.aeb")
 print(ctx.databroker_adapter.signals.bound_signals())
 ctx.run_simulation()

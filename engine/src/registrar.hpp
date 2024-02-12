@@ -32,8 +32,9 @@ namespace engine {
 
 class Registrar : public cloe::Registrar {
  public:
-  Registrar(std::unique_ptr<ServerRegistrar> r, cloe::coordinator::Coordinator* c, cloe::DataBroker* db)
-      : server_registrar_(std::move(r)), coordinator_(c), data_broker_(db) {}
+  Registrar(std::unique_ptr<ServerRegistrar> r, cloe::coordinator::Coordinator* c,
+            cloe::DataBroker* db, cloe::SimulationDriver* driver)
+      : server_registrar_(std::move(r)), coordinator_(c), data_broker_(db), driver_(driver) {}
 
   Registrar(const Registrar& ar,
             const std::string& trigger_prefix,
@@ -111,10 +112,15 @@ class Registrar : public cloe::Registrar {
     return *data_broker_;
   }
 
+  cloe::SimulationDriver& simulation_driver() override {
+    return *driver_;
+  }
+
  private:
   std::unique_ptr<ServerRegistrar> server_registrar_;
   cloe::coordinator::Coordinator* coordinator_;       // non-owning
   cloe::DataBroker* data_broker_;  // non-owning
+  cloe::SimulationDriver* driver_;
   std::string trigger_prefix_;
 };
 

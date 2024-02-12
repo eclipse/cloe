@@ -20,10 +20,9 @@
 
 #include <cloe/simulation_driver_trigger_factory.hpp>
 #include <cloe/data_broker.hpp>
-#include <cloe/registrar.hpp>
 
 namespace cloe {
-
+class Registrar;
 namespace coordinator { class Coordinator; }
 
 class SimulationDriver {

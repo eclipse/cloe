@@ -8,6 +8,7 @@
 
 #include <cloe/model.hpp>
 #include <cloe/coordinator.hpp>
+#include <cloe/registrar.hpp>
 #include <fable/conf.hpp>
 #include <fable/utility/sol.hpp>
 

@@ -26,11 +26,12 @@
 #include <string>   // for string
 #include <utility>  // for move
 
+#include <cloe/cloe_fwd.hpp>  // for DataBroker
+#include <cloe/handler.hpp>   // for Handler
+#include <cloe/trigger.hpp>   // for ActionFactory, EventFactory, Callback, ...
+#include <cloe/simulation_driver.hpp>
+#include <fable/json.hpp>     // for Json
 #include <sol/table.hpp>
-#include <cloe/cloe_fwd.hpp> // for DataBroker
-#include <cloe/handler.hpp>  // for Handler
-#include <cloe/trigger.hpp>  // for ActionFactory, EventFactory, Callback, ...
-#include <fable/json.hpp>    // for Json
 
 namespace cloe {
 
@@ -205,6 +206,8 @@ class Registrar {
    * Provide a Lua table for registration of functions and variables.
    */
   // virtual sol::table register_lua_table() = 0;
+
+  virtual cloe::SimulationDriver& simulation_driver() = 0;
 
   /**
    * Register an EventFactory and return a DirectCallback for storage of
