@@ -1,2 +1,2 @@
-add_subdirectory(data_broker_binding)
+add_subdirectory(data_broker_bindings)
 add_subdirectory(src)

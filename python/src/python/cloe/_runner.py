@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import _basic_bindings
 import _cloe_bindings as cloe
 
 
@@ -58,7 +57,6 @@ class SimulationContext:
 
     def __init__(self, the_test):
         self.databroker_adapter = cloe.DataBrokerAdapter()
-        _basic_bindings.declare(self.databroker_adapter)
         self.driver = cloe.SimulationDriver(self.databroker_adapter)
         self._test_runner = TestRunner(self.driver, the_test)
 
@@ -73,6 +71,10 @@ class SimulationContext:
         stack.merge(conf)
 
         self.sim = cloe.Simulation(stack, self.driver, uuid="123")
+
+        # todo this should be pulled from the config
+        import _basic_bindings
+        _basic_bindings.declare(self.databroker_adapter)
 
     def __call__(self, sync):
         # print("call", sync.time)
