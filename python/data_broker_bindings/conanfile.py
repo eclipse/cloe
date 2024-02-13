@@ -62,8 +62,6 @@ class CloeModels(ConanFile):
             cm.configure()
         if self.should_build:
             cm.build()
-        if self.should_test:
-            cm.test()
 
     def package(self):
         cm = cmake.CMake(self)

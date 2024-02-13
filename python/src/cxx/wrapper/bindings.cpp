@@ -10,13 +10,16 @@
 #include <cloe/python/python_data_broker_adapter.hpp>
 
 #include <pybind11/chrono.h>
-#include <pybind11/eigen.h>
 #include <pybind11/functional.h>
 #include <pybind11/stl.h>
 #include <pybind11/pybind11.h>
 
+namespace py = pybind11;
+
+void bind_cloe_object(py::module_&);
+void bind_cloe_wheel(py::module_&);
+
 PYBIND11_MODULE(_cloe_bindings, m) {
-  namespace py = pybind11;
   m.doc() = "the cloe python binding";
   {
     py::class_<cloe::Stack> stack(m, "Stack");
@@ -121,5 +124,11 @@ PYBIND11_MODULE(_cloe_bindings, m) {
     py::enum_<cloe::CallbackResult> clazz (m, "CallbackResult");
     clazz.value("Ok", cloe::CallbackResult::Ok);
     clazz.value("Unpin", cloe::CallbackResult::Unpin);
+  }
+
+  {
+    auto models = m.def_submodule("models");
+    bind_cloe_object(models);
+    bind_cloe_wheel(models);
   }
 }

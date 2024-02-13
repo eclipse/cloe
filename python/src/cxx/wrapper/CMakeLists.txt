@@ -7,6 +7,8 @@ pybind11_add_module(_cloe_bindings
         python_simulation_driver.cpp
         python_function.hpp
         python_function.cpp
+        bindings_object.cpp
+        bindings_wheel.cpp
 )
 target_link_libraries(_cloe_bindings PUBLIC cloe::stacklib cloe::enginelib data_broker_binding)
 # todo this should be exposed by engine stacklib/enginelib via conan and/or root project

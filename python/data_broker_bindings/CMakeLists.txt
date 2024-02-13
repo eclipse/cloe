@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 find_package(pybind11 CONFIG REQUIRED)
 
 set(CLOE_FIND_PACKAGES ON CACHE BOOL "Call find_package() for cloe packages")
