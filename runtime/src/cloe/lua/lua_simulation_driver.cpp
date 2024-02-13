@@ -1,10 +1,8 @@
-#include "lua_simulation_driver.hpp"
+#include <cloe/lua/lua_simulation_driver.hpp>
 
-#include "lua_bindings.hpp"
-
-#include "lua_action.hpp"
-
-#include "lua_api.hpp"
+#include <cloe/lua/lua_bindings.hpp>
+#include <cloe/lua/lua_action.hpp>
+#include <cloe/lua/lua_api.hpp>
 
 #include <cloe/model.hpp>
 #include <cloe/coordinator.hpp>
@@ -12,7 +10,7 @@
 #include <fable/conf.hpp>
 #include <fable/utility/sol.hpp>
 
-namespace engine {
+namespace cloe {
 
 LuaSimulationDriver::LuaSimulationDriver(std::unique_ptr<sol::state> lua)
     : lua_(std::move(lua)),
@@ -20,12 +18,12 @@ LuaSimulationDriver::LuaSimulationDriver(std::unique_ptr<sol::state> lua)
 
 void LuaSimulationDriver::initialize(const cloe::Sync &sync, cloe::coordinator::Coordinator& scheduler, cloe::DataBroker &/*db*/) {
   auto types_tbl = sol::object(cloe::luat_cloe_engine_types(*lua_)).as<sol::table>();
-  register_usertype_coordinator(types_tbl, sync);
+  engine::register_usertype_coordinator(types_tbl, sync);
   cloe::luat_cloe_engine_state(*lua_)["scheduler"] = std::ref(scheduler);
 }
 
 void LuaSimulationDriver::register_action_factories(cloe::Registrar& registrar) {
-  registrar.register_action<actions::LuaFactory>(*lua_);
+  registrar.register_action<engine::actions::LuaFactory>(*lua_);
 }
 
 void LuaSimulationDriver::alias_signals(cloe::DataBroker& dataBroker) {
@@ -227,7 +225,7 @@ cloe::TriggerPtr LuaSimulationDriver::make_trigger(cloe::DriverTriggerFactory& f
 }
 cloe::ActionPtr LuaSimulationDriver::make_action(cloe::DriverTriggerFactory& factory, const sol::object& lua) {
   if (lua.get_type() == sol::type::function) {
-    return std::make_unique<actions::LuaFunction>("luafunction", lua);
+    return std::make_unique<engine::actions::LuaFunction>("luafunction", lua);
   } else {
     return factory.make_action(cloe::Conf{nlohmann::json(lua)});
   }
@@ -243,8 +241,13 @@ std::vector<cloe::TriggerPtr> LuaSimulationDriver::yield_pending_triggers(){
   cloe::luat_cloe_engine_initial_input(*lua_)["triggers_processed"] = count;
   return result;
 }
-cloe::databroker::DataBrokerBinding* LuaSimulationDriver::data_broker_binding() {
+cloe::databroker::LuaDataBrokerBinding* LuaSimulationDriver::data_broker_binding() {
   return data_broker_binding_.get();
+}
+sol::table LuaSimulationDriver::register_lua_table() {
+  auto tbl = lua_->create_table();
+  cloe::luat_cloe_engine_plugins(*lua_)["_plugin_types"] = tbl;
+  return tbl;
 }
 
 }

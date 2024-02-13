@@ -1,9 +1,13 @@
 #include "json.hpp"
 #include "python_simulation_driver.hpp"
 
+#include "python_function.hpp"
 #include "lua_setup.hpp"
 #include "simulation.hpp"
 #include "stack_factory.hpp"
+
+#include <cloe/python/signals.hpp>
+#include <cloe/python/python_data_broker_adapter.hpp>
 
 #include <pybind11/chrono.h>
 #include <pybind11/eigen.h>
@@ -33,6 +37,12 @@ PYBIND11_MODULE(_cloe_bindings, m) {
   {
     py::class_<cloe::py::Signals> clazz (m, "Signals");
     clazz.def("bound_signals", &cloe::py::Signals::bound_signals);
+    /*clazz.def("getter", [](cloe::py::Signals &signals, std::string name) {
+      return signals.getter(name);
+    });
+    clazz.def("setter", [](cloe::py::Signals &signals, std::string name) {
+      return signals.setter(name);
+    });*/
   }
   {
     py::class_<cloe::py::PythonDataBrokerAdapter> clazz (m, "DataBrokerAdapter");
@@ -42,25 +52,28 @@ PYBIND11_MODULE(_cloe_bindings, m) {
   {
     using Driver = cloe::py::PythonSimulationDriver;
     py::class_<Driver> clazz (m, "SimulationDriver");
-    clazz.def(py::init<cloe::py::PythonDataBrokerAdapter*>());
+    clazz.def(py::init([extension_mod = m.def_submodule("ext")](cloe::py::PythonDataBrokerAdapter* db_adapter) {
+      return Driver (db_adapter, extension_mod);
+    }));
     clazz.def("add_signal_alias", &Driver::add_signal_alias);
     clazz.def("register_trigger", [](Driver &self, std::string_view label, const py::dict& eventDescription,
-                                const cloe::py::PythonFunction::CallbackFunction& action, bool sticky) {
+                                const cloe::py::PythonAction::CallbackFunction& action, bool sticky) {
                 self.register_trigger(label, cloe::py::dict2json(eventDescription), action, sticky);
     });
     clazz.def("add_trigger", [](Driver &self, const cloe::Sync &sync, std::string_view label, const py::dict& eventDescription,
-                                const cloe::py::PythonFunction::CallbackFunction& action, bool sticky) {
+                                const cloe::py::PythonAction::CallbackFunction& action, bool sticky) {
                 self.add_trigger(sync, label, cloe::py::dict2json(eventDescription), action, sticky);
     });
     clazz.def("require_signal", &cloe::py::PythonSimulationDriver::add_require_signal);
     clazz.def("alias_signal", &cloe::py::PythonSimulationDriver::add_signal_alias);
+    clazz.def("signals", [](cloe::py::PythonSimulationDriver &self) {
+      return self.data_broker_binding()->signals();
+    });
     clazz.def_property_readonly("available_signals", &cloe::py::PythonSimulationDriver::available_signals);
   }
   {
     py::class_<engine::Simulation> sim (m, "Simulation");
     sim.def(py::init([](cloe::Stack stack, cloe::py::PythonSimulationDriver &driver, const std::string &uuid) {
-      cloe::LuaOptions opts {};
-      opts.environment = std::make_unique<fable::Environment>();
       return engine::Simulation {std::move(stack), driver, uuid};
     }), py::arg("stack"), py::arg("driver"), py::arg("uuid"));
     sim.def_property(

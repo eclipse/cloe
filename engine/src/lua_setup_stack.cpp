@@ -18,7 +18,7 @@
 
 #include <fable/utility/sol.hpp>
 
-#include "lua_api.hpp"
+#include <cloe/lua/lua_api.hpp>
 #include "lua_setup.hpp"
 #include "stack.hpp"
 

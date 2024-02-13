@@ -20,7 +20,7 @@
  * \see  lua_action.hpp
  */
 
-#include "lua_action.hpp"
+#include <cloe/lua/lua_action.hpp>
 
 #include <string>
 #include <utility>
@@ -28,7 +28,7 @@
 #include <cloe/sync.hpp>
 #include <cloe/trigger.hpp>
 
-#include "lua_api.hpp"
+#include <cloe/lua/lua_api.hpp>
 
 namespace engine {
 namespace actions {

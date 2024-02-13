@@ -33,8 +33,9 @@
 #include <cloe/core.hpp>      // for logger::get
 #include <fable/utility.hpp>  // for read_conf
 
+#include <cloe/lua/lua_simulation_driver.hpp>
+
 #include "error_handler.hpp"  // for conclude_error
-#include "lua_simulation_driver.hpp"
 #include "main_commands.hpp"  // for RunOptions, new_stack, new_lua
 #include "simulation.hpp"     // for Simulation, SimulationResult
 #include "stack.hpp"          // for Stack
@@ -93,7 +94,7 @@ int run(const RunOptions& opt, const std::vector<std::string>& filepaths) {
   }
 
   // Create simulation:
-  engine::LuaSimulationDriver driver (std::move(lua));
+  cloe::LuaSimulationDriver driver (std::move(lua));
   Simulation sim(std::move(stack), driver, uuid);
   GLOBAL_SIMULATION_INSTANCE = &sim;
   std::ignore = std::signal(SIGINT, handle_signal);

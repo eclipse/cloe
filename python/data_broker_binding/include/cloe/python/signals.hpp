@@ -4,27 +4,30 @@
 #include <pybind11/pybind11.h>
 #include <functional>
 #include <map>
-#include <set>
-#include "cloe/data_broker.hpp"
+#include <cloe/data_broker.hpp>
 
 namespace cloe::py {
 
-class Signals {
- public:
-  using getter_fn = std::function<pybind11::object()>;
-  using setter_fn = std::function<void(const pybind11::object&)>;
-
-  /**
+namespace detail {
+using getter_fn = std::function<pybind11::object()>;
+using setter_fn = std::function<void(const pybind11::object&)>;
+/**
   * accessors (getter/setter)
   */
-  struct accessor {
-    getter_fn getter;
-    setter_fn setter;
-  };
+struct accessor {
+  getter_fn getter;
+  setter_fn setter;
+};
+}
+
+class Signals {
+ public:
+  using getter_fn = detail::getter_fn;
+  using setter_fn = detail::setter_fn;
   /**
   * Signals map (name -> accessors)
   */
-  using accessors = std::map<std::string, accessor, std::less<>>;
+  using accessors = std::map<std::string, detail::accessor, std::less<>>;
 
   Signals() = default;
 
@@ -48,7 +51,7 @@ class Signals {
     */
   template <typename T>
   void bind(const SignalPtr& signal, std::string_view lua_name) {
-    auto inserted = accessors_.try_emplace(std::string(lua_name), accessor {
+    auto inserted = accessors_.try_emplace(std::string(lua_name), accessors::mapped_type {
       .getter = [signal]() { return pybind11::cast(signal->value<T>()); },
       .setter = [signal](const pybind11::object& val) { signal->set_value<T>(val.cast<T>()); }
     });

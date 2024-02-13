@@ -17,6 +17,7 @@ endif()
 find_package(Boost COMPONENTS headers filesystem iostreams system REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(inja REQUIRED)
+find_package(pybind11 CONFIG REQUIRED)
 if(NOT TARGET pantor::inja)
     add_library(pantor::inja ALIAS inja::inja)
 endif()
@@ -48,6 +49,10 @@ add_library(cloe-runtime SHARED
     src/cloe/data_broker.cpp
     src/cloe/coordinator.cpp
     src/cloe/simulation_driver_trigger_factory.cpp
+    src/cloe/lua/lua_simulation_driver.cpp
+    src/cloe/lua/lua_action.cpp
+    src/cloe/lua/lua_api.cpp
+    src/cloe/lua/lua_bindings.cpp
 
     # For IDE integration
     ${cloe-runtime_PUBLIC_HEADERS}

@@ -1,20 +1,22 @@
 #pragma once
 
-#include "cloe/conf/action.hpp"
+#include <cloe/trigger.hpp>
+#include <cloe/conf/action.hpp>
+
 #include <functional>
 #include <string_view>
 
 namespace cloe::py {
 
-class PythonFunction : public cloe::Action {
+class PythonAction : public cloe::Action {
  public:
   using CallbackFunction = std::function<CallbackResult(const cloe::Sync*)>;
-  PythonFunction(CallbackFunction py_fun, std::string_view name);
-  PythonFunction(const PythonFunction &) = default;
-  PythonFunction &operator=(const PythonFunction&) = default;
-  PythonFunction(PythonFunction &&) = default;
-  PythonFunction &operator=(PythonFunction&&) = default;
-  ~PythonFunction() override = default;
+  PythonAction(CallbackFunction py_fun, std::string_view name);
+  PythonAction(const PythonAction &) = default;
+  PythonAction &operator=(const PythonAction &) = default;
+  PythonAction(PythonAction &&) = default;
+  PythonAction &operator=(PythonAction &&) = default;
+  ~PythonAction() override = default;
 
   [[nodiscard]] ActionPtr clone() const override;
 

@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import _basic_bindings
 import _cloe_bindings as cloe
 
 
@@ -39,6 +40,10 @@ class TestRunner:
 
         self.driver.add_trigger(self._sync, "wait_for_python_loop", {"name": "loop"}, wait_for_callback, True)
 
+    @property
+    def signals(self):
+        return self.driver.signals()
+
     def __call__(self, sync):
         print("available signals", self.driver.available_signals)
         self._sync = sync
@@ -51,10 +56,11 @@ class SimulationContext:
     def run_simulation(self):
         self.sim.run()
 
-    def __init__(self, test_my_stuff):
+    def __init__(self, the_test):
         self.databroker_adapter = cloe.DataBrokerAdapter()
+        _basic_bindings.declare(self.databroker_adapter)
         self.driver = cloe.SimulationDriver(self.databroker_adapter)
-        self._test_runner = TestRunner(self.driver, test_my_stuff)
+        self._test_runner = TestRunner(self.driver, the_test)
 
         self.driver.register_trigger("python_test_runner", {"name": "start"}, self._test_runner, False)
 

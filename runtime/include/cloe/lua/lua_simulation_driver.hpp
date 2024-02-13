@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include <typeindex>
 
-namespace engine {
+namespace cloe {
 
 class LuaSimulationDriver final : public cloe::SimulationDriver {
  public:
@@ -20,23 +20,25 @@ class LuaSimulationDriver final : public cloe::SimulationDriver {
   LuaSimulationDriver& operator=(const LuaSimulationDriver&) = delete;
   ~LuaSimulationDriver() final = default;
 
-  void initialize(const cloe::Sync &sync, cloe::coordinator::Coordinator& scheduler, cloe::DataBroker &db) override;
-  void register_action_factories(cloe::Registrar& registrar) override;
-  void alias_signals(cloe::DataBroker& dataBroker) override;
-  void bind_signals(cloe::DataBroker& dataBroker) override;
+  void initialize(const Sync &sync, coordinator::Coordinator& scheduler, DataBroker &db) override;
+  void register_action_factories(Registrar& registrar) override;
+  void alias_signals(DataBroker& dataBroker) override;
+  void bind_signals(DataBroker& dataBroker) override;
 
   [[nodiscard]] nlohmann::json produce_report() const override;
 
-  std::vector<cloe::TriggerPtr> yield_pending_triggers() override;
+  std::vector<TriggerPtr> yield_pending_triggers() override;
 
-  static cloe::ActionPtr make_action(cloe::DriverTriggerFactory& factory, const sol::object& lua);
-  static cloe::TriggerPtr make_trigger(cloe::DriverTriggerFactory& factory, const sol::table& tbl);
+  static ActionPtr make_action(cloe::DriverTriggerFactory& factory, const sol::object& lua);
+  static TriggerPtr make_trigger(cloe::DriverTriggerFactory& factory, const sol::table& tbl);
 
-  cloe::databroker::DataBrokerBinding* data_broker_binding() override;
+  databroker::LuaDataBrokerBinding* data_broker_binding() override;
+
+  sol::table register_lua_table();
 
  private:
   std::unique_ptr<sol::state> lua_;
-  std::unique_ptr<cloe::databroker::LuaDataBrokerBinding> data_broker_binding_;
+  std::unique_ptr<databroker::LuaDataBrokerBinding> data_broker_binding_;
 };
 
 }

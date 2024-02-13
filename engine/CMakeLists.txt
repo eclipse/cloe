@@ -83,32 +83,22 @@ endif()
 
 # Library libengine ----------------------------------------------
 add_library(cloe-enginelib STATIC
-    src/lua_api.hpp
-    src/lua_api.cpp
     src/lua_setup.hpp
     src/lua_setup.cpp
     src/lua_setup_duration.cpp
     src/lua_setup_fs.cpp
     src/lua_setup_stack.cpp
     src/lua_setup_sync.cpp
-    src/lua_bindings.cpp
-    src/lua_bindings.hpp
-    src/lua_action.cpp
-    src/lua_action.hpp
     src/registrar.hpp
     # These are added below and depend on CLOE_ENGINE_WITH_SERVER:
     # src/server.cpp
     # src/server_mock.cpp
     src/simulation.cpp
     src/simulation.hpp
-    src/lua_simulation_driver.cpp
-    src/lua_simulation_driver.hpp
     src/simulation_sync.hpp
     src/simulation_context.cpp
     src/simulation_context.hpp
     src/simulation_progress.hpp
-    src/trigger_factory.cpp
-    src/trigger_factory.hpp
     src/utility/command.cpp
     src/utility/command.hpp
     src/utility/defer.hpp

@@ -103,10 +103,6 @@ class Registrar : public cloe::Registrar {
     coordinator_->register_event(trigger_key(ef->name()), std::move(ef), storage);
   }
 
-  /*sol::table register_lua_table() override {
-    return coordinator_->register_lua_table(trigger_prefix_);
-  }*/
-
   [[nodiscard]] cloe::DataBroker& data_broker() const override {
     assert(data_broker_ != nullptr);
     return *data_broker_;

@@ -94,11 +94,8 @@
 #include <cloe/coordinator.hpp>            // for register_usertype_coordinator
 #include <cloe/vehicle.hpp>                   // for Vehicle
 #include <fable/utility.hpp>                  // for pretty_print
-#include <fable/utility/sol.hpp>              // for sol::object to_json
 #include <utility>
 
-#include "lua_action.hpp"             // for LuaAction,
-#include "lua_api.hpp"                // for to_json(json, sol::object)
 #include "simulation_context.hpp"     // for SimulationContext
 #include "utility/command.hpp"        // for CommandFactory
 #include "utility/state_machine.hpp"  // for State, StateMachine
@@ -773,9 +770,9 @@ StateId SimulationMachine::Start::impl(SimulationContext& ctx) {
     if (dbPtr == nullptr) {
       throw std::logic_error("Coordinator did not provide a DataBroker instance");
     }
-    // Alias signals via lua
+    // Alias signals via simulation driver
     ctx.simulation_driver->alias_signals(*dbPtr);
-    // Inject requested signals into lua
+    // Inject requested signals into simulation driver
     ctx.simulation_driver->bind_signals(*dbPtr);
   }
 

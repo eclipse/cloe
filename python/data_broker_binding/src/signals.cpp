@@ -1,4 +1,4 @@
-#include "signals.hpp"
+#include <cloe/python/signals.hpp>
 
 namespace cloe::py {
 

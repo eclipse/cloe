@@ -10,9 +10,11 @@ from cloe import SimulationContext, TestRunner
 # that converts the glorious test to a generator and using "yield from"
 # or take async and await
 def the_glorious_test(runner: TestRunner):
+    print("bound signals", runner.signals.bound_signals())
     print("test sync time", runner.sync.time)
     yield runner.wait_duration(1)
     print("test sync time", runner.sync.time)
+    # print("acc signal value", runner.signals.getter("vehicles.default.basic.acc")())
     yield runner.wait_until(lambda sync: sync.time > timedelta(seconds=2))
     print("test sync time", runner.sync.time)
 
@@ -20,6 +22,5 @@ def the_glorious_test(runner: TestRunner):
 ctx = SimulationContext(the_glorious_test)
 ctx.sim.log_level = "warn"
 # todo this should be replaced w/ a list and require_signals
-ctx.driver.require_signal("vehicles.default.basic.aeb")
-print(ctx.databroker_adapter.signals.bound_signals())
+ctx.driver.require_signal("vehicles.default.basic.acc")
 ctx.run_simulation()

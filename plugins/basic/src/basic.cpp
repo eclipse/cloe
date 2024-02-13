@@ -48,6 +48,7 @@
 #include <cloe/utility/resource_handler.hpp>            // for INCLUDE_RESOURCE
 #include <cloe/vehicle.hpp>                             // for Vehicle
 
+#include "cloe/lua/lua_simulation_driver.hpp"
 #include "hmi_contact.hpp"  // for PushButton, Switch
 
 INCLUDE_RESOURCE(controller_ui, PROJECT_SOURCE_DIR "/ui/dyn_controller_ui.json");
@@ -438,41 +439,45 @@ class BasicController : public Controller {
       }
     }
 
-    // todo
-    /*auto lua = r.register_lua_table();
+    /*if(auto *driver = dynamic_cast<cloe::LuaSimulationDriver*>(&r.simulation_driver()); driver) {
+      auto lua = driver->register_lua_table();
+      {
+        auto acc = lua.new_usertype<AccConfiguration>("AccConfiguration", sol::no_constructor);
+        acc["ego_sensor"] = sol::readonly(&AccConfiguration::ego_sensor);
+        acc["world_sensor"] = sol::readonly(&AccConfiguration::world_sensor);
+        acc["latlong_actuator"] = sol::readonly(&AccConfiguration::latlong_actuator);
+        acc["limit_acceleration"] = &AccConfiguration::limit_acceleration;
+        acc["limit_deceleration"] = &AccConfiguration::limit_deceleration;
+        acc["derivative_factor_speed_control"] = &AccConfiguration::kd;
+        acc["proportional_factor_speed_control"] = &AccConfiguration::kp;
+        acc["integral_factor_speed_control"] = &AccConfiguration::ki;
+        acc["derivative_factor_dist_control"] = &AccConfiguration::kd_m;
+        acc["proportional_factor_dist_control"] = &AccConfiguration::kp_m;
+        acc["integral_factor_dist_control"] = &AccConfiguration::ki_m;
 
-    {
-      auto acc = lua.new_usertype<AccConfiguration>("AccConfiguration", sol::no_constructor);
-      acc["ego_sensor"] = sol::readonly(&AccConfiguration::ego_sensor);
-      acc["world_sensor"] = sol::readonly(&AccConfiguration::world_sensor);
-      acc["latlong_actuator"] = sol::readonly(&AccConfiguration::latlong_actuator);
-      acc["limit_acceleration"] = &AccConfiguration::limit_acceleration;
-      acc["limit_deceleration"] = &AccConfiguration::limit_deceleration;
-      acc["derivative_factor_speed_control"] = &AccConfiguration::kd;
-      acc["proportional_factor_speed_control"] = &AccConfiguration::kp;
-      acc["integral_factor_speed_control"] = &AccConfiguration::ki;
-      acc["derivative_factor_dist_control"] = &AccConfiguration::kd_m;
-      acc["proportional_factor_dist_control"] = &AccConfiguration::kp_m;
-      acc["integral_factor_dist_control"] = &AccConfiguration::ki_m;
-
-      auto inst = lua.create("acc");
-      inst["config"] = std::ref(acc_.config);
-      inst["enabled"] = &acc_.enabled;
-      inst["active"] = &acc_.active;
-      inst["distance_algorithm"] = sol::property(
-          [this]() -> std::string { return distance::ALGORITHMS[acc_.distance_algorithm].first; },
-          [this](const std::string& name) {
-            for (size_t i = 0; i < distance::ALGORITHMS.size(); i++) {
-              if (distance::ALGORITHMS[i].first == name) {
-                acc_.distance_algorithm = i;
-                return;
+        auto inst = lua.create("acc");
+        inst["config"] = std::ref(acc_.config);
+        inst["enabled"] = &acc_.enabled;
+        inst["active"] = &acc_.active;
+        inst["distance_algorithm"] = sol::property(
+            [this]() -> std::string { return distance::ALGORITHMS[acc_.distance_algorithm].first; },
+            [this](const std::string& name) {
+              for (size_t i = 0; i < distance::ALGORITHMS.size(); i++) {
+                if (distance::ALGORITHMS[i].first == name) {
+                  acc_.distance_algorithm = i;
+                  return;
+                }
               }
-            }
-            // FIXME: Throw an error here
-          });
-      inst["target_speed"] = &acc_.target_speed;
+              // FIXME: Throw an error here
+            });
+        inst["target_speed"] = &acc_.target_speed;
+        driver->data_broker_binding()->declare<AccConfiguration>();
+      }
     }*/
-
+    /*if(auto *driver = dynamic_cast<cloe::py::PythonSimulationDriver*>(&r.simulation_driver()); driver) {
+      pybind11::class_<AccConfiguration> clazz (driver->extension_module(), "AccConfiguration");
+      driver->data_broker_binding()->declare<AccConfiguration>();
+    }*/
     r.register_action(std::make_unique<utility::ContactFactory<Duration>>(&hmi_));
 
     // clang-format off

@@ -4,6 +4,8 @@
 #include "signals.hpp"
 
 #include <typeindex>
+#include <functional>
+
 namespace cloe::py {
 
 class PythonDataBrokerAdapter : public cloe::databroker::DataBrokerBinding {
@@ -36,7 +38,6 @@ class PythonDataBrokerAdapter : public cloe::databroker::DataBrokerBinding {
       auto declared_types_iter = declared_types().find(type);
       if (declared_types_iter == declared_types().end()) {
         declared_types()[type] = true;
-        // ::cloe::databroker::detail::to_lua<T>(lua_); // todo
       }
 
       // Store adapter function

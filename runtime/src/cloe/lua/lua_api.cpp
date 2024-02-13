@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "lua_api.hpp"
+#include <cloe/lua/lua_api.hpp>
 
 #include <filesystem>  // for path
 

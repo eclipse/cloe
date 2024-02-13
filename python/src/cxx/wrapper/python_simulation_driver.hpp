@@ -1,7 +1,6 @@
 #pragma once
 
-#include "python_data_broker_adapter.hpp"
-#include "python_function.hpp"
+#include <cloe/python/python_data_broker_adapter.hpp>
 #include <cloe/simulation_driver.hpp>
 
 #include <tuple>
@@ -9,18 +8,20 @@
 
 namespace cloe::py {
 
+using CallbackFunction = std::function<CallbackResult(const cloe::Sync*)>;
+
 namespace detail {
 struct TriggerDescription {
   std::string label;
   nlohmann::json eventDescription;
-  PythonFunction::CallbackFunction action;
+  CallbackFunction action;
   bool sticky;
 };
 }
 
 class PythonSimulationDriver final : public cloe::SimulationDriver {
  public:
-  explicit PythonSimulationDriver(PythonDataBrokerAdapter *adapter);
+  explicit PythonSimulationDriver(PythonDataBrokerAdapter *adapter, pybind11::module_ custom_data_types);
   PythonSimulationDriver(PythonSimulationDriver&&) = default;
   PythonSimulationDriver& operator=(PythonSimulationDriver&&) = default;
   PythonSimulationDriver(const PythonSimulationDriver&) = delete;
@@ -32,18 +33,20 @@ class PythonSimulationDriver final : public cloe::SimulationDriver {
   void alias_signals(DataBroker& dataBroker) override;
   void bind_signals(DataBroker& dataBroker) override;
   std::vector<cloe::TriggerPtr> yield_pending_triggers() override;
-  databroker::DataBrokerBinding* data_broker_binding() override;
+  PythonDataBrokerAdapter* data_broker_binding() override;
   [[nodiscard]] nlohmann::json produce_report() const override;
 
   void add_require_signal(std::string_view signal_name);
   void add_signal_alias(std::string_view signal_name, std::string_view alias);
   void register_trigger(std::string_view label, const nlohmann::json &eventDescription,
-                        const PythonFunction::CallbackFunction &action, bool sticky);
+                        const CallbackFunction &action, bool sticky);
   void add_trigger(const cloe::Sync &sync, std::string_view label,
                    const nlohmann::json &eventDescription,
-                   const PythonFunction::CallbackFunction &action, bool sticky);
+                   const CallbackFunction &action, bool sticky);
 
   [[nodiscard]] std::vector<std::string> available_signals() const;
+
+  pybind11::module_ &extension_module();
 
  private:
 
@@ -55,6 +58,7 @@ class PythonSimulationDriver final : public cloe::SimulationDriver {
   std::vector<std::tuple<std::string, std::string>> signal_aliases_ {};
   cloe::coordinator::Coordinator* coordinator_ {};
   cloe::DataBroker* data_broker_ {};
+  pybind11::module_ custom_data_types_module_;
 };
 
 }

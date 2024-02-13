@@ -202,11 +202,6 @@ class Registrar {
    */
   virtual void register_event(std::unique_ptr<EventFactory>&& f, std::shared_ptr<Callback> c) = 0;
 
-  /**
-   * Provide a Lua table for registration of functions and variables.
-   */
-  // virtual sol::table register_lua_table() = 0;
-
   virtual cloe::SimulationDriver& simulation_driver() = 0;
 
   /**

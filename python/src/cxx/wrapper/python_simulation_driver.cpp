@@ -1,6 +1,7 @@
-#include "python_simulation_driver.hpp"
-#include "cloe/model.hpp"
+#include "python_function.hpp"
 
+#include <cloe/model.hpp>
+#include "python_simulation_driver.hpp"
 #include <cloe/coordinator.hpp>
 
 namespace cloe::py {
@@ -50,7 +51,7 @@ std::vector<cloe::TriggerPtr> PythonSimulationDriver::yield_pending_triggers() {
   return result;
 }
 
-databroker::DataBrokerBinding* PythonSimulationDriver::data_broker_binding() { return adapter_; }
+PythonDataBrokerAdapter* PythonSimulationDriver::data_broker_binding() { return adapter_; }
 nlohmann::json PythonSimulationDriver::produce_report() const {
   // todo
   return {};
@@ -63,12 +64,12 @@ void PythonSimulationDriver::add_require_signal(std::string_view signal_name) {
   require_signals_.emplace_back(signal_name);
 }
 
-PythonSimulationDriver::PythonSimulationDriver(PythonDataBrokerAdapter* adapter)
-    : adapter_(adapter) {}
+PythonSimulationDriver::PythonSimulationDriver(PythonDataBrokerAdapter* adapter, pybind11::module_ custom_data_types)
+    : adapter_(adapter), custom_data_types_module_(custom_data_types) {}
 
 void PythonSimulationDriver::register_trigger(
     std::string_view label, const nlohmann::json& eventDescription,
-    const PythonFunction::CallbackFunction& action, bool sticky) {
+    const CallbackFunction& action, bool sticky) {
   if (coordinator_ != nullptr) {
     throw std::runtime_error("simulation is already running, use add_trigger.");
   }
@@ -85,13 +86,13 @@ std::unique_ptr<cloe::Trigger> PythonSimulationDriver::trigger_description_to_tr
   auto result = std::make_unique<cloe::Trigger>(
       description.label, cloe::Source::DRIVER,
       trigger_factory().make_event(fable::Conf{description.eventDescription}),
-      std::make_unique<PythonFunction>(description.action, "python_function"));
+      std::make_unique<PythonAction>(description.action, "python_function"));
   result->set_sticky(description.sticky);
   return result;
 }
 void PythonSimulationDriver::add_trigger(const Sync& sync, std::string_view label,
                                          const nlohmann::json& eventDescription,
-                                         const PythonFunction::CallbackFunction& action,
+                                         const PythonAction::CallbackFunction& action,
                                          bool sticky) {
   detail::TriggerDescription description {
       .label = std::string(label),
@@ -112,5 +113,6 @@ std::vector<std::string> PythonSimulationDriver::available_signals() const {
   }
   return result;
 }
+pybind11::module_& PythonSimulationDriver::extension_module() { return custom_data_types_module_; }
 
 }

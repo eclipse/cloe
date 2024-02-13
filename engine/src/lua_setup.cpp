@@ -31,7 +31,7 @@
 #include <fable/utility/string.hpp>  // for join_vector
 
 #include "error_handler.hpp"  // for format_cloe_error
-#include "lua_api.hpp"
+#include <cloe/lua/lua_api.hpp>
 #include "stack.hpp"
 #include "utility/command.hpp"  // for CommandExecuter, CommandResult
 
