@@ -37,12 +37,12 @@ PYBIND11_MODULE(_cloe_bindings, m) {
   {
     py::class_<cloe::py::Signals> clazz (m, "Signals");
     clazz.def("bound_signals", &cloe::py::Signals::bound_signals);
-    /*clazz.def("getter", [](cloe::py::Signals &signals, std::string name) {
-      return signals.getter(name);
+    clazz.def("getter", [](cloe::py::Signals &signals, std::string name) {
+      return signals[name].second.getter;
     });
     clazz.def("setter", [](cloe::py::Signals &signals, std::string name) {
-      return signals.setter(name);
-    });*/
+      return signals[name].second.setter;
+    });
   }
   {
     py::class_<cloe::py::PythonDataBrokerAdapter> clazz (m, "DataBrokerAdapter");

@@ -14,7 +14,8 @@ def the_glorious_test(runner: TestRunner):
     print("test sync time", runner.sync.time)
     yield runner.wait_duration(1)
     print("test sync time", runner.sync.time)
-    # print("acc signal value", runner.signals.getter("vehicles.default.basic.acc")())
+    acc_signal_value = runner.signals.getter("vehicles.default.basic.acc")()
+    print("acc signal value (world sensor)", acc_signal_value.world_sensor)
     yield runner.wait_until(lambda sync: sync.time > timedelta(seconds=2))
     print("test sync time", runner.sync.time)
 
