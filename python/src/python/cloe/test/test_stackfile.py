@@ -6,9 +6,6 @@ sys.path.append('/home/ohf4fe/dev/sil/cloe/build/linux-x86_64-gcc-8/Debug/lib')
 from cloe import SimulationContext, TestRunner
 
 
-# we can probably get rid of the yield by using a decorator
-# that converts the glorious test to a generator and using "yield from"
-# or take async and await
 def the_glorious_test(runner: TestRunner):
     print("bound signals", runner.signals.bound_signals())
     print("test sync time", runner.sync.time)
@@ -22,6 +19,5 @@ def the_glorious_test(runner: TestRunner):
 
 ctx = SimulationContext(the_glorious_test)
 ctx.sim.log_level = "warn"
-# todo this should be replaced w/ a list and require_signals
 ctx.driver.require_signal("vehicles.default.basic.acc")
 ctx.run_simulation()

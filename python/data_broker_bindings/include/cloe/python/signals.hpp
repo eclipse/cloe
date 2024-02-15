@@ -4,6 +4,8 @@
 #include <pybind11/pybind11.h>
 #include <functional>
 #include <map>
+#include <memory>
+#include <string_view>
 #include <cloe/data_broker.hpp>
 
 namespace cloe::py {
@@ -14,14 +16,13 @@ using setter_fn = std::function<void(const pybind11::object&)>;
 /**
   * accessors (getter/setter)
   */
-struct accessor {
+struct PYBIND11_EXPORT accessor {
   getter_fn getter;
   setter_fn setter;
 };
 }
 
-class Signals {
- public:
+struct PYBIND11_EXPORT Signals {
   using getter_fn = detail::getter_fn;
   using setter_fn = detail::setter_fn;
   /**
@@ -29,7 +30,12 @@ class Signals {
   */
   using accessors = std::map<std::string, detail::accessor, std::less<>>;
 
-  Signals() = default;
+  Signals();
+  ~Signals();
+  Signals(const Signals &) = delete;
+  Signals& operator=(const Signals&) = delete;
+  Signals(Signals&&) = default;
+  Signals& operator=(Signals&&) = default;
 
   [[nodiscard]] const getter_fn &getter(std::string_view name) const;
 
@@ -38,7 +44,7 @@ class Signals {
   [[nodiscard]] std::vector<std::string> bound_signals() const;
 
   const accessors::value_type& operator[](std::string_view key) const {
-    if(auto it = accessors_.find(key); it != end(accessors_)) {
+    if(auto it = accessors_->find(key); it != accessors_->end()) {
      return *it;
     }
     throw std::runtime_error(fmt::format("Could not find signal for key {}", key));
@@ -51,7 +57,7 @@ class Signals {
     */
   template <typename T>
   void bind(const SignalPtr& signal, std::string_view lua_name) {
-    auto inserted = accessors_.try_emplace(std::string(lua_name), accessors::mapped_type {
+    auto inserted = accessors_->try_emplace(std::string(lua_name), accessors::mapped_type {
       .getter = [signal]() { return pybind11::cast(signal->value<T>()); },
       .setter = [signal](const pybind11::object& val) { signal->set_value<T>(val.cast<T>()); }
     });
@@ -61,11 +67,10 @@ class Signals {
     }
   }
 
- private:
   /**
   * Mapped signals
   */
-  accessors accessors_;
+  std::unique_ptr<accessors> accessors_;
 };
 
 }

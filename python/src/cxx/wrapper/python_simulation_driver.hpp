@@ -21,7 +21,7 @@ struct TriggerDescription {
 
 class PythonSimulationDriver final : public cloe::SimulationDriver {
  public:
-  explicit PythonSimulationDriver(PythonDataBrokerAdapter *adapter, pybind11::module_ custom_data_types);
+  explicit PythonSimulationDriver(PythonDataBrokerAdapter *adapter);
   PythonSimulationDriver(PythonSimulationDriver&&) = default;
   PythonSimulationDriver& operator=(PythonSimulationDriver&&) = default;
   PythonSimulationDriver(const PythonSimulationDriver&) = delete;
@@ -58,7 +58,6 @@ class PythonSimulationDriver final : public cloe::SimulationDriver {
   std::vector<std::tuple<std::string, std::string>> signal_aliases_ {};
   cloe::coordinator::Coordinator* coordinator_ {};
   cloe::DataBroker* data_broker_ {};
-  pybind11::module_ custom_data_types_module_;
 };
 
 }

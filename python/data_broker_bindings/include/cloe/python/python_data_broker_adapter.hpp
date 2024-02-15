@@ -32,8 +32,8 @@ class PythonDataBrokerAdapter : public cloe::databroker::DataBrokerBinding {
 
     // Check whether this type was already processed, if not declare it and store an adapter function in bindings_
     std::type_index type{typeid(compatible_type)};
-    auto iter = bindings_.find(type);
-    if (iter == bindings_.end()) {
+    auto iter = bindings_->find(type);
+    if (iter == bindings_->end()) {
       // Check whether this type was already declared to the Lua-VM, if not declare it
       auto declared_types_iter = declared_types().find(type);
       if (declared_types_iter == declared_types().end()) {
@@ -41,17 +41,17 @@ class PythonDataBrokerAdapter : public cloe::databroker::DataBrokerBinding {
       }
 
       // Store adapter function
-      bindings_.emplace(type, [this](const SignalPtr& signal, std::string_view lua_name) {
+      bindings_->emplace(type, [this](const SignalPtr& signal, std::string_view lua_name) {
         // Subscribe to the value-changed event to indicate the signal is used
         signal->subscribe<T>([](const T&) {});
         // Implement the signal as a property in Lua
-        signals_.bind<T>(signal, lua_name);
+        signals_->bind<T>(signal, lua_name);
       });
     }
   }
 
  private:
-  std::unordered_map<std::type_index, SignalAdapter> bindings_{};
-  Signals signals_;
+  std::unique_ptr<std::map<std::type_index, SignalAdapter>> bindings_;
+  std::unique_ptr<Signals> signals_;
 };
 }

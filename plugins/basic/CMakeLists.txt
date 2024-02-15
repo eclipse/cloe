@@ -7,6 +7,7 @@ set(CLOE_FIND_PACKAGES ON CACHE BOOL "Call find_package() for cloe packages")
 if(CLOE_FIND_PACKAGES)
     find_package(cloe-runtime REQUIRED)
     find_package(cloe-models REQUIRED)
+    find_package(cloe-databroker-bindings REQUIRED)
 endif()
 
 include(CloePluginSetup)
@@ -26,8 +27,11 @@ pybind11_add_module(_basic_bindings
         src/basic_bindings.cpp
 )
 target_include_directories(_basic_bindings PRIVATE src/)
-target_link_libraries(_basic_bindings PUBLIC cloe::runtime cloe::models data_broker_binding)
-
+target_link_libraries(_basic_bindings PUBLIC cloe::runtime cloe::models cloe::databroker-bindings)
+set_target_properties(_basic_bindings PROPERTIES
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED ON
+)
 
 include(CTest)
 if(BUILD_TESTING)

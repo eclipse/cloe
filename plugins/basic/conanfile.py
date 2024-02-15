@@ -42,6 +42,7 @@ class CloeControllerBasic(ConanFile):
     def requirements(self):
         self.requires(f"cloe-runtime/{self.version}@cloe/develop")
         self.requires(f"cloe-models/{self.version}@cloe/develop")
+        self.requires(f"cloe-databroker-bindings/{self.version}@cloe/develop")
 
     def build_requirements(self):
         self.test_requires("gtest/1.13.0")

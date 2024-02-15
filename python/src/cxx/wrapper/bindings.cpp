@@ -1,13 +1,15 @@
 #include "json.hpp"
 #include "python_simulation_driver.hpp"
 
-#include "python_function.hpp"
+#include "cloe/component/object.hpp"
+#include "cloe/component/wheel.hpp"
 #include "lua_setup.hpp"
+#include "python_function.hpp"
 #include "simulation.hpp"
 #include "stack_factory.hpp"
 
-#include <cloe/python/signals.hpp>
 #include <cloe/python/python_data_broker_adapter.hpp>
+#include <cloe/python/signals.hpp>
 
 #include <pybind11/chrono.h>
 #include <pybind11/functional.h>
@@ -49,14 +51,19 @@ PYBIND11_MODULE(_cloe_bindings, m) {
   }
   {
     py::class_<cloe::py::PythonDataBrokerAdapter> clazz (m, "DataBrokerAdapter");
-    clazz.def(py::init<>());
+    clazz.def(py::init([]() {
+      cloe::py::PythonDataBrokerAdapter adapter {};
+      adapter.declare<cloe::Object>();
+      adapter.declare<cloe::Wheel>();
+      return adapter;
+    }));
     clazz.def_property_readonly("signals", &cloe::py::PythonDataBrokerAdapter::signals);
   }
   {
     using Driver = cloe::py::PythonSimulationDriver;
     py::class_<Driver> clazz (m, "SimulationDriver");
-    clazz.def(py::init([extension_mod = m.def_submodule("ext")](cloe::py::PythonDataBrokerAdapter* db_adapter) {
-      return Driver (db_adapter, extension_mod);
+    clazz.def(py::init([](cloe::py::PythonDataBrokerAdapter* db_adapter) {
+      return Driver (db_adapter);
     }));
     clazz.def("add_signal_alias", &Driver::add_signal_alias);
     clazz.def("register_trigger", [](Driver &self, std::string_view label, const py::dict& eventDescription,
@@ -70,14 +77,14 @@ PYBIND11_MODULE(_cloe_bindings, m) {
     clazz.def("require_signal", &cloe::py::PythonSimulationDriver::add_require_signal);
     clazz.def("alias_signal", &cloe::py::PythonSimulationDriver::add_signal_alias);
     clazz.def("signals", [](cloe::py::PythonSimulationDriver &self) {
-      return self.data_broker_binding()->signals();
-    });
+      return &self.data_broker_binding()->signals();
+    }, py::return_value_policy::reference_internal);
     clazz.def_property_readonly("available_signals", &cloe::py::PythonSimulationDriver::available_signals);
   }
   {
     py::class_<engine::Simulation> sim (m, "Simulation");
-    sim.def(py::init([](cloe::Stack stack, cloe::py::PythonSimulationDriver &driver, const std::string &uuid) {
-      return engine::Simulation {std::move(stack), driver, uuid};
+    sim.def(py::init([](cloe::Stack stack, cloe::py::PythonSimulationDriver *driver, const std::string &uuid) {
+      return engine::Simulation {std::move(stack), *driver, uuid};
     }), py::arg("stack"), py::arg("driver"), py::arg("uuid"));
     sim.def_property(
         "log_level",

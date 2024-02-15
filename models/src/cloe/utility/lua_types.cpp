@@ -185,7 +185,7 @@ void traverse_namespace_impl(sol::state_view view, const std::vector<const char*
 template <typename T>
 void traverse_namespace(DataBroker& db, const std::vector<const char*>& ns,
                         std::function<void(sol::table&)> table_fn) {
-  db.declare_type<T>([&](sol::state_view view) { traverse_namespace_impl(view, ns, table_fn); });
+  //db.declare_type<T>([&](sol::state_view view) { traverse_namespace_impl(view, ns, table_fn); });
 }
 
 /**
@@ -285,10 +285,10 @@ void register_gaspedal_sensor(DataBroker& db, const std::string& vehicle,
         "Normalized gas pedal position for the '{}' vehicle<br><br>"
         "Range [min-max]: [0-1]",
         vehicle);
-    signal->add<cloe::LuaAutocompletionTag>(
+    /*signal->add<cloe::LuaAutocompletionTag>(
         cloe::LuaAutocompletionTag::LuaDatatype::Number,
         cloe::LuaAutocompletionTag::PhysicalQuantity::Dimensionless,
-        documentation);
+        documentation);*/
     signal->add<cloe::SignalDocumentation>(documentation);
   }
 }
@@ -308,10 +308,10 @@ void register_wheel_sensor(DataBroker& db,
         "velocity: Compression of the spring in [m]<br>"
         "spring_compression: Compression of the spring in [m]",
         vehicle);
-    signal->add<cloe::LuaAutocompletionTag>(
+    /*signal->add<cloe::LuaAutocompletionTag>(
         cloe::LuaAutocompletionTag::LuaDatatype::Class,
         cloe::LuaAutocompletionTag::PhysicalQuantity::Dimensionless,
-        documentation);
+        documentation);*/
     signal->add<cloe::SignalDocumentation>(documentation);
   }
   {
@@ -322,9 +322,9 @@ void register_wheel_sensor(DataBroker& db,
     auto documentation =
         fmt::format("Sensor for the rotation around y-axis of the {} wheel of the '{}' vehicle",
                     wheel_name, vehicle);
-    signal->add<cloe::LuaAutocompletionTag>(cloe::LuaAutocompletionTag::LuaDatatype::Number,
+    /*signal->add<cloe::LuaAutocompletionTag>(cloe::LuaAutocompletionTag::LuaDatatype::Number,
                                             cloe::LuaAutocompletionTag::PhysicalQuantity::Radian,
-                                            documentation);
+                                            documentation);*/
     signal->add<cloe::SignalDocumentation>(documentation);
   }
   {
@@ -335,9 +335,9 @@ void register_wheel_sensor(DataBroker& db,
     auto documentation =
         fmt::format("Sensor for the translative velocity of the {} wheel of the '{}' vehicle",
                     wheel_name, vehicle);
-    signal->add<cloe::LuaAutocompletionTag>(cloe::LuaAutocompletionTag::LuaDatatype::Number,
+    /*signal->add<cloe::LuaAutocompletionTag>(cloe::LuaAutocompletionTag::LuaDatatype::Number,
                                             cloe::LuaAutocompletionTag::PhysicalQuantity::Velocity,
-                                            documentation);
+                                            documentation);*/
     signal->add<cloe::SignalDocumentation>(documentation);
   }
   {
@@ -349,14 +349,14 @@ void register_wheel_sensor(DataBroker& db,
     auto documentation =
         fmt::format("Wheel sensor for spring compression of the {} wheel of the '{}' vehicle",
                     wheel_name, vehicle);
-    signal->add<cloe::LuaAutocompletionTag>(cloe::LuaAutocompletionTag::LuaDatatype::Number,
+    /*signal->add<cloe::LuaAutocompletionTag>(cloe::LuaAutocompletionTag::LuaDatatype::Number,
                                             cloe::LuaAutocompletionTag::PhysicalQuantity::Radian,
-                                            documentation);
+                                            documentation);*/
     signal->add<cloe::SignalDocumentation>(documentation);
   }
 }
 
-void register_lua_types(DataBroker& db) {
+/*void register_lua_types(DataBroker& db) {
   register_vector<Eigen::Vector2i>(db, namespace_eigen, "Vector2i", vector_names_xyzw);
   register_vector<Eigen::Vector3i>(db, namespace_eigen, "Vector3i", vector_names_xyzw);
   register_vector<Eigen::Vector4i>(db, namespace_eigen, "Vector4i", vector_names_xyzw);
@@ -387,7 +387,7 @@ void register_lua_types(DataBroker& db) {
       "Trailer", ::cloe::Object::Class::Trailer
   );
   // clang-format on
-}
+}*/
 
 }  // namespace utility
 }  // namespace cloe

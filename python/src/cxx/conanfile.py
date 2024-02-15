@@ -10,7 +10,7 @@ required_conan_version = ">=1.52.0"
 
 
 class CloeModels(ConanFile):
-    name = "cloe-databroker-bindings"
+    name = "cloe-python-bindings"
     url = "https://github.com/eclipse/cloe"
     description = ""
     license = "Apache-2.0"
@@ -28,13 +28,12 @@ class CloeModels(ConanFile):
     generators = "CMakeDeps", "VirtualRunEnv"
     no_copy_source = True
     exports_sources = [
-        "include/*",
-        "src/*",
+        "wrapper/*",
         "CMakeLists.txt",
     ]
 
     def set_version(self):
-        version_file = Path(self.recipe_folder) / '..' / '..' / "VERSION"
+        version_file = Path(self.recipe_folder) / '..' / '..' / '..' / "VERSION"
         if version_file.exists():
             self.version = files.load(self, version_file).strip()
         else:
@@ -42,7 +41,8 @@ class CloeModels(ConanFile):
             self.version = git.run("describe --dirty=-dirty")[1:]
 
     def requirements(self):
-        self.requires(f"cloe-runtime/{self.version}@cloe/develop")
+        self.requires(f"cloe-databroker-bindings/{self.version}@cloe/develop")
+        self.requires(f"cloe-engine/{self.version}@cloe/develop")
         self.requires("pybind11/2.10.1")
 
     def layout(self):
@@ -69,13 +69,8 @@ class CloeModels(ConanFile):
 
     def package_info(self):
         self.cpp_info.set_property("cmake_find_mode", "both")
-        self.cpp_info.set_property("cmake_file_name", "cloe-databroker-bindings")
-        self.cpp_info.set_property("cmake_target_name", "cloe::databroker-bindings")
-        self.cpp_info.set_property("pkg_config_name", "cloe-databroker-bindings")
+        self.cpp_info.set_property("cmake_file_name", "cloe-python-bindings")
+        self.cpp_info.set_property("cmake_target_name", "cloe::python-bindings")
+        self.cpp_info.set_property("pkg_config_name", "cloe-python-bindings")
 
-        # Make sure we can find the library, both in editable mode and in the
-        # normal package mode:
-        if not self.in_local_cache:
-            self.cpp_info.libs = ["data_broker_binding"]
-        else:
-            self.cpp_info.libs = files.collect_libs(self)
+        self.cpp_info.libs = files.collect_libs(self)
