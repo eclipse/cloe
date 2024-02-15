@@ -11,7 +11,7 @@
 #include <fable/utility/sol.hpp>
 
 #include "lua_setup.hpp"
-#include "stack.hpp"   // for Stack
+#include "cloe/stacklib/stack.hpp"   // for Stack
 using namespace cloe;  // NOLINT(build/namespaces)
 
 TEST(cloe_lua_stack, deserialize_vehicle_conf) {

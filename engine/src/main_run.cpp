@@ -38,7 +38,7 @@
 #include "error_handler.hpp"  // for conclude_error
 #include "main_commands.hpp"  // for RunOptions, new_stack, new_lua
 #include "simulation.hpp"     // for Simulation, SimulationResult
-#include "stack.hpp"          // for Stack
+#include "cloe/stacklib/stack.hpp"          // for Stack
 
 namespace engine {
 

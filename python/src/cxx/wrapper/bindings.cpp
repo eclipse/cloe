@@ -6,7 +6,7 @@
 #include "lua_setup.hpp"
 #include "python_function.hpp"
 #include "simulation.hpp"
-#include "stack_factory.hpp"
+#include "cloe/stacklib/stack_factory.hpp"
 
 #include <cloe/python/python_data_broker_adapter.hpp>
 #include <cloe/python/signals.hpp>

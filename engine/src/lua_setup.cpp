@@ -32,7 +32,7 @@
 
 #include "error_handler.hpp"  // for format_cloe_error
 #include <cloe/lua/lua_api.hpp>
-#include "stack.hpp"
+#include "cloe/stacklib/stack.hpp"
 #include "utility/command.hpp"  // for CommandExecuter, CommandResult
 
 // This variable is set from CMakeLists.txt, but in case it isn't,

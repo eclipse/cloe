@@ -20,7 +20,7 @@
  * \see  plugin.hpp
  */
 
-#include "plugin.hpp"
+#include "cloe/stacklib/plugin.hpp"
 
 #include <dlfcn.h>  // for dlopen, dlsym, RTLD_NOW, ...
 #include <memory>   // for unique_ptr<>

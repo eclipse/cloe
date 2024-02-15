@@ -21,7 +21,7 @@
  * \see  stack_test.cpp
  */
 
-#include "stack.hpp"
+#include "cloe/stacklib/stack.hpp"
 
 #include <algorithm>   // for transform, swap
 #include <filesystem>  // for filesystem

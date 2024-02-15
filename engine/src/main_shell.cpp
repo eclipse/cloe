@@ -29,7 +29,7 @@
 
 #include <cloe/lua/lua_api.hpp>        // for lua_safe_script_file
 #include "main_commands.hpp"  // for Stack, new_stack, LuaOptions, new_lua
-#include "stack.hpp"          // for Stack
+#include "cloe/stacklib/stack.hpp"          // for Stack
 
 namespace engine {
 

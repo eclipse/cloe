@@ -23,7 +23,7 @@
 #include <cloe/core/fable.hpp>
 
 #include "main_commands.hpp"
-#include "stack.hpp"
+#include "cloe/stacklib/stack.hpp"
 
 namespace engine {
 

@@ -20,7 +20,7 @@
  * \see  plugins/nop_simulator.hpp
  */
 
-#include "plugins/nop_simulator.hpp"
+#include "cloe/stacklib/plugins/nop_simulator.hpp"
 
 #include <functional>  // for function<>
 #include <memory>      // for unique_ptr<>

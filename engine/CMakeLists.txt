@@ -7,6 +7,7 @@ if(CLOE_FIND_PACKAGES)
     find_package(fable REQUIRED)
     find_package(cloe-runtime REQUIRED)
     find_package(cloe-models REQUIRED)
+    find_package(cloe-stacklib REQUIRED)
 endif()
 find_package(Boost REQUIRED)
 find_package(CLI11 REQUIRED)
@@ -22,64 +23,7 @@ string(TIMESTAMP CLOE_ENGINE_TIMESTAMP "%Y-%m-%d")
 set(CLOE_ENGINE_VERSION ${CLOE_PROJECT_VERSION})
 set(PROJECT_GIT_REF "unknown")
 
-# Library libstack ---------------------------------------------------
-add_library(cloe-stacklib STATIC
-    src/config.hpp
-    src/stack.hpp
-    src/stack.cpp
-    src/stack_factory.hpp
-    src/stack_factory.cpp
-    src/plugin.hpp
-    src/plugin.cpp
 
-    # Built-in plugins:
-    src/plugins/nop_controller.cpp
-    src/plugins/nop_controller.hpp
-    src/plugins/nop_simulator.cpp
-    src/plugins/nop_simulator.hpp
-)
-add_library(cloe::stacklib ALIAS cloe-stacklib)
-set_target_properties(cloe-stacklib PROPERTIES
-    CXX_STANDARD 17
-    CXX_STANDARD_REQUIRED ON
-    OUTPUT_NAME stack
-)
-target_include_directories(cloe-stacklib
-  PRIVATE
-    src
-)
-target_link_libraries(cloe-stacklib
-  PUBLIC
-    cloe::runtime
-    cloe::models
-    fable::fable
-    Boost::headers
-    Threads::Threads
-    ${CMAKE_DL_LIBS}
-)
-
-include(CTest)
-if(BUILD_TESTING)
-    find_package(GTest REQUIRED)
-    include(GoogleTest)
-
-    add_executable(test-stacklib
-        src/stack_test.cpp
-        src/stack_component_test.cpp
-    )
-    set_target_properties(test-stacklib PROPERTIES
-        CXX_STANDARD 17
-        CXX_STANDARD_REQUIRED ON
-    )
-    target_link_libraries(test-stacklib
-        GTest::gtest
-        GTest::gtest_main
-        Boost::boost
-        cloe::models
-        cloe::stacklib
-    )
-    gtest_add_tests(TARGET test-stacklib)
-endif()
 
 # Library libengine ----------------------------------------------
 add_library(cloe-enginelib STATIC
@@ -162,7 +106,10 @@ else()
   target_compile_definitions(cloe-enginelib PUBLIC CLOE_ENGINE_WITH_LRDB=0)
 endif()
 
+include(CTest)
 if(BUILD_TESTING)
+    find_package(GTest REQUIRED)
+    include(GoogleTest)
     add_executable(test-enginelib
         src/lua_stack_test.cpp
     )

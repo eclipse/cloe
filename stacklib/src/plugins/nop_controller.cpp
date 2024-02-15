@@ -20,7 +20,7 @@
  * \see  plugins/nop_controller.hpp
  */
 
-#include "plugins/nop_controller.hpp"
+#include "cloe/stacklib/plugins/nop_controller.hpp"
 
 #include <memory>  // for unique_ptr<>, make_unique<>
 

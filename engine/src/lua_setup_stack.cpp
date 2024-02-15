@@ -20,7 +20,7 @@
 
 #include <cloe/lua/lua_api.hpp>
 #include "lua_setup.hpp"
-#include "stack.hpp"
+#include "cloe/stacklib/stack.hpp"
 
 namespace cloe {
 

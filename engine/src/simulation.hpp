@@ -32,7 +32,7 @@
 #include <cloe/simulation_driver.hpp>
 
 #include "simulation_context.hpp"
-#include "stack.hpp"  // for Stack
+#include "cloe/stacklib/stack.hpp"  // for Stack
 
 namespace engine {
 

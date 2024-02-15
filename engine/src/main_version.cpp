@@ -22,7 +22,7 @@
 #include <cloe/plugin.hpp>        // for CLOE_PLUGIN_MANIFEST_VERSION
 #include <cloe/utility/inja.hpp>  // for inja_env
 
-#include "config.hpp"         // for CLOE_STACK_VERSION
+#include "cloe/stacklib/config.hpp"         // for CLOE_STACK_VERSION
 #include "main_commands.hpp"  // for VersionOptions
 
 namespace engine {

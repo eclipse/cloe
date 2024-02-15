@@ -26,7 +26,7 @@
 
 #include <cloe/registrar.hpp>  // for Registrar
 
-#include "stack.hpp"          // for ServerConf
+#include "cloe/stacklib/stack.hpp"          // for ServerConf
 #include "utility/defer.hpp"  // for Defer
 
 namespace engine {

@@ -20,7 +20,7 @@
  * \see  stack_factory.hpp
  */
 
-#include "stack_factory.hpp"
+#include "cloe/stacklib/stack_factory.hpp"
 
 #include <filesystem>  // for path
 #include <iostream>    // for ostream, cerr
@@ -32,10 +32,10 @@
 #include <fable/environment.hpp>            // for Environment
 #include <fable/utility.hpp>                // for pretty_print, read_conf_from_file
 
-#include "config.hpp"                  // for CLOE_PLUGIN_PATH
-#include "plugins/nop_controller.hpp"  // for NopFactory
-#include "plugins/nop_simulator.hpp"   // for NopFactory
-#include "stack.hpp"                   // for Stack
+#include "cloe/stacklib/config.hpp"                  // for CLOE_PLUGIN_PATH
+#include "cloe/stacklib/plugins/nop_controller.hpp"  // for NopFactory
+#include "cloe/stacklib/plugins/nop_simulator.hpp"   // for NopFactory
+#include "cloe/stacklib/stack.hpp"                   // for Stack
 
 namespace cloe {
 

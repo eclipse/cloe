@@ -25,7 +25,7 @@
 #include <vector>
 
 #include "lua_setup.hpp"
-#include "stack_factory.hpp"
+#include "cloe/stacklib/stack_factory.hpp"
 
 namespace engine {
 

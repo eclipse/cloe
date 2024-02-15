@@ -30,7 +30,7 @@
 #include <cloe/component/object_sensor.hpp>  // for ObjectSensor
 #include <cloe/core.hpp>                     // for Json
 #include <fable/utility/gtest.hpp>           // for assert_from_conf
-#include "stack.hpp"                         // for Stack
+#include "cloe/stacklib/stack.hpp"                         // for Stack
 using namespace cloe;                        // NOLINT(build/namespaces)
 
 namespace {

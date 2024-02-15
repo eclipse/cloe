@@ -45,7 +45,7 @@
 #include "server.hpp"               // for Server
 #include "simulation_progress.hpp"  // for SimulationProgress
 #include "simulation_sync.hpp"
-#include "stack.hpp"               // for Stack
+#include "cloe/stacklib/stack.hpp"               // for Stack
 #include "utility/command.hpp"     // for CommandExecuter
 #include "utility/time_event.hpp"  // for TimeCallback
 
