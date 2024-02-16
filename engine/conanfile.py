@@ -16,11 +16,6 @@ class CloeEngine(ConanFile):
     description = "Cloe engine to execute simulations"
     settings = "os", "compiler", "build_type", "arch"
     options = {
-        # Whether the server feature is compiled and built into the Cloe engine.
-        # Not building this may make compiling the engine possible if the web
-        # server dependencies are incompatible with your target system.
-        "server": [True, False],
-
         # Whether the LRDB integration is compiled and built into the Cloe engine.
         "lrdb": [True, False],
 
@@ -31,7 +26,6 @@ class CloeEngine(ConanFile):
     }
     default_options = {
         "lrdb": True,
-        "server": True,
         "pedantic": True,
 
         "fable:allow_comments": True,
@@ -59,8 +53,6 @@ class CloeEngine(ConanFile):
         self.requires(f"cloe-models/{self.version}@cloe/develop")
         self.requires("cli11/2.3.2", private=True)
         self.requires("sol2/3.3.1")
-        if self.options.server:
-            self.requires(f"cloe-oak/{self.version}@cloe/develop", private=True)
         self.requires("boost/[>=1.65.1]")
         self.requires("fmt/9.1.0", override=True)
         self.requires("nlohmann_json/3.11.2", override=True)

@@ -30,6 +30,7 @@ class CloeModels(ConanFile):
     exports_sources = [
         "include/*",
         "src/*",
+        "test/*",
         "CMakeLists.txt",
     ]
 

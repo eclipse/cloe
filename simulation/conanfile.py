@@ -19,17 +19,23 @@ class CloeModels(ConanFile):
         "shared": [True, False],
         "fPIC": [True, False],
         "pedantic": [True, False],
+        # Whether the server feature is compiled and built into the Cloe engine.
+        # Not building this may make compiling the engine possible if the web
+        # server dependencies are incompatible with your target system.
+        "server": [True, False],
     }
     default_options = {
         "shared": False,
         "fPIC": True,
         "pedantic": True,
+        "server": True,
     }
     generators = "CMakeDeps", "VirtualRunEnv"
     no_copy_source = True
     exports_sources = [
         "include/*",
         "src/*",
+        "webui/*",
         "CMakeLists.txt",
     ]
 
@@ -47,6 +53,8 @@ class CloeModels(ConanFile):
         self.requires(f"cloe-stacklib/{self.version}@cloe/develop")
         self.requires(f"fable/{self.version}@cloe/develop")
         self.requires("boost/[>=1.65.1]")
+        if self.options.server:
+            self.requires(f"cloe-oak/{self.version}@cloe/develop", private=True)
 
     def layout(self):
         cmake.cmake_layout(self)
@@ -64,8 +72,6 @@ class CloeModels(ConanFile):
             cm.configure()
         if self.should_build:
             cm.build()
-        if self.should_test:
-            cm.test()
 
     def package_id(self):
         self.info.requires["boost"].full_package_mode()

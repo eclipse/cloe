@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
+
 set(CLOE_FIND_PACKAGES ON CACHE BOOL "Call find_package() for cloe packages")
 set(CLOE_ENGINE_VERSION ${CLOE_PROJECT_VERSION})
 if(CLOE_FIND_PACKAGES)
@@ -7,7 +9,6 @@ if(CLOE_FIND_PACKAGES)
     find_package(cloe-stacklib REQUIRED)
 endif()
 find_package(Boost REQUIRED)
-find_package(CLI11 REQUIRED)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 # Library libstack ---------------------------------------------------
