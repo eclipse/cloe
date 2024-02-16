@@ -38,6 +38,12 @@ Features:
   server: [[feature_server]]
 )";
 
+// This variable is set from CMakeLists.txt, but in case it isn't,
+// we will assume that the server is disabled.
+#ifndef CLOE_ENGINE_WITH_SERVER
+#define CLOE_ENGINE_WITH_SERVER 0
+#endif
+
 int version(const VersionOptions& opt) {
   cloe::Json metadata{
       {"engine", CLOE_ENGINE_VERSION},                    // from CMakeLists.txt

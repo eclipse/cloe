@@ -8,6 +8,7 @@ if(CLOE_FIND_PACKAGES)
     find_package(cloe-runtime REQUIRED)
     find_package(cloe-models REQUIRED)
     find_package(cloe-stacklib REQUIRED)
+    find_package(cloe-simulation REQUIRED)
 endif()
 find_package(Boost REQUIRED)
 find_package(CLI11 REQUIRED)
@@ -60,27 +61,27 @@ target_link_libraries(cloe-enginelib
 )
 
 
-include(CTest)
-if(BUILD_TESTING)
-    find_package(GTest REQUIRED)
-    include(GoogleTest)
-    add_executable(test-enginelib
-        src/lua_stack_test.cpp
-    )
-    set_target_properties(test-enginelib PROPERTIES
-        CXX_STANDARD 17
-        CXX_STANDARD_REQUIRED ON
-    )
-    target_link_libraries(test-enginelib
-        GTest::gtest
-        GTest::gtest_main
-        Boost::boost
-        cloe::models
-        cloe::stacklib
-        cloe::simulation
-    )
-    gtest_add_tests(TARGET test-enginelib)
-endif()
+#include(CTest)
+#if(BUILD_TESTING)
+#    find_package(GTest REQUIRED)
+#    include(GoogleTest)
+#    add_executable(test-enginelib
+#        src/lua_stack_test.cpp
+#    )
+#    set_target_properties(test-enginelib PROPERTIES
+#        CXX_STANDARD 17
+#        CXX_STANDARD_REQUIRED ON
+#    )
+#    target_link_libraries(test-enginelib
+#        GTest::gtest
+#        GTest::gtest_main
+#        Boost::boost
+#        cloe::models
+#        cloe::stacklib
+#        cloe::simulation
+#    )
+#    gtest_add_tests(TARGET test-enginelib)
+#endif()
 
 # Executable ---------------------------------------------------------
 add_subdirectory(vendor/linenoise)

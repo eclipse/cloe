@@ -29,7 +29,7 @@
  * Having a separate file makes it easier to diff the two implmentation files.
  */
 
-#include "server.hpp"
+#include "cloe/simulation/server.hpp"
 
 #include <memory>   // for unique_ptr<>, make_unique
 

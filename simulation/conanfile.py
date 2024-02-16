@@ -63,6 +63,7 @@ class CloeModels(ConanFile):
         tc = cmake.CMakeToolchain(self)
         tc.cache_variables["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
         tc.cache_variables["CLOE_PROJECT_VERSION"] = self.version
+        tc.cache_variables["CLOE_ENGINE_WITH_SERVER"] = self.options.server
         tc.cache_variables["TargetLintingExtended"] = self.options.pedantic
         tc.generate()
 
