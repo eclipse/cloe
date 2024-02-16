@@ -102,7 +102,6 @@ PYBIND11_MODULE(_cloe_bindings, m) {
     // todo hooks!, store in ptr
     // todo is sim arg uuid == stack options uuid?
     sim.def("run", [](engine::Simulation &self) {
-      py::gil_scoped_release release_gil;
       return self.run();
     });
     sim.def("wait_until", [](engine::Simulation &self,
