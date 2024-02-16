@@ -1,5 +1,5 @@
 from pathlib import Path
-
+import os
 import _cloe_bindings as cloe
 
 
@@ -62,7 +62,11 @@ class SimulationContext:
 
         self.driver.register_trigger("python_test_runner", {"name": "start"}, self._test_runner, False)
 
-        stack = cloe.Stack()
+        if "CLOE_PLUGIN_PATH" not in os.environ:
+            plugin_paths = ["/home/ohf4fe/dev/sil/cloe/build/linux-x86_64-gcc-8/Debug/lib/cloe"]
+        else:
+            plugin_paths = os.environ["CLOE_PLUGIN_PATH"].split(":")
+        stack = cloe.Stack(plugin_paths)
         conf = dict(
             version="4",
             include=[str(Path(__file__).parent / "test" / "config_minimator_smoketest.json")],

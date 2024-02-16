@@ -1,3 +1,4 @@
+#include "fable/environment.hpp"
 #include "json.hpp"
 #include "python_simulation_driver.hpp"
 #include "python_function.hpp"
@@ -10,6 +11,8 @@
 
 #include <cloe/python/python_data_broker_adapter.hpp>
 #include <cloe/python/signals.hpp>
+#include <memory>
+#include <string>
 
 #include <pybind11/chrono.h>
 #include <pybind11/functional.h>
@@ -25,11 +28,13 @@ PYBIND11_MODULE(_cloe_bindings, m) {
   m.doc() = "the cloe python binding";
   {
     py::class_<cloe::Stack> stack(m, "Stack");
-    stack.def(py::init([]() {
+    stack.def(py::init([](const std::vector<std::string> &plugin_paths) {
       cloe::StackOptions stackOptions{};
       stackOptions.environment = std::make_unique<fable::Environment>();
       stackOptions.environment->set(CLOE_SIMULATION_UUID_VAR, "123"); // todo :( doesn't work without
-      stackOptions.plugin_paths.emplace_back("/home/ohf4fe/dev/sil/cloe/build/linux-x86_64-gcc-8/Debug/lib/cloe"); // todo remove
+      for (const auto &path : plugin_paths) {
+        stackOptions.plugin_paths.emplace_back(path);
+      }
       // todo why can't i just create a new stack with its default c'tor?
       return cloe::new_stack(stackOptions);
     }));
