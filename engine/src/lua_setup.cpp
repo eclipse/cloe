@@ -33,7 +33,7 @@
 #include "error_handler.hpp"  // for format_cloe_error
 #include <cloe/lua/lua_api.hpp>
 #include "cloe/stacklib/stack.hpp"
-#include "utility/command.hpp"  // for CommandExecuter, CommandResult
+#include "cloe/simulation/utility/command.hpp"  // for CommandExecuter, CommandResult
 
 // This variable is set from CMakeLists.txt, but in case it isn't,
 // we will assume that the server is disabled.
@@ -199,7 +199,7 @@ void register_cloe_engine(sol::state_view& lua, Stack& stack) {
 
     // Server enabled:
     "cloe-server", CLOE_ENGINE_WITH_SERVER != 0,
-    "cloe-lrdb", CLOE_ENGINE_WITH_LRDB != 0
+    "cloe-lrdb", false
   );
   // clang-format on
 

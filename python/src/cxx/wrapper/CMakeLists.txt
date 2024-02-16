@@ -1,3 +1,11 @@
+set(CLOE_FIND_PACKAGES ON CACHE BOOL "Call find_package() for cloe packages")
+set(CLOE_ENGINE_VERSION ${CLOE_PROJECT_VERSION})
+if(CLOE_FIND_PACKAGES)
+    find_package(cloe-stacklib REQUIRED)
+    find_package(cloe-simulation REQUIRED)
+    find_package(cloe-databroker-bindings REQUIRED)
+endif()
+
 find_package(pybind11 CONFIG REQUIRED)
 pybind11_add_module(_cloe_bindings
         bindings.cpp

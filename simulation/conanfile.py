@@ -10,7 +10,7 @@ required_conan_version = ">=1.52.0"
 
 
 class CloeModels(ConanFile):
-    name = "cloe-python-bindings"
+    name = "cloe-simulation"
     url = "https://github.com/eclipse/cloe"
     description = ""
     license = "Apache-2.0"
@@ -28,12 +28,13 @@ class CloeModels(ConanFile):
     generators = "CMakeDeps", "VirtualRunEnv"
     no_copy_source = True
     exports_sources = [
-        "wrapper/*",
+        "include/*",
+        "src/*",
         "CMakeLists.txt",
     ]
 
     def set_version(self):
-        version_file = Path(self.recipe_folder) / '..' / '..' / '..' / "VERSION"
+        version_file = Path(self.recipe_folder) / '..' / "VERSION"
         if version_file.exists():
             self.version = files.load(self, version_file).strip()
         else:
@@ -41,10 +42,11 @@ class CloeModels(ConanFile):
             self.version = git.run("describe --dirty=-dirty")[1:]
 
     def requirements(self):
-        self.requires(f"cloe-databroker-bindings/{self.version}@cloe/develop")
+        self.requires(f"cloe-runtime/{self.version}@cloe/develop")
+        self.requires(f"cloe-models/{self.version}@cloe/develop")
         self.requires(f"cloe-stacklib/{self.version}@cloe/develop")
-        self.requires(f"cloe-simulation/{self.version}@cloe/develop")
-        self.requires("pybind11/2.10.1")
+        self.requires(f"fable/{self.version}@cloe/develop")
+        self.requires("boost/[>=1.65.1]")
 
     def layout(self):
         cmake.cmake_layout(self)
@@ -62,6 +64,12 @@ class CloeModels(ConanFile):
             cm.configure()
         if self.should_build:
             cm.build()
+        if self.should_test:
+            cm.test()
+
+    def package_id(self):
+        self.info.requires["boost"].full_package_mode()
+        del self.info.options.pedantic
 
     def package(self):
         cm = cmake.CMake(self)
@@ -70,8 +78,13 @@ class CloeModels(ConanFile):
 
     def package_info(self):
         self.cpp_info.set_property("cmake_find_mode", "both")
-        self.cpp_info.set_property("cmake_file_name", "cloe-python-bindings")
-        self.cpp_info.set_property("cmake_target_name", "cloe::python-bindings")
-        self.cpp_info.set_property("pkg_config_name", "cloe-python-bindings")
+        self.cpp_info.set_property("cmake_file_name", "cloe-simulation")
+        self.cpp_info.set_property("cmake_target_name", "cloe::simulation")
+        self.cpp_info.set_property("pkg_config_name", "cloe-simulation")
 
-        self.cpp_info.libs = files.collect_libs(self)
+        # Make sure we can find the library, both in editable mode and in the
+        # normal package mode:
+        if not self.in_local_cache:
+            self.cpp_info.libs = ["cloe-simulation"]
+        else:
+            self.cpp_info.libs = files.collect_libs(self)

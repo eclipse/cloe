@@ -43,8 +43,8 @@ class CloeModels(ConanFile):
 
     def requirements(self):
         self.requires(f"cloe-runtime/{self.version}@cloe/develop")
-        self.requires(f"cloe-models{self.version}@cloe/develop")
-        self.requires(f"fable{self.version}@cloe/develop")
+        self.requires(f"cloe-models/{self.version}@cloe/develop")
+        self.requires(f"fable/{self.version}@cloe/develop")
         self.requires("boost/[>=1.65.1]")
 
     def layout(self):

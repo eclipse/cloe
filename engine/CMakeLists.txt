@@ -53,6 +53,10 @@ target_include_directories(cloe-enginelib
 target_link_libraries(cloe-enginelib
   PUBLIC
     sol2::sol2
+    fable::fable
+    cloe::runtime
+    cloe::stacklib
+    cloe::simulation
 )
 
 
@@ -73,7 +77,7 @@ if(BUILD_TESTING)
         Boost::boost
         cloe::models
         cloe::stacklib
-        cloe::enginelib
+        cloe::simulation
     )
     gtest_add_tests(TARGET test-enginelib)
 endif()
