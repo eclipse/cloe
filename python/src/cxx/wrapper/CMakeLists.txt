@@ -10,7 +10,7 @@ pybind11_add_module(_cloe_bindings
         bindings_object.cpp
         bindings_wheel.cpp
 )
-target_link_libraries(_cloe_bindings PUBLIC cloe::stacklib cloe::enginelib data_broker_binding)
+target_link_libraries(_cloe_bindings PUBLIC cloe::stacklib cloe::databroker-bindings cloe::simulation)
 # todo this should be exposed by engine stacklib/enginelib via conan and/or root project
 target_include_directories(_cloe_bindings PRIVATE ${PROJECT_SOURCE_DIR}/engine/src)
 install(TARGETS _cloe_bindings

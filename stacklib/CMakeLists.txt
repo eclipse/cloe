@@ -9,6 +9,18 @@ find_package(Boost REQUIRED)
 find_package(CLI11 REQUIRED)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
+find_package(sol2 REQUIRED)
+
+set(CLOE_FIND_PACKAGES ON CACHE BOOL "Call find_package() for cloe packages")
+if(CLOE_FIND_PACKAGES)
+    find_package(fable REQUIRED)
+    find_package(cloe-runtime REQUIRED)
+    find_package(cloe-models REQUIRED)
+endif()
+find_package(Boost REQUIRED)
+find_package(CLI11 REQUIRED)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
 # Library libstack ---------------------------------------------------
 add_library(cloe-stacklib
         src/stack.cpp
@@ -23,7 +35,6 @@ add_library(cloe::stacklib ALIAS cloe-stacklib)
 set_target_properties(cloe-stacklib PROPERTIES
         CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
-        OUTPUT_NAME stack
 )
 target_include_directories(cloe-stacklib
         PUBLIC
@@ -38,6 +49,9 @@ target_link_libraries(cloe-stacklib
         Threads::Threads
         ${CMAKE_DL_LIBS}
 )
+
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(TARGETS cloe-stacklib DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 include(CTest)
 if(BUILD_TESTING)

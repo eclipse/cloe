@@ -1,11 +1,11 @@
 #include "json.hpp"
 #include "python_simulation_driver.hpp"
+#include "python_function.hpp"
 
 #include "cloe/component/object.hpp"
 #include "cloe/component/wheel.hpp"
-#include "lua_setup.hpp"
-#include "python_function.hpp"
-#include "simulation.hpp"
+// #include "lua_setup.hpp"
+#include "cloe/simulation/simulation.hpp"
 #include "cloe/stacklib/stack_factory.hpp"
 
 #include <cloe/python/python_data_broker_adapter.hpp>

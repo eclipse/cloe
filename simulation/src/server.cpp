@@ -22,7 +22,7 @@
  * This file is included in the build when the server component is enabled.
  */
 
-#include "server.hpp"
+#include "cloe/simulation/server.hpp"
 
 #include <memory>   // for unique_ptr<>, make_unique
 #include <utility>  // for make_pair

@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "simulation_context.hpp"
+#include "cloe/simulation/simulation_context.hpp"
 
 #include <cloe/vehicle.hpp>
 #include <cloe/controller.hpp>

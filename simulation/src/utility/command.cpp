@@ -20,7 +20,7 @@
  * \see  utility/command.hpp
  */
 
-#include "utility/command.hpp"
+#include "cloe/simulation/utility/command.hpp"
 
 #include <boost/process.hpp>  // for child, std_out, std_err
 #include <stdexcept>          // for runtime_error

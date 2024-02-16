@@ -73,7 +73,7 @@
  * never into the Reset state.
  */
 
-#include "simulation.hpp"
+#include "cloe/simulation/simulation.hpp"
 
 #include <cstdint>     // for uint64_t
 #include <filesystem>  // for filesystem::path
@@ -96,10 +96,10 @@
 #include <fable/utility.hpp>                  // for pretty_print
 #include <utility>
 
-#include "simulation_context.hpp"     // for SimulationContext
-#include "utility/command.hpp"        // for CommandFactory
-#include "utility/state_machine.hpp"  // for State, StateMachine
-#include "utility/time_event.hpp"     // for TimeCallback, NextCallback, NextEvent, TimeEvent
+#include "cloe/simulation/simulation_context.hpp"     // for SimulationContext
+#include "cloe/simulation/utility/command.hpp"        // for CommandFactory
+#include "cloe/simulation/utility/state_machine.hpp"  // for State, StateMachine
+#include "cloe/simulation/utility/time_event.hpp"     // for TimeCallback, NextCallback, NextEvent, TimeEvent
 
 // PROJECT_SOURCE_DIR is normally exported by CMake during build, but it's not
 // available for the linters, so we define a dummy value here for that case.

@@ -23,8 +23,6 @@ string(TIMESTAMP CLOE_ENGINE_TIMESTAMP "%Y-%m-%d")
 set(CLOE_ENGINE_VERSION ${CLOE_PROJECT_VERSION})
 set(PROJECT_GIT_REF "unknown")
 
-
-
 # Library libengine ----------------------------------------------
 add_library(cloe-enginelib STATIC
     src/lua_setup.hpp
@@ -33,22 +31,6 @@ add_library(cloe-enginelib STATIC
     src/lua_setup_fs.cpp
     src/lua_setup_stack.cpp
     src/lua_setup_sync.cpp
-    src/registrar.hpp
-    # These are added below and depend on CLOE_ENGINE_WITH_SERVER:
-    # src/server.cpp
-    # src/server_mock.cpp
-    src/simulation.cpp
-    src/simulation.hpp
-    src/simulation_sync.hpp
-    src/simulation_context.cpp
-    src/simulation_context.hpp
-    src/simulation_progress.hpp
-    src/utility/command.cpp
-    src/utility/command.hpp
-    src/utility/defer.hpp
-    src/utility/progress.hpp
-    src/utility/state_machine.hpp
-    src/utility/time_event.hpp
 )
 add_library(cloe::enginelib ALIAS cloe-enginelib)
 set_target_properties(cloe-enginelib PROPERTIES
@@ -70,41 +52,9 @@ target_include_directories(cloe-enginelib
 )
 target_link_libraries(cloe-enginelib
   PUBLIC
-    cloe::stacklib
-    cloe::models
-    cloe::runtime
-    fable::fable
-    boost::boost
     sol2::sol2
-    Threads::Threads
 )
 
-option(CLOE_ENGINE_WITH_SERVER "Enable integrated server component?" ON)
-if(CLOE_ENGINE_WITH_SERVER)
-  message(STATUS "-> Enable server component")
-  if(CLOE_FIND_PACKAGES)
-    find_package(cloe-oak REQUIRED)
-  endif()
-  target_sources(cloe-enginelib PRIVATE src/server.cpp)
-  target_link_libraries(cloe-enginelib PRIVATE cloe::oak)
-  target_compile_definitions(cloe-enginelib PUBLIC CLOE_ENGINE_WITH_SERVER=1)
-else()
-  message(STATUS "-> Disable server component")
-  target_sources(cloe-enginelib PRIVATE src/server_mock.cpp)
-  target_compile_definitions(cloe-enginelib PUBLIC CLOE_ENGINE_WITH_SERVER=0)
-endif()
-
-option(CLOE_ENGINE_WITH_LRDB "Enable LRDB Lua Debugger?" ON)
-if(CLOE_ENGINE_WITH_LRDB)
-  message(STATUS "-> Enable LRDB component")
-  add_subdirectory(vendor/lrdb)
-  target_sources(cloe-enginelib PRIVATE src/lua_debugger.cpp)
-  target_link_libraries(cloe-enginelib PRIVATE lrdb::lrdb)
-  target_compile_definitions(cloe-enginelib PUBLIC CLOE_ENGINE_WITH_LRDB=1)
-else()
-  message(STATUS "-> Disable LRDB component")
-  target_compile_definitions(cloe-enginelib PUBLIC CLOE_ENGINE_WITH_LRDB=0)
-endif()
 
 include(CTest)
 if(BUILD_TESTING)
@@ -156,6 +106,18 @@ target_link_libraries(cloe-engine
     CLI11::CLI11
     linenoise::linenoise
 )
+
+option(CLOE_ENGINE_WITH_LRDB "Enable LRDB Lua Debugger?" ON)
+if(CLOE_ENGINE_WITH_LRDB)
+    message(STATUS "-> Enable LRDB component")
+    add_subdirectory(vendor/lrdb)
+    target_sources(cloe-engine PRIVATE src/lua_debugger.cpp)
+    target_link_libraries(cloe-engine PRIVATE lrdb::lrdb)
+    target_compile_definitions(cloe-engine PUBLIC CLOE_ENGINE_WITH_LRDB=1)
+else()
+    message(STATUS "-> Disable LRDB component")
+    target_compile_definitions(cloe-engine PUBLIC CLOE_ENGINE_WITH_LRDB=0)
+endif()
 
 # Installation -------------------------------------------------------
 install(TARGETS cloe-engine
