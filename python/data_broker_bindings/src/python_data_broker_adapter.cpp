@@ -1,5 +1,7 @@
 #include <cloe/python/python_data_broker_adapter.hpp>
 
+#include <optional>
+
 namespace cloe::py {
 
 void PythonDataBrokerAdapter::bind_signal(SignalPtr signal, std::string_view signal_name,
@@ -30,6 +32,17 @@ PythonDataBrokerAdapter::PythonDataBrokerAdapter()
   declare<uint64_t>();
   declare<float>();
   declare<double>();
+  declare<std::optional<bool>>();
+  declare<std::optional<int8_t>>();
+  declare<std::optional<uint8_t>>();
+  declare<std::optional<int16_t>>();
+  declare<std::optional<uint16_t>>();
+  declare<std::optional<int32_t>>();
+  declare<std::optional<uint32_t>>();
+  declare<std::optional<int64_t>>();
+  declare<std::optional<uint64_t>>();
+  declare<std::optional<float>>();
+  declare<std::optional<double>>();
 }
 const Signals& PythonDataBrokerAdapter::signals() const { return *signals_; }
 }

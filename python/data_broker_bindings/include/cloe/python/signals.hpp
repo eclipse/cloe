@@ -2,6 +2,8 @@
 
 #include <fmt/format.h>
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+// #include <pybind11/eigen.h>
 #include <functional>
 #include <map>
 #include <memory>
@@ -66,7 +68,7 @@ struct PYBIND11_EXPORT Signals {
           "Failure adding lua-accessor for signal {}. Name already exists.", lua_name));
     }
   }
-
+ private:
   /**
   * Mapped signals
   */

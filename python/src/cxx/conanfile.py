@@ -44,7 +44,7 @@ class CloeModels(ConanFile):
         self.requires(f"cloe-databroker-bindings/{self.version}@cloe/develop")
         self.requires(f"cloe-stacklib/{self.version}@cloe/develop")
         self.requires(f"cloe-simulation/{self.version}@cloe/develop")
-        self.requires("pybind11/2.10.1")
+        self.requires("pybind11/2.11.1")
 
     def layout(self):
         cmake.cmake_layout(self)

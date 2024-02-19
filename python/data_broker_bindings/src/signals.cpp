@@ -1,4 +1,5 @@
 #include <cloe/python/signals.hpp>
+#include <fmt/format.h>
 
 namespace cloe::py {
 

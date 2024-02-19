@@ -41,11 +41,11 @@ class PythonDataBrokerAdapter : public cloe::databroker::DataBrokerBinding {
       }
 
       // Store adapter function
-      bindings_->emplace(type, [this](const SignalPtr& signal, std::string_view lua_name) {
+      bindings_->emplace(type, [signals=signals_.get()](const SignalPtr& signal, std::string_view lua_name) {
         // Subscribe to the value-changed event to indicate the signal is used
         signal->subscribe<T>([](const T&) {});
         // Implement the signal as a property in Lua
-        signals_->bind<T>(signal, lua_name);
+        signals->bind<T>(signal, lua_name);
       });
     }
   }
