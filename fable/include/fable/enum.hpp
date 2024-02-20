@@ -149,22 +149,22 @@ struct EnumSerializerImpl<T, false> {
   }
 };
 
-template <typename T, std::enable_if_t<std::is_enum<T>::value, int> = 0>
+template <typename T, std::enable_if_t<std::is_enum_v<T>, int> = 0>
 const std::map<T, std::string>& enum_serialization() {
   return EnumSerializerImpl<T, has_enum_serializer<T>::value>::serialization_impl();
 }
 
-template <typename T, std::enable_if_t<std::is_enum<T>::value, int> = 0>
+template <typename T, std::enable_if_t<std::is_enum_v<T>, int> = 0>
 const std::map<std::string, T>& enum_deserialization() {
   return EnumSerializerImpl<T, has_enum_serializer<T>::value>::deserialization_impl();
 }
 
-template <typename T, std::enable_if_t<std::is_enum<T>::value, int> = 0>
+template <typename T, std::enable_if_t<std::is_enum_v<T>, int> = 0>
 std::string to_string(T x) {
   return enum_serialization<T>().at(x);
 }
 
-template <typename T, std::enable_if_t<std::is_enum<T>::value, int> = 0>
+template <typename T, std::enable_if_t<std::is_enum_v<T>, int> = 0>
 T from_string(const std::string& s) {
   return enum_deserialization<T>().at(s);
 }

@@ -40,15 +40,15 @@ class Number : public Base<Number<T>> {
  public:  // Types and Constructors
   using Type = T;
 
-  template <typename X = T, std::enable_if_t<std::is_integral<X>::value && std::is_unsigned<X>::value, int> = 0>
+  template <typename X = T, std::enable_if_t<std::is_integral_v<X> && std::is_unsigned_v<X>, int> = 0>
   Number(Type* ptr, std::string&& desc)
       : Base<Number<T>>(JsonType::number_unsigned, std::move(desc)), ptr_(ptr) {}
 
-  template <typename X = T, std::enable_if_t<std::is_integral<X>::value && std::is_signed<X>::value, int> = 0>
+  template <typename X = T, std::enable_if_t<std::is_integral_v<X> && std::is_signed_v<X>, int> = 0>
   Number(Type* ptr, std::string&& desc)
       : Base<Number<T>>(JsonType::number_integer, std::move(desc)), ptr_(ptr) {}
 
-  template <typename X = T, std::enable_if_t<std::is_floating_point<X>::value, int> = 0>
+  template <typename X = T, std::enable_if_t<std::is_floating_point_v<X>, int> = 0>
   Number(Type* ptr, std::string&& desc)
       : Base<Number<T>>(JsonType::number_float, std::move(desc)), ptr_(ptr) {}
 

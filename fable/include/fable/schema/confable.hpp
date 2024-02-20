@@ -37,7 +37,7 @@ class Confable;
 
 namespace schema {
 
-template <typename T, std::enable_if_t<std::is_base_of<Confable, T>::value, int> = 0>
+template <typename T, std::enable_if_t<std::is_base_of_v<Confable, T>, int> = 0>
 class FromConfable : public Base<FromConfable<T>> {
  public:  // Types and Constructors
   using Type = T;
