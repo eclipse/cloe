@@ -114,8 +114,6 @@
 
 #pragma once
 
-#include <chrono>       // for duration<>
-#include <map>          // for map<>
 #include <memory>       // for shared_ptr<>
 #include <string>       // for string
 #include <type_traits>  // for enable_if_t<>, is_arithmetic<>, is_enum<>, ...
@@ -179,25 +177,25 @@ class Schema : public schema::Interface {
   Schema& operator=(const Schema&) = default;
 
   // Struct
-  Schema(std::string&& desc, schema::PropertyList<> props)
+  Schema(std::string desc, schema::PropertyList<> props)
       : impl_(new schema::Struct(std::move(desc), props)) {}
 
   Schema(schema::PropertyList<> props) : Schema("", props) {}
 
-  Schema(std::string&& desc, const Schema& base, schema::PropertyList<> props)
+  Schema(std::string desc, const Schema& base, schema::PropertyList<> props)
       : impl_(new schema::Struct(std::move(desc), base, props)) {}
 
   Schema(const Schema& base, schema::PropertyList<> props) : Schema("", base, props) {}
 
   // Variant
   Schema(const std::vector<Schema>& xs);  // NOLINT(runtime/explicit)
-  Schema(std::string&& desc, const std::vector<Schema>& xs);
+  Schema(std::string desc, const std::vector<Schema>& xs);
 
   Schema(schema::BoxList props);  // NOLINT(runtime/explicit)
-  Schema(std::string&& desc, schema::BoxList props);
+  Schema(std::string desc, schema::BoxList props);
 
   Schema(schema::BoxVec&& props);  // NOLINT(runtime/explicit)
-  Schema(std::string&& desc, schema::BoxVec&& props);
+  Schema(std::string desc, schema::BoxVec&& props);
 
   // Interface
   template <typename T, std::enable_if_t<std::is_base_of_v<schema::Interface, T>, int> = 0>
@@ -209,19 +207,19 @@ class Schema : public schema::Interface {
 
   // Ignore
   Schema() : impl_(new schema::Ignore("")) {}
-  explicit Schema(std::string&& desc, JsonType t = JsonType::object)
+  explicit Schema(std::string desc, JsonType t = JsonType::object)
       : impl_(new schema::Ignore(std::move(desc), t)) {}
 
   // Primitives
   template <typename T>
-  Schema(T* ptr, std::string&& desc) : impl_(make_schema(ptr, std::move(desc)).clone()) {}
+  Schema(T* ptr, std::string desc) : impl_(make_schema(ptr, std::move(desc)).clone()) {}
   template <typename T>
-  Schema(T* ptr, const schema::Box& prototype, std::string&& desc)
+  Schema(T* ptr, const schema::Box& prototype, std::string desc)
       : impl_(make_schema(ptr, prototype, std::move(desc)).clone()) {}
 
   // FromJson
   template <typename T>
-  Schema(T* ptr, JsonType t, std::string&& desc)
+  Schema(T* ptr, JsonType t, std::string desc)
       : impl_(new schema::FromJson<T>(ptr, t, std::move(desc))) {}
 
  public:  // Special

@@ -41,15 +41,15 @@ class Optional : public Base<Optional<T, P>> {
   using Type = boost::optional<T>;
   using PrototypeSchema = std::remove_cv_t<std::remove_reference_t<P>>;
 
-  Optional(Type* ptr, std::string&& desc);
-  Optional(Type* ptr, PrototypeSchema prototype, std::string&& desc)
+  Optional(Type* ptr, std::string desc);
+  Optional(Type* ptr, PrototypeSchema prototype, std::string desc)
       : Base<Optional<T, P>>(prototype.type(), std::move(desc)), prototype_(std::move(prototype)), ptr_(ptr) {
     prototype_.reset_ptr();
   }
 
 #if 0
   // This is defined in: fable/schema/magic.hpp
-  Optional(Type* ptr, std::string&& desc)
+  Optional(Type* ptr, std::string desc)
       : Optional(ptr, make_prototype<T>(), std::move(desc)) {}
 #endif
 

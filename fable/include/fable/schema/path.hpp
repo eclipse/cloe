@@ -71,7 +71,7 @@ class Path : public Base<Path> {
     NotDir,      /// path does not exist or is a file
   };
 
-  Path(Type* ptr, std::string&& desc) : Base(JsonType::string, std::move(desc)), ptr_(ptr) {}
+  Path(Type* ptr, std::string desc) : Base(JsonType::string, std::move(desc)), ptr_(ptr) {}
 
  public:  // Special
   /**

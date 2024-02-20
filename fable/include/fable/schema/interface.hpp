@@ -352,9 +352,9 @@ template <typename CRTP>
 class Base : public Interface {
  public:
   Base() = default;
-  Base(JsonType t, std::string&& desc) : type_(t), desc_(std::move(desc)) {}
+  Base(JsonType t, std::string desc) : type_(t), desc_(std::move(desc)) {}
   explicit Base(JsonType t) : type_(t) {}
-  explicit Base(std::string&& desc) : desc_(std::move(desc)) {}
+  explicit Base(std::string desc) : desc_(std::move(desc)) {}
   virtual ~Base() = default;
 
   Interface* clone() const override { return new CRTP(static_cast<CRTP const&>(*this)); }
@@ -391,7 +391,7 @@ class Base : public Interface {
   void set_description(const std::string& s) override { desc_ = s; }
   void set_description(std::string&& s) { desc_ = std::move(s); }
   const std::string& description() const override { return desc_; }
-  CRTP description(std::string&& desc) && {
+  CRTP description(std::string desc) && {
     desc_ = std::move(desc);
     return std::move(*dynamic_cast<CRTP*>(this));
   }

@@ -28,7 +28,7 @@
 namespace fable {
 namespace schema {
 
-Boolean::Boolean(Boolean::Type* ptr, std::string&& desc)
+Boolean::Boolean(Boolean::Type* ptr, std::string desc)
   : Base(JsonType::boolean, std::move(desc)), ptr_(ptr) {}
 
   Json Boolean::json_schema() const {

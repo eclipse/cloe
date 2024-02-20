@@ -34,7 +34,7 @@
 namespace fable {
 namespace schema {
 
-Variant::Variant(std::string&& desc, std::vector<Box>&& vec)
+Variant::Variant(std::string desc, std::vector<Box>&& vec)
     : desc_(std::move(desc)), schemas_(std::move(vec)) {
   assert(!schemas_.empty());
 

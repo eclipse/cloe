@@ -44,7 +44,7 @@ namespace schema {
 class Ignore : public Base<Ignore> {
  public:  // Constructors
   Ignore() : Base(JsonType::object, "ignored") {}
-  explicit Ignore(std::string&& desc, JsonType t = JsonType::object) : Base(t, std::move(desc)) {}
+  explicit Ignore(std::string desc, JsonType t = JsonType::object) : Base(t, std::move(desc)) {}
 
  public:  // Overrides
   Json json_schema() const override {

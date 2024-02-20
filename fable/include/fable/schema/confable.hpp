@@ -42,14 +42,14 @@ class FromConfable : public Base<FromConfable<T>> {
  public:  // Types and Constructors
   using Type = T;
 
-  explicit FromConfable(std::string&& desc = "") {
-    schema_ = Type().schema();
+  FromConfable(std::string desc = "") {
+    schema_ = Type().schema(); // NOLINT
     schema_.reset_ptr();
     this->type_ = schema_.type();
     this->desc_ = std::move(desc);
   }
 
-  FromConfable(Type* ptr, std::string&& desc)
+  FromConfable(Type* ptr, std::string desc)
       : Base<FromConfable<Type>>(ptr->schema().type(), std::move(desc))
       , schema_(ptr->schema())
       , ptr_(ptr) {
