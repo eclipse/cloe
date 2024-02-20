@@ -51,7 +51,8 @@ class Boolean : public Base<Boolean> {
   Type* ptr_{nullptr};
 };
 
-inline Boolean make_schema_impl(bool* ptr, std::string&& desc) { return Boolean(ptr, std::move(desc)); }
+template <typename S>
+inline Boolean make_schema(bool* ptr, S&& desc) { return Boolean(ptr, std::forward<S>(desc)); }
 
 }  // namespace schema
 }  // namespace fable

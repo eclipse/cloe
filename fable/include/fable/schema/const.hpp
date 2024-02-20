@@ -88,17 +88,14 @@ class Const : public Base<Const<T, P>> {
   const Type constant_;
 };
 
-template <typename T, typename P>
-Const<T, P> make_const_schema(const T& constant, P&& prototype, std::string&& desc) {
-  return Const<T, P>(constant, std::forward<P>(prototype), std::move(desc));
+template <typename T, typename P, typename S>
+Const<T, P> make_const_schema(const T& constant, P&& prototype, S&& desc) {
+  return Const<T, P>(constant, std::forward<P>(prototype), std::forward<S>(desc));
 }
 
-inline Const<std::string, String> make_const_str(const std::string& constant, std::string&& desc) {
-  return Const<std::string, String>(constant, std::move(desc));
-}
-
-inline Const<std::string, String> make_const_str(const char* constant, std::string&& desc) {
-  return Const<std::string, String>(constant, std::move(desc));
+template <typename S1, typename S2>
+inline Const<std::string, String> make_const_str(S1&& constant, S2&& desc) {
+  return Const<std::string, String>(std::forward<S1>(constant), std::forward<S2>(desc));
 }
 
 }  // namespace schema

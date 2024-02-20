@@ -188,9 +188,9 @@ class Map : public Base<Map<T, P>> {
   Type* ptr_{nullptr};
 };
 
-template <typename T, typename P>
-Map<T, P> make_schema_impl(std::map<std::string, T>* ptr, P&& prototype, std::string&& desc) {
-  return Map<T, P>(ptr, std::forward<P>(prototype), std::move(desc));
+template <typename T, typename P, typename S>
+Map<T, P> make_schema(std::map<std::string, T>* ptr, P&& prototype, S&& desc) {
+  return Map<T, P>(ptr, std::forward<P>(prototype), std::forward<S>(desc));
 }
 
 }  // namespace schema

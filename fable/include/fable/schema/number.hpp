@@ -102,10 +102,9 @@ class Number : public Base<Number<T>> {
   Type* ptr_{nullptr};
 };
 
-template <typename T,
-          std::enable_if_t<std::is_arithmetic<T>::value && !std::is_enum<T>::value, int> = 0>
-inline Number<T> make_schema_impl(T* ptr, std::string&& desc) {
-  return Number<T>(ptr, std::move(desc));
+template <typename T, typename S, std::enable_if_t<std::is_arithmetic_v<T> && !std::is_enum_v<T>, int> = 0>
+inline Number<T> make_schema(T* ptr, S&& desc) {
+  return Number<T>(ptr, std::forward<S>(desc));
 }
 
 }  // namespace schema
