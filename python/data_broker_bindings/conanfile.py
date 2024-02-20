@@ -43,6 +43,7 @@ class CloeModels(ConanFile):
 
     def requirements(self):
         self.requires(f"cloe-runtime/{self.version}@cloe/develop")
+        self.requires("eigen/3.4.0")
         self.requires("pybind11/2.11.1")
 
     def layout(self):

@@ -1,8 +1,5 @@
 import sys
 from datetime import timedelta
-
-sys.path.append('/home/ohf4fe/dev/sil/cloe/build/linux-x86_64-gcc-8/Debug/lib')
-
 from cloe import SimulationContext, TestRunner
 
 

@@ -186,7 +186,7 @@ class Cloe(ConanFile):
             self.cpp_info.includedirs.append(os.path.join(self.build_folder, "include"))
             bindir = os.path.join(self.build_folder, "bin")
             luadir = os.path.join(self.source_folder, "engine/lua")
-            libdir = os.path.join(self.build_folder, "lib");
+            libdir = os.path.join(self.build_folder, "lib")
         else:
             self.cpp_info.builddirs.append(os.path.join("lib", "cmake", "cloe"))
             bindir = os.path.join(self.package_folder, "bin")

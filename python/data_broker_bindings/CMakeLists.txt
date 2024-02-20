@@ -5,11 +5,12 @@ set(CLOE_FIND_PACKAGES ON CACHE BOOL "Call find_package() for cloe packages")
 if(CLOE_FIND_PACKAGES)
     find_package(cloe-runtime REQUIRED)
 endif()
+find_package(Eigen3 REQUIRED)
 
 add_library(data_broker_binding SHARED src/python_data_broker_adapter.cpp src/signals.cpp)
 add_library(cloe::databroker-bindings ALIAS data_broker_binding)
 target_include_directories(data_broker_binding PUBLIC include)
-target_link_libraries(data_broker_binding PUBLIC cloe::runtime pybind11::pybind11)
+target_link_libraries(data_broker_binding PUBLIC cloe::runtime Eigen3::Eigen pybind11::pybind11)
 set_target_properties(data_broker_binding PROPERTIES
         CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON

@@ -1,2 +1,2 @@
 add_subdirectory(data_broker_bindings)
-add_subdirectory(src)
+add_subdirectory(python_api)

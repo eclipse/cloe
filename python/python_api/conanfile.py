@@ -5,12 +5,13 @@ from pathlib import Path
 
 from conan import ConanFile
 from conan.tools import cmake, files, scm
+from conan.tools.files import copy
 
 required_conan_version = ">=1.52.0"
 
 
 class CloeModels(ConanFile):
-    name = "cloe-python-bindings"
+    name = "cloe-python-api"
     url = "https://github.com/eclipse/cloe"
     description = ""
     license = "Apache-2.0"
@@ -28,12 +29,12 @@ class CloeModels(ConanFile):
     generators = "CMakeDeps", "VirtualRunEnv"
     no_copy_source = True
     exports_sources = [
-        "wrapper/*",
+        "cloe/*",
         "CMakeLists.txt",
     ]
 
     def set_version(self):
-        version_file = Path(self.recipe_folder) / '..' / '..' / '..' / "VERSION"
+        version_file = Path(self.recipe_folder) / '..' / '..' / "VERSION"
         if version_file.exists():
             self.version = files.load(self, version_file).strip()
         else:
@@ -64,14 +65,21 @@ class CloeModels(ConanFile):
             cm.build()
 
     def package(self):
-        cm = cmake.CMake(self)
         if self.should_install:
-            cm.install()
+            copy(self, pattern="*.py", src=Path(self.source_folder) / 'cloe',
+                 dst=Path(self.package_folder) / 'lib' / 'cloe' / 'python' / 'cloe', keep_path=True)
+            cmake.CMake(self).install()
 
     def package_info(self):
         self.cpp_info.set_property("cmake_find_mode", "both")
-        self.cpp_info.set_property("cmake_file_name", "cloe-python-bindings")
-        self.cpp_info.set_property("cmake_target_name", "cloe::python-bindings")
-        self.cpp_info.set_property("pkg_config_name", "cloe-python-bindings")
+        self.cpp_info.set_property("cmake_file_name", "cloe-python-api")
+        self.cpp_info.set_property("cmake_target_name", "cloe::python-api")
+        self.cpp_info.set_property("pkg_config_name", "cloe-python-api")
 
         self.cpp_info.libs = files.collect_libs(self)
+
+        if self.in_local_cache:
+            self.runenv_info.prepend_path("PYTHONPATH",
+                                          str(Path(self.package_folder) / 'lib' / 'cloe' / 'python'))
+        else:
+            self.runenv_info.prepend_path("PYTHONPATH", str(Path(self.source_folder)))

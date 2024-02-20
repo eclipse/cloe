@@ -32,6 +32,7 @@ set_target_properties(_basic_bindings PROPERTIES
         CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
 )
+install(TARGETS _basic_bindings LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/cloe/python)
 
 include(CTest)
 if(BUILD_TESTING)

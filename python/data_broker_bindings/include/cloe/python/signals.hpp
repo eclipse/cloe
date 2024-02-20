@@ -3,7 +3,7 @@
 #include <fmt/format.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-// #include <pybind11/eigen.h>
+#include <pybind11/eigen.h>
 #include <functional>
 #include <map>
 #include <memory>
