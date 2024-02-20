@@ -457,11 +457,11 @@ using enable_if_confable_t = std::enable_if_t<std::is_base_of<Confable, T>::valu
 template <typename T>
 using enable_if_not_confable_t = std::enable_if_t<!std::is_base_of<Confable, T>::value>;
 
-template <typename T, std::enable_if_t<std::is_base_of<Confable, T>::value, int> = 0>
-auto make_prototype(std::string&& desc = "");
+template <typename T, typename S = std::string, std::enable_if_t<std::is_base_of_v<Confable, T>, int> = 0>
+auto make_prototype(S&& desc = "");
 
-template <typename T, std::enable_if_t<!std::is_base_of<Confable, T>::value, int> = 0>
-auto make_prototype(std::string&& desc = "");
+template <typename T, typename S = std::string, std::enable_if_t<!std::is_base_of_v<Confable, T>, int> = 0>
+auto make_prototype(S&& desc = "");
 
 }  // namespace schema
 }  // namespace fable

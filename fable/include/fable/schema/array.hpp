@@ -173,9 +173,9 @@ class Array : public Base<Array<T, P>> {
   Type* ptr_{nullptr};
 };
 
-template <typename T, typename P>
-Array<T, P> make_schema_impl(std::vector<T>* ptr, P&& prototype, std::string&& desc) {
-  return Array<T, P>(ptr, std::forward<P>(prototype), std::move(desc));
+template <typename T, typename P, typename S>
+Array<T, P> make_schema(std::vector<T>* ptr, P&& prototype, S&& desc) {
+  return Array<T, P>(ptr, std::forward<P>(prototype), std::forward<S>(desc));
 }
 
 }  // namespace schema

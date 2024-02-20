@@ -24,7 +24,6 @@ add_library(${target}
     src/fable/confable.cpp
     src/fable/json.cpp
     src/fable/schema.cpp
-    src/fable/make_schema.cpp
     src/fable/schema/boolean.cpp
     src/fable/schema/number.cpp
     src/fable/schema/struct.cpp

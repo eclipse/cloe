@@ -261,8 +261,9 @@ class String : public Base<String> {
   Type* ptr_{nullptr};
 };
 
-inline String make_schema_impl(std::string* ptr, std::string&& desc) {
-  return String(ptr, std::move(desc));
+template <typename S>
+inline String make_schema(std::string* ptr, S&& desc) {
+  return String(ptr, std::forward<S>(desc));
 }
 
 }  // namespace schema

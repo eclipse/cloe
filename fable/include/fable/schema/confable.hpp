@@ -103,10 +103,10 @@ class FromConfable : public Base<FromConfable<T>> {
   Type* ptr_{nullptr};
 };
 
-template <typename T>
-FromConfable<T> make_schema_impl(T* ptr, std::string&& desc) {
+template <typename T, typename S>
+FromConfable<T> make_schema(T* ptr, S&& desc) {
   assert(ptr != nullptr);
-  return FromConfable<T>(ptr, std::move(desc));
+  return FromConfable<T>(ptr, std::forward<S>(desc));
 }
 
 }  // namespace schema
