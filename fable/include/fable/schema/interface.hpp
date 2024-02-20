@@ -254,7 +254,7 @@ class Interface {
  *     void foobar(S schema);
  */
 template <typename S>
-using enable_if_schema_t = std::enable_if_t<std::is_base_of<Interface, S>::value>;
+using enable_if_schema_t = std::enable_if_t<std::is_base_of_v<Interface, S>>;
 
 // ------------------------------------------------------------------------- //
 
@@ -444,7 +444,7 @@ class Base : public Interface {
  *     void foobar(T x);
  */
 template <typename T>
-using enable_if_confable_t = std::enable_if_t<std::is_base_of<Confable, T>::value>;
+using enable_if_confable_t = std::enable_if_t<std::is_base_of_v<Confable, T>>;
 
 /**
  * Use SFINAE mechanism to disable a template function when S is a subclass
@@ -455,7 +455,7 @@ using enable_if_confable_t = std::enable_if_t<std::is_base_of<Confable, T>::valu
  *     void foobar(T x);
  */
 template <typename T>
-using enable_if_not_confable_t = std::enable_if_t<!std::is_base_of<Confable, T>::value>;
+using enable_if_not_confable_t = std::enable_if_t<!std::is_base_of_v<Confable, T>>;
 
 template <typename T, typename S = std::string, std::enable_if_t<std::is_base_of_v<Confable, T>, int> = 0>
 auto make_prototype(S&& desc = "");
