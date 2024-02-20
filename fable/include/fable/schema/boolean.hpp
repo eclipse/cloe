@@ -35,7 +35,7 @@ class Boolean : public Base<Boolean> {
  public:  // Types and Constructors
   using Type = bool;
 
-  Boolean(Type* ptr, std::string&& desc);
+  Boolean(Type* ptr, std::string desc);
 
  public:  // Overrides
   Json json_schema() const override;

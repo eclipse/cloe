@@ -65,7 +65,7 @@ class String : public Base<String> {
  public:  // Types and Constructors
   using Type = std::string;
 
-  String(Type* ptr, std::string&& desc) : Base(JsonType::string, std::move(desc)), ptr_(ptr) {}
+  String(Type* ptr, std::string desc) : Base(JsonType::string, std::move(desc)), ptr_(ptr) {}
 
  public:  // Special
   /**

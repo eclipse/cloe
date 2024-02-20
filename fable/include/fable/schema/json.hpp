@@ -48,7 +48,7 @@ class FromJson : public Base<FromJson<T>> {
  public:  // Types and Constructors
   using Type = T;
 
-  FromJson(Type* ptr, JsonType t, std::string&& desc)
+  FromJson(Type* ptr, JsonType t, std::string desc)
       : Base<FromJson<T>>(t, std::move(desc)), ptr_(ptr) {}
 
  public:  // Overrides

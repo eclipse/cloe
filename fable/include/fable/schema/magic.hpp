@@ -54,7 +54,7 @@ class Confable;
 namespace schema {
 
 template <typename T, typename P>
-Array<T, P>::Array(std::vector<T>* ptr, std::string&& desc)
+Array<T, P>::Array(std::vector<T>* ptr, std::string desc)
     : Array<T, P>(ptr, make_prototype<T>(), std::move(desc)) {}
 
 template <typename T, typename S>
@@ -63,7 +63,7 @@ Array<T, decltype(make_prototype<T>())> make_schema(std::vector<T>* ptr, S&& des
 }
 
 template <typename T, typename P>
-Const<T, P>::Const(const T& constant, std::string&& desc)
+Const<T, P>::Const(const T& constant, std::string desc)
     : Const<T, P>(constant, make_prototype<T>(), std::move(desc)) {}
 
 template <typename T, typename S>
@@ -72,7 +72,7 @@ Const<T, decltype(make_prototype<T>())> make_const_schema(const T& constant, S&&
 }
 
 template <typename T, typename P>
-Map<T, P>::Map(std::map<std::string, T>* ptr, std::string&& desc)
+Map<T, P>::Map(std::map<std::string, T>* ptr, std::string desc)
     : Map<T, P>(ptr, make_prototype<T>(), std::move(desc)) {}
 
 template <typename T, typename S>
@@ -82,7 +82,7 @@ Map<T, decltype(make_prototype<T>())> make_schema(std::map<std::string, T>* ptr,
 }
 
 template <typename T, typename P>
-Optional<T, P>::Optional(boost::optional<T>* ptr, std::string&& desc)
+Optional<T, P>::Optional(boost::optional<T>* ptr, std::string desc)
     : Optional<T, P>(ptr, make_prototype<T>(), std::move(desc)) {}
 
 template <typename T, typename S>

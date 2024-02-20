@@ -48,9 +48,9 @@ class Passthru : public Base<Passthru<P>> {
   using Type = Conf;
   using PrototypeSchema = std::remove_cv_t<std::remove_reference_t<P>>;
 
-  Passthru(Type* ptr, std::string&& desc)
+  Passthru(Type* ptr, std::string desc)
       : Passthru(ptr, PrototypeSchema(nullptr, ""), std::move(desc)) {}
-  Passthru(Type* ptr, PrototypeSchema prototype, std::string&& desc)
+  Passthru(Type* ptr, PrototypeSchema prototype, std::string desc)
       : Base<Passthru<P>>(prototype.type(), std::move(desc)), prototype_(std::move(prototype)), ptr_(ptr) {
     prototype_.reset_ptr();
   }

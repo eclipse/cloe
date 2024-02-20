@@ -39,8 +39,8 @@ class Const : public Base<Const<T, P>> {
   using Type = T;
   using PrototypeSchema = std::remove_cv_t<std::remove_reference_t<P>>;
 
-  Const(const Type& constant, std::string&& desc);
-  Const(const Type& constant, PrototypeSchema prototype, std::string&& desc)
+  Const(const Type& constant, std::string desc);
+  Const(const Type& constant, PrototypeSchema prototype, std::string desc)
       : Base<Const<T, P>>(prototype.type(), std::move(desc))
       , prototype_(std::move(prototype))
       , constant_(constant) {
@@ -49,7 +49,7 @@ class Const : public Base<Const<T, P>> {
 
 #if 0
   // This is defined in: fable/schema/magic.hpp
-  Const(const T& constant, std::string&& desc)
+  Const(const T& constant, std::string desc)
       : Const(constant, make_prototype<T>(), std::move(desc)) {}
 #endif
 
