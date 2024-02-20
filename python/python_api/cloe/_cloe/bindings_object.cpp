@@ -25,7 +25,9 @@ void bind_cloe_object(pybind11::module_ &m) {
   obj.def_readonly("exist_prob", &cloe::Object::exist_prob);
   obj.def_readonly("type", &cloe::Object::type);
   obj.def_readonly("classification", &cloe::Object::classification);
-  obj.def_readonly("pose", &cloe::Object::pose);
+  obj.def_property_readonly("pose", [](const cloe::Object &self) {
+    return self.pose.matrix();
+  });
   obj.def_readonly("cog_offset", &cloe::Object::cog_offset);
   obj.def_readonly("velocity", &cloe::Object::velocity);
   obj.def_readonly("acceleration", &cloe::Object::acceleration);
