@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from pathlib import Path
 import os
 from typing import Optional, Dict, Any
@@ -5,11 +6,40 @@ from typing import Optional, Dict, Any
 from ._cloe_bindings import SimulationDriver, CallbackResult, DataBrokerAdapter, SimulationDriver, Stack, Simulation
 
 
+@dataclass
+class TestingReportEntry:
+    left: str
+    op: str
+    right: str
+    result: str
+    msg: str
+
+    def __str__(self):
+        return f"Check {self.left} {self.op} {self.right} is {self.result} (msg: {self.msg})"
+
+
+class TestingReport:
+
+    def __init__(self):
+        self._entries = []
+
+    def append_result(self, left, op, right, result, msg):
+        self._entries.append(TestingReportEntry(left=left, op=op, right=right, result=result, msg=msg))
+
+    def __str__(self):
+        out = f"Testing report\n"
+        out += f"--------------\n"
+        for entry in self._entries:
+            out += f"{entry}\n"
+        return out
+
+
 class TestRunner:
     def __init__(self, driver: SimulationDriver, the_test):
         self._sync = None
         self.driver = driver
         self._the_test_gen = the_test(self)
+        self.report = TestingReport()
 
     @property
     def sync(self):
@@ -40,6 +70,17 @@ class TestRunner:
                 return CallbackResult.Ok
 
         self.driver.add_trigger(self._sync, "wait_for_python_loop", {"name": "loop"}, wait_for_callback, True)
+
+    def check_eq(self, actual, desired, err_msg=''):
+        import numpy as np
+        try:
+            np.testing.assert_equal(actual, desired, err_msg=err_msg)
+            passed = True
+            msg = "success"
+        except AssertionError as e:
+            msg = str(e)
+            passed = False
+        self.report.append_result(str(actual), "==", str(desired), passed, msg)
 
     @property
     def signals(self):
