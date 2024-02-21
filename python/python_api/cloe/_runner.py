@@ -3,7 +3,8 @@ from pathlib import Path
 import os
 from typing import Optional, Dict, Any
 
-from ._cloe_bindings import SimulationDriver, CallbackResult, DataBrokerAdapter, SimulationDriver, Stack, Simulation
+from ._cloe_bindings import SimulationDriver, CallbackResult, DataBrokerAdapter, SimulationDriver, Stack
+from ._cloe_bindings import Simulation as _Simulation
 
 
 @dataclass
@@ -54,8 +55,8 @@ class TestRunner:
                 pass
             return CallbackResult.Ok
 
-        self.driver.add_trigger(self._sync, "python_loop", {"name": "time", "time": seconds}, wait_until_callback,
-                                False)
+        self.driver.add_trigger(self._sync, "wait_until_callback", {"name": "time", "time": seconds},
+                                wait_until_callback, False)
 
     def wait_until(self, condition):
         def wait_for_callback(sync):
@@ -69,7 +70,7 @@ class TestRunner:
             else:
                 return CallbackResult.Ok
 
-        self.driver.add_trigger(self._sync, "wait_for_python_loop", {"name": "loop"}, wait_for_callback, True)
+        self.driver.add_trigger(self._sync, "wait_for_callback", {"name": "loop"}, wait_for_callback, True)
 
     def check_eq(self, actual, desired, err_msg=''):
         import numpy as np
@@ -93,18 +94,32 @@ class TestRunner:
         return CallbackResult.Ok
 
 
-class SimulationContext:
+class Simulation:
 
-    def run_simulation(self):
-        self.sim.run()
+    def run(self, test):
+        test_runner = TestRunner(self.driver, test)
+        self.driver.register_trigger("python_test_runner", {"name": "start"}, test_runner, False)
+        self._sim.run()
 
-    def __init__(self, the_test, stack: Optional[Dict[str, Any]] = None):
+    def bind_plugin_types(self, lib: Path):
+        import importlib
+        import sys
+        components = str(lib.name).split('.')
+        module_name = components[0]
+        print(f"Attempting to load module {module_name} from {lib}")
+        try:
+            spec = importlib.util.spec_from_file_location(module_name, lib)
+            mod = importlib.util.module_from_spec(spec)
+            sys.modules[module_name] = mod
+            spec.loader.exec_module(mod)
+            # declare!
+            mod.declare(self.databroker_adapter)
+        except RuntimeError as e:
+            print(f"Failed to load module {module_name}:", e)
+
+    def __init__(self, stack: Optional[Dict[str, Any]] = None):
         self.databroker_adapter = DataBrokerAdapter()
         self.driver = SimulationDriver(self.databroker_adapter)
-        self._test_runner = TestRunner(self.driver, the_test)
-
-        self.driver.register_trigger("python_test_runner", {"name": "start"}, self._test_runner, False)
-
         if "CLOE_PLUGIN_PATH" not in os.environ:
             # todo this is just here for debugging
             plugin_paths = ["/home/ohf4fe/dev/sil/cloe/build/linux-x86_64-gcc-8/Debug/lib/cloe"]
@@ -120,9 +135,8 @@ class SimulationContext:
             )
         full_config_stack.merge(stack)
 
-        self.sim = Simulation(full_config_stack, self.driver, uuid="123")
+        self._sim = _Simulation(full_config_stack, self.driver, uuid="123")
 
-        # todo this should be pulled from the config
         if "CLOE_PYTHON_BINDINGS" in os.environ:
             import importlib.util
             import sys
@@ -134,15 +148,4 @@ class SimulationContext:
                         binding_libs += [f.absolute() for f in binding_path.glob("*")]
             binding_libs = sorted(list(set(binding_libs)))  # unique and sorted
             for lib in binding_libs:
-                components = str(lib.name).split('.')
-                module_name = components[0]
-                print(f"Attempting to load module {module_name} from {lib}")
-                try:
-                    spec = importlib.util.spec_from_file_location(module_name, lib)
-                    mod = importlib.util.module_from_spec(spec)
-                    sys.modules[module_name] = mod
-                    spec.loader.exec_module(mod)
-                    # declare!
-                    mod.declare(self.databroker_adapter)
-                except RuntimeError as e:
-                    print(f"Failed to load module {module_name}:", e)
+                self.bind_plugin_types(lib)

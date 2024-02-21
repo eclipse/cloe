@@ -1,1 +1,1 @@
-from ._runner import TestRunner, SimulationContext
+from ._runner import TestRunner, Simulation

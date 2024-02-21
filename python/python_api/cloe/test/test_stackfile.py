@@ -1,6 +1,7 @@
-import sys
 from datetime import timedelta
-from cloe import SimulationContext, TestRunner
+from pathlib import Path
+
+from cloe import Simulation, TestRunner
 
 
 def the_glorious_test(runner: TestRunner):
@@ -14,7 +15,8 @@ def the_glorious_test(runner: TestRunner):
     print("test sync time", runner.sync.time)
 
 
-ctx = SimulationContext(the_glorious_test)
-ctx.sim.log_level = "warn"
-ctx.driver.require_signal("vehicles.default.basic.acc")
-ctx.run_simulation()
+sim = Simulation()
+sim.bind_plugin_types(Path("/home/ohf4fe/dev/sil/cloe/build/linux-x86_64-gcc-8/Debug/lib/_basic_bindings.cpython-310-x86_64-linux-gnu.so"))
+sim._sim.log_level = "warn"
+sim.driver.require_signal("vehicles.default.basic.acc")
+sim.run(the_glorious_test)
