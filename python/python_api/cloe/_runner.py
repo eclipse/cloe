@@ -121,6 +121,14 @@ class InteractiveRunner:
         self.q.join()
         return CallbackResult.Ok
 
+    @property
+    def sync(self):
+        return self._sync
+
+    @property
+    def signals(self):
+        return self.driver.signals()
+
     def advance_by(self, time: timedelta):
         def wait_until_callback(sync):
             self._sync = sync
@@ -147,6 +155,14 @@ class Simulation:
 
     def run_interactive(self):
         return InteractiveRunner(self.driver, self._sim)
+
+    @property
+    def log_level(self):
+        return self._sim.log_level
+
+    @log_level.setter
+    def log_level(self, value):
+        self._sim.log_level = value
 
     def bind_plugin_types(self, lib: Path):
         import importlib

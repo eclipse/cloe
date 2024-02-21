@@ -17,15 +17,16 @@ from cloe import Simulation, TestRunner
 #
 sim = Simulation()
 sim.bind_plugin_types(Path("/home/ohf4fe/dev/sil/cloe/build/linux-x86_64-gcc-8/Debug/lib/_basic_bindings.cpython-310-x86_64-linux-gnu.so"))
-sim._sim.log_level = "err"
+sim.log_level = "err"
 sim.driver.require_signal("vehicles.default.basic.acc")
 # sim.run(the_glorious_test)
-
-
 run_interactive = sim.run_interactive()
-print("huhu", run_interactive._sync.time)
+print("start", run_interactive.sync.time)
+acc_getter = run_interactive.signals.getter("vehicles.default.basic.acc")
 run_interactive.advance_by(timedelta(seconds=1))
-print("yup", run_interactive._sync.time)
+print("after one sec", run_interactive.sync.time)
+print("acc state", acc_getter())
 run_interactive.advance_by(timedelta(seconds=1))
-print("yup2", run_interactive._sync.time)
+print("after two sec", run_interactive.sync.time)
+print("acc state", acc_getter())
 run_interactive.finish()
