@@ -1,7 +1,9 @@
 from dataclasses import dataclass
+from datetime import timedelta
 from pathlib import Path
 import os
 from typing import Optional, Dict, Any
+from queue import Queue
 
 from ._cloe_bindings import SimulationDriver, CallbackResult, DataBrokerAdapter, SimulationDriver, Stack
 from ._cloe_bindings import Simulation as _Simulation
@@ -94,12 +96,57 @@ class TestRunner:
         return CallbackResult.Ok
 
 
+class InteractiveRunner:
+    def __init__(self, driver: SimulationDriver, simulation: _Simulation):
+        self._sync = None
+        self.q = Queue(maxsize=1)
+        self.done = object()
+        self.driver = driver
+        self._sim = simulation
+        self.driver.register_trigger("python_test_runner", {"name": "start"}, self, False)
+
+        def run():
+            self._sim.run()
+
+        from threading import Thread
+        Thread(target=run).start()
+        self.q.get(True)
+
+    def __next__(self):
+        return self
+
+    def __call__(self, sync):
+        self._sync = sync
+        self.q.put(sync)
+        self.q.join()
+        return CallbackResult.Ok
+
+    def advance_by(self, time: timedelta):
+        def wait_until_callback(sync):
+            self._sync = sync
+            self.q.put(sync)
+            self.q.join()
+            return CallbackResult.Ok
+
+        until = self._sync.time + time
+        self.driver.add_trigger(self._sync, "wait_until_callback", {"name": "time", "time": int(until.total_seconds())},
+                                wait_until_callback, False)
+        self.q.task_done()
+        self.q.get(True)
+
+    def finish(self):
+        self.q.task_done()
+
+
 class Simulation:
 
     def run(self, test):
         test_runner = TestRunner(self.driver, test)
         self.driver.register_trigger("python_test_runner", {"name": "start"}, test_runner, False)
         self._sim.run()
+
+    def run_interactive(self):
+        return InteractiveRunner(self.driver, self._sim)
 
     def bind_plugin_types(self, lib: Path):
         import importlib

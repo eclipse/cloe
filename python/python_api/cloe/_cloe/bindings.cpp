@@ -104,6 +104,9 @@ PYBIND11_MODULE(_cloe_bindings, m) {
     sim.def("run", [](engine::Simulation &self) {
       return self.run();
     });
+    sim.def("advance_by", [](engine::Simulation &self, std::chrono::milliseconds delta) {
+
+    });
     sim.def("wait_until", [](engine::Simulation &self,
                              const std::function<bool(const cloe::Sync&)> &condition) {
       // todo impl, add timeout parameter
