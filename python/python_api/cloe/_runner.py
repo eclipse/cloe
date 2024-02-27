@@ -2,8 +2,9 @@ from dataclasses import dataclass
 from datetime import timedelta
 from pathlib import Path
 import os
+from time import sleep
 from typing import Optional, Dict, Any
-from queue import Queue
+from queue import Queue, Empty
 
 from ._cloe_bindings import SimulationDriver, CallbackResult, DataBrokerAdapter, SimulationDriver, Stack
 from ._cloe_bindings import Simulation as _Simulation
@@ -109,7 +110,8 @@ class InteractiveRunner:
             self._sim.run()
 
         from threading import Thread
-        Thread(target=run).start()
+        t = Thread(target=run)
+        t.start()
         self.q.get(True)
 
     def __next__(self):
@@ -131,16 +133,24 @@ class InteractiveRunner:
 
     def advance_by(self, time: timedelta):
         def wait_until_callback(sync):
+            print("callback received!")
             self._sync = sync
-            self.q.put(sync)
+            self.q.put(True, False)
             self.q.join()
             return CallbackResult.Ok
 
         until = self._sync.time + time
+        assert until > self._sync.time
         self.driver.add_trigger(self._sync, "wait_until_callback", {"name": "time", "time": int(until.total_seconds())},
                                 wait_until_callback, False)
+        sleep(.1)
         self.q.task_done()
-        self.q.get(True)
+        while True:
+            try:
+                if self.q.get(True, timeout=.1):
+                    break
+            except Empty:
+                pass
 
     def finish(self):
         self.q.task_done()
