@@ -9,7 +9,7 @@ add_library(g1-fitting-lib STATIC
     src/g1_fitting.cpp
 )
 set_target_properties(g1-fitting-lib PROPERTIES
-    CXX_STANDARD 14
+    CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
     POSITION_INDEPENDENT_CODE ON
 )
@@ -39,7 +39,7 @@ if(BuildTests)
         src/clothoid_test.cpp
     )
     set_target_properties(test-clothoid-fit PROPERTIES
-        CXX_STANDARD 14
+        CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
     )
     target_link_libraries(test-clothoid-fit
