@@ -33,6 +33,5 @@ if(PYTHON_BINDINGS_LOCAL_DEV)
 endif()
 
 target_link_libraries(_cloe_bindings PUBLIC cloe::stacklib cloe::databroker-bindings cloe::simulation)
-# todo this should be exposed by engine stacklib/enginelib via conan and/or root project
 target_include_directories(_cloe_bindings PRIVATE ${PROJECT_SOURCE_DIR}/engine/src)
 install(TARGETS _cloe_bindings DESTINATION ${CMAKE_INSTALL_LIBDIR}/cloe/python/cloe)

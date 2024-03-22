@@ -30,7 +30,7 @@
 
 using DataBroker = cloe::DataBroker;
 
-TEST(lua_types_test, DISABLED_object) {
+TEST(lua_types_test, object) {
   //         Test Scenario: positive-test
   // Test Case Description: Implement a vector3d signal and manipulate a member from Lua
   //            Test Steps: 1) Implement a signal
@@ -41,10 +41,11 @@ TEST(lua_types_test, DISABLED_object) {
   sol::state state;
   sol::state_view view(state);
   cloe::databroker::LuaDataBrokerBinding binding {view};
-  DataBroker db{&binding};
-
+  binding.declare<cloe::Object>();
   // Register all types
-  // cloe::utility::register_lua_types(db); todo reenable
+  cloe::utility::register_lua_types(binding);
+
+  DataBroker db{&binding};
 
   // 1) Implement a signal
   auto gamma = db.implement<cloe::Object>("gamma");
@@ -67,7 +68,7 @@ TEST(lua_types_test, DISABLED_object) {
   EXPECT_EQ(gamma->classification, cloe::Object::Class::Pedestrian);
 }
 
-TEST(lua_types_test, DISABLED_vector3d) {
+TEST(lua_types_test, vector3d) {
   //         Test Scenario: positive-test
   // Test Case Description: Implement a vector3d signal and manipulate a member from Lua
   //            Test Steps: 1) Implement a signal
@@ -77,12 +78,11 @@ TEST(lua_types_test, DISABLED_vector3d) {
   //       Expected Result: I) The value of the member changed
   //                        II) The value-changed event was received
   sol::state state;
-  sol::state_view view(state);
+  sol::state_view const view(state);
   cloe::databroker::LuaDataBrokerBinding binding {view};
-  DataBroker db{&binding};
-
   // Register all types
-  // cloe::utility::register_lua_types(db); // todo reenable
+  cloe::utility::register_lua_types(binding);
+  DataBroker db{&binding};
 
   // 1) Implement a signal
   auto gamma = db.implement<Eigen::Vector3d>("gamma");

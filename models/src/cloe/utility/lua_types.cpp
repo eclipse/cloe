@@ -265,6 +265,7 @@ void register_vector(cloe::databroker::LuaDataBrokerBinding& db, const std::vect
   if constexpr (3 == sizeof...(ints)) {
     usertype["cross"] = [](const T& that, const T& arg) -> T { return that.cross(arg); };
   }
+  db.declare<T>();
 }
 
 template <typename T>

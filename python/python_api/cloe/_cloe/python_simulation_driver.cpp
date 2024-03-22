@@ -37,7 +37,6 @@ void PythonSimulationDriver::bind_signals(DataBroker& dataBroker) {
       throw cloe::ModelError("Binding signals to Python failed with above error. Aborting.");
     }
   }
-  //adapter_->bind("signals", (*lua_)); // todo??
 }
 std::vector<cloe::TriggerPtr> PythonSimulationDriver::yield_pending_triggers() {
   std::vector<cloe::TriggerPtr> result {};

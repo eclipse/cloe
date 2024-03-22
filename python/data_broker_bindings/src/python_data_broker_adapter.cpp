@@ -17,7 +17,7 @@ void PythonDataBrokerAdapter::bind_signal(SignalPtr signal, std::string_view sig
   adapter(signal, lua_name);
 }
 void PythonDataBrokerAdapter::bind(std::string_view signals_name) {
-  // todo not needed!!
+  // not needed!!
 }
 PythonDataBrokerAdapter::PythonDataBrokerAdapter()
     : bindings_(std::make_unique<std::map<std::type_index, SignalAdapter>>()), signals_(std::make_unique<Signals>()) {
