@@ -21,24 +21,24 @@
 
 #pragma once
 
+#include <cloe/data_broker_lua_binding.hpp>
 #include <cloe/data_broker.hpp>
+#include <cloe/component/wheel.hpp>
 
 #include <Eigen/Dense>
 
-#include <cloe/component/wheel.hpp>
+namespace cloe::utility {
 
-namespace cloe {
-namespace utility {
+extern void register_lua_types(cloe::databroker::LuaDataBrokerBinding& db);
 
-// extern void register_lua_types(cloe::DataBroker& db) {}; // todo
-
-extern void register_gaspedal_sensor(DataBroker& db, const std::string& vehicle,
+extern void register_gaspedal_sensor(cloe::DataBroker& db,
+                                     const std::string& vehicle,
                                      std::function<const double&()> gaspedal_getter);
-extern void register_wheel_sensor(DataBroker& db,
+extern void register_wheel_sensor(cloe::DataBroker& db,
                                   const std::string& vehicle,
                                   const std::string& wheel_name,
                                   std::function<const ::cloe::Wheel&()>
                                       wheel_getter);
 
-}  // namespace utility
-}  // namespace cloe
+} // namespace cloe::utility
+

@@ -40,13 +40,13 @@ void LuaSimulationDriver::alias_signals(cloe::DataBroker& dataBroker) {
       for (int i = 0; i < tbl_size; i++) {
         //sol::object value = kv.second;
         sol::object value = alias_signals[i + 1];
-        sol::type type = value.get_type();
-        switch (type) {
+        sol::type value_type = value.get_type();
+        switch (value_type) {
           // cloe.alias_signals[i]: expected is a 2-tuple (i.e. table) each strings
           case sol::type::table: {
             sol::table alias_tuple = value.as<sol::table>();
-            auto tbl_size = std::distance(alias_tuple.begin(), alias_tuple.end());
-            if (tbl_size != 2) {
+            auto curr_tbl_size = std::distance(alias_tuple.begin(), alias_tuple.end());
+            if (curr_tbl_size != 2) {
               // clang-format off
               logger()->error(
                   "One or more entries in 'cloe.alias_signals' does not consist out of a 2-tuple. "
@@ -57,36 +57,36 @@ void LuaSimulationDriver::alias_signals(cloe::DataBroker& dataBroker) {
               continue;
             }
 
-            sol::object value;
-            sol::type type;
+            sol::object tbl_value;
+            sol::type tbl_type;
             std::string old_name;
             std::string alias_name;
-            value = alias_tuple[1];
-            type = value.get_type();
-            if (sol::type::string != type) {
+            tbl_value = alias_tuple[1];
+            tbl_type = tbl_value.get_type();
+            if (sol::type::string != tbl_type) {
               // clang-format off
               logger()->error(
                   "One or more parts in a tuple in 'cloe.alias_signals' has an unexpected datatype '{}'. "
                   "Expected are entries in this format { \"regex\" , \"short-name\" }",
-                  static_cast<int>(type));
+                  static_cast<int>(tbl_type));
               // clang-format on
               aliasing_failure = true;
             } else {
-              old_name = value.as<std::string>();
+              old_name = tbl_value.as<std::string>();
             }
 
-            value = alias_tuple[2];
-            type = value.get_type();
-            if (sol::type::string != type) {
+            tbl_value = alias_tuple[2];
+            tbl_type = tbl_value.get_type();
+            if (sol::type::string != tbl_type) {
               // clang-format off
               logger()->error(
                   "One or more parts in a tuple in 'cloe.alias_signals' has an unexpected datatype '{}'. "
                   "Expected are entries in this format { \"regex\" , \"short-name\" }",
-                  static_cast<int>(type));
+                  static_cast<int>(tbl_type));
               // clang-format on
               aliasing_failure = true;
             } else {
-              alias_name = value.as<std::string>();
+              alias_name = tbl_value.as<std::string>();
             }
             try {
               dataBroker.alias(old_name, alias_name);
@@ -117,7 +117,7 @@ void LuaSimulationDriver::alias_signals(cloe::DataBroker& dataBroker) {
             logger()->error(
                 "One or more entries in 'cloe.alias_signals' has an unexpected datatype '{}'. "
                 "Expected are entries in this format { \"regex\" , \"short-name\" }",
-                static_cast<int>(type));
+                static_cast<int>(value_type));
             // clang-format on
             aliasing_failure = true;
           } break;
@@ -156,18 +156,18 @@ void LuaSimulationDriver::bind_signals(cloe::DataBroker& dataBroker) {
       auto tbl_size = std::distance(require_signals.begin(), require_signals.end());
 
       for (int i = 0; i < tbl_size; i++) {
-        sol::object value = require_signals[i + 1];
+        sol::object signal_value = require_signals[i + 1];
 
-        sol::type type = value.get_type();
-        if (type != sol::type::string) {
+        sol::type signal_type = signal_value.get_type();
+        if (signal_type != sol::type::string) {
           logger()->warn(
               "One entry of cloe.require_signals has a wrong data type: '{}'. "
               "Expected is a list of strings.",
-              static_cast<int>(type));
+              static_cast<int>(signal_type));
           binding_failure = true;
           continue;
         }
-        std::string signal_name = value.as<std::string>();
+        std::string signal_name = signal_value.as<std::string>();
 
         // virtually bind signal 'signal_name' to lua
         auto iter = dataBroker[signal_name];
