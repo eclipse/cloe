@@ -137,7 +137,7 @@ const std::map<int, LaneBoundary::Color> osi_lane_bdry_color_map = {
 
 Duration osi_timestamp_to_time(const osi3::Timestamp& timestamp) {
   return std::chrono::duration_cast<Duration>(std::chrono::seconds(timestamp.seconds()) +
-                                                    std::chrono::nanoseconds(timestamp.nanos()));
+                                              std::chrono::nanoseconds(timestamp.nanos()));
 }
 
 Duration OsiMsgHandler::osi_timestamp_to_simtime(const osi3::Timestamp& timestamp) const {
@@ -355,8 +355,7 @@ void transform_obj_coord_from_osi_data(const Eigen::Isometry3d& sensor_pose,
 }
 
 template <typename T>
-void OsiMsgHandler::process_osi_msgs(const Sync& s, const bool& restart,
-                                     Duration& osi_time) {
+void OsiMsgHandler::process_osi_msgs(const Sync& s, const bool& restart, Duration& osi_time) {
   this->clear_cache();
   // Cycle until osi message has been received.
   int n_msg{0};
@@ -733,8 +732,7 @@ void OsiMsgHandler::convert_to_cloe_data(const bool has_eh,
       break;
     }
     case SensorMockLevel::OverwriteAll: {
-      throw ModelError(
-          "OSI SensorMockLevel::OverwriteAll not available for DetectedMovingObject");
+      throw ModelError("OSI SensorMockLevel::OverwriteAll not available for DetectedMovingObject");
       break;
     }
   }
@@ -766,6 +764,31 @@ void OsiMsgHandler::convert_to_cloe_data(const bool has_eh,
   store_object(obj);
 }
 
+template <typename TOsiObject>
+bool skip_polygonal_objects(const TOsiObject& obj) {
+  // TODO: Implement support for polygonal objects.
+  //
+  // At the moment, we expect objects to be represented as bounding boxes,
+  // since we don't have a use for higher fidelity object representation.
+  //
+  // OSI allows objects to take different forms:
+  //
+  //     https://opensimulationinterface.github.io/osi-antora-generator/asamosi/V3.5.0/gen/structosi3_1_1BaseStationary.html
+  //
+  // If you need support for Polygons please create an issue so we can plan this:
+  //
+  //     https://github.com/eclipse/cloe/issues/new
+  //
+  if (!obj.base().has_orientation() && !obj.base().base_polygon().empty()) {
+    osi_logger()->warn(
+        "OsiMsgHandler: Objects defined by polygon are not supported yet. Skipping object "
+        "{}.",
+        osi_identifier(obj.id()));
+    return true;
+  }
+  return false;
+}
+
 void OsiMsgHandler::detected_moving_objects_from_ground_truth() {
   const auto& osi_gt = ground_truth_->get_gt();
   // Set moving object data.
@@ -773,6 +796,9 @@ void OsiMsgHandler::detected_moving_objects_from_ground_truth() {
     osi_require("GroundTruth-MovingObject::id", osi_obj.has_id());
     int id = osi_identifier(osi_obj.id());
     if (id != static_cast<int>(owner_id_)) {
+      if (skip_polygonal_objects(osi_obj)) {
+        continue;
+      }
       auto obj = std::make_shared<Object>();
       // Set existence probability.
       obj->exist_prob = 1.0;
@@ -852,6 +878,10 @@ void OsiMsgHandler::detected_static_objects_from_ground_truth() {
   // Set static object data.
   for (const auto& osi_obj : osi_gt.stationary_object()) {
     osi_require("GroundTruth-StationaryObject::id", osi_obj.has_id());
+    if (skip_polygonal_objects(osi_obj)) {
+      continue;
+    }
+
     auto obj = std::make_shared<Object>();
     // Set existence probability.
     obj->exist_prob = 1.0;
