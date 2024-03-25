@@ -36,8 +36,8 @@
 #include <osi3/osi_sensordata.pb.h>      // for SensorData, DetectedEntityHeader
 #include <osi3/osi_sensorview.pb.h>      // for SensorView
 
-#include <osi/utility/osi_message_handler.hpp>
-#include <osi/utility/osi_transceiver_tcp.hpp>
+#include <osi3/utility/osi_message_handler.hpp>
+#include <osi3/utility/osi_transceiver_tcp.hpp>
 
 #include "osi_sensor_component.hpp"  // for transform_...
 

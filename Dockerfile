@@ -69,7 +69,7 @@ WORKDIR /cloe
 SHELL ["/bin/bash", "-c"]
 
 ARG PROJECT_VERSION=unknown
-ARG PACKAGE_TARGET="export smoketest-deps"
+ARG PACKAGE_TARGET="export-vendor export smoketest-deps"
 ARG KEEP_SOURCES=0
 
 COPY . /cloe

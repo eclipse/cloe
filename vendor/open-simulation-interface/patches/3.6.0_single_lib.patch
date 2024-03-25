@@ -1,0 +1,91 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index dc99bba..2daddad 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -14,7 +14,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
+ 
+ # Optional Flatbuffer support
+ option(OSI_BUILD_FLATBUFFER "Build flatbuffer versions of libraries" OFF)
+-option(OSI_BUILD_DOCUMENTATION "Build flatbuffer versions of libraries" ${OSI_IS_TOP_LEVEL})
++option(OSI_BUILD_DOCUMENTATION "Build flatbuffer versions of libraries" OFF)
+ 
+ # Set a default build type if none was specified
+ set(default_build_type "Release")
+@@ -56,16 +56,16 @@ else()
+ endif()
+ set(OSI_INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH "Installation directory for CMake files")
+ 
+-set(OSI_INSTALL_LIB_DIR ${OSI_INSTALL_LIB_DIR}/osi${VERSION_MAJOR})
++set(OSI_INSTALL_LIB_DIR ${OSI_INSTALL_LIB_DIR})
+ set(OSI_INSTALL_INCLUDE_DIR ${OSI_INSTALL_INCLUDE_DIR}/osi${VERSION_MAJOR})
+ 
+-configure_file(osi_version.proto.in osi_version.proto)
++configure_file(osi_version.proto.in "${CMAKE_CURRENT_SOURCE_DIR}/osi_version.proto")
+ 
+ find_package(Protobuf 2.6.1 REQUIRED)
+ set(PROTOBUF_IMPORT_DIRS ${PROTOBUF_INCLUDE_DIRS})
+ 
+ set(OSI_PROTO_FILES
+-    ${CMAKE_CURRENT_BINARY_DIR}/osi_version.proto
++    osi_version.proto
+     osi_common.proto
+     osi_datarecording.proto
+     osi_detectedtrafficsign.proto
+@@ -143,48 +143,7 @@ if(OSI_BUILD_FLATBUFFER)
+   target_link_libraries(${PROJECT_NAME}_fbs INTERFACE flatbuffers::flatbuffers)
+ endif()
+ 
+-add_library(${PROJECT_NAME}_static STATIC ${PROTO_SRCS} ${PROTO_HEADERS})
+-add_library(${PROJECT_NAME}::${PROJECT_NAME}_static ALIAS ${PROJECT_NAME}_static)
+-target_include_directories(${PROJECT_NAME}_static
+-    PUBLIC
+-        ${PROTOBUF_INCLUDE_DIR}
+-        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+-        $<INSTALL_INTERFACE:${OSI_INSTALL_INCLUDE_DIR}>
+-)
+-target_link_libraries(${PROJECT_NAME}_static PUBLIC ${PROTOBUF_LIBRARY})
+-install(TARGETS ${PROJECT_NAME}_static
+-        EXPORT ${PROJECT_NAME}_targets
+-        ARCHIVE DESTINATION "${OSI_INSTALL_LIB_DIR}" COMPONENT lib)
+-
+-
+-add_library(${PROJECT_NAME}_obj OBJECT ${PROTO_SRCS} ${PROTO_HEADERS})
+-add_library(${PROJECT_NAME}::${PROJECT_NAME}_obj ALIAS ${PROJECT_NAME}_obj)
+-target_include_directories(${PROJECT_NAME}_obj
+-    PUBLIC
+-        ${PROTOBUF_INCLUDE_DIR}
+-        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+-        $<INSTALL_INTERFACE:${OSI_INSTALL_INCLUDE_DIR}>
+-)
+-set_property(TARGET ${PROJECT_NAME}_obj PROPERTY POSITION_INDEPENDENT_CODE ON)
+-
+-
+-add_library(${PROJECT_NAME}_pic STATIC $<TARGET_OBJECTS:${PROJECT_NAME}_obj>)
+-add_library(${PROJECT_NAME}::${PROJECT_NAME}_pic ALIAS ${PROJECT_NAME}_pic)
+-target_include_directories(${PROJECT_NAME}_pic
+-    PUBLIC
+-        ${PROTOBUF_INCLUDE_DIR}
+-        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+-        $<INSTALL_INTERFACE:${OSI_INSTALL_INCLUDE_DIR}>
+-)
+-target_link_libraries(${PROJECT_NAME}_pic PUBLIC ${PROTOBUF_LIBRARY})
+-
+-set_property(TARGET ${PROJECT_NAME}_pic PROPERTY POSITION_INDEPENDENT_CODE ON)
+-
+-install(TARGETS ${PROJECT_NAME}_pic
+-        EXPORT ${PROJECT_NAME}_targets
+-        ARCHIVE DESTINATION "${OSI_INSTALL_LIB_DIR}" COMPONENT lib)
+-
+-add_library(${PROJECT_NAME} SHARED $<TARGET_OBJECTS:${PROJECT_NAME}_obj>)
++add_library(${PROJECT_NAME} ${PROTO_SRCS} ${PROTO_HEADERS})
+ add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+ target_include_directories(${PROJECT_NAME}
+     PUBLIC
+@@ -192,6 +151,7 @@ target_include_directories(${PROJECT_NAME}
+         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+         $<INSTALL_INTERFACE:${OSI_INSTALL_INCLUDE_DIR}>
+ )
++target_link_libraries(${PROJECT_NAME} PUBLIC protobuf::libprotobuf)
+ 
+ set_property(
+     TARGET ${PROJECT_NAME}

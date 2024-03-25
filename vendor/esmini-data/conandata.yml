@@ -1,0 +1,12 @@
+---
+sources:
+  2.37.0:
+    url:
+      - https://github.com/esmini/esmini/archive/refs/tags/v2.37.0.tar.gz
+    sha256: "a1f216411caa7d8782dd9c82683f8bac3f00d7da2f6370535726b6446c339e59"
+patches:
+  2.37.0:
+    - patch_file: patches/2.37.0-test-driver-path.patch
+      patch_type: git
+      patch_description: >
+        Patch paths to reflect new position of test-driver.xosc.
