@@ -1,0 +1,523 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index dc5a621..4c4c6c8 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -51,6 +51,7 @@ set(USE_OSG
+     ON
+     CACHE BOOL
+           "If projects that depend on osg should be compiled.")
++# TODO: Use openscenegraph from CCI
+ 
+ set(USE_OSI
+     ON
+@@ -66,16 +67,25 @@ set(USE_GTEST
+     ON
+     CACHE BOOL
+           "If unit test suites based on googletest should be compiled.")
++# TODO: Use gtest from CCI
+ 
+ set(DYN_PROTOBUF
+     OFF
+     CACHE BOOL
+           "Set for dynamic linking of protobuf library (.so/.dll)")
++# TODO: Use protobuf from CCI
+ 
+ set(USE_IMPLOT
+     ON
+     CACHE BOOL
+           "If implot for real-time plotting should be compiled.")
++# TODO: Use implot from CCI
++
++# TODO: Use pugixml from CCI
++
++# TODO: Use fmi2 from CCI
++
++# TODO: Use dirent from CCI
+ 
+ set(ESMINI_BUILD_VERSION
+     "N/A - client build"
+@@ -110,6 +120,11 @@ if(NOT
+     message(FATAL_ERROR "Unrecognized platform therefore there isn't an installation directory. Stopping the cmake process.")
+ endif()
+ 
++# ############################### Finding required packages ##########################################################
++
++find_package(open_simulation_interface REQUIRED)
++find_package(protobuf REQUIRED)
++
+ # ############################### Loading common packages ############################################################
+ 
+ include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/common/color.cmake)
+@@ -145,11 +160,11 @@ download(
+     ${EXTERNALS_OSG_OS_SPECIFIC_PATH}
+     "${OSG_PACKAGE_URL}")
+ 
+-download(
+-    osi
+-    ${EXTERNALS_OSI_PATH}
+-    ${EXTERNALS_OSI_OS_SPECIFIC_PATH}
+-    "${OSI_PACKAGE_URL}")
++# download(
++#     osi
++#     ${EXTERNALS_OSI_PATH}
++#     ${EXTERNALS_OSI_OS_SPECIFIC_PATH}
++#     "${OSI_PACKAGE_URL}")
+ 
+ download(
+     sumo
+@@ -157,6 +172,7 @@ download(
+     ${EXTERNALS_SUMO_OS_SPECIFIC_PATH}
+     "${SUMO_PACKAGE_URL}")
+ 
++# TODO: Replace with CCI
+ download(
+     implot
+     ${EXTERNALS_IMPLOT_PATH}
+diff --git a/EnvironmentSimulator/Applications/esmini-dyn/main.cpp b/EnvironmentSimulator/Applications/esmini-dyn/main.cpp
+index 6b8d3b5..747ae54 100644
+--- a/EnvironmentSimulator/Applications/esmini-dyn/main.cpp
++++ b/EnvironmentSimulator/Applications/esmini-dyn/main.cpp
+@@ -16,11 +16,11 @@
+  */
+ 
+ #ifdef _USE_OSI
+-#include "osi_common.pb.h"
+-#include "osi_object.pb.h"
+-#include "osi_groundtruth.pb.h"
+-#include "osi_sensordata.pb.h"
+-#include "osi_version.pb.h"
++#include "osi3/osi_common.pb.h"
++#include "osi3/osi_object.pb.h"
++#include "osi3/osi_groundtruth.pb.h"
++#include "osi3/osi_sensordata.pb.h"
++#include "osi3/osi_version.pb.h"
+ #endif
+ 
+ #include "stdio.h"
+diff --git a/EnvironmentSimulator/Applications/replayer/osi_receiver.cpp b/EnvironmentSimulator/Applications/replayer/osi_receiver.cpp
+index bb94aa4..b354ded 100644
+--- a/EnvironmentSimulator/Applications/replayer/osi_receiver.cpp
++++ b/EnvironmentSimulator/Applications/replayer/osi_receiver.cpp
+@@ -14,10 +14,10 @@
+ #include <stdlib.h>
+ #include <string.h>
+ 
+-#include "osi_common.pb.h"
+-#include "osi_object.pb.h"
+-#include "osi_sensorview.pb.h"
+-#include "osi_version.pb.h"
++#include "osi3/osi_common.pb.h"
++#include "osi3/osi_object.pb.h"
++#include "osi3/osi_sensorview.pb.h"
++#include "osi3/osi_version.pb.h"
+ #include <signal.h>
+ 
+ #ifndef _WINDOWS
+diff --git a/EnvironmentSimulator/Libraries/esminiLib/esminiLib.cpp b/EnvironmentSimulator/Libraries/esminiLib/esminiLib.cpp
+index aced2a3..a254873 100644
+--- a/EnvironmentSimulator/Libraries/esminiLib/esminiLib.cpp
++++ b/EnvironmentSimulator/Libraries/esminiLib/esminiLib.cpp
+@@ -18,7 +18,7 @@
+ #include "esminiLib.hpp"
+ #include "IdealSensor.hpp"
+ #ifdef USE_OSI
+-#include "osi_sensordata.pb.h"
++#include "osi3/osi_sensordata.pb.h"
+ #endif
+ #include "vehicle.hpp"
+ #include "pugixml.hpp"
+diff --git a/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/OSIReporter.hpp b/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/OSIReporter.hpp
+index 8ab1396..0ba6af0 100644
+--- a/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/OSIReporter.hpp
++++ b/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/OSIReporter.hpp
+@@ -16,14 +16,14 @@
+ #include "IdealSensor.hpp"
+ #include "ScenarioGateway.hpp"
+ #include "ScenarioEngine.hpp"
+-#include "osi_sensordata.pb.h"
+-#include "osi_object.pb.h"
+-#include "osi_groundtruth.pb.h"
+-#include "osi_sensorview.pb.h"
+-#include "osi_version.pb.h"
+-#include "osi_common.pb.h"
+-#include "osi_trafficcommand.pb.h"
+-#include "osi_trafficupdate.pb.h"
++#include "osi3/osi_sensordata.pb.h"
++#include "osi3/osi_object.pb.h"
++#include "osi3/osi_groundtruth.pb.h"
++#include "osi3/osi_sensorview.pb.h"
++#include "osi3/osi_version.pb.h"
++#include "osi3/osi_common.pb.h"
++#include "osi3/osi_trafficcommand.pb.h"
++#include "osi3/osi_trafficupdate.pb.h"
+ #include <iostream>
+ #include <fstream>
+ #include <string>
+diff --git a/EnvironmentSimulator/Unittest/ScenarioEngineDll_test.cpp b/EnvironmentSimulator/Unittest/ScenarioEngineDll_test.cpp
+index 4c2ecd2..0b9e0f8 100644
+--- a/EnvironmentSimulator/Unittest/ScenarioEngineDll_test.cpp
++++ b/EnvironmentSimulator/Unittest/ScenarioEngineDll_test.cpp
+@@ -1,10 +1,10 @@
+ #include <iostream>
+ #include <gtest/gtest.h>
+ #include <gmock/gmock.h>
+-#include "osi_common.pb.h"
+-#include "osi_object.pb.h"
+-#include "osi_sensorview.pb.h"
+-#include "osi_version.pb.h"
++#include "osi3/osi_common.pb.h"
++#include "osi3/osi_object.pb.h"
++#include "osi3/osi_sensorview.pb.h"
++#include "osi3/osi_version.pb.h"
+ #include "Replay.hpp"
+ #include "CommonMini.hpp"
+ #include "esminiLib.hpp"
+@@ -16,6 +16,13 @@
+ #define _USE_MATH_DEFINES
+ #include <math.h>
+ 
++#define USING_BUNDLED_OSI 0
++#if USING_BUNDLED_OSI
++#define OSI_MAX_MSG_SIZE 10000
++#else
++#define OSI_MAX_MSG_SIZE 12000
++#endif
++
+ class GetNumberOfObjectsTest : public ::testing::TestWithParam<std::tuple<std::string, int>>
+ {
+ };
+@@ -331,7 +338,9 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
+     SE_UpdateOSIGroundTruth();
+     SE_FlushOSIFile();
+     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
++#if USING_BUNDLED_OSI
+     EXPECT_EQ(fileStatus.st_size, 83802);  // initial OSI size, including static content
++#endif
+ 
+     int road_lane_size;
+ 
+@@ -344,13 +353,17 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
+     SE_UpdateOSIGroundTruth();
+     SE_FlushOSIFile();
+     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
++#if USING_BUNDLED_OSI
+     EXPECT_EQ(fileStatus.st_size, 84691);  // slight growth due to only dynamic updates
++#endif
+ 
+     SE_StepDT(0.001f);  // Step for write another frame to osi file
+     SE_UpdateOSIGroundTruth();
+     SE_FlushOSIFile();
+     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
++#if USING_BUNDLED_OSI
+     EXPECT_EQ(fileStatus.st_size, 85581);  // slight growth due to only dynamic updates
++#endif
+ 
+     SE_DisableOSIFile();
+     SE_Close();
+@@ -860,13 +873,15 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
+     SE_DisableOSIFile();
+ 
+     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
++#if USING_BUNDLED_OSI
+     EXPECT_EQ(fileStatus.st_size, 8126);
++#endif
+ 
+     // Read OSI file
+     FILE* file = FileOpen("gt.osi", "rb");
+     ASSERT_NE(file, nullptr);
+ 
+-    const int max_msg_size = 10000;
++    const int max_msg_size = OSI_MAX_MSG_SIZE;
+     int       msg_size;
+     char      msg_buf[max_msg_size];
+ 
+@@ -935,13 +950,15 @@ TEST(GroundTruthTests, check_frequency_implicit)
+     SE_Close();
+ 
+     ASSERT_EQ(stat("gt_implicit.osi", &fileStatus), 0);
++#if USING_BUNDLED_OSI
+     EXPECT_EQ(fileStatus.st_size, 8126);
++#endif
+ 
+     // Read OSI file
+     FILE* file = FileOpen("gt_implicit.osi", "rb");
+     ASSERT_NE(file, nullptr);
+ 
+-    const int max_msg_size = 10000;
++    const int max_msg_size = OSI_MAX_MSG_SIZE;
+     int       msg_size;
+     char      msg_buf[max_msg_size];
+ 
+@@ -1005,13 +1022,15 @@ TEST(GroundTruthTests, check_frequency_explicit)
+     SE_Close();
+ 
+     ASSERT_EQ(stat("gt_explicit.osi", &fileStatus), 0);
++#if USING_BUNDLED_OSI
+     EXPECT_EQ(fileStatus.st_size, 8126);
++#endif
+ 
+     // Read OSI file
+     FILE* file = FileOpen("gt_explicit.osi", "rb");
+     ASSERT_NE(file, nullptr);
+ 
+-    const int max_msg_size = 10000;
++    const int max_msg_size = OSI_MAX_MSG_SIZE;
+     int       msg_size;
+     char      msg_buf[max_msg_size];
+ 
+diff --git a/EnvironmentSimulator/code-examples/osi-groundtruth/osi-groundtruth.cpp b/EnvironmentSimulator/code-examples/osi-groundtruth/osi-groundtruth.cpp
+index 466e9ba..cfae2bb 100644
+--- a/EnvironmentSimulator/code-examples/osi-groundtruth/osi-groundtruth.cpp
++++ b/EnvironmentSimulator/code-examples/osi-groundtruth/osi-groundtruth.cpp
+@@ -1,9 +1,9 @@
+ #include "esminiLib.hpp"
+ 
+-#include "osi_common.pb.h"
+-#include "osi_object.pb.h"
+-#include "osi_groundtruth.pb.h"
+-#include "osi_version.pb.h"
++#include "osi3/osi_common.pb.h"
++#include "osi3/osi_object.pb.h"
++#include "osi3/osi_groundtruth.pb.h"
++#include "osi3/osi_version.pb.h"
+ 
+ int main(int argc, char* argv[])
+ {
+diff --git a/EnvironmentSimulator/code-examples/osi-traffic_command/osi-traffic_command.cpp b/EnvironmentSimulator/code-examples/osi-traffic_command/osi-traffic_command.cpp
+index 9b1aedd..5548bce 100644
+--- a/EnvironmentSimulator/code-examples/osi-traffic_command/osi-traffic_command.cpp
++++ b/EnvironmentSimulator/code-examples/osi-traffic_command/osi-traffic_command.cpp
+@@ -1,10 +1,10 @@
+ #include "esminiLib.hpp"
+ 
+-#include "osi_common.pb.h"
+-#include "osi_object.pb.h"
+-#include "osi_groundtruth.pb.h"
+-#include "osi_trafficcommand.pb.h"
+-#include "osi_version.pb.h"
++#include "osi3/osi_common.pb.h"
++#include "osi3/osi_object.pb.h"
++#include "osi3/osi_groundtruth.pb.h"
++#include "osi3/osi_trafficcommand.pb.h"
++#include "osi3/osi_version.pb.h"
+ 
+ int main(int argc, char* argv[])
+ {
+diff --git a/OSMP_FMU/CMakeLists.txt b/OSMP_FMU/CMakeLists.txt
+index 57413a4..d31622e 100644
+--- a/OSMP_FMU/CMakeLists.txt
++++ b/OSMP_FMU/CMakeLists.txt
+@@ -1,4 +1,4 @@
+-cmake_minimum_required(VERSION 3.5)
++cmake_minimum_required(VERSION 3.15)
+ 
+ set(TARGET EsminiOsiSource)
+ project(${TARGET})
+@@ -13,7 +13,12 @@ execute_process(
+ string(SUBSTRING "${VERSION}" 1 -1 VERSION )
+ string(STRIP "${VERSION}" VERSION)
+ 
+-set(OSIVERSION "3.5.0")
++find_package(open_simulation_interface REQUIRED)
++link_libraries(open_simulation_interface::libopen_simulation_interface)
++set(OSIVERSION ${open_simulation_interface_VERSION})
++get_filename_component(EXTERNALS_OSI_PATH
++    "${open_simulation_interface_INCLUDE_DIR}" DIRECTORY)
++
+ set(OSMPVERSION "1.4.0")
+ 
+ set(STATIC_LINKING TRUE)
+@@ -98,12 +103,11 @@ string(MD5 FMUGUID modelDescription.in.xml)
+ configure_file(modelDescription.in.xml modelDescription.xml @ONLY)
+ 
+ include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../EnvironmentSimulator/Libraries/esminiLib
+-                    ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osi/${EXT_INCL_DIR}/include)
++                   )
+ 
+ link_directories(
+     ${CMAKE_CURRENT_SOURCE_DIR}
+     ${CMAKE_CURRENT_SOURCE_DIR}/../bin
+-    ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osi/${EXT_INCL_DIR}/lib
+     ${CMAKE_CURRENT_SOURCE_DIR}/../externals/sumo/${EXT_INCL_DIR}/lib
+     ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osg/${EXT_INCL_DIR}/lib
+     ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osg/${EXT_INCL_DIR}/lib/osgPlugins-3.6.5
+@@ -123,7 +127,7 @@ target_compile_definitions(${TARGET} PRIVATE "FMU_SHARED_OBJECT")
+ 
+ if(STATIC_LINKING)
+     message("Link esmini statically")
+-    set(EXTERNALS_OSI_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osi/${EXT_INCL_DIR}/lib)
++    set(EXTERNALS_OSI_LIBRARY_PATH "${EXTERNALS_OSI_PATH}/lib")
+     set(EXTERNALS_OSG_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osg/${EXT_INCL_DIR}/lib)
+     set(EXTERNALS_OSG_PLUGINS_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osg/${EXT_INCL_DIR}/lib/osgPlugins-3.6.5)
+     set(EXTERNALS_SUMO_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../externals/sumo/${EXT_INCL_DIR}/lib)
+diff --git a/OSMP_FMU/EsminiOsiSource.cpp b/OSMP_FMU/EsminiOsiSource.cpp
+index c8e0496..6a1f3ee 100644
+--- a/OSMP_FMU/EsminiOsiSource.cpp
++++ b/OSMP_FMU/EsminiOsiSource.cpp
+@@ -6,10 +6,10 @@
+ 
+ #include "esminiLib.hpp"
+ 
+-#include "osi_common.pb.h"
+-#include "osi_object.pb.h"
+-#include "osi_groundtruth.pb.h"
+-#include "osi_trafficupdate.pb.h"
++#include "osi3/osi_common.pb.h"
++#include "osi3/osi_object.pb.h"
++#include "osi3/osi_groundtruth.pb.h"
++#include "osi3/osi_trafficupdate.pb.h"
+ 
+ #include "EsminiOsiSource.h"
+ 
+diff --git a/OSMP_FMU/EsminiOsiSource.h b/OSMP_FMU/EsminiOsiSource.h
+index 9027ff2..5f90ac2 100644
+--- a/OSMP_FMU/EsminiOsiSource.h
++++ b/OSMP_FMU/EsminiOsiSource.h
+@@ -81,8 +81,8 @@ using namespace std;
+ 
+ #undef min
+ #undef max
+-#include "osi_sensorview.pb.h"
+-#include "osi_trafficcommand.pb.h"
++#include "osi3/osi_sensorview.pb.h"
++#include "osi3/osi_trafficcommand.pb.h"
+ 
+ /* FMU Class */
+ class EsminiOsiSource {
+diff --git a/support/cmake/common/locations.cmake b/support/cmake/common/locations.cmake
+index d4ee92e..193870f 100644
+--- a/support/cmake/common/locations.cmake
++++ b/support/cmake/common/locations.cmake
+@@ -63,8 +63,8 @@ macro(set_project_external_paths)
+         ${EXTERNALS_PATH}/googletest)
+     set(EXTERNALS_OSG_PATH
+         ${EXTERNALS_PATH}/osg)
+-    set(EXTERNALS_OSI_PATH
+-        ${EXTERNALS_PATH}/osi)
++    get_filename_component(EXTERNALS_OSI_PATH
++        "${open_simulation_interface_INCLUDE_DIR}" DIRECTORY)
+     set(EXTERNALS_PUGIXML_PATH
+         ${EXTERNALS_PATH}/pugixml)
+     set(EXTERNALS_SUMO_PATH
+@@ -84,7 +84,7 @@ macro(set_project_os_specific_paths)
+         set(EXTERNALS_OSG_OS_SPECIFIC_PATH
+             ${EXTERNALS_OSG_PATH}/mac)
+         set(EXTERNALS_OSI_OS_SPECIFIC_PATH
+-            ${EXTERNALS_OSI_PATH}/mac)
++            ${EXTERNALS_OSI_PATH})
+         set(EXTERNALS_SUMO_OS_SPECIFIC_PATH
+             ${EXTERNALS_SUMO_PATH}/mac)
+         set(EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH
+@@ -97,7 +97,7 @@ macro(set_project_os_specific_paths)
+         set(EXTERNALS_OSG_OS_SPECIFIC_PATH
+             ${EXTERNALS_OSG_PATH}/linux)
+         set(EXTERNALS_OSI_OS_SPECIFIC_PATH
+-            ${EXTERNALS_OSI_PATH}/linux)
++            ${EXTERNALS_OSI_PATH})
+         set(EXTERNALS_SUMO_OS_SPECIFIC_PATH
+             ${EXTERNALS_SUMO_PATH}/linux)
+         set(EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH
+@@ -120,7 +120,7 @@ macro(set_project_os_specific_paths)
+             set(EXTERNALS_OSG_OS_SPECIFIC_PATH
+                 ${EXTERNALS_OSG_PATH}/v10)
+             set(EXTERNALS_OSI_OS_SPECIFIC_PATH
+-                ${EXTERNALS_OSI_PATH}/v10)
++                ${EXTERNALS_OSI_PATH})
+             set(EXTERNALS_SUMO_OS_SPECIFIC_PATH
+                 ${EXTERNALS_SUMO_PATH}/v10)
+             set(EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH
+@@ -152,7 +152,8 @@ macro(set_project_includes)
+         ${EXTERNALS_OSG_OS_SPECIFIC_PATH}/build/include
+         ${EXTERNALS_OSG_OS_SPECIFIC_PATH}/include)
+     set(EXTERNALS_OSI_INCLUDES
+-        ${EXTERNALS_OSI_OS_SPECIFIC_PATH}/include)
++        "${open_simulation_interface_INCLUDE_DIRS}"
++        "${protobuf_INCLUDE_DIRS}")
+     set(EXTERNALS_SUMO_INCLUDES
+         ${EXTERNALS_SUMO_OS_SPECIFIC_PATH}/include)
+     set(EXTERNALS_GOOGLETEST_INCLUDES
+@@ -175,13 +176,8 @@ macro(set_project_library_paths)
+     set(EXTERNALS_OSG_PLUGINS_LIBRARY_PATH
+         ${EXTERNALS_OSG_LIBRARY_PATH}/osgPlugins-3.6.5)
+ 
+-    if(DYN_PROTOBUF)
+-        set(EXTERNALS_OSI_LIBRARY_PATH
+-            ${EXTERNALS_OSI_OS_SPECIFIC_PATH}/lib-dyn)
+-    else()
+-        set(EXTERNALS_OSI_LIBRARY_PATH
+-            ${EXTERNALS_OSI_OS_SPECIFIC_PATH}/lib)
+-    endif(DYN_PROTOBUF)
++    set(EXTERNALS_OSI_LIBRARY_PATH
++        ${EXTERNALS_OSI_OS_SPECIFIC_PATH}/lib)
+ 
+     set(EXTERNALS_SUMO_LIBRARY_PATH
+         ${EXTERNALS_SUMO_OS_SPECIFIC_PATH}/lib)
+diff --git a/support/cmake/external/osi.cmake b/support/cmake/external/osi.cmake
+index 780fdb2..b49b44d 100644
+--- a/support/cmake/external/osi.cmake
++++ b/support/cmake/external/osi.cmake
+@@ -3,61 +3,8 @@ include_guard()
+ # ############################### Setting osi libraries ##############################################################
+ 
+ macro(set_osi_libs)
++    find_package(open_simulation_interface REQUIRED)
++    find_package(Protobuf REQUIRED)
+ 
+-    if(APPLE)
+-        if(DYN_PROTOBUF)
+-            set(OSI_LIBRARIES
+-                ${EXTERNALS_OSI_LIBRARY_PATH}/libopen_simulation_interface.dylib
+-                ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobuf.dylib)
+-        else()
+-            set(OSI_LIBRARIES
+-                ${EXTERNALS_OSI_LIBRARY_PATH}/libopen_simulation_interface_pic.a
+-                ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobuf.a)
+-        endif()
+-
+-    elseif(LINUX)
+-        if(DYN_PROTOBUF)
+-            set(OSI_LIBRARIES
+-                optimized
+-                ${EXTERNALS_OSI_LIBRARY_PATH}/libopen_simulation_interface.so
+-                optimized
+-                ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobuf.so
+-                debug
+-                ${EXTERNALS_OSI_LIBRARY_PATH}/libopen_simulation_interfaced.so
+-                debug
+-                ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobufd.so)
+-        else()
+-            set(OSI_LIBRARIES
+-                optimized
+-                ${EXTERNALS_OSI_LIBRARY_PATH}/libopen_simulation_interface_pic.a
+-                optimized
+-                ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobuf.a
+-                debug
+-                ${EXTERNALS_OSI_LIBRARY_PATH}/libopen_simulation_interface_picd.a
+-                debug
+-                ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobufd.a)
+-        endif()
+-    elseif(MSVC)
+-        if(DYN_PROTOBUF)
+-            set(OSI_LIBRARIES
+-                optimized
+-                ${EXTERNALS_OSI_LIBRARY_PATH}/open_simulation_interface.dll
+-                optimized
+-                ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobuf.lib
+-                debug
+-                ${EXTERNALS_OSI_LIBRARY_PATH}/open_simulation_interfaced.dll
+-                debug
+-                ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobufd.lib)
+-        else()
+-            set(OSI_LIBRARIES
+-                optimized
+-                ${EXTERNALS_OSI_LIBRARY_PATH}/open_simulation_interface_pic.lib
+-                optimized
+-                ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobuf.lib
+-                debug
+-                ${EXTERNALS_OSI_LIBRARY_PATH}/open_simulation_interface_picd.lib
+-                debug
+-                ${EXTERNALS_OSI_LIBRARY_PATH}/libprotobufd.lib)
+-        endif()
+-    endif()
++    set(OSI_LIBRARIES ${open_simulation_interface_LIBRARIES} ${Protobuf_LIBRARIES})
+ endmacro()

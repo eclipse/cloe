@@ -10,7 +10,7 @@ class CloeTest(ConanFile):
     python_requires_extend = "cloe-launch-profile.Base"
 
     default_options = {
-        "cloe-engine:server": False,
+        "cloe-engine:server": True,
     }
 
     @property
@@ -28,5 +28,12 @@ class CloeTest(ConanFile):
     def requirements(self):
         self.requires(f"cloe-engine/{self.version}@cloe/develop")
         self.requires(f"cloe-plugin-basic/{self.version}@cloe/develop")
-        self.requires(f"cloe-plugin-minimator/{self.version}@cloe/develop")
+        self.requires(f"cloe-plugin-noisy-sensor/{self.version}@cloe/develop")
+        self.requires(f"cloe-plugin-speedometer/{self.version}@cloe/develop")
         self.requires(f"cloe-plugin-gndtruth-extractor/{self.version}@cloe/develop")
+        self.requires(f"cloe-plugin-virtue/{self.version}@cloe/develop")
+        self.requires(f"cloe-plugin-esmini/{self.version}@cloe/develop")
+        self.requires("esmini-data/2.37.0@cloe/stable")
+
+        # Overrides:
+        self.requires("zlib/1.2.13", override=True)

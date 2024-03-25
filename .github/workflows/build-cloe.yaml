@@ -22,7 +22,7 @@ jobs:
           - "cloe-normal"
         package_target:
           # 1. Build each test configuration in Conan cache and run all tests
-          - "export smoketest-deps smoketest"
+          - "export export-vendor smoketest-deps smoketest"
     env:
       CONAN_NON_INTERACTIVE: "yes"
       DEBIAN_FRONTEND: noninteractive

@@ -29,9 +29,8 @@
 
 #include <cloe/component/object.hpp>  // for Object
 #include <cloe/utility/geometry.hpp>  // for quaternion_from_rpy
-
-#include <osi/utility/osi_message_handler.hpp>  // for OsiMsgHandler
-#include <osi/utility/osi_transceiver.hpp>      // for OsiTransceiver
+#include <cloe/osi/utility/osi_message_handler.hpp>  // for OsiMsgHandler
+#include <cloe/osi/utility/osi_transceiver.hpp>      // for OsiTransceiver
 
 #include "vtd_conf.hpp"         // for VtdSensorConfig
 #include "vtd_sensor_data.hpp"  // for VtdSensorData

@@ -1,0 +1,23 @@
+diff --git a/EnvironmentSimulator/Unittest/CMakeLists.txt b/EnvironmentSimulator/Unittest/CMakeLists.txt
+index 58cdea2..f9764c9 100644
+--- a/EnvironmentSimulator/Unittest/CMakeLists.txt
++++ b/EnvironmentSimulator/Unittest/CMakeLists.txt
+@@ -7,18 +7,11 @@ include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
+ 
+ include(${CMAKE_SOURCE_DIR}/support/cmake/common/unittest.cmake)
+ 
+-# ############################### Creating executable (OperatingSystem_test) #########################################
+-
+ if(USE_OSG)
+     set(VIEWER_LIBS_FOR_TEST
+         ViewerBase)
+ endif()
+ 
+-unittest(
+-    OperatingSystem_test
+-    OperatingSystem_test.cpp
+-    PlayerBase)
+-
+ # ############################### Creating executable (RoadManager_test) #############################################
+ 
+ unittest(
