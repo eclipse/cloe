@@ -599,7 +599,7 @@ void OsiMsgHandler::process_received_msg(osi3::GroundTruth* osi_gt, Duration& os
     osi_logger()->trace("OsiMsgHandler: message @ {} ns", osi_time.count());
     if (osi_time.count() == 0) {
       // DEBUG(tobias)
-      osi_to_file(*osi_gt, "esmini_osi_ground_truth.json");
+      osi_to_file(*osi_gt, "/tmp/cloe_osi_ground_truth.json");
     }
   } else {
     throw ModelError("OsiMsgHandler: No timestamp in GroundTruth.");
