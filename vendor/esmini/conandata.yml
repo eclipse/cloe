@@ -1,10 +1,33 @@
 ---
 sources:
+  2.37.4:
+    url:
+      - https://github.com/esmini/esmini/archive/refs/tags/v2.37.4.tar.gz
+    sha256: "6d765db38bc3769a867555f108c25b0d62029780d41784e429822ed35776bfc6"
   2.37.0:
     url:
       - https://github.com/esmini/esmini/archive/refs/tags/v2.37.0.tar.gz
     sha256: "a1f216411caa7d8782dd9c82683f8bac3f00d7da2f6370535726b6446c339e59"
 patches:
+  2.37.4:
+    - patch_file: patches/2.37.4_add_ctest.patch
+      patch_type: git
+      patch_description: >
+        Use CTest for running all unit tests.
+    - patch_file: patches/2.37.0_remove_operating_system_test.patch
+      patch_type: git
+      patch_description: >
+        Remove unnecessary operating system test. This intentionally fails and requires
+        a gtest filter to be used, but it's easier to just remove it.
+    - patch_file: patches/2.37.4_use_conan_osi_package.patch
+      patch_type: git
+      patch_description: >
+        Use open_simulation_interface package from Conan instead of downloaded version.
+    - patch_file: patches/2.37.4_disable_unittests_for_container.patch
+      patch_type: git
+      patch_description: >
+        Disable unit tests that only fail when we run within a container.
+        Presumably these unit tests require a running desktop environment.
   2.37.0:
     - patch_file: patches/2.37.0_add_ctest.patch
       patch_type: git

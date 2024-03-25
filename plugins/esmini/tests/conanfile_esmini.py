@@ -33,7 +33,7 @@ class CloeTest(ConanFile):
         self.requires(f"cloe-plugin-gndtruth-extractor/{self.version}@cloe/develop")
         self.requires(f"cloe-plugin-virtue/{self.version}@cloe/develop")
         self.requires(f"cloe-plugin-esmini/{self.version}@cloe/develop")
-        self.requires("esmini-data/2.37.0@cloe/stable")
+        self.requires("esmini-data/2.37.4@cloe/stable")
 
         # Overrides:
         self.requires("zlib/1.2.13", override=True)

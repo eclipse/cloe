@@ -9,7 +9,6 @@ required_conan_version = ">=1.52.0"
 
 class ESMini(ConanFile):
     name = "esmini"
-    version = "2.37.0"
     license = "MPL-2.0"
     url = "https://github.com/esmini/esmini"
     description = "Basic OpenScenario player"

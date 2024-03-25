@@ -28,7 +28,7 @@ class CloeSimulatorESMini(ConanFile):
 
     def requirements(self):
         self.requires("eigen/3.4.0")
-        self.requires(f"esmini/2.37.0@cloe/stable")
+        self.requires(f"esmini/2.37.4@cloe/stable")
         self.requires(f"cloe-runtime/{self.version}@cloe/develop")
         self.requires(f"cloe-models/{self.version}@cloe/develop")
         self.requires(f"cloe-osi/{self.version}@cloe/develop")

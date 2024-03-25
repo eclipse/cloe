@@ -114,14 +114,18 @@ install-ubuntu-deps::
 		git \
 		graphviz \
 		jq \
+		libgl-dev \
+		libxinerama-dev \
+		libxrandr-dev \
+		libfontconfig1-dev \
 		netcat-openbsd \
 		patchelf \
 		psmisc \
 		python3-pip \
 		python3-setuptools \
+		python3-venv \
 		time \
 		tmux \
-		python3-venv \
 		;
 
 	# Require GCC and G++ version >= 8
