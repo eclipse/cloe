@@ -61,27 +61,27 @@ target_link_libraries(cloe-enginelib
 )
 
 
-#include(CTest)
-#if(BUILD_TESTING)
-#    find_package(GTest REQUIRED)
-#    include(GoogleTest)
-#    add_executable(test-enginelib
-#        src/lua_stack_test.cpp
-#    )
-#    set_target_properties(test-enginelib PROPERTIES
-#        CXX_STANDARD 17
-#        CXX_STANDARD_REQUIRED ON
-#    )
-#    target_link_libraries(test-enginelib
-#        GTest::gtest
-#        GTest::gtest_main
-#        Boost::boost
-#        cloe::models
-#        cloe::stacklib
-#        cloe::simulation
-#    )
-#    gtest_add_tests(TARGET test-enginelib)
-#endif()
+include(CTest)
+if(BUILD_TESTING)
+    find_package(GTest REQUIRED)
+    include(GoogleTest)
+    add_executable(test-enginelib
+        src/lua_stack_test.cpp
+    )
+    set_target_properties(test-enginelib PROPERTIES
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED ON
+    )
+    target_link_libraries(test-enginelib
+        GTest::gtest
+        GTest::gtest_main
+        Boost::boost
+        cloe::models
+        cloe::stacklib
+        cloe::simulation
+    )
+    gtest_add_tests(TARGET test-enginelib)
+endif()
 
 # Executable ---------------------------------------------------------
 add_subdirectory(vendor/linenoise)
@@ -119,9 +119,11 @@ if(CLOE_ENGINE_WITH_LRDB)
     target_sources(cloe-engine PRIVATE src/lua_debugger.cpp)
     target_link_libraries(cloe-engine PRIVATE lrdb::lrdb)
     target_compile_definitions(cloe-engine PUBLIC CLOE_ENGINE_WITH_LRDB=1)
+    target_compile_definitions(cloe-enginelib PUBLIC CLOE_ENGINE_WITH_LRDB=1)
 else()
     message(STATUS "-> Disable LRDB component")
     target_compile_definitions(cloe-engine PUBLIC CLOE_ENGINE_WITH_LRDB=0)
+    target_compile_definitions(cloe-enginelib PUBLIC CLOE_ENGINE_WITH_LRDB=0)
 endif()
 
 # Installation -------------------------------------------------------

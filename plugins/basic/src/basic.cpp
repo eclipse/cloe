@@ -307,7 +307,7 @@ struct LaneKeepingAssistant {
       return;
     }
 
-    auto world_sensor = v.get<ObjectSensor>(config.world_sensor);
+  auto world_sensor = v.get<ObjectSensor>(config.world_sensor);
     auto objects = world_sensor->sensed_objects();
     auto rabbit = utility::closest_forward(objects);
 
@@ -426,7 +426,7 @@ class BasicController : public Controller {
             });
       }
       {
-        std::string name1 = fmt::format("vehicles.{}.{}.lka", vehicle, name());
+        std::string const name1 = fmt::format("vehicles.{}.{}.lka", vehicle, name());
         auto lka_signal = db.declare<cloe::controller::basic::LkaConfiguration>(name1);
         lka_signal->set_getter<cloe::controller::basic::LkaConfiguration>(
             [this]() -> const cloe::controller::basic::LkaConfiguration& {
@@ -439,22 +439,22 @@ class BasicController : public Controller {
       }
     }
 
-    /*if(auto *driver = dynamic_cast<cloe::LuaSimulationDriver*>(&r.simulation_driver()); driver) {
+    if(auto *driver = r.lua_simulation_driver(); driver) {
       auto lua = driver->register_lua_table();
+      auto acc = lua.new_usertype<AccConfiguration>("AccConfiguration", sol::no_constructor);
+      acc["ego_sensor"] = sol::readonly(&AccConfiguration::ego_sensor);
+      acc["world_sensor"] = sol::readonly(&AccConfiguration::world_sensor);
+      acc["latlong_actuator"] = sol::readonly(&AccConfiguration::latlong_actuator);
+      acc["limit_acceleration"] = &AccConfiguration::limit_acceleration;
+      acc["limit_deceleration"] = &AccConfiguration::limit_deceleration;
+      acc["derivative_factor_speed_control"] = &AccConfiguration::kd;
+      acc["proportional_factor_speed_control"] = &AccConfiguration::kp;
+      acc["integral_factor_speed_control"] = &AccConfiguration::ki;
+      acc["derivative_factor_dist_control"] = &AccConfiguration::kd_m;
+      acc["proportional_factor_dist_control"] = &AccConfiguration::kp_m;
+      acc["integral_factor_dist_control"] = &AccConfiguration::ki_m;
+      driver->data_broker_binding()->declare<AccConfiguration>();
       {
-        auto acc = lua.new_usertype<AccConfiguration>("AccConfiguration", sol::no_constructor);
-        acc["ego_sensor"] = sol::readonly(&AccConfiguration::ego_sensor);
-        acc["world_sensor"] = sol::readonly(&AccConfiguration::world_sensor);
-        acc["latlong_actuator"] = sol::readonly(&AccConfiguration::latlong_actuator);
-        acc["limit_acceleration"] = &AccConfiguration::limit_acceleration;
-        acc["limit_deceleration"] = &AccConfiguration::limit_deceleration;
-        acc["derivative_factor_speed_control"] = &AccConfiguration::kd;
-        acc["proportional_factor_speed_control"] = &AccConfiguration::kp;
-        acc["integral_factor_speed_control"] = &AccConfiguration::ki;
-        acc["derivative_factor_dist_control"] = &AccConfiguration::kd_m;
-        acc["proportional_factor_dist_control"] = &AccConfiguration::kp_m;
-        acc["integral_factor_dist_control"] = &AccConfiguration::ki_m;
-
         auto inst = lua.create("acc");
         inst["config"] = std::ref(acc_.config);
         inst["enabled"] = &acc_.enabled;
@@ -471,13 +471,8 @@ class BasicController : public Controller {
               // FIXME: Throw an error here
             });
         inst["target_speed"] = &acc_.target_speed;
-        driver->data_broker_binding()->declare<AccConfiguration>();
       }
-    }*/
-    /*if(auto *driver = dynamic_cast<cloe::py::PythonSimulationDriver*>(&r.simulation_driver()); driver) {
-      pybind11::class_<AccConfiguration> clazz (driver->extension_module(), "AccConfiguration");
-      driver->data_broker_binding()->declare<AccConfiguration>();
-    }*/
+    }
     r.register_action(std::make_unique<utility::ContactFactory<Duration>>(&hmi_));
 
     // clang-format off

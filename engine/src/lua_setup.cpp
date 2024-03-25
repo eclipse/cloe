@@ -199,7 +199,7 @@ void register_cloe_engine(sol::state_view& lua, Stack& stack) {
 
     // Server enabled:
     "cloe-server", CLOE_ENGINE_WITH_SERVER != 0,
-    "cloe-lrdb", false
+    "cloe-lrdb", CLOE_ENGINE_WITH_LRDB != 0 // todo(mho) reintroduce
   );
   // clang-format on
 

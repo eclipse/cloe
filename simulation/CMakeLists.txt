@@ -15,6 +15,7 @@ find_package(Threads REQUIRED)
 add_library(cloe-simulation
         src/simulation.cpp
         src/simulation_context.cpp
+        src/registrar.cpp
         src/utility/command.cpp
 )
 add_library(cloe::simulation ALIAS cloe-simulation)

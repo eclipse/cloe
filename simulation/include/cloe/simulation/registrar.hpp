@@ -26,6 +26,7 @@
 
 #include <cloe/registrar.hpp>  // for cloe::Registrar
 #include <cloe/coordinator.hpp>  // for Coordinator
+#include <cloe/lua/lua_simulation_driver.hpp>
 #include "server.hpp"       // for Server, ServerRegistrar
 
 namespace engine {
@@ -40,7 +41,7 @@ class Registrar : public cloe::Registrar {
             const std::string& trigger_prefix,
             const std::string& static_prefix,
             const std::string& api_prefix)
-      : coordinator_(ar.coordinator_), data_broker_(ar.data_broker_) {
+      : coordinator_(ar.coordinator_), data_broker_(ar.data_broker_), driver_(ar.driver_) {
     if (trigger_prefix.empty()) {
       trigger_prefix_ = ar.trigger_prefix_;
     } else {
@@ -112,11 +113,13 @@ class Registrar : public cloe::Registrar {
     return *driver_;
   }
 
+  cloe::LuaSimulationDriver* lua_simulation_driver() override;
+
  private:
   std::unique_ptr<ServerRegistrar> server_registrar_;
   cloe::coordinator::Coordinator* coordinator_;       // non-owning
   cloe::DataBroker* data_broker_;  // non-owning
-  cloe::SimulationDriver* driver_;
+  cloe::SimulationDriver* driver_ {nullptr};
   std::string trigger_prefix_;
 };
 

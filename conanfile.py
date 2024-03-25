@@ -23,6 +23,8 @@ class Cloe(ConanFile):
         "cloe-runtime",
         "cloe-models",
         "cloe-oak",
+        "cloe-simulation",
+        "cloe-stacklib",
         "cloe-engine",
         "cloe-plugins-core",
         "cloe-plugin-basic",
@@ -55,12 +57,13 @@ class Cloe(ConanFile):
         "*/cmake/*",
         "*/src/*",
         "*/include/*",
+        "*/test/*",
         "*/CMakeLists.txt",
 
         "fable/examples/*",
 
         "engine/lua/*",
-        "engine/webui/*",
+        "simulation/webui/*",
         "engine/vendor/*",
 
         "plugins/*/src/*",

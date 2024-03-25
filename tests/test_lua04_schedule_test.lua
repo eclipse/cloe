@@ -3,6 +3,9 @@ local events, actions = cloe.events, cloe.actions
 
 cloe.load_stackfile("config_nop_smoketest.json")
 
+cloe.require_signals{
+    "vehicles.default.basic.acc"
+}
 -- If schedule_test does not work, then we will keep running until
 -- this event triggers and we fail.
 cloe.schedule {
@@ -30,6 +33,9 @@ cloe.schedule_test {
 
         cloe.log("info", "Asserting something...")
         z:assert_eq(sync:time():s(), 0, "time at start is 0s")
+
+        acc = cloe.signal("vehicles.default.basic.acc")
+        cloe.log("info", "ifdc " .. acc.limit_acceleration)
 
         cloe.log("info", "Waiting 1s...")
         z:wait_duration("1s")
