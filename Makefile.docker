@@ -12,6 +12,7 @@ DOCKER := DOCKER_BUILDKIT=1 docker
 DOCKER_IMAGE_NAME := cloe/cloe-engine
 DOCKER_IMAGE_VERSION := ${PROJECT_VERSION}
 DOCKER_IMAGE := ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VERSION}
+DOCKER_DEVIMAGE := ${DOCKER_IMAGE_NAME}-dev:${DOCKER_IMAGE_VERSION}
 DOCKER_CONTEXT := ${PROJECT_ROOT}
 
 DOCKER_USER_ARGS +=
@@ -115,6 +116,13 @@ ubuntu-%: FORCE build-ubuntu-% test-ubuntu-%
 .PHONY: all
 all: $(addprefix ubuntu-,${UBUNTU_VERSIONS})
 
+build-devc-%: FORCE Dockerfile
+	${DOCKER} build -f Dockerfile ${DOCKER_BUILD_ARGS} ${DOCKER_USER_ARGS} \
+		--build-arg UBUNTU_VERSION=$* \
+		--target stage-setup-system \
+		-t ${DOCKER_DEVIMAGE}-ubuntu-$* \
+		${DOCKER_CONTEXT}
+
 build-ubuntu-%: FORCE Dockerfile
 	${DOCKER} build -f Dockerfile ${DOCKER_BUILD_ARGS} ${DOCKER_USER_ARGS} \
 		--build-arg UBUNTU_VERSION=$* \
@@ -124,6 +132,9 @@ build-ubuntu-%: FORCE Dockerfile
 test-ubuntu-%: FORCE
 	docker run ${DOCKER_RUN_ARGS} ${DOCKER_USER_ARGS} ${DOCKER_IMAGE}-ubuntu-$* \
 		bash -ec "[ -f /root/setup.sh ] && source /root/setup.sh; make smoketest"
+
+run-devc-%: FORCE
+	docker run -it ${DOCKER_RUN_ARGS} ${DOCKER_USER_ARGS} --mount type=bind,source=$$(pwd),destination=/cloe ${DOCKER_DEVIMAGE}-ubuntu-$*
 
 run-ubuntu-%: FORCE
 	docker run -it ${DOCKER_RUN_ARGS} ${DOCKER_USER_ARGS} ${DOCKER_IMAGE}-ubuntu-$*
