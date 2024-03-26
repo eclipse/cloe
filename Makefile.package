@@ -316,7 +316,7 @@ smoketest-deps:
 	@for conanfile in ${TEST_CONANFILES}; do \
 		test -f "$${conanfile}" || continue; \
 		echo "Building dependencies for conanfile: $${conanfile}"; \
-		${CLOE_LAUNCH} prepare -P "$${conanfile}" || break; \
+		${CLOE_LAUNCH} prepare -P "$${conanfile}" || exit 1; \
 	done
 
 # CONFIGURATION TARGETS -------------------------------------------------------
