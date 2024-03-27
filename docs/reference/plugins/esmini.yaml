@@ -1,0 +1,14 @@
+Name: esmini
+Type: simulator
+Path: ~/.conan/data/cloe-plugin-esmini/0.22.0/cloe/develop/package/edd33cfae11b1ac2558435742ce028cfc34c7917/lib/cloe/simulator_esmini.so
+Usage: {
+  "headless": "boolean :: run esmini without viewer",
+  "scenario": "string :: absolute path to open scenario file",
+  "vehicles": "object :: vehicle configuration like sensors and component mapping",
+  "write_images": "boolean :: save an image for each step"
+}
+Defaults: {
+  "headless": true,
+  "scenario": "",
+  "write_images": false
+}

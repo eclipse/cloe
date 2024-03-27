@@ -18,6 +18,7 @@ class Cloe(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     options = {
         "with_vtd": [True, False],
+        "with_esmini": [True, False],
         "with_engine": [True, False],
 
         # Doesn't affect package ID:
@@ -25,6 +26,7 @@ class Cloe(ConanFile):
     }
     default_options = {
         "with_vtd": False,
+        "with_esmini": True,
         "with_engine": True,
 
         "pedantic": True,
@@ -54,6 +56,8 @@ class Cloe(ConanFile):
         cloe_requires("cloe-plugin-noisy-sensor")
         cloe_requires("cloe-plugin-speedometer")
         cloe_requires("cloe-plugin-virtue")
+        if self.options.with_esmini:
+            cloe_requires("cloe-plugin-esmini")
         if self.options.with_vtd:
             cloe_requires("cloe-plugin-vtd")
 
@@ -62,6 +66,7 @@ class Cloe(ConanFile):
             cloe_requires("cloe-engine")
 
         # Overrides:
+        self.requires("zlib/1.2.13", override=True)
         self.requires("fmt/9.1.0", override=True)
         self.requires("inja/3.4.0", override=True)
         self.requires("nlohmann_json/3.11.2", override=True)
