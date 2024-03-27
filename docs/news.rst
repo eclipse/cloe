@@ -23,9 +23,27 @@ News
    :hidden:
    :maxdepth: 1
 
+   news/release-0.22.0
    news/release-0.21.0
    news/release-0.20.0
    news/release-0.19.0
+
+:doc:`Version 0.22.0 Release <news/release-0.22.0>`
+---------------------------------------------------
+
+This version includes the initial release of the ESMini simulator
+plugin binding.
+
+The cloe-osi library is introduced for a re-usable mechanism of
+handling and converting Open Simulation Interface data.
+
+The clothoid-fit component plugin for lane boundaries makes its
+entrance.
+
+Finally, compile-time improvements for the fable library radically
+speed up the compilation of code that use the `make_schema` functions.
+
+Read all about it :doc:`here <news/release-0.22.0>`.
 
 :doc:`Version 0.21.0 Release <news/release-0.21.0>`
 ---------------------------------------------------

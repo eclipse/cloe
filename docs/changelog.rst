@@ -58,6 +58,44 @@ readable perspective on new releases.
 
       Note that the most recent release is at the *top* of the document.
 
+0.22.0 (2024-03-28)
+-------------------
+
+This is the fifth public minor release of the Cloe packages.
+Read all about it :doc:`here <news/release-0.22.0>`.
+
+**Core Libraries:**
+
+- fable: Use std::string instead of std::string&& for constructors `[2084ca03] <https://github.com/eclipse/cloe/commit/2084ca0352a96e753e0f140a2a9c7eb61f17a04f>`_
+- fable: Use C++17 type traits with _t and _v suffixes `[1b659be3] <https://github.com/eclipse/cloe/commit/1b659be3c377bf013faad1d37cd1d480cdc8a181>`_
+- fable: Fix excessive compilation duration `[6700c73d] <https://github.com/eclipse/cloe/commit/6700c73de9f1dbaa2452be250b8f82cf6f5862dc>`_
+- fable: Add example stress test with generated code `[6113b487] <https://github.com/eclipse/cloe/commit/6113b4874cc4dfea9b570f2e1d15ceba66b4df8e>`_
+
+- models: Add lane sensor functional `[c0f7c844] <https://github.com/eclipse/cloe/commit/c0f7c844616312b4aae3b4111ab2cbf8a5452b54>`_
+
+- osi: Return reference to osi3::SensorData instead of shared_ptr `[a2283b9e] <https://github.com/eclipse/cloe/commit/a2283b9e12c6943037f08d72535a245bc610fe40>`_
+- osi: Skip polygonal objects `[bdf616fa] <https://github.com/eclipse/cloe/commit/bdf616fac0a78b1a08ff5f4f940a206c837fd5b0>`_
+- osi: Write debug files to /tmp `[a5d5f7e4] <https://github.com/eclipse/cloe/commit/a5d5f7e41ef9abb98dde0935f93c7d456a607a03>`_
+- osi: Merge OsiSensor into cloe-osi `[ddff0cb2] <https://github.com/eclipse/cloe/commit/ddff0cb2a7fb6a234630f1445f70991c54394f28>`_
+- osi: Fix lane boundary point order `[865668e7] <https://github.com/eclipse/cloe/commit/865668e729843bd3f90e4ba0a873f781475eaa37>`_
+- osi: Renaming and cleanup `[26dde038] <https://github.com/eclipse/cloe/commit/26dde038d92bf09794a36e6e7db40433cc5f781f>`_
+- osi: Initial commit of message handler and utils `[1eb0a156] <https://github.com/eclipse/cloe/commit/1eb0a156b617e46f82d505e3fd2323edb2f59e57>`_
+
+**Plugins:**
+
+- clothoid_fit: Add frustum culling `[957cfe74] <https://github.com/eclipse/cloe/commit/957cfe74b61f9ca22f0b09bdac61627888dd7daa>`_
+- clothoid_fit: Add lane boundary clothoid fitting plugin `[c3b7e2cd] <https://github.com/eclipse/cloe/commit/c3b7e2cd3b3f28562ce45684ff39e0974dcd9fa8>`_
+
+- esmini: Move from optional to base `[c16fab70] <https://github.com/eclipse/cloe/commit/c16fab70b11782d5a40a513a67cfa5c851f850bb>`_
+- esmini: Fix received osi data `[a9412f89] <https://github.com/eclipse/cloe/commit/a9412f899d8525b3a4edbe4f7e95a14e7d08437f>`_
+- esmini: Initial commit of simulator binding `[e516a72a] <https://github.com/eclipse/cloe/commit/e516a72afbf579af132ed5a72bd14bb6c2261ad1>`_
+
+**Tooling & Dependencies:**
+
+- tooling: Add targets to Makefile.docker for building and running dev container `[8e766a27] <https://github.com/eclipse/cloe/commit/8e766a272fc7cf1fc7cf05f1e6f9074a7ed2785c>`_
+- tooling: Fail when smoketest-deps fails `[c0e9c043] <https://github.com/eclipse/cloe/commit/c0e9c0437a7e4f268ea1482051e777cf27166c9c>`_
+- vendor: Add esmini/2.37.4 `[ecf30691] <https://github.com/eclipse/cloe/commit/ecf30691b63463d4901ed50ea21b713a0ff3de48>`_
+
 
 0.21.0 (2024-02-02)
 -------------------
