@@ -64,7 +64,7 @@ to use a separate, temporary Conan data directory::
 
 Then, compile the entire project locally::
 
-    make purge-all export smoketest-deps smoketest
+    make purge-all export export-vendor smoketest-deps smoketest
 
 This should run through without errors. Then make sure to do the same with
 the optional packages::
