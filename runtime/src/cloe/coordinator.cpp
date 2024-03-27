@@ -29,10 +29,6 @@
 #include <utility>     // for move
 #include <vector>      // for vector<>
 
-#include <fable/utility/sol.hpp>
-#include <sol/optional.hpp>
-
-#include <cloe/core.hpp>       // for Json, Duration, Logger
 #include <cloe/handler.hpp>    // for HandlerType, Request
 #include <cloe/registrar.hpp>  // for Registrar
 #include <cloe/sync.hpp>       // for Sync

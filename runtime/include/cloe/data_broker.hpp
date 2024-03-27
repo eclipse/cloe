@@ -44,23 +44,20 @@
 #ifndef CLOE_DATA_BROKER_HPP_
 #define CLOE_DATA_BROKER_HPP_
 
-#include <any>
 #include <cassert>
 #include <functional>
 #include <map>
 #include <memory>
 #include <regex>
 #include <stdexcept>
+#include <string>
 #include <string_view>
-#include <typeindex>
-#include <vector>
 
 #include <fmt/format.h>
 
-#include <sol/sol.hpp>
-#include "data_broker_types.hpp"
-#include "data_broker_binding.hpp"
-#include "data_broker_container.hpp"
+#include "databroker/data_broker_types.hpp"
+#include "databroker/data_broker_binding.hpp"
+#include "databroker/data_broker_container.hpp"
 
 namespace cloe {
 
@@ -147,7 +144,7 @@ class DataBroker {
    * \param name Name of the signal
    * \return Signal with the given name
    */
-  [[nodiscard]] const SignalContainer::const_iterator operator[](std::string_view name) const {
+  [[nodiscard]] SignalContainer::const_iterator operator[](std::string_view name) const {
     return signals_.find(name);
   }
 

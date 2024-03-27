@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cloe_fwd.hpp"
+#include <cloe/cloe_fwd.hpp>
 
 #include <unordered_map>
 #include <typeindex>

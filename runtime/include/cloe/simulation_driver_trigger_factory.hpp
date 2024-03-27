@@ -1,6 +1,9 @@
 #pragma once
 
 #include "trigger.hpp"
+
+#include <map>
+#include <string>
 namespace cloe {
 
 /**

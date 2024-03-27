@@ -158,9 +158,10 @@ class InteractiveRunner:
 
 class Simulation:
 
-    def run(self, test):
-        test_runner = TestRunner(self.driver, test)
-        self.driver.register_trigger("python_test_runner", {"name": "start"}, test_runner, False)
+    def run(self, test=None):
+        if test:
+            test_runner = TestRunner(self.driver, test)
+            self.driver.register_trigger("python_test_runner", {"name": "start"}, test_runner, False)
         self._sim.run()
 
     def run_interactive(self):

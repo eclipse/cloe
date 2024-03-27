@@ -50,7 +50,7 @@ class SimulationDriver {
   [[nodiscard]] const DriverTriggerFactory& trigger_factory() const { return *trigger_factory_; }
   DriverTriggerFactory& trigger_factory() { return *trigger_factory_; }
 
- private:
+ protected:
   std::unique_ptr<DriverTriggerFactory> trigger_factory_ {std::make_unique<DriverTriggerFactory>()};
 };
 

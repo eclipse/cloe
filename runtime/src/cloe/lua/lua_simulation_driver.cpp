@@ -249,5 +249,12 @@ sol::table LuaSimulationDriver::register_lua_table() {
   cloe::luat_cloe_engine_plugins(*lua_)["_plugin_types"] = tbl;
   return tbl;
 }
+LuaSimulationDriver::~LuaSimulationDriver() {
+  // we need to reset the trigger factory here, b/c it contains a lua state view member and is a
+  // member of the lua simulation driver superclass.
+  // without reset, the lua state is erased upon destruction of "this", leading to segfault when
+  // trying to subsequently remove the state view reference from our superclass
+  trigger_factory_.reset();
+}
 
 }

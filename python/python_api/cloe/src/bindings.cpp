@@ -5,7 +5,6 @@
 
 #include "cloe/component/object.hpp"
 #include "cloe/component/wheel.hpp"
-// #include "lua_setup.hpp"
 #include "cloe/simulation/simulation.hpp"
 #include "cloe/stacklib/stack_factory.hpp"
 
@@ -16,7 +15,6 @@
 
 #include <pybind11/chrono.h>
 #include <pybind11/functional.h>
-#include <pybind11/stl.h>
 #include <pybind11/pybind11.h>
 
 namespace py = pybind11;

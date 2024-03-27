@@ -21,11 +21,12 @@
  */
 
 #include "cloe/data_broker.hpp"
-#include "cloe/data_broker_lua_binding.hpp"
+#include "cloe/databroker/data_broker_lua_binding.hpp"
 
 #include <gtest/gtest.h>
 
 #include <functional>
+#include <sol/state.hpp>
 
 using cloe::Container;
 using cloe::DataBroker;

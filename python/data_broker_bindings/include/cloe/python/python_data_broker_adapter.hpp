@@ -1,10 +1,13 @@
 #pragma once
 
-#include "cloe/data_broker_binding.hpp"
+#include "cloe/databroker/data_broker_binding.hpp"
 #include "signals.hpp"
 
+#include <map>
 #include <typeindex>
 #include <functional>
+#include <string_view>
+#include <memory>
 
 namespace cloe::py {
 

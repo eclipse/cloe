@@ -1,13 +1,14 @@
 #pragma once
 
 #include <cloe/simulation_driver.hpp>
-#include <cloe/data_broker_lua_binding.hpp>
 #include <cloe/coordinator.hpp>
+#include <cloe/databroker/data_broker_lua_binding.hpp>
 
 #include <sol/state.hpp>   // for state
 
 #include <unordered_map>
 #include <typeindex>
+#include <vector>
 
 namespace cloe {
 
@@ -18,7 +19,7 @@ class LuaSimulationDriver final : public cloe::SimulationDriver {
   LuaSimulationDriver& operator=(LuaSimulationDriver&&) = default;
   LuaSimulationDriver(const LuaSimulationDriver&) = delete;
   LuaSimulationDriver& operator=(const LuaSimulationDriver&) = delete;
-  ~LuaSimulationDriver() final = default;
+  ~LuaSimulationDriver() final;
 
   void initialize(const Sync &sync, coordinator::Coordinator& scheduler, DataBroker &db) override;
   void register_action_factories(Registrar& registrar) override;

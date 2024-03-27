@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include <cloe/data_broker_lua_binding.hpp>
+#include <cloe/databroker/data_broker_lua_binding.hpp>
 #include <cloe/data_broker.hpp>
 #include <cloe/component/wheel.hpp>
 
