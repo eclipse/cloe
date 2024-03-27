@@ -27,10 +27,10 @@
 
 #include <Eigen/Geometry>  // for Isometry3d, Vector3d
 
-#include <cloe/component/object.hpp>  // for Object
-#include <cloe/utility/geometry.hpp>  // for quaternion_from_rpy
-#include <cloe/osi/utility/osi_message_handler.hpp>  // for OsiMsgHandler
-#include <cloe/osi/utility/osi_transceiver.hpp>      // for OsiTransceiver
+#include <cloe/component/object.hpp>             // for Object
+#include <cloe/utility/geometry.hpp>             // for quaternion_from_rpy
+#include <cloe/utility/osi_message_handler.hpp>  // for OsiMsgHandler
+#include <cloe/utility/osi_transceiver.hpp>      // for OsiTransceiver
 
 #include "vtd_conf.hpp"         // for VtdSensorConfig
 #include "vtd_sensor_data.hpp"  // for VtdSensorData
@@ -44,11 +44,11 @@ namespace vtd {
  * and provided as an object list.
  *
  */
-class VtdOsiSensor : public cloeosi::OsiMsgHandler, public VtdSensorData {
+class VtdOsiSensor : public cloe::utility::OsiMsgHandler, public VtdSensorData {
  public:
   virtual ~VtdOsiSensor() = default;
 
-  VtdOsiSensor(std::unique_ptr<cloeosi::OsiTransceiver>&& osi_transceiver, uint64_t owner_id)
+  VtdOsiSensor(std::unique_ptr<cloe::utility::OsiTransceiver>&& osi_transceiver, uint64_t owner_id)
       : OsiMsgHandler(std::move(osi_transceiver), owner_id), VtdSensorData("osi_sensor") {
     ego_object_ = std::make_shared<cloe::Object>();  // NOLINT
   }
@@ -106,7 +106,7 @@ class VtdOsiSensor : public cloeosi::OsiMsgHandler, public VtdSensorData {
   /**
    * Set the mock level for different data types according to user request.
    */
-  void set_mock_conf(std::shared_ptr<const cloeosi::SensorMockConf> mock) override {
+  void set_mock_conf(std::shared_ptr<const cloe::utility::SensorMockConf> mock) override {
     this->mock_ = mock;
   }
 

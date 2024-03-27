@@ -20,9 +20,11 @@ class ProtobufConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     generators = "AutotoolsToolchain"
     options = {
+        "shared": [True, False],
         "lite": [True, False],
     }
     default_options = {
+        "shared": True,
         "lite": False,
     }
     exports_sources = [
@@ -37,6 +39,9 @@ class ProtobufConan(ConanFile):
     @property
     def _is_clang_x86(self):
         return self.settings.compiler == "clang" and self.settings.arch == "x86"
+
+    def configure(self):
+        self.options.rm_safe("shared")
 
     def source(self):
         files.get(self, **self.conan_data["sources"][self.version], strip_root=True)
