@@ -42,7 +42,7 @@ class CloeEngine(ConanFile):
     ]
 
     def set_version(self):
-        version_file = Path(self.recipe_folder) / "../VERSION"
+        version_file = Path(self.recipe_folder) / ".." / "VERSION"
         if version_file.exists():
             self.version = files.load(self, version_file).strip()
         else:
