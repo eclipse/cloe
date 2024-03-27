@@ -1,7 +1,7 @@
 .. reference-gen: esmini
 
 ESMini Simulator
-===================
+================
 
 .. todo:: Describe the esmini simulator.
 

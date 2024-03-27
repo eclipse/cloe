@@ -1,15 +1,111 @@
 {
-  "$id": "~/.conan/data/cloe-plugin-minimator/0.21.0/cloe/develop/package/6352d57f4a7e8dd08c53120788e741395b18563e/lib/cloe/simulator_minimator.so",
+  "$id": "~/.conan/data/cloe-plugin-minimator/0.22.0/cloe/develop/package/88e43b731b463b3c3359213daffc30089aa50747/lib/cloe/simulator_minimator.so",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "additionalProperties": false,
   "description": "minimalistic simulator",
   "properties": {
     "vehicles": {
-      "description": "list of vehicle names to make available",
-      "items": {
-        "type": "string"
+      "additionalProperties": {
+        "additionalProperties": false,
+        "properties": {
+          "ego_sensor_mockup": {
+            "additionalProperties": false,
+            "description": "Ego sensor mockup configuration",
+            "properties": {
+              "ego_object": {
+                "additionalProperties": false,
+                "description": "Ego object configuration in world coordinates",
+                "properties": {
+                  "position": {
+                    "additionalProperties": false,
+                    "description": "Object position coordinates (x,y,z)",
+                    "properties": {
+                      "x": {
+                        "description": "Object position x axis",
+                        "maximum": 1.7976931348623157e+308,
+                        "minimum": -1.7976931348623157e+308,
+                        "type": "number"
+                      },
+                      "y": {
+                        "description": "Object position y axis",
+                        "maximum": 1.7976931348623157e+308,
+                        "minimum": -1.7976931348623157e+308,
+                        "type": "number"
+                      },
+                      "z": {
+                        "description": "Object position z axis",
+                        "maximum": 1.7976931348623157e+308,
+                        "minimum": -1.7976931348623157e+308,
+                        "type": "number"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "velocity": {
+                    "description": "Object longitudinal velocity",
+                    "maximum": 1.7976931348623157e+308,
+                    "minimum": -1.7976931348623157e+308,
+                    "type": "number"
+                  }
+                },
+                "type": "object"
+              }
+            },
+            "type": "object"
+          },
+          "object_sensor_mockup": {
+            "additionalProperties": false,
+            "description": "Object sensor mockup configuration",
+            "properties": {
+              "objects": {
+                "description": "Array of object configuration relative to ego vehicle",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "position": {
+                      "additionalProperties": false,
+                      "description": "Object position coordinates (x,y,z)",
+                      "properties": {
+                        "x": {
+                          "description": "Object position x axis",
+                          "maximum": 1.7976931348623157e+308,
+                          "minimum": -1.7976931348623157e+308,
+                          "type": "number"
+                        },
+                        "y": {
+                          "description": "Object position y axis",
+                          "maximum": 1.7976931348623157e+308,
+                          "minimum": -1.7976931348623157e+308,
+                          "type": "number"
+                        },
+                        "z": {
+                          "description": "Object position z axis",
+                          "maximum": 1.7976931348623157e+308,
+                          "minimum": -1.7976931348623157e+308,
+                          "type": "number"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "velocity": {
+                      "description": "Object longitudinal velocity",
+                      "maximum": 1.7976931348623157e+308,
+                      "minimum": -1.7976931348623157e+308,
+                      "type": "number"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
       },
-      "type": "array"
+      "description": "list of vehicle names to make available",
+      "type": "object"
     }
   },
   "title": "minimator",

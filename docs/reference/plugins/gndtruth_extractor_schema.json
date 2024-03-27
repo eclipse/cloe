@@ -1,5 +1,5 @@
 {
-  "$id": "~/.conan/data/cloe-plugin-gndtruth-extractor/0.21.0/cloe/develop/package/6352d57f4a7e8dd08c53120788e741395b18563e/lib/cloe/controller_gndtruth_extractor.so",
+  "$id": "~/.conan/data/cloe-plugin-gndtruth-extractor/0.22.0/cloe/develop/package/88e43b731b463b3c3359213daffc30089aa50747/lib/cloe/controller_gndtruth_extractor.so",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "additionalProperties": false,
   "description": "extracts information from the simulation",
