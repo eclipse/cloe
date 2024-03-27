@@ -47,7 +47,6 @@
 /**
  * \file g1_fitting.cpp
  * \see  g1_fitting.hpp
- *
  */
 
 #include <math.h>     // for M_PI, ..
