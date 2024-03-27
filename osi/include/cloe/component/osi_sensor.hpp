@@ -40,8 +40,7 @@ class OsiSensor : public Component {
   /**
    * Return OSI-SensorData
    */
-  [[nodiscard]] virtual const std::shared_ptr<osi3::SensorData>& get() const = 0;
-  [[nodiscard]] virtual std::shared_ptr<osi3::SensorData>& get() = 0;
+  [[nodiscard]] virtual const osi3::SensorData& get() const = 0;
 };
 
 }  // namespace cloe

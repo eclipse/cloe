@@ -29,17 +29,18 @@
 class TestOsiSensor : public ::cloe::OsiSensor {
  public:
   using OsiSensor::OsiSensor;
-  TestOsiSensor() : OsiSensor("nop_osi_sensor") {}
+  TestOsiSensor(const osi3::SensorData& sdata) : OsiSensor("nop_osi_sensor") {
+    sensor_data_ = std::make_shared<osi3::SensorData>(sdata);
+  }
   TestOsiSensor(const TestOsiSensor&) = default;
   TestOsiSensor(TestOsiSensor&&) = delete;
   TestOsiSensor& operator=(const TestOsiSensor&) = default;
   TestOsiSensor& operator=(TestOsiSensor&&) = delete;
   ~TestOsiSensor() noexcept override = default;
 
-  [[nodiscard]] const std::shared_ptr<osi3::SensorData>& get() const override {
-    return sensor_data_;
+  [[nodiscard]] const osi3::SensorData& get() const override {
+    return *sensor_data_;
   };
-  std::shared_ptr<osi3::SensorData>& get() override { return sensor_data_; }
 
   void reset() override {
     OsiSensor::reset();
@@ -57,14 +58,11 @@ class TestOsiSensor : public ::cloe::OsiSensor {
 };
 
 TEST(cloe_osi_sensor, sensor_data) {
-  TestOsiSensor sensor;
-  {
-    osi3::SensorData sd;
-    sd.mutable_version()->set_version_major(3);
-    sd.mutable_timestamp()->set_seconds(1);
-    sensor.get() = std::make_shared<osi3::SensorData>(sd);
-  }
-  ASSERT_TRUE(sensor.get()->has_version());
-  ASSERT_TRUE(sensor.get()->has_timestamp());
-  ASSERT_FALSE(sensor.get()->has_mounting_position());
+  osi3::SensorData sd;
+  sd.mutable_version()->set_version_major(3);
+  sd.mutable_timestamp()->set_seconds(1);
+  TestOsiSensor sensor(sd);
+  ASSERT_TRUE(sensor.get().has_version());
+  ASSERT_TRUE(sensor.get().has_timestamp());
+  ASSERT_FALSE(sensor.get().has_mounting_position());
 }
