@@ -1,5 +1,5 @@
 {
-  "$id": "~/.conan/data/cloe-plugin-vtd/0.20.0/cloe/develop/package/7e58df8cb379ba7703d10f34d6afe33281d13a30/lib/cloe/simulator_vtd.so",
+  "$id": "~/.conan/data/cloe-plugin-vtd/0.22.0/cloe/develop/package/5ec31e9bbc46d487e0ca8068705cf29ed0087f35/lib/cloe/simulator_vtd.so",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "additionalProperties": false,
   "description": "VIRES Virtual Test Drive",
@@ -209,6 +209,15 @@
                     },
                     "detected_moving_objects": {
                       "description": "mock level for detected moving objects",
+                      "enum": [
+                        "overwrite_none",
+                        "interpolate_missing",
+                        "overwrite_all"
+                      ],
+                      "type": "string"
+                    },
+                    "detected_static_objects": {
+                      "description": "mock level for detected stationary objects",
                       "enum": [
                         "overwrite_none",
                         "interpolate_missing",

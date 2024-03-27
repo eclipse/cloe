@@ -34,7 +34,7 @@ for plugin in "${refdir}"/*.rst; do
 
    launch_options=
    if [[ "$plugin_ref" == "vtd" ]]; then
-      launch_options="-o:o with_vtd=True"
+      launch_options="-o:o with_vtd=True -o:o with_esmini=False"
    fi
 
    echo "info: generating usage for: $plugin_ref"

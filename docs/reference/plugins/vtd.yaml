@@ -1,6 +1,6 @@
 Name: vtd
 Type: simulator
-Path: ~/.conan/data/cloe-plugin-vtd/0.20.0/cloe/develop/package/7e58df8cb379ba7703d10f34d6afe33281d13a30/lib/cloe/simulator_vtd.so
+Path: ~/.conan/data/cloe-plugin-vtd/0.22.0/cloe/develop/package/5ec31e9bbc46d487e0ca8068705cf29ed0087f35/lib/cloe/simulator_vtd.so
 Usage: {
   "camera": {
     "focus_on": "string :: player to focus on",
