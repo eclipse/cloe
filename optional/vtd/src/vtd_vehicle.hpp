@@ -32,21 +32,21 @@
 #include <cloe/models.hpp>                              // for CloeComponent
 #include <cloe/sync.hpp>                                // for Sync
 #include <cloe/utility/inja.hpp>                        // for inja
+#include <cloe/utility/osi_transceiver_tcp.hpp>         // for OsiTransceiverTcpFactory
 #include <cloe/utility/tcp_transceiver_config.hpp>      // for TcpTransceiverConfiguration
 #include <cloe/vehicle.hpp>                             // for Vehicle
 
-#include <osi/utility/osi_transceiver_tcp.hpp>  // for OsiTransceiverTcpFactory
-#include "actuator_component.hpp"               // for VtdLatLongActuator
-#include "omni_sensor_component.hpp"            // for VtdOmniSensor
-#include "osi_sensor_component.hpp"             // for VtdOsiSensor
-#include "rdb_transceiver_tcp.hpp"              // for RdbTransceiverTcp, RdbTransceiverTcpFactory
-#include "scp_messages.hpp"                     // for scp::{LabelVehicle, SensorConfiguration}
-#include "scp_transceiver.hpp"                  // for ScpTransceiver
-#include "task_control.hpp"                     // for TaskControl
-#include "vtd_conf.hpp"                         // for VtdVehicleConfig
-#include "vtd_logger.hpp"                       // for sensors_logger
-#include "vtd_sensor_components.hpp"            // VtdEgoSensor, VtdWorldSensor, ...
-#include "vtd_sensor_data.hpp"                  // for VtdSensorData
+#include "actuator_component.hpp"     // for VtdLatLongActuator
+#include "omni_sensor_component.hpp"  // for VtdOmniSensor
+#include "osi_sensor_component.hpp"   // for VtdOsiSensor
+#include "rdb_transceiver_tcp.hpp"    // for RdbTransceiverTcp, RdbTransceiverTcpFactory
+#include "scp_messages.hpp"           // for scp::{LabelVehicle, SensorConfiguration}
+#include "scp_transceiver.hpp"        // for ScpTransceiver
+#include "task_control.hpp"           // for TaskControl
+#include "vtd_conf.hpp"               // for VtdVehicleConfig
+#include "vtd_logger.hpp"             // for sensors_logger
+#include "vtd_sensor_components.hpp"  // VtdEgoSensor, VtdWorldSensor, ...
+#include "vtd_sensor_data.hpp"        // for VtdSensorData
 
 namespace vtd {
 
@@ -395,7 +395,7 @@ class VtdVehicleFactory {
   std::vector<std::string> remaining_vehicles_;
   std::shared_ptr<TaskControl> task_control_{nullptr};
   RdbTransceiverTcpFactory rdb_factory_{};
-  cloeosi::OsiTransceiverTcpFactory osi_factory_{};
+  cloe::utility::OsiTransceiverTcpFactory osi_factory_{};
   std::string sensor_host_{"localhost"};
   uint16_t sensor_port_{0};
   std::map<std::string, VtdVehicleConfig> vehicles_;

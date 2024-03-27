@@ -36,8 +36,8 @@
 #include <osi3/osi_sensordata.pb.h>      // for SensorData, DetectedEntityHeader
 #include <osi3/osi_sensorview.pb.h>      // for SensorView
 
-#include <osi3/utility/osi_message_handler.hpp>
-#include <osi3/utility/osi_transceiver_tcp.hpp>
+#include <cloe/utility/osi_message_handler.hpp>
+#include <cloe/utility/osi_transceiver_tcp.hpp>
 
 #include "osi_sensor_component.hpp"  // for transform_...
 
@@ -106,9 +106,11 @@ TEST(vtd_osi, osi_sensor) {
       {"target",
        {0, osi3::MovingObject_Type_TYPE_VEHICLE,
         osi3::MovingObject_VehicleClassification_Type_TYPE_SMALL_CAR}}};
-  vtd::VtdOsiSensor sensor(std::unique_ptr<cloeosi::OsiTransceiver>(nullptr), vehicles.at("ego").id);
+  vtd::VtdOsiSensor sensor(std::unique_ptr<cloe::utility::OsiTransceiver>(nullptr),
+                           vehicles.at("ego").id);
   cloe::Duration sim_time{0};
-  std::shared_ptr<cloeosi::SensorMockConf> mock_conf = std::make_shared<cloeosi::SensorMockConf>();
+  std::shared_ptr<cloe::utility::SensorMockConf> mock_conf =
+      std::make_shared<cloe::utility::SensorMockConf>();
   sensor.set_mock_conf(mock_conf);
   // Initialize sensor data.
   auto data_shp = std::make_shared<osi3::SensorData>();

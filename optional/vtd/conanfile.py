@@ -44,7 +44,8 @@ class CloeSimulatorVTD(ConanFile):
     def requirements(self):
         self.requires(f"cloe-runtime/{self.version}@cloe/develop")
         self.requires(f"cloe-models/{self.version}@cloe/develop")
-        self.requires("open-simulation-interface/3.2.0@cloe/stable")
+        self.requires(f"cloe-osi/{self.version}@cloe/develop")
+        self.requires("open-simulation-interface/3.5.0@cloe/stable")
         self.requires("vtd-api/2.2.0@cloe/stable")
 
         # Overrides, same as in the cloe conanfile.py:

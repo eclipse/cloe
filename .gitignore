@@ -9,6 +9,7 @@ build/
 
 # Vendored Conan recipes sometimes extract fetched sources
 vendor/**/src/
+**/vendor/**/src/
 
 # Documentation
 docs/_build/
