@@ -1,0 +1,42 @@
+{
+  "$id": "~/.conan/data/cloe-plugin-esmini/0.22.0/cloe/develop/package/edd33cfae11b1ac2558435742ce028cfc34c7917/lib/cloe/simulator_esmini.so",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "description": "basic OpenScenario player",
+  "properties": {
+    "headless": {
+      "description": "run esmini without viewer",
+      "type": "boolean"
+    },
+    "scenario": {
+      "description": "absolute path to open scenario file",
+      "type": "string"
+    },
+    "vehicles": {
+      "additionalProperties": {
+        "additionalProperties": false,
+        "properties": {
+          "closed_loop": {
+            "description": "control the esmini vehicle",
+            "type": "boolean"
+          },
+          "filter_distance": {
+            "description": "filter distance for ground truth data",
+            "maximum": 1.7976931348623157e+308,
+            "minimum": -1.7976931348623157e+308,
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "description": "vehicle configuration like sensors and component mapping",
+      "type": "object"
+    },
+    "write_images": {
+      "description": "save an image for each step",
+      "type": "boolean"
+    }
+  },
+  "title": "esmini",
+  "type": "object"
+}

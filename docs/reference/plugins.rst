@@ -30,6 +30,7 @@ installation of these simulators.
 
    plugins/nop_simulator
    plugins/minimator
+   plugins/esmini
    plugins/vtd
 
 .. rubric:: Controller Plugins
