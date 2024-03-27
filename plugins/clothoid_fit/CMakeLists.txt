@@ -1,9 +1,10 @@
-cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 
 project(cloe_plugin_clothoid_fit LANGUAGES CXX)
 
-include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS)
+find_package(cloe-runtime REQUIRED)
+find_package(cloe-models REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 add_library(g1-fitting-lib STATIC
     src/g1_fitting.cpp
@@ -21,17 +22,16 @@ cloe_add_plugin(
         src/clothoid_fit.cpp
     LINK_LIBRARIES
         g1-fitting-lib
-        CONAN_PKG::eigen
-        CONAN_PKG::cloe-runtime
-        CONAN_PKG::cloe-models
+        Eigen3::Eigen
+        cloe::runtime
+        cloe::models
     COMPILE_DEFINITIONS
         PROJECT_SOURCE_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}\"
 )
 
-option(BuildTests "Build tests?" ON)
-if(BuildTests)
-    message(STATUS "-> Enable testing")
-    enable_testing()
+include(CTest)
+if(BUILD_TESTING)
+    find_package(GTest REQUIRED)
     include(GoogleTest)
 
     add_executable(test-clothoid-fit
@@ -45,10 +45,11 @@ if(BuildTests)
     target_link_libraries(test-clothoid-fit
       PRIVATE
         g1-fitting-lib
-        CONAN_PKG::gtest
-        CONAN_PKG::eigen
-        CONAN_PKG::cloe-runtime
-        CONAN_PKG::cloe-models
+        GTest::gtest
+        GTest::gtest_main
+        Eigen3::Eigen
+        cloe::runtime
+        cloe::models
     )
     gtest_add_tests(TARGET test-clothoid-fit)
 endif()

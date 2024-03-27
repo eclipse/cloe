@@ -20,6 +20,8 @@
  *
  */
 
+#pragma once
+
 #include <math.h>          // for atan
 #include <Eigen/Geometry>  // for Isometry3d
 #include <map>             // for map
