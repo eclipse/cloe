@@ -95,7 +95,6 @@ class CloeSimulatorVTD(ConanFile):
 
     def configure(self):
         self.options["open-simulation-interface"].shared = False
-        self.options["open-simulation-interface"].fPIC = True
 
     def layout(self):
         cmake.cmake_layout(self)

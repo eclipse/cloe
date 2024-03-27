@@ -32,8 +32,8 @@ class ProtobufConan(ConanFile):
         "cmake/*",
     ]
     build_requires = [
-        "autoconf/[>=2.69]",
-        "libtool/[>=2.4.6]",
+        "autoconf/2.71",
+        "libtool/2.4.7",
     ]
 
     @property

@@ -20,16 +20,11 @@ class Cloe(ConanFile):
         "with_vtd": [True, False],
         "with_esmini": [True, False],
         "with_engine": [True, False],
-
-        # Doesn't affect package ID:
-        "pedantic": [True, False],
     }
     default_options = {
         "with_vtd": False,
         "with_esmini": True,
         "with_engine": True,
-
-        "pedantic": True,
 
         "cloe-engine:server": True,
     }
@@ -73,6 +68,3 @@ class Cloe(ConanFile):
         self.requires("nlohmann_json/3.11.2", override=True)
         self.requires("incbin/cci.20211107", override=True),
         self.requires(f"boost/{boost_version}", override=True)
-
-    def package_id(self):
-        del self.info.options.pedantic
