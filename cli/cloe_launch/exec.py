@@ -429,6 +429,12 @@ class Engine:
         """Return all Cloe plugin paths we find in LD_LIBRARY_PATH."""
         plugin_paths = []
         for libdir in env.get_list("LD_LIBRARY_PATH", default=[]):
+            # Conan defines LD_LIBRARY_PATH like this:
+            #   LD_LIBRARY_PATH=...:$LD_LIBRARY_PATH
+            # If the initial value is empty, this leads to an empty item in the list;
+            # we don't want this to be interpreted as CWD.
+            if len(libdir) == 0:
+                continue
             pp = Path(libdir) / "cloe"
             if pp.exists():
                 plugin_paths.append(pp)
