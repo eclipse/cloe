@@ -35,6 +35,7 @@ from ._options import cli_command
 @cli_command("exec")
 @_options.preserve_env()
 @_options.override_env()
+@_options.ignore_plugin_setups()
 @_options.cache()
 @click.option(
     "-d",
@@ -49,6 +50,7 @@ def cli_exec(
     conf: Configuration,
     preserve_env: bool,
     override_env: List[str],
+    ignore_plugin_setups: bool,
     cache: bool,
     debug: bool,
     conanfile: str,
@@ -71,6 +73,7 @@ def cli_exec(
     engine = Engine(conf, conanfile=conanfile)
     engine.conan_args = _options.extract_conan_args(args)
     engine.preserve_env = preserve_env
+    engine.load_plugin_setups = not ignore_plugin_setups
 
     # Run cloe-engine and pass on returncode:
     # If cloe-engine is killed/aborted, subprocess will return 250.

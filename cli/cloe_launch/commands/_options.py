@@ -80,6 +80,23 @@ def extract_target_args(xargs) -> List[str]:
             should_append = True
     return results
 
+def ignore_plugin_setups():
+    """Click option --ignore-plugin-setups.
+
+    Python files co-located in the CLOE_PLUGIN_PATH are loaded by cloe-launch.
+    However, CLOE_PLUGIN_PATH is currently approximated through identifying
+    directories in LD_LIBRARY_PATH that contain a cloe directory.
+    This approximation doesn't always work out, for example if LD_LIBRARY_PATH
+    contains relative paths, such as ".".
+
+    In this case you may want to disable plugin-setup loading, espcially if
+    you know that you don't need it.
+    """
+    return click.option(
+        "--ignore-plugin-setups",
+        is_flag=True,
+        help="Ignore python plugin setup configuration files."
+    )
 
 def preserve_env():
     """Click option --preserve-env."""
