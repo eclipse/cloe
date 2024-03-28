@@ -1,0 +1,13 @@
+---
+name: Git Checks
+
+on: [pull_request]
+
+jobs:
+  block-fixup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Ensure !fixup commits are merged
+        uses: 13rac1/block-fixup-merge-action@v2.0.0
