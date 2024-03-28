@@ -52,10 +52,10 @@ class Enum : public Base<Enum<T>> {
   }
 
  public:  // Special
-  const std::vector<std::string>& keys() const { return keys_; }
+  [[nodiscard]] const std::vector<std::string>& keys() const { return keys_; }
 
  public:  // Overrides
-  Json json_schema() const override {
+  [[nodiscard]] Json json_schema() const override {
     Json j{
         {"type", this->type_string()},
         {"enum", keys_},
@@ -73,6 +73,7 @@ class Enum : public Base<Enum<T>> {
   }
 
   using Interface::to_json;
+
   void to_json(Json& j) const override {
     assert(ptr_ != nullptr);
     j = serialize(*ptr_);

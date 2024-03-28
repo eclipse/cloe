@@ -64,45 +64,54 @@ class Variant : public Interface {
   Variant(std::string desc, std::vector<Box>&& vec);
 
  public:  // Base
-  Interface* clone() const override { return new Variant(*this); }
-  operator Box() const { return Box{this->clone()}; }
-  JsonType type() const override { return type_; }
-  std::string type_string() const override { return type_string_; }
-  bool is_variant() const override { return true; }
-  Json usage() const override;
+  [[nodiscard]] Interface* clone() const override { return new Variant(*this); }
+  [[nodiscard]] operator Box() const { return Box{this->clone()}; }
+  [[nodiscard]] JsonType type() const override { return type_; }
+  [[nodiscard]] std::string type_string() const override { return type_string_; }
+  [[nodiscard]] bool is_variant() const override { return true; }
+  [[nodiscard]] Json usage() const override;
 
-  bool is_required() const override { return required_; }
-  Variant require() && {
+  [[nodiscard]] bool is_required() const override { return required_; }
+  [[nodiscard]] Variant require() && {
     required_ = true;
     return std::move(*this);
   }
-  Variant required(bool value) && {
+  void set_required(bool value) {
+    required_ = value;
+  }
+  [[nodiscard]] Variant required(bool value) && {
     required_ = value;
     return std::move(*this);
   }
 
-  bool has_description() const { return !desc_.empty(); }
+  [[nodiscard]] bool has_description() const { return !desc_.empty(); }
   void set_description(std::string s) override { desc_ = std::move(s); }
-  const std::string& description() const override { return desc_; }
-  Variant description(std::string desc) && {
+  [[nodiscard]] const std::string& description() const override { return desc_; }
+  [[nodiscard]] Variant description(std::string desc) && {
     desc_ = std::move(desc);
     return std::move(*this);
   }
 
  public:  // Special
-  Variant unique_match(bool value) && {
+  [[nodiscard]] bool unique_match() const {
+    return unique_match_;
+  }
+  void set_unique_match(bool value) {
+    unique_match_ = value;
+  }
+  [[nodiscard]] Variant unique_match(bool value) && {
     unique_match_ = value;
     return std::move(*this);
   }
 
-  Variant reset_pointer() && {
+  [[nodiscard]] Variant reset_pointer() && {
     reset_ptr();
     return std::move(*this);
   }
 
  public:  // Overrides
   using Interface::to_json;
-  Json json_schema() const override;
+  [[nodiscard]] Json json_schema() const override;
   bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
     return validate_index(c, err).has_value();
   }
@@ -122,7 +131,7 @@ class Variant : public Interface {
 
  private:
   std::optional<size_t> validate_index(const Conf& c, std::optional<SchemaError>& err) const;
-  size_t variant_index(const Conf& c) const;
+  [[nodiscard]] size_t variant_index(const Conf& c) const;
 
  private:
   std::string desc_{};

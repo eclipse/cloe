@@ -45,27 +45,29 @@ class CustomDeserializer : public schema::Interface {
       : impl_(std::move(s).reset_pointer().get()), from_conf_fn_(f) {}
 
  public:  // Special
-  operator Box() const { return Box{this->clone()}; }
+  [[nodiscard]] operator Box() const { return Box{this->clone()}; }
 
   void set_from_conf(std::function<void(CustomDeserializer*, const Conf&)> f) { from_conf_fn_ = f; }
 
-  CustomDeserializer with_from_conf(std::function<void(CustomDeserializer*, const Conf&)> f) && {
+  [[nodiscard]] CustomDeserializer with_from_conf(std::function<void(CustomDeserializer*, const Conf&)> f) && {
     set_from_conf(f);
     return std::move(*this);
   }
 
  public:  // Overrides
-  Interface* clone() const override { return new CustomDeserializer(*this); }
+  [[nodiscard]] Interface* clone() const override { return new CustomDeserializer(*this); }
 
   using Interface::to_json;
-  JsonType type() const override { return impl_->type(); }
-  std::string type_string() const override { return impl_->type_string(); }
-  bool is_required() const override { return impl_->is_required(); }
-  const std::string& description() const override { return impl_->description(); }
+  [[nodiscard]] JsonType type() const override { return impl_->type(); }
+  [[nodiscard]] std::string type_string() const override { return impl_->type_string(); }
+  [[nodiscard]] bool is_required() const override { return impl_->is_required(); }
+  [[nodiscard]] const std::string& description() const override { return impl_->description(); }
   void set_description(std::string s) override { return impl_->set_description(std::move(s)); }
-  Json usage() const override { return impl_->usage(); }
-  Json json_schema() const override { return impl_->json_schema(); };
-  bool validate(const Conf& c, std::optional<SchemaError>& err) const override { return impl_->validate(c, err); }
+  [[nodiscard]] Json usage() const override { return impl_->usage(); }
+  [[nodiscard]] Json json_schema() const override { return impl_->json_schema(); };
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
+    return impl_->validate(c, err);
+  }
   void to_json(Json& j) const override { impl_->to_json(j); }
 
   void from_conf(const Conf& c) override {

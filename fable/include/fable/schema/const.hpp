@@ -49,7 +49,7 @@ class Const : public Base<Const<T, P>> {
   }
 
  public:  // Overrides
-  Json json_schema() const override {
+  [[nodiscard]] Json json_schema() const override {
     Json j{
         {"const", constant_},
     };
@@ -70,9 +70,9 @@ class Const : public Base<Const<T, P>> {
 
   void from_conf(const Conf& c) override { this->validate_or_throw(c); }
 
-  Json serialize(const Type& x) const { return prototype_.serialize(x); }
+  [[nodiscard]] Json serialize(const Type& x) const { return prototype_.serialize(x); }
 
-  Type deserialize(const Conf& c) const {
+  [[nodiscard]] Type deserialize(const Conf& c) const {
     this->validate_or_throw(c);
     return constant_;
   }

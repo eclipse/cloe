@@ -100,44 +100,57 @@ class Path : public Base<Path<T>> {
   /**
    * Return the required state of the path in the filesystem.
    */
-  State state() const { return req_state_; }
+  [[nodiscard]] State state() const { return req_state_; }
+
+  void set_state(State s) { req_state_ = s; }
 
   /**
    * Set the required state of the path in the filesystem.
    */
-  Path state(State s) && {
+  [[nodiscard]] Path state(State s) && {
     req_state_ = s;
     return std::move(*this);
   }
-  void set_state(State s) { req_state_ = s; }
 
-  Path absent() && { return std::move(*this).state(State::Absent); }
-  Path exists() && { return std::move(*this).state(State::Exists); }
-  Path executable() && { return std::move(*this).state(State::Executable); }
-  Path file_exists() && { return std::move(*this).state(State::FileExists); }
-  Path dir_exists() && { return std::move(*this).state(State::DirExists); }
-  Path not_file() && { return std::move(*this).state(State::NotFile); }
-  Path not_dir() && { return std::move(*this).state(State::NotDir); }
+  [[nodiscard]] Path absent() && { return std::move(*this).state(State::Absent); }
+  [[nodiscard]] Path exists() && { return std::move(*this).state(State::Exists); }
+  [[nodiscard]] Path executable() && { return std::move(*this).state(State::Executable); }
+  [[nodiscard]] Path file_exists() && { return std::move(*this).state(State::FileExists); }
+  [[nodiscard]] Path dir_exists() && { return std::move(*this).state(State::DirExists); }
+  [[nodiscard]] Path not_file() && { return std::move(*this).state(State::NotFile); }
+  [[nodiscard]] Path not_dir() && { return std::move(*this).state(State::NotDir); }
 
-  Path not_empty() && {
+  [[nodiscard]] Path not_empty() && {
     set_min_length(1);
     return std::move(*this);
+  }
+
+  [[nodiscard]] bool absolute() const {
+    return req_abs_;
+  }
+
+  void set_absolute(bool value) {
+    req_abs_ = value;
   }
 
   /**
    * Require the input path to be absolute.
    */
-  Path absolute() && {
-    req_abs_ = true;
+  [[nodiscard]] Path absolute(bool value) && {
+    req_abs_ = value;
     return std::move(*this);
   }
+
+
 
   /**
    * Return whether path resolution is active.
    *
    * By default this is true.
    */
-  bool resolve() const { return resolve_; }
+  [[nodiscard]] bool resolve() const { return resolve_; }
+
+  void set_resolve(bool value) { resolve_ = value; }
 
   /**
    * Set whether the configuration file location should be used to resolve the
@@ -151,56 +164,55 @@ class Path : public Base<Path<T>> {
    * Resolve must be true if the search path should be used to resolve
    * executables.
    */
-  Path resolve(bool value) && {
+  [[nodiscard]] Path resolve(bool value) && {
     resolve_ = value;
     return std::move(*this);
   }
-  void set_resolve(bool value) { resolve_ = value; }
 
-  bool normalize() const { return normalize_; }
-  Path normalize(bool value) && {
+  [[nodiscard]] bool normalize() const { return normalize_; }
+  void set_normalize(bool value) { normalize_ = value; }
+  [[nodiscard]] Path normalize(bool value) && {
     normalize_ = value;
     return std::move(*this);
   }
-  void set_normalize(bool value) { normalize_ = value; }
 
-  bool interpolate() const { return interpolate_; }
+  [[nodiscard]] bool interpolate() const { return interpolate_; }
   void set_interpolate(bool value) { interpolate_ = value; }
-  Path interpolate(bool value) && {
+  [[nodiscard]] Path interpolate(bool value) && {
     interpolate_ = value;
     return std::move(*this);
   }
 
-  Environment* environment() const { return env_; }
+  [[nodiscard]] Environment* environment() const { return env_; }
   void set_environment(Environment* env) { env_ = env; }
-  Path environment(Environment* env) && {
+  [[nodiscard]] Path environment(Environment* env) && {
     env_ = env;
     return std::move(*this);
   }
 
-  size_t min_length() const { return min_length_; }
+  [[nodiscard]] size_t min_length() const { return min_length_; }
   void set_min_length(size_t value) { min_length_ = value; }
-  Path min_length(size_t value) && {
+  [[nodiscard]] Path min_length(size_t value) && {
     min_length_ = value;
     return std::move(*this);
   }
 
-  size_t max_length() const { return max_length_; }
+  [[nodiscard]] size_t max_length() const { return max_length_; }
   void set_max_length(size_t value) { max_length_ = value; }
-  Path max_length(size_t value) && {
+  [[nodiscard]] Path max_length(size_t value) && {
     max_length_ = value;
     return std::move(*this);
   }
 
-  const std::string& pattern() const { return pattern_; }
+  [[nodiscard]] const std::string& pattern() const { return pattern_; }
   void set_pattern(const std::string& value) { pattern_ = value; }
-  Path pattern(const std::string& value) && {
+  [[nodiscard]] Path pattern(const std::string& value) && {
     pattern_ = value;
     return std::move(*this);
   }
 
  public:  // Overrides
-  Json json_schema() const override;
+  [[nodiscard]] Json json_schema() const override;
   bool validate(const Conf& c, std::optional<SchemaError>& err) const override;
 
   using Interface::to_json;
@@ -214,9 +226,9 @@ class Path : public Base<Path<T>> {
     *ptr_ = deserialize(c);
   }
 
-  Json serialize(const Type& x) const { return x.native(); }
+  [[nodiscard]] Json serialize(const Type& x) const { return x.native(); }
 
-  Type deserialize(const Conf& c) const;
+  [[nodiscard]] Type deserialize(const Conf& c) const;
 
   void serialize_into(Json& j, const Type& x) const { j = serialize(x); }
 
@@ -225,7 +237,7 @@ class Path : public Base<Path<T>> {
   void reset_ptr() override { ptr_ = nullptr; }
 
  private:
-  Type resolve_path(const Conf&, const Type&) const;
+  [[nodiscard]] Type resolve_path(const Conf&, const Type&) const;
 
  private:
   State req_state_{State::Any};

@@ -119,7 +119,7 @@ class Struct : public Base<Struct> {
    */
   void set_property(const std::string& key, Box&& s);
 
-  Struct property(const std::string& key, Box&& s) && {
+  [[nodiscard]] Struct property(const std::string& key, Box&& s) && {
     set_property(key, std::move(s));
     return std::move(*this);
   }
@@ -146,7 +146,7 @@ class Struct : public Base<Struct> {
   }
 
   template <typename T>
-  Struct properties_from(const T x) {
+  [[nodiscard]] Struct properties_from(const T x) && {
     set_properties_from(x);
     return std::move(*this);
   }
@@ -158,7 +158,7 @@ class Struct : public Base<Struct> {
    *   m the number of properties in init.
    */
   void set_require(std::initializer_list<std::string> init);
-  Struct require(std::initializer_list<std::string> init) &&;
+  [[nodiscard]] Struct require(std::initializer_list<std::string> init) &&;
 
   /**
    * Set whether all entries are required.
@@ -169,7 +169,7 @@ class Struct : public Base<Struct> {
    *   called.
    */
   void set_require_all();
-  Struct require_all() &&;
+  [[nodiscard]] Struct require_all() &&;
 
   /**
    * Set whether to tolerate unknown fields in this entry.
@@ -177,7 +177,7 @@ class Struct : public Base<Struct> {
    * - The default is false.
    * - Meant to be used during construction.
    */
-  Struct additional_properties(bool v) && {
+  [[nodiscard]] Struct additional_properties(bool v) && {
     additional_properties_ = v;
     return std::move(*this);
   }
@@ -190,19 +190,19 @@ class Struct : public Base<Struct> {
   }
 
   template <typename S, typename = enable_if_schema_t<S>>
-  Struct additional_properties(const S& s) && {
+  [[nodiscard]] Struct additional_properties(const S& s) && {
     set_additional_properties(s);
     return std::move(*this);
   }
 
-  bool additional_properties() const { return additional_properties_; }
+  [[nodiscard]] bool additional_properties() const { return additional_properties_; }
 
   void reset_ptr() override;
 
  public:  // Overrides
   using Interface::to_json;
-  Json usage() const override;
-  Json json_schema() const override;
+  [[nodiscard]] Json usage() const override;
+  [[nodiscard]] Json json_schema() const override;
   bool validate(const Conf& c, std::optional<SchemaError>& err) const override;
   void to_json(Json& j) const override;
   void from_conf(const Conf& c) override;

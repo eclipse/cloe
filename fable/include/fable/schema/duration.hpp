@@ -52,43 +52,72 @@ class Duration : public Base<Duration<T, Period>> {
       : Base<Duration<T, Period>>(JsonType::number_float, std::move(desc)), ptr_(ptr) {}
 
  public:  // Special
-  T minimum() const { return value_min_; }
-  bool exclusive_minimum() const { return exclusive_min_; }
-  Duration<T, Period> minimum(T value) && {
+  [[nodiscard]] T minimum() const { return value_min_; }
+
+  void set_minimum(T value) {
     value_min_ = value;
     exclusive_min_ = false;
-    return std::move(*this);
   }
-  Duration<T, Period> exclusive_minimum(T value) && {
-    value_min_ = value;
-    exclusive_min_ = true;
+
+  [[nodiscard]] Duration<T, Period> minimum(T value) && {
+    set_minimum(value);
     return std::move(*this);
   }
 
-  T maximum() const { return value_max_; }
-  bool exclusive_maximum() const { return exclusive_max_; }
-  Duration<T, Period> maximum(T value) && {
+  [[nodiscard]] bool exclusive_minimum() const { return exclusive_min_; }
+
+  void set_exclusive_minimum(T value) {
+    value_min_ = value;
+    exclusive_min_ = true;
+  }
+
+  [[nodiscard]] Duration<T, Period> exclusive_minimum(T value) && {
+    set_exclusive_minimum(value);
+    return std::move(*this);
+  }
+
+  [[nodiscard]] T maximum() const { return value_max_; }
+
+  void set_maximum(T value) {
+    value_max_ = value;
+    exclusive_max_ = false;
+  }
+
+  [[nodiscard]] Duration<T, Period> maximum(T value) && {
     value_max_ = value;
     exclusive_max_ = false;
     return std::move(*this);
   }
-  Duration<T, Period> exclusive_maximum(T value) && {
+
+  [[nodiscard]] bool exclusive_maximum() const { return exclusive_max_; }
+
+  void set_exclusive_maximum(T value) {
+    value_max_ = value;
+    exclusive_max_ = true;
+  }
+
+  [[nodiscard]] Duration<T, Period> exclusive_maximum(T value) && {
     value_max_ = value;
     exclusive_max_ = true;
     return std::move(*this);
   }
 
-  std::pair<T, T> bounds() const { return std::make_pair(value_min_, value_max_); }
-  Duration<T, Period> bounds(T min, T max) && {
+  [[nodiscard]] std::pair<T, T> bounds() const { return std::make_pair(value_min_, value_max_); }
+
+  void set_bounds(T min, T max) {
     exclusive_min_ = false;
     value_min_ = min;
     exclusive_max_ = false;
     value_max_ = max;
+  }
+
+  [[nodiscard]] Duration<T, Period> bounds(T min, T max) && {
+    set_bounds(min, max);
     return std::move(*this);
   }
 
  public:  // Overrides
-  Json json_schema() const override {
+  [[nodiscard]] Json json_schema() const override {
     Json j{
         {"type", this->type_string()},
         {exclusive_min_ ? "exclusiveMinimum" : "minimum", value_min_},
@@ -116,6 +145,7 @@ class Duration : public Base<Duration<T, Period>> {
   }
 
   using Interface::to_json;
+
   void to_json(Json& j) const override {
     assert(ptr_ != nullptr);
     j = serialize(*ptr_);
@@ -126,9 +156,9 @@ class Duration : public Base<Duration<T, Period>> {
     *ptr_ = deserialize(c);
   }
 
-  Json serialize(const Type& x) const { return x.count(); }
+  [[nodiscard]] Json serialize(const Type& x) const { return x.count(); }
 
-  Type deserialize(const Conf& c) const { return Type(c.get<T>()); }
+  [[nodiscard]] Type deserialize(const Conf& c) const { return Type(c.get<T>()); }
 
   void serialize_into(Json& j, const Type& x) const { j = x.count(); }
 

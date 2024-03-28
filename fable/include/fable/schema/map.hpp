@@ -63,30 +63,42 @@ class Map : public Base<Map<T, P>> {
   }
 
  public:  // Special
-  bool unique_properties() const { return unique_properties_; }
-  Map<T, P> unique_properties(bool value) && {
+  [[nodiscard]] bool unique_properties() const { return unique_properties_; }
+  [[nodiscard]] Map<T, P> unique_properties(bool value) && {
+    set_unique_properties(value);
+    return std::move(*this);
+  }
+  void set_unique_properties(bool value) {
     unique_properties_ = value;
-    return std::move(*this);
   }
 
-  const std::vector<std::string>& required() const { return required_; }
-  Map<T, P> require_properties(const std::vector<std::string>& values) && {
+  [[nodiscard]] const std::vector<std::string>& required_properties() const { return required_; }
+  [[nodiscard]] Map<T, P> require_properties(const std::vector<std::string>& values) && {
+    set_required_properties(values);
+    return std::move(*this);
+  }
+  [[nodiscard]] Map<T, P> require_property(const std::string& value) && {
+    add_required_property(value);
+    return std::move(*this);
+  }
+  void set_required_properties(const std::vector<std::string>& values) {
     required_ = values;
-    return std::move(*this);
   }
-  Map<T, P> require_property(const std::string& value) && {
+  void add_required_property(const std::string& value) {
     required_.emplace_back(value);
-    return std::move(*this);
   }
 
-  const std::string& pattern() const { return pattern_; }
-  Map<T, P> pattern(const std::string& value) && {
+  [[nodiscard]] const std::string& pattern() const { return pattern_; }
+  [[nodiscard]] Map<T, P> pattern(const std::string& value) && {
     pattern_ = value;
     return std::move(*this);
   }
+  void set_pattern(const std::string& value) {
+    pattern_ = value;
+  }
 
  public:  // Overrides
-  Json json_schema() const override {
+  [[nodiscard]] Json json_schema() const override {
     Json j{
         {"type", "object"},
         {"additionalProperties", prototype_.json_schema()},
@@ -164,13 +176,13 @@ class Map : public Base<Map<T, P>> {
     }
   }
 
-  Json serialize(const Type& x) const {
+  [[nodiscard]] Json serialize(const Type& x) const {
     Json j;
     serialize_into(j, x);
     return j;
   }
 
-  Type deserialize(const Conf& c) const {
+  [[nodiscard]] Type deserialize(const Conf& c) const {
     Type tmp;
     deserialize_into(c, tmp);
     return tmp;
@@ -189,7 +201,7 @@ class Map : public Base<Map<T, P>> {
     }
   }
 
-  T deserialize_item(const Conf& c, const std::string& key) const {
+  [[nodiscard]] T deserialize_item(const Conf& c, const std::string& key) const {
     return prototype_.deserialize(c.at(key));
   }
 

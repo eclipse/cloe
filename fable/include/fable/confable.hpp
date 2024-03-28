@@ -66,7 +66,7 @@ class Confable {
    * This method uses `schema_impl` under the hood, which the object should
    * implement.
    */
-  Schema& schema();
+  [[nodiscard]] Schema& schema();
 
   /**
    * Return the object schema for description and validation.
@@ -74,7 +74,7 @@ class Confable {
    * This method uses `schema_impl` under the hood, which the object should
    * implement.
    */
-  const Schema& schema() const;
+  [[nodiscard]] const Schema& schema() const;
 
   /**
    * Validate a Conf without applying it.
@@ -128,7 +128,7 @@ class Confable {
   /**
    * Serialize a Confable to Json.
    */
-  Json to_json() const;
+  [[nodiscard]] Json to_json() const;
 
  protected:
   /**
@@ -138,7 +138,7 @@ class Confable {
    * object is created or moved, since Schema contains references to fields
    * that (should be) in the object.
    */
-  virtual Schema schema_impl();
+  [[nodiscard]] virtual Schema schema_impl();
 
  private:
   mutable std::unique_ptr<Schema> schema_;

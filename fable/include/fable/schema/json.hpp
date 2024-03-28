@@ -52,7 +52,7 @@ class FromJson : public Base<FromJson<T>> {
       : Base<FromJson<T>>(t, std::move(desc)), ptr_(ptr) {}
 
  public:  // Overrides
-  Json json_schema() const override {
+  [[nodiscard]] Json json_schema() const override {
     Json j{
         {"type", this->type_string()},
     };

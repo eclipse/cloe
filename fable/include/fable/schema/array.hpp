@@ -115,7 +115,7 @@ class Array : public Base<Array<T, N, P>> {
    *
    * By default, this is false.
    */
-  bool require_all() const { return option_require_all_; }
+  [[nodiscard]] bool require_all() const { return option_require_all_; }
 
   /**
    * Set whether deserialization requires setting the entire array.
@@ -144,15 +144,15 @@ class Array : public Base<Array<T, N, P>> {
    *
    * \see set_require_all(bool)
    */
-  Array<T, N, P> require_all(bool value) && {
+  [[nodiscard]] Array<T, N, P> require_all(bool value) && {
     this->set_require_all(value);
     return std::move(*this);
   }
 
  public:  // Overrides
-  std::string type_string() const override { return "array of " + prototype_.type_string(); }
+  [[nodiscard]] std::string type_string() const override { return "array of " + prototype_.type_string(); }
 
-  Json json_schema() const override {
+  [[nodiscard]] Json json_schema() const override {
     Json j;
     if (option_require_all_) {
       j = this->json_schema_array();
@@ -203,7 +203,7 @@ class Array : public Base<Array<T, N, P>> {
     this->deserialize_into(c, *ptr_);
   }
 
-  Json serialize(const Type& xs) const {
+  [[nodiscard]] Json serialize(const Type& xs) const {
     Json j = Json::array();
     serialize_into(j, xs);
     return j;
@@ -225,7 +225,7 @@ class Array : public Base<Array<T, N, P>> {
    * Because it's not pre-existing, we can't guarantee that it will be
    * initialized and therefore only support setting the full array.
    */
-  Type deserialize(const Conf& c) const {
+  [[nodiscard]] Type deserialize(const Conf& c) const {
     Type array;
     this->deserialize_into(c, array);
     return array;
@@ -244,7 +244,7 @@ class Array : public Base<Array<T, N, P>> {
   void reset_ptr() override { ptr_ = nullptr; }
 
  private:
-  Json json_schema_array() const {
+  [[nodiscard]] Json json_schema_array() const {
     return Json::object({
         {"type", "array"},
         {"items", prototype_.json_schema()},
@@ -253,7 +253,7 @@ class Array : public Base<Array<T, N, P>> {
     });
   }
 
-  Json json_schema_object() const {
+  [[nodiscard]] Json json_schema_object() const {
     return Json::object({
         {"type", "object"},
         {"additionalProperties", false},
