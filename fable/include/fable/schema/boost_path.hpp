@@ -29,8 +29,7 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/process/search_path.hpp>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 template <>
 struct is_path<boost::filesystem::path> : std::true_type {};
@@ -73,5 +72,4 @@ inline std::optional<boost::filesystem::path> search_path(const boost::filesyste
 
 }  // namespace detail
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

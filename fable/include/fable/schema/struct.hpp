@@ -32,8 +32,7 @@
 
 #include <fable/schema/interface.hpp>  // for Base<>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 /**
  * PropertyList is mainly used in constructors to enable the use of initializer
@@ -223,5 +222,4 @@ class Struct : public Base<Struct> {
   bool additional_properties_{false};
 };
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

@@ -28,8 +28,7 @@
 
 #include <fable/schema/interface.hpp>  // for Base<>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 /**
  * Ignore always validates true and does not deserialize or serialize types.
@@ -67,5 +66,4 @@ class Ignore : public Base<Ignore> {
   void deserialize_into(const Conf&, Type&) const {}
 };
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

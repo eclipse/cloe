@@ -25,8 +25,7 @@
 #include <string>   // for string
 #include <utility>  // for move
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 Boolean::Boolean(Boolean::Type* ptr, std::string desc)
     : Base(JsonType::boolean, std::move(desc)), ptr_(ptr) {}
@@ -63,5 +62,4 @@ void Boolean::deserialize_into(const Conf& c, Type& x) const { x = c.get<Type>()
 
 void Boolean::reset_ptr() { ptr_ = nullptr; }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

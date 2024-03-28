@@ -31,8 +31,7 @@
 
 #include <fable/schema/interface.hpp>  // for Base<>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 template <typename T, typename Period>
 class Duration : public Base<Duration<T, Period>> {
@@ -219,5 +218,4 @@ inline Duration<Rep, Period> make_schema(std::chrono::duration<Rep, Period>* ptr
   return Duration<Rep, Period>(ptr, std::forward<S>(desc));
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

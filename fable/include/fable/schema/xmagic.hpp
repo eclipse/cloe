@@ -49,8 +49,7 @@
 #include <fable/schema/optional.hpp>  // for Optional<>
 #include <fable/schema/vector.hpp>    // for Vector<>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 template <typename T, typename S, std::enable_if_t<std::is_base_of_v<Confable, T>, int>>
 auto make_prototype(S&& desc) {
@@ -62,5 +61,4 @@ auto make_prototype(S&& desc) {
   return make_schema(static_cast<T*>(nullptr), std::forward<S>(desc));
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

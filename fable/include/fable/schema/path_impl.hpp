@@ -33,8 +33,7 @@
 #include <fable/environment.hpp>     // for interpolate_vars
 #include <fable/utility/string.hpp>  // for split_string
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 namespace detail {
 
@@ -199,5 +198,4 @@ typename Path<T>::Type Path<T>::resolve_path(const Conf& c, const Path<T>::Type&
   }
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

@@ -28,8 +28,7 @@
 
 #include <fable/schema/interface.hpp>  // for Base<>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 class Boolean : public Base<Boolean> {
  public:  // Types and Constructors
@@ -56,5 +55,4 @@ class Boolean : public Base<Boolean> {
 template <typename S>
 inline Boolean make_schema(bool* ptr, S&& desc) { return Boolean(ptr, std::forward<S>(desc)); }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

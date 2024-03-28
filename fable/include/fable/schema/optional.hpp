@@ -32,8 +32,7 @@
 #include <fable/schema/interface.hpp>  // for Base<>, Box
 #include <fable/utility/optional.hpp>  // for adl_serializer<>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 /**
  * Helper type trait class to use with std::enable_if and friends.
@@ -156,5 +155,4 @@ Optional<T, decltype(make_prototype<typename T::value_type>())> make_schema(T* p
   return Optional<T, decltype(make_prototype<typename T::value_type>())>(ptr, std::forward<S>(desc));
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

@@ -30,8 +30,7 @@
 
 #include <fable/schema/interface.hpp>  // for Interface
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 using BoxVec = std::vector<Box>;
 using BoxList = std::initializer_list<Box>;
@@ -142,5 +141,4 @@ class Variant : public Interface {
   bool unique_match_{false};
 };
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

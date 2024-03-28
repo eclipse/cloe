@@ -32,8 +32,7 @@
 #include <fable/schema/interface.hpp>  // for Base<>
 #include <fable/utility/path.hpp>      // for adl_serializer<>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 /**
  * Helper type trait class to use with std::enable_if and friends.
@@ -257,5 +256,4 @@ inline Path<T> make_schema(T* ptr, S&& desc) {
   return Path(ptr, std::forward<S>(desc));
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

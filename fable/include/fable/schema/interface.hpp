@@ -34,8 +34,7 @@
 #include <fable/fable_fwd.hpp>  // for Confable
 #include <fable/json.hpp>       // for Json
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 /**
  * Interface specifies all information for describing a JSON entity.
@@ -528,5 +527,4 @@ auto make_prototype(S&& desc = "");
 template <typename T, typename S = std::string, std::enable_if_t<!std::is_base_of_v<Confable, T>, int> = 0>
 auto make_prototype(S&& desc = "");
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema
