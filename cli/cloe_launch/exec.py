@@ -335,7 +335,7 @@ class Engine:
         for arg in self.conan_args:
             conan_cmd.append(arg)
         conan_cmd.append(self.profile_path)
-        result = subprocess.run(conan_cmd, check=False, capture_output=True)
+        result = subprocess.run(conan_cmd, check=False, capture_output=self.capture_output)
         if result.returncode == 0:
             # Short-circuit out if everything is fine.
             return
@@ -349,7 +349,15 @@ class Engine:
         stderr_lines = result.stderr.decode().splitlines()
         for line in stderr_lines:
             logging.error(
-                "\n".join(textwrap.wrap(line, 80, initial_indent="  ", subsequent_indent="    ", break_long_words=False))
+                "\n".join(
+                    textwrap.wrap(
+                        line,
+                        80,
+                        initial_indent="  ",
+                        subsequent_indent="    ",
+                        break_long_words=False,
+                    )
+                )
             )
 
         # Here are some errors that can happen and what to do about them.
@@ -393,14 +401,13 @@ class Engine:
             ],
         }
         for error in stderr_lines:
-            for (regex, response) in known_errors.items():
+            for regex, response in known_errors.items():
                 if re.match(regex, error):
                     logging.error("")
                     logging.error("Note:")
                     for line in response:
                         logging.error(f"  {line}")
         sys.exit(2)
-
 
     def _extract_engine_path(self, env: Environment) -> Path:
         """Return the first cloe-engine we find in the PATH."""
@@ -547,6 +554,8 @@ class Engine:
             logging.warning("")
             for plugin in plugin_setups:
                 logging.warning(f"    {plugin.plugin}")
+
+        # TODO: Use preserve_env from plugin_setups!
 
         # Replace this process with the SHELL now.
         sys.stdout.flush()
