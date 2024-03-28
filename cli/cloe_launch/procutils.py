@@ -236,7 +236,19 @@ class Environment:
     def get_list(
         self, key: str, default: Optional[List[str]] = None
     ) -> Optional[List[str]]:
-        """Get the value at key and split or return default."""
+        """Get the value at key and split or return default.
+
+        Note: The list may contain empty entries, as is the case when a trailing
+        colon or sandwiched colon is present:
+
+            PATH=/bin:/usr/bin:
+            PATH=:/bin:/usr/bin
+            PATH=/bin::/usr/bin
+
+        In each of these these examples, an empty string is present in the list.
+        These may be interpreted by the shell and many programs as the current directory.
+        This has been experimentally verified with the PATH variable in Zsh and Bash.
+        """
         if key in self._data:
             return self._data[key].split(self._sep)
         return default
