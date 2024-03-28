@@ -472,21 +472,21 @@
                         "description": "whether to ignore execution failure",
                         "type": "boolean"
                       },
+                      "log_output": {
+                        "description": "how to log command output",
+                        "enum": [
+                          "never",
+                          "on_error",
+                          "always"
+                        ],
+                        "type": "string"
+                      },
                       "mode": {
                         "description": "synchronization mode to use",
                         "enum": [
                           "sync",
                           "async",
                           "detach"
-                        ],
-                        "type": "string"
-                      },
-                      "output": {
-                        "description": "how to log command output",
-                        "enum": [
-                          "never",
-                          "normal",
-                          "always"
                         ],
                         "type": "string"
                       },
@@ -514,21 +514,21 @@
                         "description": "whether to ignore execution failure",
                         "type": "boolean"
                       },
+                      "log_output": {
+                        "description": "how to log command output",
+                        "enum": [
+                          "never",
+                          "on_error",
+                          "always"
+                        ],
+                        "type": "string"
+                      },
                       "mode": {
                         "description": "synchronization mode to use",
                         "enum": [
                           "sync",
                           "async",
                           "detach"
-                        ],
-                        "type": "string"
-                      },
-                      "output": {
-                        "description": "how to log command output",
-                        "enum": [
-                          "never",
-                          "normal",
-                          "always"
                         ],
                         "type": "string"
                       }
@@ -565,21 +565,21 @@
                         "description": "whether to ignore execution failure",
                         "type": "boolean"
                       },
+                      "log_output": {
+                        "description": "how to log command output",
+                        "enum": [
+                          "never",
+                          "on_error",
+                          "always"
+                        ],
+                        "type": "string"
+                      },
                       "mode": {
                         "description": "synchronization mode to use",
                         "enum": [
                           "sync",
                           "async",
                           "detach"
-                        ],
-                        "type": "string"
-                      },
-                      "output": {
-                        "description": "how to log command output",
-                        "enum": [
-                          "never",
-                          "normal",
-                          "always"
                         ],
                         "type": "string"
                       },
@@ -607,21 +607,21 @@
                         "description": "whether to ignore execution failure",
                         "type": "boolean"
                       },
+                      "log_output": {
+                        "description": "how to log command output",
+                        "enum": [
+                          "never",
+                          "on_error",
+                          "always"
+                        ],
+                        "type": "string"
+                      },
                       "mode": {
                         "description": "synchronization mode to use",
                         "enum": [
                           "sync",
                           "async",
                           "detach"
-                        ],
-                        "type": "string"
-                      },
-                      "output": {
-                        "description": "how to log command output",
-                        "enum": [
-                          "never",
-                          "normal",
-                          "always"
                         ],
                         "type": "string"
                       }
