@@ -110,6 +110,7 @@ class Engine:
         self.preserve_env: bool = False
         self.conan_args: List[str] = []
         self.capture_output = True
+        self.load_plugin_setups = True
 
         logging.info(f"Profile name: {self.profile}")
         logging.info("Configuration:")
@@ -523,7 +524,9 @@ class Engine:
         env = self._prepare_runtime_env(use_cache)
         self._write_runtime_env(env)
 
-        plugin_setups = self._prepare_plugin_setups(env)
+        plugin_setups = []
+        if self.load_plugin_setups:
+            plugin_setups = self._prepare_plugin_setups(env)
         shell = os.getenv("SHELL", "/bin/bash")
 
         # Print the final environment, if desired
@@ -694,9 +697,11 @@ class Engine:
         plugin setup and teardown."""
         env = self._prepare_runtime_env(use_cache)
         self._write_runtime_env(env)
-        plugin_setups = self._prepare_plugin_setups(env)
 
         # Initialize plugin setups:
+        plugin_setups = []
+        if self.load_plugin_setups:
+            plugin_setups = self._prepare_plugin_setups(env)
         for plugin in plugin_setups:
             logging.debug(
                 f"Initializing plugin setup for {plugin.name} at {plugin.plugin}"
