@@ -146,13 +146,13 @@ class Optional : public Base<Optional<T, P>> {
 
 // Define make_schema only for std::optional and boost::optional.
 template <typename T, typename P, typename S, std::enable_if_t<is_optional_v<T>, bool> = true>
-inline Optional<T, P> make_schema(T* ptr, P&& prototype, S&& desc) {
-  return Optional<T, P>(ptr, std::forward<P>(prototype), std::forward<S>(desc));
+Optional<T, P> make_schema(T* ptr, P&& prototype, S&& desc) {
+  return {ptr, std::forward<P>(prototype), std::forward<S>(desc)};
 }
 
 template <typename T, typename S, std::enable_if_t<is_optional_v<T>, bool> = true>
 Optional<T, decltype(make_prototype<typename T::value_type>())> make_schema(T* ptr, S&& desc) {
-  return Optional<T, decltype(make_prototype<typename T::value_type>())>(ptr, std::forward<S>(desc));
+  return {ptr, std::forward<S>(desc)};
 }
 
 }  // namespace fable::schema

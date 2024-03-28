@@ -116,8 +116,8 @@ class Number : public Base<Number<T>> {
 };
 
 template <typename T, typename S, std::enable_if_t<std::is_arithmetic_v<T> && !std::is_enum_v<T>, int> = 0>
-inline Number<T> make_schema(T* ptr, S&& desc) {
-  return Number<T>(ptr, std::forward<S>(desc));
+Number<T> make_schema(T* ptr, S&& desc) {
+  return {ptr, std::forward<S>(desc)};
 }
 
 }  // namespace fable::schema

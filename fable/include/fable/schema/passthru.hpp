@@ -93,13 +93,13 @@ class Passthru : public Base<Passthru<P>> {
 };
 
 template <typename S>
-inline Passthru<Ignore> make_schema(Conf* ptr, S&& desc) {
-  return Passthru<Ignore>(ptr, Ignore(), std::forward<S>(desc));
+Passthru<Ignore> make_schema(Conf* ptr, S&& desc) {
+  return {ptr, Ignore(), std::forward<S>(desc)};
 }
 
 template <typename P, typename S>
 Passthru<P> make_schema(Conf* ptr, P&& prototype, S&& desc) {
-  return Passthru<P>(ptr, std::forward<P>(prototype), std::forward<S>(desc));
+  return {ptr, std::forward<P>(prototype), std::forward<S>(desc)};
 }
 
 }  // namespace fable::schema

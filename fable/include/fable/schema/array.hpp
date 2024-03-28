@@ -385,12 +385,12 @@ class Array : public Base<Array<T, N, P>> {
 
 template <typename T, typename P, size_t N, typename S>
 Array<T, N, P> make_schema(std::array<T, N>* ptr, P&& prototype, S&& desc) {
-  return Array<T, N, P>(ptr, std::forward<P>(prototype), std::forward<S>(desc));
+  return {ptr, std::forward<P>(prototype), std::forward<S>(desc)};
 }
 
 template <typename T, size_t N, typename S>
 Array<T, N, decltype(make_prototype<T>())> make_schema(std::array<T, N>* ptr, S&& desc) {
-  return Array<T, N, decltype(make_prototype<T>())>(ptr, std::forward<S>(desc));
+  return {ptr, std::forward<S>(desc)};
 }
 
 }  // namespace fable::schema

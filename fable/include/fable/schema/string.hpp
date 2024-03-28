@@ -260,8 +260,8 @@ class String : public Base<String> {
 };
 
 template <typename S>
-inline String make_schema(std::string* ptr, S&& desc) {
-  return String(ptr, std::forward<S>(desc));
+String make_schema(std::string* ptr, S&& desc) {
+  return {ptr, std::forward<S>(desc)};
 }
 
 }  // namespace fable::schema

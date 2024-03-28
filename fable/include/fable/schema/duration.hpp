@@ -214,8 +214,8 @@ class Duration : public Base<Duration<T, Period>> {
 };
 
 template <typename Rep, typename Period, typename S>
-inline Duration<Rep, Period> make_schema(std::chrono::duration<Rep, Period>* ptr, S&& desc) {
-  return Duration<Rep, Period>(ptr, std::forward<S>(desc));
+Duration<Rep, Period> make_schema(std::chrono::duration<Rep, Period>* ptr, S&& desc) {
+  return {ptr, std::forward<S>(desc)};
 }
 
 }  // namespace fable::schema
