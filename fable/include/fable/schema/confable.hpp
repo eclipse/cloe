@@ -24,7 +24,6 @@
 
 #pragma once
 
-#include <memory>   // for shared_ptr<>
 #include <string>   // for string
 #include <utility>  // for move
 
@@ -38,11 +37,11 @@ class FromConfable : public Base<FromConfable<T>> {
  public:  // Types and Constructors
   using Type = T;
 
-  FromConfable(std::string desc = "") {
-    schema_ = Type().schema(); // NOLINT
-    schema_.reset_ptr();
+  template <std::enable_if_t<std::is_default_constructible_v<T>, int> = 0>
+  FromConfable(std::string desc = "")
+      : Base<FromConfable<T>>(std::move(desc)), schema_(Type().schema()) {
+    schema_.reset_ptr();  // type was temporary
     this->type_ = schema_.type();
-    this->desc_ = std::move(desc);
   }
 
   FromConfable(Type* ptr, std::string desc)
@@ -65,9 +64,8 @@ class FromConfable : public Base<FromConfable<T>> {
   bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
     if (ptr_ == nullptr) {
       return schema_.validate(c, err);
-    } else {
-      return ptr_->validate(c, err);
     }
+    return ptr_->validate(c, err);
   }
 
   using Interface::to_json;
@@ -103,10 +101,26 @@ class FromConfable : public Base<FromConfable<T>> {
   Type* ptr_{nullptr};
 };
 
-template <typename T, typename S>
+template <
+    typename T, typename S,
+    std::enable_if_t<std::is_base_of_v<Confable, T> && std::is_default_constructible_v<T>, int> = 0>
 FromConfable<T> make_schema(T* ptr, S&& desc) {
-  assert(ptr != nullptr);
-  return FromConfable<T>(ptr, std::forward<S>(desc));
+  if (ptr == nullptr) {
+    return {std::forward<S>(desc)};
+  }
+  return {ptr, std::forward<S>(desc)};
+}
+
+template <typename T, typename S,
+          std::enable_if_t<std::is_base_of_v<Confable, T> && !std::is_default_constructible_v<T>,
+                           int> = 0>
+FromConfable<T> make_schema(T* ptr, S&& desc) {
+  if (ptr == nullptr) {
+    // Since T is a struct with a user-defined schema, we need an instance in order
+    // to extract its schema, and T is not default constructible.
+    throw std::invalid_argument("make_schema(FromConfable*, S&&) requires a valid pointer");
+  }
+  return {ptr, std::forward<S>(desc)};
 }
 
 }  // namespace fable::schema

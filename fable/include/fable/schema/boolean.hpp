@@ -53,6 +53,8 @@ class Boolean : public Base<Boolean> {
 };
 
 template <typename S>
-inline Boolean make_schema(bool* ptr, S&& desc) { return Boolean(ptr, std::forward<S>(desc)); }
+Boolean make_schema(bool* ptr, S&& desc) {
+  return {ptr, std::forward<S>(desc)};
+}
 
 }  // namespace fable::schema

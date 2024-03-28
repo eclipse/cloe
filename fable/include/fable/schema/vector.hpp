@@ -187,12 +187,12 @@ class Vector : public Base<Vector<T, P>> {
 
 template <typename T, typename P, typename S>
 Vector<T, P> make_schema(std::vector<T>* ptr, P&& prototype, S&& desc) {
-  return Vector<T, P>(ptr, std::forward<P>(prototype), std::forward<S>(desc));
+  return {ptr, std::forward<P>(prototype), std::forward<S>(desc)};
 }
 
 template <typename T, typename S>
 Vector<T, decltype(make_prototype<T>())> make_schema(std::vector<T>* ptr, S&& desc) {
-  return Vector<T, decltype(make_prototype<T>())>(ptr, std::forward<S>(desc));
+  return {ptr, std::forward<S>(desc)};
 }
 
 }  // namespace fable::schema

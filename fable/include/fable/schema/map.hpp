@@ -218,12 +218,12 @@ class Map : public Base<Map<T, P>> {
 
 template <typename T, typename P, typename S>
 Map<T, P> make_schema(std::map<std::string, T>* ptr, P&& prototype, S&& desc) {
-  return Map<T, P>(ptr, std::forward<P>(prototype), std::forward<S>(desc));
+  return {ptr, std::forward<P>(prototype), std::forward<S>(desc)};
 }
 
 template <typename T, typename S>
 Map<T, decltype(make_prototype<T>())> make_schema(std::map<std::string, T>* ptr, S&& desc) {
-  return Map<T, decltype(make_prototype<T>())>(ptr, std::forward<S>(desc));
+  return {ptr, std::forward<S>(desc)};
 }
 
 }  // namespace fable::schema

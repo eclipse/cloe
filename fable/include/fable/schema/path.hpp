@@ -252,8 +252,8 @@ class Path : public Base<Path<T>> {
 };
 
 template <typename T, typename S, std::enable_if_t<is_path_v<T>, bool> = true>
-inline Path<T> make_schema(T* ptr, S&& desc) {
-  return Path(ptr, std::forward<S>(desc));
+Path<T> make_schema(T* ptr, S&& desc) {
+  return {ptr, std::forward<S>(desc)};
 }
 
 }  // namespace fable::schema
