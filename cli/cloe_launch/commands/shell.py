@@ -35,6 +35,7 @@ from ._options import cli_command
 @cli_command("shell")
 @_options.preserve_env()
 @_options.override_env()
+@_options.ignore_plugin_setups()
 @_options.cache()
 @_options.conanfile()
 @_options.args()
@@ -43,6 +44,7 @@ def cli_shell(
     conf: Configuration,
     preserve_env: bool,
     override_env: List[str],
+    ignore_plugin_setups: bool,
     cache: bool,
     conanfile: str,
     args: List[str],
@@ -68,6 +70,7 @@ def cli_shell(
     engine = Engine(conf, conanfile=conanfile)
     engine.preserve_env = preserve_env
     engine.conan_args = _options.extract_conan_args(args)
+    engine.load_plugin_setups = not ignore_plugin_setups
 
     # Replace process with shell.
     engine.shell(_options.extract_target_args(args), use_cache=cache)
