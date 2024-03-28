@@ -79,7 +79,7 @@ String String::environment(Environment* env) && {
 
 const std::vector<std::string>& String::enum_of() const { return enum_; }
 void String::set_enum_of(std::vector<std::string>&& init) { enum_ = std::move(init); }
-String String::enum_of(std::vector<std::string>&& init) {
+String String::enum_of(std::vector<std::string>&& init) && {
   enum_ = std::move(init);
   return std::move(*this);
 }

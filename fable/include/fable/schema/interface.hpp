@@ -76,7 +76,7 @@ class Interface {
    * This is implemented by Base and allows us to wrap implementors of
    * Interface with Schema.
    */
-  virtual Interface* clone() const = 0;
+  [[nodiscard]] virtual Interface* clone() const = 0;
 
   /**
    * Return whether the accepted input type is a variant.
@@ -84,7 +84,7 @@ class Interface {
    * A variant type is one that is composed of other types, such as
    * the special types: any-of, one-of, and all-of.
    */
-  virtual bool is_variant() const { return false; }
+  [[nodiscard]] virtual bool is_variant() const { return false; }
 
   /**
    * Return the JSON type.
@@ -94,7 +94,7 @@ class Interface {
    * A type that is null is almost always a variant type of some sort, if
    * even only an optional type.
    */
-  virtual JsonType type() const = 0;
+  [[nodiscard]] virtual JsonType type() const = 0;
 
   /**
    * Return the type as a string.
@@ -112,17 +112,17 @@ class Interface {
    *     "array of boolean"
    *     "array of object"
    */
-  virtual std::string type_string() const = 0;
+  [[nodiscard]] virtual std::string type_string() const = 0;
 
   /**
    * Return whether this interface needs to be set.
    */
-  virtual bool is_required() const = 0;
+  [[nodiscard]] virtual bool is_required() const = 0;
 
   /**
    * Return human-readable description.
    */
-  virtual const std::string& description() const = 0;
+  [[nodiscard]] virtual const std::string& description() const = 0;
 
   /**
    * Set human-readable description.
@@ -153,7 +153,7 @@ class Interface {
    * object in an array. This isn't awfully consistent, but it's the best we
    * can do.
    */
-  virtual Json usage() const = 0;
+  [[nodiscard]] virtual Json usage() const = 0;
 
   /**
    * Return the JSON schema.
@@ -181,7 +181,7 @@ class Interface {
    *   - https://json-schema.org
    *   - https://json-schema.org/understanding-json-schema/
    */
-  virtual Json json_schema() const = 0;
+  [[nodiscard]] virtual Json json_schema() const = 0;
 
   /**
    * Validate the input JSON configuration for correctness.
@@ -246,7 +246,7 @@ class Interface {
    * Warning: This is NOT an efficient operation, but it can be useful for
    * cases where speed is not important.
    */
-  virtual Json to_json() const {
+  [[nodiscard]] virtual Json to_json() const {
     Json j;
     to_json(j);
     return j;
@@ -303,7 +303,7 @@ class Box : public Interface {
   /**
    * Return the underlying Interface.
    */
-  std::shared_ptr<Interface> get() { return impl_; }
+  [[nodiscard]] std::shared_ptr<Interface> get() { return impl_; }
 
   /**
    * Return this type as a pointer to T.
@@ -315,7 +315,7 @@ class Box : public Interface {
    *
    */
   template <typename T>
-  std::shared_ptr<T> as() const {
+  [[nodiscard]] std::shared_ptr<T> as() const {
     assert(impl_ != nullptr);
     auto downcast_ptr = std::dynamic_pointer_cast<T>(impl_);
     if (downcast_ptr == nullptr) {
@@ -347,25 +347,25 @@ class Box : public Interface {
    * yourself for whether the dynamic cast was successful or not.
    */
   template <typename T>
-  std::shared_ptr<T> as_unsafe() const {
+  [[nodiscard]] std::shared_ptr<T> as_unsafe() const {
     return std::dynamic_pointer_cast<T>(impl_);
   }
 
-  Box reset_pointer() && {
+  [[nodiscard]] Box reset_pointer() && {
     reset_ptr();
     return std::move(*this);
   }
 
  public:  // Overrides
   using Interface::to_json;
-  Interface* clone() const override { return impl_->clone(); }
-  JsonType type() const override { return impl_->type(); }
-  std::string type_string() const override { return impl_->type_string(); }
-  bool is_required() const override { return impl_->is_required(); }
-  const std::string& description() const override { return impl_->description(); }
+  [[nodiscard]] Interface* clone() const override { return impl_->clone(); }
+  [[nodiscard]] JsonType type() const override { return impl_->type(); }
+  [[nodiscard]] std::string type_string() const override { return impl_->type_string(); }
+  [[nodiscard]] bool is_required() const override { return impl_->is_required(); }
+  [[nodiscard]] const std::string& description() const override { return impl_->description(); }
   void set_description(std::string s) override { return impl_->set_description(std::move(s)); }
-  Json usage() const override { return impl_->usage(); }
-  Json json_schema() const override { return impl_->json_schema(); };
+  [[nodiscard]] Json usage() const override { return impl_->usage(); }
+  [[nodiscard]] Json json_schema() const override { return impl_->json_schema(); };
   bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
     return impl_->validate(c, err);
   }
@@ -396,13 +396,13 @@ class Base : public Interface {
   explicit Base(std::string desc) : desc_(std::move(desc)) {}
   virtual ~Base() = default;
 
-  Interface* clone() const override { return new CRTP(static_cast<CRTP const&>(*this)); }
-  operator Box() const { return Box{this->clone()}; }
+  [[nodiscard]] Interface* clone() const override { return new CRTP(static_cast<CRTP const&>(*this)); }
+  [[nodiscard]] operator Box() const { return Box{this->clone()}; }
 
-  JsonType type() const override { return type_; }
-  std::string type_string() const override { return to_string(type_); }
+  [[nodiscard]] JsonType type() const override { return type_; }
+  [[nodiscard]] std::string type_string() const override { return to_string(type_); }
 
-  Json usage() const override {
+  [[nodiscard]] Json usage() const override {
     auto required = required_ ? "!" : "";
     if (desc_.empty()) {
       return type_string() + required;
@@ -411,25 +411,25 @@ class Base : public Interface {
     }
   }
 
-  bool is_required() const override { return required_; }
-  CRTP require() && {
+  [[nodiscard]] bool is_required() const override { return required_; }
+  [[nodiscard]] CRTP require() && {
     required_ = true;
     return std::move(*dynamic_cast<CRTP*>(this));
   }
-  CRTP required(bool value) && {
+  [[nodiscard]] CRTP required(bool value) && {
     required_ = value;
     return std::move(*dynamic_cast<CRTP*>(this));
   }
 
-  CRTP reset_pointer() && {
+  [[nodiscard]] CRTP reset_pointer() && {
     reset_ptr();
     return std::move(*dynamic_cast<CRTP*>(this));
   }
 
-  bool has_description() const { return !desc_.empty(); }
+  [[nodiscard]] bool has_description() const { return !desc_.empty(); }
   void set_description(std::string s) override { desc_ = std::move(s); }
-  const std::string& description() const override { return desc_; }
-  CRTP description(std::string desc) && {
+  [[nodiscard]] const std::string& description() const override { return desc_; }
+  [[nodiscard]] CRTP description(std::string desc) && {
     desc_ = std::move(desc);
     return std::move(*dynamic_cast<CRTP*>(this));
   }

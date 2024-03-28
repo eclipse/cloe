@@ -54,10 +54,10 @@ class FromConfable : public Base<FromConfable<T>> {
   }
 
  public:  // Special
-  Box get_confable_schema() const { return schema_.clone(); }
+  [[nodiscard]] Box get_confable_schema() const { return schema_.clone(); }
 
  public:  // Overrides
-  Json json_schema() const override {
+  [[nodiscard]] Json json_schema() const override {
     Json j = schema_.json_schema();
     this->augment_schema(j);
     return j;
@@ -82,9 +82,9 @@ class FromConfable : public Base<FromConfable<T>> {
     ptr_->from_conf(c);
   }
 
-  Json serialize(const Type& x) const { return x.to_json(); }
+  [[nodiscard]] Json serialize(const Type& x) const { return x.to_json(); }
 
-  Type deserialize(const Conf& c) const {
+  [[nodiscard]] Type deserialize(const Conf& c) const {
     Type tmp;
     tmp.from_conf(c);
     return tmp;

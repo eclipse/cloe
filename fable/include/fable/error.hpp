@@ -66,12 +66,12 @@ class ConfError : public Error {
   ConfError(const Conf& c, std::string_view format, Args&&... args)
       : Error(format, std::forward<Args>(args)...), data_(c) {}
 
-  std::string file() const { return data_.file(); }
-  std::string root() const { return data_.root(); }
-  const Conf& conf() const { return data_; }
-  const Json& data() const { return *data_; }
+  [[nodiscard]] std::string file() const noexcept { return data_.file(); }
+  [[nodiscard]] std::string root() const noexcept { return data_.root(); }
+  [[nodiscard]] const Conf& conf() const noexcept { return data_; }
+  [[nodiscard]] const Json& data() const noexcept { return *data_; }
 
-  virtual std::string message() const {
+  [[nodiscard]] virtual std::string message() const {
     return fmt::format("{}:{}: {}", file(), root(), this->what());
   }
 
@@ -170,8 +170,8 @@ class SchemaError : public ConfError {
       : ConfError(c, format, std::forward<Args>(args)...), schema_(s), context_(ctx) {}
 
  public:  // Special
-  const Json& schema() const { return schema_; }
-  const Json& context() const { return context_; }
+  [[nodiscard]] const Json& schema() const { return schema_; }
+  [[nodiscard]] const Json& context() const { return context_; }
 
   friend void to_json(Json& j, const SchemaError& e) {
     j = Json{

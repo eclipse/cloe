@@ -49,7 +49,7 @@ class Ignore : public Base<Ignore> {
   explicit Ignore(std::string desc, JsonType t = JsonType::object) : Base(t, std::move(desc)) {}
 
  public:  // Overrides
-  Json json_schema() const override {
+  [[nodiscard]] Json json_schema() const override {
     Json j = Json::object({});
     this->augment_schema(j);
     return j;
@@ -61,8 +61,8 @@ class Ignore : public Base<Ignore> {
   void from_conf(const Conf&) override {}
   void reset_ptr() override {}
 
-  Json serialize(const Type&) const { return nullptr; }
-  Type deserialize(const Conf&) const { return {}; }
+  [[nodiscard]] Json serialize(const Type& /*unused*/) const { return nullptr; }
+  [[nodiscard]] Type deserialize(const Conf& /*unused*/) const { return {}; }
   void serialize_into(Json&, const Type&) const {}
   void deserialize_into(const Conf&, Type&) const {}
 };

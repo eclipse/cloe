@@ -81,10 +81,10 @@ class Optional : public Base<Optional<T, P>> {
   }
 
  public:  // Overrides
-  std::string type_string() const override { return prototype_.type_string() + "?"; }
-  bool is_variant() const override { return true; }
+  [[nodiscard]] std::string type_string() const override { return prototype_.type_string() + "?"; }
+  [[nodiscard]] bool is_variant() const override { return true; }
 
-  Json json_schema() const override {
+  [[nodiscard]] Json json_schema() const override {
     Json j{{
         "oneOf",
         {
@@ -119,7 +119,7 @@ class Optional : public Base<Optional<T, P>> {
     *ptr_ = deserialize(c);
   }
 
-  Json serialize(const Type& x) const {
+  [[nodiscard]] Json serialize(const Type& x) const {
     if (x) {
       return prototype_.serialize(x.value());
     } else {
@@ -127,7 +127,7 @@ class Optional : public Base<Optional<T, P>> {
     }
   }
 
-  Type deserialize(const Conf& c) const {
+  [[nodiscard]] Type deserialize(const Conf& c) const {
     if (c->type() == JsonType::null) {
       return Type{};
     }

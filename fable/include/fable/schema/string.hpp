@@ -72,14 +72,14 @@ class String : public Base<String> {
    *
    * \return *this, for chaining
    */
-  String not_empty() &&;
+  [[nodiscard]] String not_empty() &&;
 
   /**
    * Return the current minimum length (0 if unset).
    *
    * \return minimum string length in bytes
    */
-  size_t min_length() const;
+  [[nodiscard]] size_t min_length() const;
 
   /**
    * Set the minimum string length in bytes.
@@ -87,7 +87,7 @@ class String : public Base<String> {
    * \param value min bytes
    * \return *this, for chaining
    */
-  String min_length(size_t value) &&;
+  [[nodiscard]] String min_length(size_t value) &&;
 
   /**
    * Set the minimum string length in bytes.
@@ -101,7 +101,7 @@ class String : public Base<String> {
    *
    * \return maximum string length in bytes
    */
-  size_t max_length() const;
+  [[nodiscard]] size_t max_length() const;
 
   /**
    * Set the maximum string length in bytes.
@@ -109,7 +109,7 @@ class String : public Base<String> {
    * \param value max bytes
    * \return *this, for chaining
    */
-  String max_length(size_t value) &&;
+  [[nodiscard]] String max_length(size_t value) &&;
 
   /**
    * Set the maximum string length in bytes.
@@ -123,7 +123,7 @@ class String : public Base<String> {
    *
    * \return regex pattern
    */
-  const std::string& pattern() const;
+  [[nodiscard]] const std::string& pattern() const;
 
   /**
    * Set the string regular expression pattern.
@@ -131,7 +131,7 @@ class String : public Base<String> {
    * \param value regex pattern
    * \return *this, for chaining
    */
-  String pattern(const std::string& value) &&;
+  [[nodiscard]] String pattern(const std::string& value) &&;
 
   /**
    * Set the string regular expression pattern.
@@ -146,21 +146,21 @@ class String : public Base<String> {
    *
    * This is shorthand for setting the pattern to FABLE_REGEX_C_IDENTIFIER.
    */
-  String c_identifier() &&;
+  [[nodiscard]] String c_identifier() &&;
 
   /**
    * Return whether shell-style variable interpolation is enabled (default false).
    *
    * \return true if enabled
    */
-  bool interpolate() const;
+  [[nodiscard]] bool interpolate() const;
 
   /**
    * \copydoc String::set_interpolate(bool)
    *
    * \return *this, for chaining
    */
-  String interpolate(bool value) &&;
+  [[nodiscard]] String interpolate(bool value) &&;
 
   /**
    * Set whether variable interpolation is enabled.
@@ -189,7 +189,7 @@ class String : public Base<String> {
    *
    * \return environment
    */
-  Environment* environment() const;
+  [[nodiscard]] Environment* environment() const;
 
   /**
    * Set the Environment used for variable interpolation.
@@ -199,7 +199,7 @@ class String : public Base<String> {
    * \param environment
    * \return *this, for chaining
    */
-  String environment(Environment* env) &&;
+  [[nodiscard]] String environment(Environment* env) &&;
 
   /**
    * Set the Environment used for variable interpolation.
@@ -215,7 +215,7 @@ class String : public Base<String> {
    *
    * \return valid values
    */
-  const std::vector<std::string>& enum_of() const;
+  [[nodiscard]] const std::vector<std::string>& enum_of() const;
 
   /**
    * Set the valid values for the string.
@@ -226,7 +226,7 @@ class String : public Base<String> {
    * \param init list of valid values
    * \return *this, for chaining
    */
-  String enum_of(std::vector<std::string>&& init);
+  [[nodiscard]] String enum_of(std::vector<std::string>&& init) &&;
 
   /**
    * Set the valid values for the string.
@@ -239,13 +239,13 @@ class String : public Base<String> {
   void set_enum_of(std::vector<std::string>&& init);
 
  public:  // Overrides
-  Json json_schema() const override;
+  [[nodiscard]] Json json_schema() const override;
   bool validate(const Conf& c, std::optional<SchemaError>& err) const override;
   using Interface::to_json;
   void to_json(Json& j) const override;
   void from_conf(const Conf& c) override;
-  Json serialize(const Type& x) const;
-  Type deserialize(const Conf& c) const;
+  [[nodiscard]] Json serialize(const Type& x) const;
+  [[nodiscard]] Type deserialize(const Conf& c) const;
   void serialize_into(Json& j, const Type& x) const { j = serialize(x); }
   void deserialize_into(const Conf& c, Type& x) const { x = deserialize(c); }
   void reset_ptr() override;

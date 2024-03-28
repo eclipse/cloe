@@ -42,10 +42,10 @@ class Environment {
   Environment(std::map<std::string, std::string>&& defines) : defines_(std::move(defines)) {}
   ~Environment() = default;
 
-  bool prefer_external() const { return prefer_external_; }
+  [[nodiscard]] bool prefer_external() const { return prefer_external_; }
   void prefer_external(bool value) { prefer_external_ = value; }
 
-  bool allow_undefined() const { return allow_undefined_; }
+  [[nodiscard]] bool allow_undefined() const { return allow_undefined_; }
   void allow_undefined(bool value) { allow_undefined_ = value; }
 
   void insert(const std::string& key, const std::string& value) {
@@ -64,10 +64,10 @@ class Environment {
    *
    * This is roughly equivalent to ${KEY}.
    */
-  std::optional<std::string> get(const std::string& key) const {
+  [[nodiscard]] std::optional<std::string> get(const std::string& key) const {
     return get(key, prefer_external_);
   }
-  std::optional<std::string> get(const std::string& key, bool prefer_external) const;
+  [[nodiscard]] std::optional<std::string> get(const std::string& key, bool prefer_external) const;
 
   /**
    * Return the value of a literal key, trying both environment and internal
@@ -77,11 +77,11 @@ class Environment {
    *
    * This is equivalent to ${KEY-ALTERNATIVE}, and cannot fail.
    */
-  std::string get_or(const std::string& key, const std::string& alternative) const {
+  [[nodiscard]] std::string get_or(const std::string& key, const std::string& alternative) const {
     return get(key).value_or(alternative);
   }
-  std::string get_or(const std::string& key, const std::string& alternative,
-                     bool prefer_external) const {
+  [[nodiscard]] std::string get_or(const std::string& key, const std::string& alternative,
+                                   bool prefer_external) const {
     return get(key, prefer_external).value_or(alternative);
   }
 
@@ -93,8 +93,10 @@ class Environment {
    *
    * This is roughly equivalent to ${KEY?out_of_range}.
    */
-  std::string require(const std::string& key) const { return require(key, prefer_external_); }
-  std::string require(const std::string& key, bool prefer_external) const;
+  [[nodiscard]] std::string require(const std::string& key) const {
+    return require(key, prefer_external_);
+  }
+  [[nodiscard]] std::string require(const std::string& key, bool prefer_external) const;
 
   /**
    * Evaluate a single variable, such as "KEY" or "KEY-ALTERNATIVE".
@@ -102,10 +104,11 @@ class Environment {
    * Throws std::out_of_range if allow_undefined() is false and
    * std::invalid_argument if a malformed string is supplied.
    */
-  std::string evaluate(const std::string& s) const {
+  [[nodiscard]] std::string evaluate(const std::string& s) const {
     return evaluate(s, prefer_external_, allow_undefined_);
   }
-  std::string evaluate(const std::string& s, bool prefer_external, bool allow_undefined) const;
+  [[nodiscard]] std::string evaluate(const std::string& s, bool prefer_external,
+                                     bool allow_undefined) const;
 
   /**
    * Interpolate a string will evaluate all variable instances in a string.
@@ -113,10 +116,11 @@ class Environment {
    * Throws std::out_of_range if allow_undefined() is false and
    * std::invalid_argument if a malformed string is supplied.
    */
-  std::string interpolate(const std::string& s) const {
+  [[nodiscard]] std::string interpolate(const std::string& s) const {
     return interpolate(s, prefer_external_, allow_undefined_);
   }
-  std::string interpolate(const std::string& s, bool prefer_external, bool allow_undefined) const;
+  [[nodiscard]] std::string interpolate(const std::string& s, bool prefer_external,
+                                        bool allow_undefined) const;
 
  private:
   bool prefer_external_{true};

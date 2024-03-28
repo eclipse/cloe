@@ -182,12 +182,14 @@ class FactoryBase : public Base<CRTP> {
   /**
    * Return the schema and factory function associated with the given key.
    */
-  const TypeFactory& get_factory(const std::string& key) const { return available_.at(key); }
+  [[nodiscard]] const TypeFactory& get_factory(const std::string& key) const {
+    return available_.at(key);
+  }
 
   /**
    * Return whether a factory with the given key is available.
    */
-  bool has_factory(const std::string& key) const { return available_.count(key); }
+  [[nodiscard]] bool has_factory(const std::string& key) const { return available_.count(key); }
 
   /**
    * Add a factory with the given key, schema, and function, provided it
@@ -241,7 +243,7 @@ class FactoryBase : public Base<CRTP> {
   }
 
  public:  // Overrides
-  Json json_schema() const override {
+  [[nodiscard]] Json json_schema() const override {
     Json j;
     if (available_.empty()) {
       j["not"] = Json{
@@ -264,9 +266,9 @@ class FactoryBase : public Base<CRTP> {
     return schema_->validate(c, err);
   }
 
-  Type make(const Conf& c) const { return deserialize(c); }
+  [[nodiscard]] Type make(const Conf& c) const { return deserialize(c); }
 
-  Type deserialize(const Conf& c) const {
+  [[nodiscard]] Type deserialize(const Conf& c) const {
     assert(schema_ != nullptr);
     auto factory = c.get<std::string>(factory_key_);
     if (!available_.count(factory)) {
@@ -290,7 +292,7 @@ class FactoryBase : public Base<CRTP> {
     return available_.at(factory).func(args);
   }
 
-  Json serialize(const Type& x) const { return x; }
+  [[nodiscard]] Json serialize(const Type& x) const { return x; }
 
   void serialize_into(Json& j, const Type& x) const { j = serialize(x); }
 
@@ -301,6 +303,7 @@ class FactoryBase : public Base<CRTP> {
   }
 
   using Interface::to_json;
+
   void to_json(Json& j) const override {
     throw std::logic_error("FactoryBase::to_json() should not be used");
   }
@@ -317,7 +320,7 @@ class FactoryBase : public Base<CRTP> {
     schema_.reset(new Variant(factory_schemas()));
   }
 
-  std::vector<Box> factory_schemas() const {
+  [[nodiscard]] std::vector<Box> factory_schemas() const {
     std::vector<Box> out;
     out.reserve(available_.size());
     for (auto& kv : available_) {
@@ -340,7 +343,7 @@ class FactoryBase : public Base<CRTP> {
     return out;
   }
 
-  std::vector<Json> factory_json_schemas() const {
+  [[nodiscard]] std::vector<Json> factory_json_schemas() const {
     auto schemas = factory_schemas();
     std::vector<Json> out;
     out.reserve(schemas.size());

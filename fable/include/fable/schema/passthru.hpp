@@ -53,9 +53,9 @@ class Passthru : public Base<Passthru<P>> {
   }
 
  public:  // Overrides
-  std::string type_string() const override { return prototype_.type_string(); }
+  [[nodiscard]] std::string type_string() const override { return prototype_.type_string(); }
 
-  Json json_schema() const override {
+  [[nodiscard]] Json json_schema() const override {
     Json j = prototype_.json_schema();
     this->augment_schema(j);
     return j;
@@ -78,9 +78,9 @@ class Passthru : public Base<Passthru<P>> {
     *ptr_ = deserialize(c);
   }
 
-  Json serialize(const Type& x) const { return *x; }
+  [[nodiscard]] Json serialize(const Type& x) const { return *x; }
 
-  Type deserialize(const Conf& c) const { return c; }
+  [[nodiscard]] Type deserialize(const Conf& c) const { return c; }
 
   void serialize_into(Json& j, const Type& x) const { j = serialize(x); }
 

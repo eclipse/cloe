@@ -56,7 +56,7 @@ class Vector : public Base<Vector<T, P>> {
    *
    * By default, this is false.
    */
-  bool extend() const { return option_extend_; }
+  [[nodiscard]] bool extend() const { return option_extend_; }
 
   /**
    * Set whether deserialization should extend the underlying array.
@@ -66,29 +66,29 @@ class Vector : public Base<Vector<T, P>> {
   /**
    * Set whether deserialization should extend the underlying array.
    */
-  Vector<T, P> extend(bool value) && {
+  [[nodiscard]] Vector<T, P> extend(bool value) && {
     option_extend_ = value;
     return std::move(*this);
   }
 
-  size_t min_items() const { return min_items_; }
+  [[nodiscard]] size_t min_items() const { return min_items_; }
   void set_min_items(size_t value) { min_items_ = value; }
-  Vector<T, P> min_items(size_t value) && {
+  [[nodiscard]] Vector<T, P> min_items(size_t value) && {
     min_items_ = value;
     return std::move(*this);
   }
 
-  size_t max_items() const { return max_items_; }
+  [[nodiscard]] size_t max_items() const { return max_items_; }
   void set_max_items(size_t value) { max_items_ = value; }
-  Vector<T, P> max_items(size_t value) && {
+  [[nodiscard]] Vector<T, P> max_items(size_t value) && {
     max_items_ = value;
     return std::move(*this);
   }
 
  public:  // Overrides
-  std::string type_string() const override { return "array of " + prototype_.type_string(); }
+  [[nodiscard]] std::string type_string() const override { return "array of " + prototype_.type_string(); }
 
-  Json json_schema() const override {
+  [[nodiscard]] Json json_schema() const override {
     Json j{
         {"type", "array"},
         {"items", prototype_.json_schema()},
@@ -138,13 +138,13 @@ class Vector : public Base<Vector<T, P>> {
     deserialize_into(c, *ptr_);
   }
 
-  Json serialize(const Type& xs) const {
+  [[nodiscard]] Json serialize(const Type& xs) const {
     Json j = Json::array();
     serialize_into(j, xs);
     return j;
   }
 
-  Type deserialize(const Conf& c) const {
+  [[nodiscard]] Type deserialize(const Conf& c) const {
     Type vec;
     vec.reserve(c->size());
     fill(vec, c);

@@ -41,30 +41,50 @@ namespace schema {
 
 template <typename T>
 Number<T> Number<T>::minimum(T value) && {
+  set_minimum(value);
+  return std::move(*this);
+}
+
+template <typename T>
+void Number<T>::set_minimum(T value) {
   value_min_ = value;
   exclusive_min_ = false;
-  return std::move(*this);
 }
 
 template <typename T>
 Number<T> Number<T>::exclusive_minimum(T value) && {
+  set_exclusive_minimum(value);
+  return std::move(*this);
+}
+
+template <typename T>
+void Number<T>::set_exclusive_minimum(T value) {
   value_min_ = value;
   exclusive_min_ = true;
-  return std::move(*this);
 }
 
 template <typename T>
 Number<T> Number<T>::maximum(T value) && {
-  value_max_ = value;
-  exclusive_max_ = false;
+  set_maximum(value);
   return std::move(*this);
 }
 
 template <typename T>
+void Number<T>::set_maximum(T value) {
+  value_max_ = value;
+  exclusive_max_ = false;
+}
+
+template <typename T>
 Number<T> Number<T>::exclusive_maximum(T value) && {
+  set_exclusive_maximum(value);
+  return std::move(*this);
+}
+
+template <typename T>
+void Number<T>::set_exclusive_maximum(T value) {
   value_max_ = value;
   exclusive_max_ = true;
-  return std::move(*this);
 }
 
 template <typename T>
@@ -74,11 +94,16 @@ std::pair<T, T> Number<T>::bounds() const {
 
 template <typename T>
 Number<T> Number<T>::bounds(T min, T max) && {
+  set_bounds(min, max);
+  return std::move(*this);
+}
+
+template <typename T>
+void Number<T>::set_bounds(T min, T max) {
   exclusive_min_ = false;
   value_min_ = min;
   exclusive_max_ = false;
   value_max_ = max;
-  return std::move(*this);
 }
 
 template <typename T>
@@ -101,9 +126,7 @@ Number<T> Number<T>::whitelist(T x) && {
 
 template <typename T>
 Number<T> Number<T>::whitelist(std::initializer_list<T> xs) && {
-  for (auto x : xs) {
-    insert_whitelist(x);
-  }
+  extend_whitelist(std::move(xs));
   return std::move(*this);
 }
 
@@ -119,6 +142,19 @@ void Number<T>::insert_whitelist(T x) {
 }
 
 template <typename T>
+void Number<T>::extend_whitelist(std::initializer_list<T> xs) {
+  for (const auto& x : xs) {
+    insert_whitelist(x);
+  }
+}
+
+template <typename T>
+void Number<T>::reset_whitelist(std::initializer_list<T> xs) {
+  whitelist_.clear();
+  extend_whitelist(std::move(xs));
+}
+
+template <typename T>
 Number<T> Number<T>::blacklist(T x) && {
   insert_blacklist(x);
   return std::move(*this);
@@ -126,9 +162,7 @@ Number<T> Number<T>::blacklist(T x) && {
 
 template <typename T>
 Number<T> Number<T>::blacklist(std::initializer_list<T> xs) && {
-  for (auto x : xs) {
-    insert_blacklist(x);
-  }
+  extend_blacklist(std::move(xs));
   return std::move(*this);
 }
 
@@ -141,6 +175,19 @@ void Number<T>::insert_blacklist(T x) {
     throw std::logic_error("cannot add whitelisted value to blacklist: " + std::to_string(x));
   }
   blacklist_.insert(x);
+}
+
+template <typename T>
+void Number<T>::extend_blacklist(std::initializer_list<T> xs) {
+  for (const auto& x : xs) {
+    insert_blacklist(x);
+  }
+}
+
+template <typename T>
+void Number<T>::reset_blacklist(std::initializer_list<T> xs) {
+  blacklist_.clear();
+  extend_blacklist(std::move(xs));
 }
 
 template <typename T>

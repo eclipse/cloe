@@ -53,38 +53,51 @@ class Number : public Base<Number<T>> {
       : Base<Number<T>>(JsonType::number_float, std::move(desc)), ptr_(ptr) {}
 
  public:  // Special
-  T minimum() const { return value_min_; }
-  bool exclusive_minimum() const { return exclusive_min_; }
-  Number<T> minimum(T value) &&;
-  Number<T> exclusive_minimum(T value) &&;
+  [[nodiscard]] T minimum() const { return value_min_; }
+  void set_minimum(T value);
+  [[nodiscard]] Number<T> minimum(T value) &&;
 
-  T maximum() const { return value_max_; }
-  bool exclusive_maximum() const { return exclusive_max_; }
-  Number<T> maximum(T value) &&;
-  Number<T> exclusive_maximum(T value) &&;
+  [[nodiscard]] bool exclusive_minimum() const { return exclusive_min_; }
+  void set_exclusive_minimum(T value);
+  [[nodiscard]] Number<T> exclusive_minimum(T value) &&;
 
-  std::pair<T, T> bounds() const;
-  Number<T> bounds(T min, T max) &&;
-  Number<T> bounds_with(T min, T max, std::initializer_list<T> whitelisted) &&;
+  [[nodiscard]] T maximum() const { return value_max_; }
+  void set_maximum(T value);
+  [[nodiscard]] Number<T> maximum(T value) &&;
 
-  const std::set<T>& whitelist() const { return whitelist_; }
-  Number<T> whitelist(T x) &&;
-  Number<T> whitelist(std::initializer_list<T> xs) &&;
+  [[nodiscard]] bool exclusive_maximum() const { return exclusive_max_; }
+  void set_exclusive_maximum(T value);
+  [[nodiscard]] Number<T> exclusive_maximum(T value) &&;
+
+  [[nodiscard]] std::pair<T, T> bounds() const;
+  void set_bounds(T min, T max);
+  [[nodiscard]] Number<T> bounds(T min, T max) &&;
+
+  void set_bounds_with(T min, T max, std::initializer_list<T> whitelisted);
+  [[nodiscard]] Number<T> bounds_with(T min, T max, std::initializer_list<T> whitelisted) &&;
+
+  [[nodiscard]] const std::set<T>& whitelist() const { return whitelist_; }
   void insert_whitelist(T x);
+  [[nodiscard]] Number<T> whitelist(T x) &&;
+  void reset_whitelist(std::initializer_list<T> xs = {});
+  void extend_whitelist(std::initializer_list<T> xs);
+  [[nodiscard]] Number<T> whitelist(std::initializer_list<T> xs) &&;
 
-  const std::set<T>& blacklist() const { return blacklist_; }
-  Number<T> blacklist(T x) &&;
-  Number<T> blacklist(std::initializer_list<T> xs) &&;
+  [[nodiscard]] const std::set<T>& blacklist() const { return blacklist_; }
   void insert_blacklist(T x);
+  [[nodiscard]] Number<T> blacklist(T x) &&;
+  void reset_blacklist(std::initializer_list<T> xs = {});
+  void extend_blacklist(std::initializer_list<T> xs);
+  [[nodiscard]] Number<T> blacklist(std::initializer_list<T> xs) &&;
 
  public:  // Overrides
-  Json json_schema() const override;
+  [[nodiscard]] Json json_schema() const override;
   bool validate(const Conf& c, std::optional<SchemaError>& err) const override;
   using Interface::to_json;
   void to_json(Json& j) const override;
   void from_conf(const Conf& c) override;
-  Json serialize(const Type& x) const;
-  Type deserialize(const Conf& c) const;
+  [[nodiscard]] Json serialize(const Type& x) const;
+  [[nodiscard]] Type deserialize(const Conf& c) const;
   void serialize_into(Json& j, const Type& x) const;
   void deserialize_into(const Conf& c, Type& x) const;
   void reset_ptr() override;
