@@ -124,7 +124,7 @@ class Random {
 
 class DistributionFactory : public fable::schema::Factory<DistributionPtr> {
  public:
-  DistributionFactory(DistributionPtr* ptr, std::string&& desc)
+  DistributionFactory(DistributionPtr* ptr, std::string desc)
       : fable::schema::Factory<DistributionPtr>(ptr, std::move(desc)) {
     this->set_factory_key("binding");
     this->set_args_key("");

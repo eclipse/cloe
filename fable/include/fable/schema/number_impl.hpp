@@ -34,10 +34,10 @@
 #include <utility>           // for move
 #include <vector>            // for vector<>
 
-#include <fable/schema/number.hpp>  // for Number<>
+#include <fable/schema/number.hpp>      // for Number<>
+#include <fable/utility/templates.hpp>  // for is_safe_cast<>, typeinfo<>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 template <typename T>
 Number<T> Number<T>::minimum(T value) && {
@@ -68,7 +68,9 @@ Number<T> Number<T>::exclusive_maximum(T value) && {
 }
 
 template <typename T>
-std::pair<T, T> Number<T>::bounds() const { return std::make_pair(value_min_, value_max_); }
+std::pair<T, T> Number<T>::bounds() const {
+  return std::make_pair(value_min_, value_max_);
+}
 
 template <typename T>
 Number<T> Number<T>::bounds(T min, T max) && {
@@ -107,7 +109,7 @@ Number<T> Number<T>::whitelist(std::initializer_list<T> xs) && {
 
 template <typename T>
 void Number<T>::insert_whitelist(T x) {
-  if (std::is_floating_point<T>::value) {
+  if (std::is_floating_point_v<T>) {
     throw std::logic_error("cannot whitelist floating-point numbers");
   }
   if (blacklist_.count(x)) {
@@ -132,7 +134,7 @@ Number<T> Number<T>::blacklist(std::initializer_list<T> xs) && {
 
 template <typename T>
 void Number<T>::insert_blacklist(T x) {
-  if (std::is_floating_point<T>::value) {
+  if (std::is_floating_point_v<T>) {
     throw std::logic_error("cannot blacklist floating-point numbers");
   }
   if (blacklist_.count(x)) {
@@ -149,7 +151,7 @@ Json Number<T>::json_schema() const {
       {exclusive_max_ ? "exclusiveMaximum" : "maximum", value_max_},
   };
 
-  if (!std::is_floating_point<T>::value) {
+  if (!std::is_floating_point_v<T>) {
     auto write_list = [&j](auto name, auto xlist) {
       if (!xlist.empty()) {
         std::vector<T> xs;
@@ -169,25 +171,20 @@ Json Number<T>::json_schema() const {
 }
 
 template <typename T>
-void Number<T>::validate(const Conf& c) const {
+bool Number<T>::validate(const Conf& c, std::optional<SchemaError>& err) const {
   switch (c->type()) {
-    case JsonType::number_unsigned: {
-      check_bounds<uint64_t>(c);
-      break;
-    }
-    case JsonType::number_integer: {
-      check_bounds<int64_t>(c);
-      break;
-    }
-    case JsonType::number_float: {
+    case JsonType::number_unsigned:
+      return validate_bounds<uint64_t>(c, err);
+    case JsonType::number_integer:
+      return validate_bounds<int64_t>(c, err);
+    case JsonType::number_float:
       if (this->type() != JsonType::number_float) {
-        this->throw_wrong_type(c);
+        return this->set_wrong_type(err, c);
+      } else {
+        return validate_bounds<double>(c, err);
       }
-      check_bounds<double>(c);
-      break;
-    }
     default:
-      this->throw_wrong_type(c);
+      return this->set_wrong_type(err, c);
   }
 }
 
@@ -204,62 +201,88 @@ void Number<T>::from_conf(const Conf& c) {
 }
 
 template <typename T>
-Json Number<T>::serialize(const T& x) const { return x; }
+Json Number<T>::serialize(const T& x) const {
+  return x;
+}
 
 template <typename T>
-T Number<T>::deserialize(const Conf& c) const { return c.get<T>(); }
+T Number<T>::deserialize(const Conf& c) const {
+  return c.get<T>();
+}
 
 template <typename T>
-void Number<T>::reset_ptr() { ptr_ = nullptr; }
+void Number<T>::serialize_into(Json& j, const T& x) const {
+  j = x;
+}
+
+template <typename T>
+void Number<T>::deserialize_into(const Conf& c, T& x) const {
+  x = c.get<T>();
+}
+
+template <typename T>
+void Number<T>::reset_ptr() {
+  ptr_ = nullptr;
+}
 
 /**
  * Check that the min and max bounds are held by c.
+ *
+ * Use-cases with the bounds T={} and the input B=[]:
+ * (a) ---{---[--0--]---}--- B within T
+ *     Note that this doesn't mean we can stop looking, since the actual range
+ *     might be in the top or bottom of T:
+ *     -------[--0--]{--}---
+ *
+ * (b) ---[---{--0--}---]--- T within B
+ *
+ * (c) ---[------{------]--} T overlaps B
  */
 template <typename T>
 template <typename B>
-void Number<T>::check_bounds(const Conf& c) const {
-  auto v = c.get<B>();
-
-  // Check whitelist and blacklist first.
-  if (!std::is_floating_point<T>::value) {
-    if (whitelist_.count(v)) {
-      return;
-    }
-    if (blacklist_.count(v)) {
-      this->throw_error(c, "unexpected blacklisted value {}", v);
+bool Number<T>::validate_bounds(const Conf& c, std::optional<SchemaError>& err) const {
+  auto original = c.get<B>();
+  auto value = static_cast<T>(original);
+  if constexpr (!std::is_floating_point_v<T>) {
+    if (!is_cast_safe<T>(original)) {
+      return this->set_error(err, c,
+                             "failed to convert input to destination type {}, got {}( {} ) = {}",
+                             typeinfo<T>::name, typeinfo<B>::name, original, value);
     }
   }
 
-  if (!std::numeric_limits<B>::is_signed && value_min_ < 0) {
-    // If B is unsigned and value_min_ is less than 0, there is no way
-    // that v cannot fulfill the minimum requirements. Trying to use the
-    // other branches will "underflow" the value_min_ which will invalidate
-    // any comparison.
-  } else if (exclusive_min_) {
-    if (v <= static_cast<B>(value_min_)) {
-      this->throw_error(c, "expected exclusive minimum of {}, got {}", value_min_, v);
+  // Check whitelist and blacklist first:
+  if (!std::is_floating_point_v<T>) {
+    if (whitelist_.count(value)) {
+      return true;
+    }
+    if (blacklist_.count(value)) {
+      return this->set_error(err, c, "unexpected blacklisted value {}", value);
+    }
+  }
+
+  // Check minimum value:
+  if (exclusive_min_) {
+    if (value <= value_min_) {
+      return this->set_error(err, c, "expected exclusive minimum of {}, got {}", value_min_, value);
     }
   } else {
-    if (v < static_cast<B>(value_min_)) {
-      this->throw_error(c, "expected minimum of {}, got {}", value_min_, v);
+    if (value < value_min_) {
+      return this->set_error(err, c, "expected minimum of {}, got {}", value_min_, value);
     }
   }
 
-  if (!std::numeric_limits<B>::is_signed && value_max_ < 0) {
-    // If B is unsigned, but our maximum value is somewhere below 0, then v
-    // will by definition always be out-of-bounds.
-    this->throw_error(c, "expected {}maximum of {}, got {}", (exclusive_max_ ? "exclusive " : ""),
-                      value_max_, v);
-  } else if (exclusive_max_) {
-    if (v >= static_cast<B>(value_max_)) {
-      this->throw_error(c, "expected exclusive maximum of {}, got {}", value_max_, v);
+  if (exclusive_max_) {
+    if (value >= value_max_) {
+      return this->set_error(err, c, "expected exclusive maximum of {}, got {}", value_max_, value);
     }
   } else {
-    if (v > static_cast<B>(value_max_)) {
-      this->throw_error(c, "expected maximum of {}, got {}", value_max_, v);
+    if (value > value_max_) {
+      return this->set_error(err, c, "expected maximum of {}, got {}", value_max_, value);
     }
   }
+
+  return true;
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

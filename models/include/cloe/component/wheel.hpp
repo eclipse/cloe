@@ -23,6 +23,8 @@
 
 #include <fable/json.hpp>  // for to_json
 
+#include <sol/sol.hpp>  // for Lua related aspects
+
 namespace cloe {
 
 struct Wheel {
@@ -35,12 +37,18 @@ struct Wheel {
   /// Compression of the spring in [m].
   double spring_compression{0.0};
 
-  friend void to_json(Json& j, const Wheel& w) {
-    j = Json{
+  friend void to_json(fable::Json& j, const Wheel& w) {
+    j = fable::Json{
         {"rotation", w.rotation},
         {"velocity", w.velocity},
         {"spring_compression", w.spring_compression},
     };
+  }
+  friend void to_lua(sol::state_view view, Wheel* /* value */) {
+    sol::usertype<Wheel> usertype_table = view.new_usertype<Wheel>("Wheel");
+    usertype_table["rotation"] = &Wheel::rotation;
+    usertype_table["velocity"] = &Wheel::velocity;
+    usertype_table["spring_compression"] = &Wheel::spring_compression;
   }
 };
 

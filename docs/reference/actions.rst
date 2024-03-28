@@ -200,7 +200,7 @@ Parameter           Required    Type            Description
 ==================  ==========  ==============  ==================================
 ``command``         yes         string          command to execute in shell
 ``mode``            no          string          one of ``sync``, ``async``, ``detach``
-``output``          no          string          one of ``never``, ``normal``, ``always``
+``log_output``      no          string          one of ``never``, ``on_error``, ``always``
 ``ignore_failure``  no          bool            whether to ignore execution failure
 ==================  ==========  ==============  ==================================
 
@@ -212,7 +212,7 @@ Parameter           Required    Type            Description
 ``path``            yes         string          command to execute directly
 ``args``            no          array           arguments to pass to path
 ``mode``            no          string          one of ``sync``, ``async``, ``detach``
-``output``          no          string          one of ``never``, ``normal``, ``always``
+``log_output``      no          string          one of ``never``, ``on_error``, ``always``
 ``ignore_failure``  no          bool            whether to ignore execution failure
 ==================  ==========  ==============  ==================================
 

@@ -25,21 +25,22 @@
 #include <string>   // for string
 #include <utility>  // for move
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 Boolean::Boolean(Boolean::Type* ptr, std::string desc)
-  : Base(JsonType::boolean, std::move(desc)), ptr_(ptr) {}
+    : Base(JsonType::boolean, std::move(desc)), ptr_(ptr) {}
 
-  Json Boolean::json_schema() const {
-    Json j{
-        {"type", "boolean"},
-    };
-    this->augment_schema(j);
-    return j;
-  }
+Json Boolean::json_schema() const {
+  Json j{
+      {"type", "boolean"},
+  };
+  this->augment_schema(j);
+  return j;
+}
 
-void Boolean::validate(const Conf& c) const { this->validate_type(c); }
+bool Boolean::validate(const Conf& c, std::optional<SchemaError>& err) const {
+  return this->validate_type(c, err);
+}
 
 void Boolean::to_json(Json& j) const {
   assert(ptr_ != nullptr);
@@ -53,9 +54,12 @@ void Boolean::from_conf(const Conf& c) {
 
 Json Boolean::serialize(const Type& x) const { return x; }
 
+void Boolean::serialize_into(Json& j, const Type& x) const { j = x; }
+
 Boolean::Type Boolean::deserialize(const Conf& c) const { return c.get<Type>(); }
+
+void Boolean::deserialize_into(const Conf& c, Type& x) const { x = c.get<Type>(); }
 
 void Boolean::reset_ptr() { ptr_ = nullptr; }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

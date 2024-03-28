@@ -26,14 +26,10 @@
 #include <string>   // for string
 #include <utility>  // for move
 
-#include <boost/optional.hpp>  // for optional<>
-
-#include <fable/json/with_boost.hpp>   // for to_json, from_json
 #include <fable/schema/ignore.hpp>     // for Ignore
 #include <fable/schema/interface.hpp>  // for Base<>, Box
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 /**
  * Passthru stores JSON data and optionally validates it.
@@ -56,18 +52,18 @@ class Passthru : public Base<Passthru<P>> {
   }
 
  public:  // Overrides
-  std::string type_string() const override { return prototype_.type_string(); }
+  [[nodiscard]] std::string type_string() const override { return prototype_.type_string(); }
 
-  Json json_schema() const override {
+  [[nodiscard]] Json json_schema() const override {
     Json j = prototype_.json_schema();
     this->augment_schema(j);
     return j;
   }
 
-  void validate(const Conf& c) const override {
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
     // Let the prototype do all the validation, since Passthru doesn't have
     // enough information to do a correct validation.
-    prototype_.validate(c);
+    return prototype_.validate(c, err);
   }
 
   using Interface::to_json;
@@ -81,9 +77,13 @@ class Passthru : public Base<Passthru<P>> {
     *ptr_ = deserialize(c);
   }
 
-  Json serialize(const Type& x) const { return *x; }
+  [[nodiscard]] Json serialize(const Type& x) const { return *x; }
 
-  Type deserialize(const Conf& c) const { return c; }
+  [[nodiscard]] Type deserialize(const Conf& c) const { return c; }
+
+  void serialize_into(Json& j, const Type& x) const { j = serialize(x); }
+
+  void deserialize_into(const Conf& c, Type& x) const { x = deserialize(c); }
 
   void reset_ptr() override { ptr_ = nullptr; }
 
@@ -94,13 +94,12 @@ class Passthru : public Base<Passthru<P>> {
 
 template <typename S>
 inline Passthru<Ignore> make_schema(Conf* ptr, S&& desc) {
-  return Passthru<Ignore>(ptr, Ignore(), std::forward<S>(desc));
+  return {ptr, Ignore(), std::forward<S>(desc)};
 }
 
 template <typename P, typename S>
 Passthru<P> make_schema(Conf* ptr, P&& prototype, S&& desc) {
-  return Passthru<P>(ptr, std::forward<P>(prototype), std::forward<S>(desc));
+  return {ptr, std::forward<P>(prototype), std::forward<S>(desc)};
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

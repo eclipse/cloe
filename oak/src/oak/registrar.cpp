@@ -23,14 +23,15 @@
 #include "oak/registrar.hpp"
 
 #include <map>
+#include <memory>
 #include <mutex>
 #include <shared_mutex>
-#include <memory>
 #include <string>
 
-#include <cloe/core.hpp>   // for Json, logger::get
-#include "oak/server.hpp"  // for Server
+#include <cloe/handler.hpp>  // for Request, Response, Handler
+
 #include "oak/request_stub.hpp"  // for RequestStub
+#include "oak/server.hpp"        // for Server
 
 namespace oak {
 
@@ -40,7 +41,7 @@ Middleware chain_middleware(Middleware x, Middleware y) {
   } else if (y == nullptr) {
     return x;
   } else {
-    return [x, y](Handler h) -> Handler { return y(x(h)); };
+    return [x, y](cloe::Handler h) -> cloe::Handler { return y(x(h)); };
   }
 }
 
@@ -65,7 +66,7 @@ Registrar Registrar::with_middleware(Middleware m) const {
   return Registrar(this, prefix_, chain_middleware(middleware_, m));
 }
 
-void Registrar::register_handler(const std::string& route, Handler h) {
+void Registrar::register_handler(const std::string& route, cloe::Handler h) {
   assert(route.size() != 0 && route[0] == '/');
   assert(proxy_ != nullptr);
   if (middleware_) {
@@ -78,7 +79,7 @@ void Registrar::register_handler(const std::string& route, Handler h) {
   proxy_->register_handler(endpoint, h);
 }
 
-void StaticRegistrar::register_handler(const std::string& route, Handler h) {
+void StaticRegistrar::register_handler(const std::string& route, cloe::Handler h) {
   assert(route.size() != 0 && route[0] == '/');
   assert(proxy_ == nullptr);
   auto endpoint = prefix_ + route;
@@ -91,10 +92,10 @@ void StaticRegistrar::register_handler(const std::string& route, Handler h) {
   endpoints_.push_back(endpoint);
 }
 
-void LockedRegistrar::register_handler(const std::string& route, Handler h) {
+void LockedRegistrar::register_handler(const std::string& route, cloe::Handler h) {
   assert(route.size() != 0 && route[0] == '/');
   assert(proxy_ == nullptr);
-  h = [this, h](const cloe::Request& q, Response& r) {
+  h = [this, h](const cloe::Request& q, cloe::Response& r) {
     std::shared_lock read_lock(this->access_);
     h(q, r);
   };
@@ -102,10 +103,10 @@ void LockedRegistrar::register_handler(const std::string& route, Handler h) {
   StaticRegistrar::register_handler(route, h);
 }
 
-void BufferRegistrar::register_handler(const std::string& route, Handler h) {
+void BufferRegistrar::register_handler(const std::string& route, cloe::Handler h) {
   assert(route.size() != 0 && route[0] == '/');
   assert(proxy_ == nullptr);
-  auto key = Muxer<Handler>::normalize(prefix_ + route);
+  auto key = Muxer<cloe::Handler>::normalize(prefix_ + route);
   log(key);
   if (middleware_) {
     handlers_.add(key, middleware_(h));
@@ -116,7 +117,7 @@ void BufferRegistrar::register_handler(const std::string& route, Handler h) {
   // Since it's not available to the server yet, we don't need to
   // lock for refreshing the route.
   refresh_route(key);
-  server_->add_handler(key, [this, key](const cloe::Request&, Response& r) {
+  server_->add_handler(key, [this, key](const cloe::Request&, cloe::Response& r) {
     // Technically it's not necessary to lock, but when we are updating the
     // buffers, we do not want any requests to get through.
     std::shared_lock read_lock(this->access_);
@@ -136,7 +137,7 @@ void BufferRegistrar::refresh_buffer() {
 void BufferRegistrar::refresh_route(const std::string& key) {
   const RequestStub q;
   auto handler = handlers_.get_unsafe(key).first;
-  Response r;
+  cloe::Response r;
   handler(q, r);
   buffer_.set_unsafe(key, r);
 }

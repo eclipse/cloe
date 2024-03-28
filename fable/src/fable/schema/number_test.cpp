@@ -26,12 +26,13 @@ using namespace std;  // NOLINT(build/namespaces)
 
 #include <gtest/gtest.h>
 
-#include <fable/confable.hpp>       // for Confable
-#include <fable/schema.hpp>         // for Number
-#include <fable/utility/gtest.hpp>  // for assert_validate
+#include <fable/confable.hpp>           // for Confable
+#include <fable/schema.hpp>             // for Number
+#include <fable/utility/gtest.hpp>      // for assert_validate
+#include <fable/utility/templates.hpp>  // for typeinfo
 
 struct MyNumberStruct : public fable::Confable {
-  uint8_t number;
+  uint8_t number = 0;
   CONFABLE_SCHEMA(MyNumberStruct) {
     using namespace fable::schema;  // NOLINT(build/namespace)
     return Struct{
@@ -75,4 +76,72 @@ TEST(fable_schema_number, validate) {
                                       {"number", x},
                                   });
   }
+}
+
+template <typename T>
+void assert_validate_t(const fable::Schema& schema, const std::vector<T>& xs) {
+  for (T x : xs) {
+    std::cerr << "Expect ok   " << fable::typeinfo<T>::name << ":\t" << (+x) << std::endl;
+    fable::assert_validate(schema, fable::Json(x));
+  }
+}
+
+template <typename T>
+void assert_invalidate_t(const fable::Schema& schema, const std::vector<T>& xs) {
+  for (T x : xs) {
+    std::cerr << "Expect fail " << fable::typeinfo<T>::name << ":\t" << (+x) << std::endl;
+    fable::assert_invalidate(schema, fable::Json(x));
+  }
+}
+
+TEST(fable_schema_number, validate_u64) {
+  auto schema = fable::schema::Number<uint64_t>(nullptr, "");
+
+  assert_validate_t<uint64_t>(schema, {0, 1, std::numeric_limits<uint64_t>::max()});
+  assert_validate_t<int64_t>(schema, {0, 1, std::numeric_limits<int64_t>::max()});
+
+  assert_invalidate_t<int8_t>(schema, {-1, -5, std::numeric_limits<int8_t>::min()});
+  assert_invalidate_t<int64_t>(schema, {-1, -5, std::numeric_limits<int8_t>::min()});
+}
+
+TEST(fable_schema_number, validate_u64_narrow_high) {
+  auto schema = fable::schema::Number<uint64_t>(nullptr, "")
+                    .minimum(std::numeric_limits<uint64_t>::max() - 2);
+
+  assert_validate_t<uint64_t>(
+      schema, {std::numeric_limits<uint64_t>::max() - 2, std::numeric_limits<uint64_t>::max()});
+  assert_invalidate_t<uint64_t>(schema, {0, std::numeric_limits<uint64_t>::max() - 3});
+  assert_invalidate_t<uint32_t>(schema, {0, std::numeric_limits<uint32_t>::max()});
+  assert_invalidate_t<int32_t>(schema, {-1, std::numeric_limits<int32_t>::max()});
+}
+
+TEST(fable_schema_number, validate_u8) {
+  auto schema = fable::schema::Number<uint8_t>(nullptr, "");
+
+  assert_validate_t<uint8_t>(schema, {0, 1, std::numeric_limits<uint8_t>::max()});
+  assert_validate_t<int8_t>(schema, {0, 1, std::numeric_limits<int8_t>::max()});
+
+  assert_invalidate_t<uint32_t>(schema, {std::numeric_limits<uint32_t>::max()});
+  assert_invalidate_t<int8_t>(schema, {-1, -5, std::numeric_limits<int8_t>::min()});
+  assert_invalidate_t<int64_t>(schema, {-1, -5, std::numeric_limits<int8_t>::min()});
+}
+
+TEST(fable_schema_number, validate_i64) {
+  auto schema = fable::schema::Number<int64_t>(nullptr, "");
+
+  assert_validate_t<uint64_t>(schema, {0, 1, std::numeric_limits<uint64_t>::max() / 2});
+  assert_validate_t<int64_t>(schema, {0, 1, std::numeric_limits<int64_t>::max()});
+
+  assert_invalidate_t<uint64_t>(schema, {std::numeric_limits<uint64_t>::max()});
+}
+
+TEST(fable_schema_number, validate_i8) {
+  auto schema = fable::schema::Number<int8_t>(nullptr, "");
+
+  assert_validate_t<uint8_t>(schema, {0, 1, std::numeric_limits<uint8_t>::max() / 2});
+  assert_validate_t<int8_t>(schema, {-1, 0, 1, std::numeric_limits<int8_t>::max()});
+
+  assert_invalidate_t<uint64_t>(schema, {std::numeric_limits<uint32_t>::max()});
+  assert_invalidate_t<int64_t>(
+      schema, {std::numeric_limits<int16_t>::min(), std::numeric_limits<int64_t>::max()});
 }

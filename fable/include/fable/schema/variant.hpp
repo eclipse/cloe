@@ -30,8 +30,7 @@
 
 #include <fable/schema/interface.hpp>  // for Interface
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 using BoxVec = std::vector<Box>;
 using BoxList = std::initializer_list<Box>;
@@ -64,14 +63,16 @@ class Variant : public Interface {
   Variant(std::string desc, std::vector<Box>&& vec);
 
  public:  // Base
-  Interface* clone() const override { return new Variant(*this); }
-  operator Box() const { return Box{this->clone()}; }
-  JsonType type() const override { return type_; }
-  std::string type_string() const override { return type_string_; }
-  bool is_variant() const override { return true; }
-  Json usage() const override;
+  [[nodiscard]] std::unique_ptr<Interface> clone() const override {
+    return std::make_unique<Variant>(*this);
+  }
+  [[nodiscard]] operator Box() const { return Box{this->clone()}; }
+  [[nodiscard]] JsonType type() const override { return type_; }
+  [[nodiscard]] std::string type_string() const override { return type_string_; }
+  [[nodiscard]] bool is_variant() const override { return true; }
+  [[nodiscard]] Json usage() const override;
 
-  bool is_required() const override { return required_; }
+  [[nodiscard]] bool is_required() const override { return required_; }
   Variant require() && {
     required_ = true;
     return std::move(*this);
@@ -81,10 +82,9 @@ class Variant : public Interface {
     return std::move(*this);
   }
 
-  bool has_description() const { return !desc_.empty(); }
-  void set_description(const std::string& s) override { desc_ = s; }
-  void set_description(std::string&& s) { desc_ = std::move(s); }
-  const std::string& description() const override { return desc_; }
+  [[nodiscard]] bool has_description() const { return !desc_.empty(); }
+  void set_description(std::string s) override { desc_ = std::move(s); }
+  [[nodiscard]] const std::string& description() const override { return desc_; }
   Variant description(std::string desc) && {
     desc_ = std::move(desc);
     return std::move(*this);
@@ -103,18 +103,27 @@ class Variant : public Interface {
 
  public:  // Overrides
   using Interface::to_json;
-  Json json_schema() const override;
-  void validate(const Conf& c) const override { validate_index(c); }
+  [[nodiscard]] Json json_schema() const override;
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
+    return validate_index(c, err).has_value();
+  }
   void to_json(Json& j) const override { schemas_[0].to_json(j); }
   void from_conf(const Conf& c) override {
-    auto index = validate_index(c);
+    auto index = variant_index(c);
     schemas_[index].from_conf(c);
   }
+
+  // TODO: Implement or explain why we don't need the following methods:
+  // - serialize
+  // - serialize_into
+  // - deserialize
+  // - deserialize_into
 
   void reset_ptr() override;
 
  private:
-  size_t validate_index(const Conf& c) const;
+  std::optional<size_t> validate_index(const Conf& c, std::optional<SchemaError>& err) const;
+  [[nodiscard]] size_t variant_index(const Conf& c) const;
 
  private:
   std::string desc_{};
@@ -125,5 +134,4 @@ class Variant : public Interface {
   bool unique_match_{false};
 };
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

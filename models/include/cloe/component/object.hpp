@@ -24,10 +24,12 @@
 #include <memory>  // for shared_ptr<>
 #include <vector>  // for vector<>
 
-#include <Eigen/Geometry>             // for Isometry3d, Vector3d
-#include <fable/json/with_eigen.hpp>  // for to_json
+#include <sol/sol.hpp>  // for Lua related aspects
 
-#include <cloe/core.hpp>  // for Json
+#include <Eigen/Geometry>           // for Isometry3d, Vector3d
+#include <fable/enum.hpp>           // for ENUM_SERIALIZATION
+#include <fable/json.hpp>           // for Json
+#include <fable/utility/eigen.hpp>  // for to_json
 
 namespace cloe {
 
@@ -83,8 +85,8 @@ struct Object {
 
   Object() = default;
 
-  friend void to_json(Json& j, const Object& o) {
-    j = Json{
+  friend void to_json(fable::Json& j, const Object& o) {
+    j = fable::Json{
         {"id", o.id},
         {"exist_prob", o.exist_prob},
         {"type", o.type},
@@ -98,6 +100,23 @@ struct Object {
         {"angular_velocity", o.angular_velocity},
     };
   }
+  friend void to_lua(sol::state_view view, Object* /* value */) {
+    sol::usertype<Object> usertype_table = view.new_usertype<Object>("Object");
+    usertype_table["id"] = &Object::id;
+    usertype_table["exist_prob"] = &Object::exist_prob;
+    usertype_table["type"] = &Object::type;
+    usertype_table["classification"] = &Object::classification;
+    usertype_table["pose"] = &Object::pose;
+    usertype_table["dimensions"] = &Object::dimensions;
+    usertype_table["cog_offset"] = &Object::cog_offset;
+    usertype_table["velocity"] = &Object::velocity;
+    usertype_table["acceleration"] = &Object::acceleration;
+    usertype_table["angular_velocity"] = &Object::angular_velocity;
+    usertype_table["ego_position"] = +[](const Object &self, const Eigen::Isometry3d &sensorMountPose) {
+        Eigen::Vector3d pos = sensorMountPose * self.pose * self.cog_offset;
+        return pos;
+    };
+  }
 };
 
 /**
@@ -108,8 +127,8 @@ struct Object {
  */
 using Objects = std::vector<std::shared_ptr<Object>>;
 
-inline void to_json(Json& j, const Objects& os) {
-  j = Json::array();
+inline void to_json(fable::Json& j, const Objects& os) {
+  j = fable::Json::array();
   for (const auto& o : os) {
     assert(o != nullptr);
     j.push_back(*o);

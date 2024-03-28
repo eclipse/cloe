@@ -21,10 +21,10 @@
 
 # Usage: $(call assert_numeric_bool, VARIABLE-NAME)
 define assert_numeric_bool
-$(if $(filter-out 0 1,${$1}), $(error Unexpected value for parameter $1, expect either 0 or 1))
+$(if $(filter-out 0 1,$($1)), $(error Unexpected value for parameter $1, expect either 0 or 1))
 endef
 
-# Usage: $(call uniq, ${LIST-OF-WORDS})
+# Usage: $(call uniq, $(LIST-OF-WORDS))
 define uniq
 $(if $1,$(firstword $1) $(call uniq,$(filter-out $(firstword $1),$1)))
 endef
@@ -58,39 +58,39 @@ _dim := \e[2m
 define print_header
 	@printf "________________________________________"
 	@printf "________________________________________\n"
-	@printf ":: %s\n" ${1}
+	@printf ":: %s\n" $(1)
 endef
 
 # Usage: $(call print_help_section, SECTION-TITLE)
 define print_help_section
-	@printf "%s:\n" ${1}
+	@printf "%s:\n" $(1)
 endef
 
 # Usage: $(call print_help_subsection, SUBSECTION-TITLE)
 define print_help_subsection
-	@printf "  %s:\n" ${1}
+	@printf "  %s:\n" $(1)
 endef
 
 # Usage: $(call print_help_target, TARGET-NAME, HELP-DESCRIPTION, HELP-CATEGORY)
 define print_help_target
-	@printf "  ${_blu}% -21s${_rst} % -45b ${_dim}%s${_rst}\n" ${1} ${2} ${3}
+	@printf "  $(_blu)% -21s$(_rst) % -45b $(_dim)%s$(_rst)\n" $(1) $(2) $(3)
 endef
 
 # Usage: $(call print_help_option, VAR-NAME, VAR-DEFAULT, DESCRIPTION)
 define print_help_option
-	@printf "    % -36s %b\n" $(shell printf "${_grn}%s${_rst}=${_dim}%s${_rst}" ${1} ${2}) ${3}
+	@printf "    % -36s %b\n" $(shell printf "$(_grn)%s$(_rst)=$(_dim)%s$(_rst)" $(1) $(2)) $(3)
 endef
 
-# Usage: $(call print_help_define, VAR-NAME, ${VAR-NAME})
+# Usage: $(call print_help_define, VAR-NAME, $(VAR-NAME))
 define print_help_define
-	@printf "    ${_grn}%s${_rst}=${_dim}%s${_rst}\n" ${1} ${2}
+	@printf "    $(_grn)%s$(_rst)=$(_dim)%s$(_rst)\n" $(1) $(2)
 endef
 
 define print_help_define_align
-	@printf "    ${_grn}%-16s${_rst}=${_dim} %s${_rst}\n" ${1} ${2}
+	@printf "    $(_grn)%-16s$(_rst)=$(_dim) %s$(_rst)\n" $(1) $(2)
 endef
 
-# Usage: $(call print_help_define_lines, VAR-NAME, ${VAR-NAME})
+# Usage: $(call print_help_define_lines, VAR-NAME, $(VAR-NAME))
 #
 # For example, given a call with the following:
 #
@@ -103,16 +103,16 @@ endef
 #       20.04
 #       22.04
 #
-# If the contents of ${VAR-NAME} is empty or only contains whitespace,
+# If the contents of $(VAR-NAME) is empty or only contains whitespace,
 # then no extra newline is printed, and it behaves as print_help_define.
 define print_help_define_lines
-	@printf "    ${_grn}%s${_rst}=${_dim}" ${1}
-	@if [ -n "$(strip ${2})" ]; then printf "\\ \n"; fi
-	@printf "%s" "$$(echo "     ${2}" | fmt -5)"
-	@printf "${_rst}\n"
+	@printf "    $(_grn)%s$(_rst)=$(_dim)" $(1)
+	@if [ -n "$(strip $(2))" ]; then printf "\\ \n"; fi
+	@printf "%s" "$$(echo "     $(2)" | fmt -5)"
+	@printf "$(_rst)\n"
 endef
 
-# Usage: $(call print_help_args_lines, VAR-NAME, ${VAR-NAME})
+# Usage: $(call print_help_args_lines, VAR-NAME, $(VAR-NAME))
 #
 # This function behaves as print_help_define_lines, except that
 # it doesn't split on words, but on arguments. Each argument (leading with -)
@@ -129,12 +129,12 @@ endef
 #         --rm
 #         --network host
 #
-# If the contents of ${VAR-NAME} is empty, same behavior as print_help_define.
+# If the contents of $(VAR-NAME) is empty, same behavior as print_help_define.
 define print_help_args_lines
-	@printf "    ${_grn}%s${_rst}=${_dim}" ${1}
-	@if [ -n "$(strip ${2})" ]; then printf "\\ \n"; fi
-	@printf "%s" "$$(echo "     ${2}" | sed -r -e 's/\W--?[^-]/\n     \0/g' -e 's/^\s*\n//')"
-	@printf "${_rst}\n"
+	@printf "    $(_grn)%s$(_rst)=$(_dim)" $(1)
+	@if [ -n "$(strip $(2))" ]; then printf "\\ \n"; fi
+	@printf "%s" "$$(echo "     $(2)" | sed -r -e 's/\W--?[^-]/\n     \0/g' -e 's/^\s*\n//')"
+	@printf "$(_rst)\n"
 endef
 
 # Usage: $(call print_help_usage)
@@ -142,5 +142,5 @@ endef
 # This should be called only once, before all other print_help_* calls,
 # so that the help message starts with a usage statement.
 define print_help_usage
-	@printf "Usage: make ${_blu}target${_rst}\n"
+	@printf "Usage: make $(_blu)target$(_rst)\n"
 endef

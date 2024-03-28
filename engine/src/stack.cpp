@@ -23,17 +23,17 @@
 
 #include "stack.hpp"
 
-#include <algorithm>  // for transform, swap
-#include <map>        // for map<>
-#include <memory>     // for shared_ptr<>
-#include <set>        // for set<>
-#include <string>     // for string
+#include <algorithm>   // for transform, swap
+#include <filesystem>  // for filesystem
+#include <map>         // for map<>
+#include <memory>      // for shared_ptr<>
+#include <set>         // for set<>
+#include <string>      // for string
 
-#include <boost/algorithm/string/predicate.hpp>  // for starts_with
-#include <boost/filesystem.hpp>                  // for path
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 #include <cloe/utility/std_extensions.hpp>  // for join_vector
+#include <fable/utility/string.hpp>         // for starts_with
 
 namespace cloe {
 
@@ -86,7 +86,7 @@ void LoggingConf::apply() const {
 
 std::string PluginConf::canonical() const {
   // Handle builtins specially, these are in a URI form.
-  if (boost::starts_with(plugin_path.string(), "builtin://")) {
+  if (fable::starts_with(plugin_path.string(), "builtin://")) {
     return plugin_path.string();
   }
 
@@ -135,8 +135,7 @@ inline auto include_prototype() { return IncludeSchema(nullptr, "").file_exists(
 Conf default_conf_reader(const std::string& filepath) { return Conf{filepath}; }
 
 Stack::Stack()
-    : Confable()
-    , reserved_ids_({"_", "cloe", "sim", "simulation"})
+    : reserved_ids_({"_", "cloe", "sim", "simulation"})
     , version(CLOE_STACK_VERSION)
     , engine_schema(&engine, "engine configuration")
     , include_schema(&include, include_prototype(), "include configurations")
@@ -178,10 +177,16 @@ Stack::Stack(const Stack& other)
   Stack::reset_schema();
 }
 
-Stack::Stack(Stack&& other) : Stack() { swap(*this, other); }
+Stack::Stack(Stack&& other) noexcept : Stack() { swap(*this, other); }
 
-Stack& Stack::operator=(Stack other) {
+Stack& Stack::operator=(const Stack& other) {
   // Make use of the copy constructor and then swap.
+  auto copy = Stack(other);
+  swap(*this, copy);
+  return *this;
+}
+
+Stack& Stack::operator=(Stack&& other) noexcept {
   swap(*this, other);
   return *this;
 }
@@ -232,6 +237,18 @@ void Stack::reset_schema() {
   plugins_schema = PluginsSchema(&plugins, "plugin configuration").extend(true);
   Confable::reset_schema();
   // clang-format on
+}
+
+void Stack::merge_stackfile(const std::string& filepath) {
+  this->logger()->info("Include conf: {}", filepath);
+  Conf config;
+  try {
+    config = this->conf_reader_func_(filepath);
+  } catch (std::exception& e) {
+    this->logger()->error("Error including conf {}: {}", filepath, e.what());
+    throw;
+  }
+  from_conf(config);
 }
 
 void Stack::apply_plugin_conf(const PluginConf& c) {
@@ -302,7 +319,7 @@ void Stack::insert_plugin(std::shared_ptr<Plugin> p, const PluginConf& c) {
   }
 
   // Skip loading if already loaded
-  if (all_plugins_.count(canon)) {
+  if (all_plugins_.count(canon) != 0) {
     logger()->debug("Skip {}", canon);
     return;
   }
@@ -452,7 +469,6 @@ void Stack::from_conf(const Conf& _conf, size_t depth) {
       //     throw SchemaError{
       //       c,
       //       this->schema().json_schema(),
-      //       Json{},
       //       "require version compatible with {}, got {}",
       //       CLOE_STACK_VERSION,
       //       ver,
@@ -460,7 +476,8 @@ void Stack::from_conf(const Conf& _conf, size_t depth) {
       //
       // But that would result in a very verbose error message, so we shall
       // throw a more user-friendly error message instead.
-      throw Error{"require version compatible with {}, got {}", CLOE_STACK_VERSION, ver}.explanation(R"(
+      throw Error{"require version compatible with {}, got {}", CLOE_STACK_VERSION, ver}
+          .explanation(R"(
             It looks like you are attempting to load a stack file with an
             incompatible version.
 
@@ -597,32 +614,47 @@ void Stack::from_conf(const Conf& _conf, size_t depth) {
         apply_plugin_conf(plugins[i]);
       } catch (Error& e) {
         auto ec = c.at("plugins").to_array()[i];
-        throw SchemaError{ec, plugins_schema.json_schema(), Json{}, e.what()};
+        throw SchemaError{ec, plugins_schema.json_schema(), e.what()};
       }
     }
     c.erase("plugins");
   }
 
   // Apply everything else.
-  this->schema().validate(c);
+  this->schema().validate_or_throw(c);
   this->schema().from_conf(c);
   this->reset_schema();
 }
 
-void Stack::validate(const Conf& c) const {
-  Stack copy(*this);
-  copy.from_conf(c);
-  copy.validate();
-}
-
-void Stack::validate() const {
+void Stack::validate_self() const {
   check_consistency();
   check_defaults();
 }
 
+void Stack::validate_or_throw(const Conf& c) const {
+  Stack copy(*this);
+  copy.from_conf(c);
+  copy.validate_self();
+}
+
+bool Stack::validate(const Conf& c, std::optional<SchemaError>& err) const {
+  Stack copy(*this);
+  try {
+    copy.from_conf(c);
+    copy.validate_self();
+  } catch (fable::SchemaError& e) {
+    err.emplace(e);
+    return false;
+  } catch (Error& e) {
+    err.emplace(SchemaError(c, schema().json_schema(), e.what()));
+    return false;
+  }
+  return true;
+}
+
 bool Stack::is_valid() const {
   try {
-    validate();
+    validate_self();
     return true;
   } catch (...) {
     // TODO(ben): Replace ... with specific error classes
@@ -632,7 +664,7 @@ bool Stack::is_valid() const {
 
 void Stack::check_consistency() const {
   std::map<std::string, std::string> ns;
-  for (auto x : reserved_ids_) {
+  for (const auto& x : reserved_ids_) {
     ns[x] = "reserved keyword";
   }
 
@@ -640,7 +672,7 @@ void Stack::check_consistency() const {
    * Check that the given name does not exist yet.
    */
   auto check = [&](const char* type, const std::string& key) {
-    if (ns.count(key)) {
+    if (ns.count(key) != 0) {
       throw Error("cannot define a new {} with the name '{}': a {} with that name already exists",
                   type, key, ns[key]);
     }
@@ -648,7 +680,7 @@ void Stack::check_consistency() const {
   };
 
   auto check_has = [&](const char* type, const std::string& key) {
-    if (!ns.count(key)) {
+    if (ns.count(key) == 0) {
       throw Error("cannot find a {} with the name '{}': no entity with that name has been defined",
                   type, key);
     } else if (ns[key] != type) {
@@ -684,7 +716,7 @@ void Stack::check_consistency() const {
 }
 
 void Stack::check_defaults() const {
-  auto check = [&](auto f, const std::string& name, const std::vector<DefaultConf> defaults) {
+  auto check = [&](auto f, const std::string& name, const std::vector<DefaultConf>& defaults) {
     auto y = f->clone();
     for (const auto& c : defaults) {
       if (c.name.value_or(name) == name && c.binding.value_or(f->name()) == f->name()) {

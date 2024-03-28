@@ -46,6 +46,42 @@ The following third-party libraries are included in the Cloe repository:
   - Website: https://jothepro.github.io/doxygen-awesome-css
   - Source: docs/_vendor/doxygen-awesome
 
+- Inspect.lua
+  - License: MIT
+  - License-Source: https://raw.githubusercontent.com/kikito/inspect.lua/master/MIT-LICENSE.txt
+  - Website: https://github.com/kikito/inspect.lua
+  - Source: engine/lua/inspect.lua
+
+- Typecheck
+  - License: MIT
+  - License-Source: https://github.com/gvvaughan/typecheck/raw/master/LICENSE.md
+  - Website: https://github.com/gvvaughan/typecheck
+  - Source: engine/lua/typecheck.lua
+
+- Tableshape
+  - License: MIT
+  - License-Source: https://github.com/leafo/tableshape/blob/v2.6.0/README.md
+  - Website: https://github.com/leafo/tableshape
+  - Source: engine/lua/tableshape.lua
+
+- Linenoise
+  - License: BSD2
+  - License-Source: https://raw.githubusercontent.com/antirez/linenoise/master/LICENSE
+  - Website: https://github.com/antirez/linenoise
+  - Source: engine/vendor/linenoise
+
+- LRDB
+  - License: BSL-1.0
+  - License-Source: https://www.boost.org/LICENSE_1_0.txt
+  - Website: https://github.com/satoren/LRDB
+  - Source: engine/vendor/lrdb
+
+- Lust
+  - License: MIT
+  - License-Source: https://raw.githubusercontent.com/bjornbytes/lust/master/LICENSE
+  - Website: https://github.com/bjornbytes/lust
+  - Source: engine/lua/lust.lua
+
 The following third-party libraries are used by this project (these are usually
 installed with the help of Conan):
 
@@ -93,7 +129,7 @@ installed with the help of Conan):
   - Conan-Package: inja
 
 - Boost
-  - License: Boost
+  - License: BSL-1.0
   - License-Source: https://www.boost.org/LICENSE_1_0.txt
   - Website: https://www.boost.org
   - Conan-Package: boost

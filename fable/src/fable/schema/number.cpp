@@ -29,8 +29,7 @@
 
 #include <fable/schema/number_impl.hpp>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 template class Number<char>;
 template class Number<signed char>;
@@ -47,5 +46,4 @@ template class Number<float>;
 template class Number<double>;
 template class Number<long double>;
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

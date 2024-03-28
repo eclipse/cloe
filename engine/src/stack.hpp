@@ -23,15 +23,17 @@
 
 #pragma once
 
-#include <map>      // for map<>
-#include <memory>   // for shared_ptr<>
-#include <set>      // for set<>
-#include <string>   // for string
-#include <utility>  // for move
-#include <vector>   // for vector<>
+#include <filesystem>  // for filesystem::path
+#include <map>         // for map<>
+#include <memory>      // for shared_ptr<>
+#include <optional>    // for optional<>
+#include <set>         // for set<>
+#include <string>      // for string
+#include <utility>     // for move
+#include <vector>      // for vector<>
 
-#include <boost/filesystem/path.hpp>  // for path
-#include <boost/optional.hpp>         // for optional<>
+#include <fable/schema/custom.hpp>          // for CustomDeserializer
+#include <fable/schema/factory.hpp>         // for Factory
 
 #include <cloe/component.hpp>        // for ComponentFactory
 #include <cloe/controller.hpp>       // for ControllerFactory
@@ -39,32 +41,9 @@
 #include <cloe/simulator.hpp>        // for SimulatorFactory
 #include <cloe/trigger.hpp>          // for Source
 #include <cloe/utility/command.hpp>  // for Command
-#include <fable/schema/custom.hpp>   // for CustomDeserializer
-#include <fable/schema/factory.hpp>  // for Factory
 
+#include "config.hpp"
 #include "plugin.hpp"  // for Plugin
-
-#ifndef CLOE_STACK_VERSION
-#define CLOE_STACK_VERSION "4.1"
-#endif
-
-#ifndef CLOE_STACK_SUPPORTED_VERSIONS
-#define CLOE_STACK_SUPPORTED_VERSIONS {"4", "4.0", "4.1"}
-#endif
-
-#ifndef CLOE_XDG_SUFFIX
-#define CLOE_XDG_SUFFIX "cloe"
-#endif
-
-#ifndef CLOE_CONFIG_HOME
-#define CLOE_CONFIG_HOME "${XDG_CONFIG_HOME-${HOME}/.config}/" CLOE_XDG_SUFFIX
-#endif
-
-#ifndef CLOE_DATA_HOME
-#define CLOE_DATA_HOME "${XDG_DATA_HOME-${HOME}/.local/share}/" CLOE_XDG_SUFFIX
-#endif
-
-#define CLOE_SIMULATION_UUID_VAR "CLOE_SIMULATION_UUID"
 
 namespace cloe {
 
@@ -78,7 +57,7 @@ class PersistentConfable : public Confable {
  public:
   const Conf& conf() const { return conf_; }
 
-  void from_conf(const Conf& c) {
+  void from_conf(const Conf& c) override {
     Confable::from_conf(c);
     conf_ = c;
   }
@@ -87,11 +66,11 @@ class PersistentConfable : public Confable {
   Conf conf_;
 };
 
-inline auto id_prototype(std::string&& desc = "") {
+inline auto id_prototype(std::string desc = "") {
   return schema::make_prototype<std::string>(std::move(desc)).c_identifier();
 }
 
-inline auto id_path_prototype(std::string&& desc = "") {
+inline auto id_path_prototype(std::string desc = "") {
   return schema::make_prototype<std::string>(std::move(desc))
       .pattern("^([a-zA-Z_][a-zA-Z0-9_]*/?)+$");
 }
@@ -102,9 +81,9 @@ inline auto id_path_prototype(std::string&& desc = "") {
  * IncludeConf is a relative or absolute filepath that should be included in
  * the stack configuration.
  */
-using IncludeConf = boost::filesystem::path;
+using IncludeConf = std::filesystem::path;
 using IncludeSchema = decltype(schema::make_schema(static_cast<IncludeConf*>(nullptr), ""));
-using IncludesSchema = schema::Array<IncludeConf, IncludeSchema>;
+using IncludesSchema = schema::Vector<IncludeConf, IncludeSchema>;
 
 // --------------------------------------------------------------------------------------------- //
 
@@ -159,8 +138,8 @@ using IncludesSchema = schema::Array<IncludeConf, IncludeSchema>;
  */
 struct LoggingConf : public Confable {
   std::string name;
-  boost::optional<std::string> pattern;
-  boost::optional<LogLevel> level;
+  std::optional<std::string> pattern;
+  std::optional<LogLevel> level;
 
  public:  // Special
   void apply() const;
@@ -175,13 +154,17 @@ struct LoggingConf : public Confable {
     };
   }
 
-  void validate(const Conf& c) const override {
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
     const auto& s = this->schema();
-    s.validate(c);
-    if (!c.has("pattern") && !c.has("level")) {
-      throw SchemaError(c, s.json_schema(),
-                        "require at least one of 'pattern' or 'level' properties");
+    if (!s.validate(c, err)) {
+      return false;
     }
+    if (!c.has("pattern") && !c.has("level")) {
+      err.emplace(SchemaError(c, s.json_schema(),
+                              "require at least one of 'pattern' or 'level' properties"));
+      return false;
+    }
+    return true;
   }
 };
 
@@ -217,23 +200,23 @@ struct ServerConf : public Confable {
  */
 struct PluginConf : public PersistentConfable {
   /** Filesystem path to file or directory. */
-  boost::filesystem::path plugin_path{};
+  std::filesystem::path plugin_path{};
 
   /** Name to give plugin if path is to a single file. */
-  boost::optional<std::string> plugin_name{};
+  std::optional<std::string> plugin_name{};
 
   /** Prefix for plugin name(s). */
-  boost::optional<std::string> plugin_prefix{};
+  std::optional<std::string> plugin_prefix{};
 
   /** Do not fail if path does not exist. */
-  boost::optional<bool> ignore_missing{};
+  std::optional<bool> ignore_missing{};
 
   /**
    * Do not fail if path exists but plugin cannot be loaded.
    * This is especially useful if trying to load from several directories,
    * such as /usr/lib/cloe/plugins.
    */
-  boost::optional<bool> ignore_failure{};
+  std::optional<bool> ignore_failure{};
 
   /**
    * If a plugin with the same name exists, replace it with this one.
@@ -241,7 +224,7 @@ struct PluginConf : public PersistentConfable {
    * This is dependent on the order of plugin loading, which is determined by
    * the order of configuration files.
    */
-  boost::optional<bool> allow_clobber{};
+  std::optional<bool> allow_clobber{};
 
  public:  // Constructors
   PluginConf() = default;
@@ -324,12 +307,14 @@ struct EngineConf : public Confable {
   bool triggers_ignore_source{false};
 
   // Output:
-  boost::optional<boost::filesystem::path> registry_path{CLOE_DATA_HOME "/registry"};
-  boost::optional<boost::filesystem::path> output_path{"${CLOE_SIMULATION_UUID}"};
-  boost::optional<boost::filesystem::path> output_file_config{"config.json"};
-  boost::optional<boost::filesystem::path> output_file_result{"result.json"};
-  boost::optional<boost::filesystem::path> output_file_triggers{"triggers.json"};
-  boost::optional<boost::filesystem::path> output_file_data_stream;
+  std::optional<std::filesystem::path> registry_path{CLOE_DATA_HOME "/registry"};
+  std::optional<std::filesystem::path> output_path{"${CLOE_SIMULATION_UUID}"};
+  std::optional<std::filesystem::path> output_file_config{"config.json"};
+  std::optional<std::filesystem::path> output_file_result{"result.json"};
+  std::optional<std::filesystem::path> output_file_triggers{"triggers.json"};
+  std::optional<std::filesystem::path> output_file_signals{"signals.json"};
+  std::optional<std::filesystem::path> output_file_signals_autocompletion;
+  std::optional<std::filesystem::path> output_file_data_stream;
   bool output_clobber_files{true};
 
   /**
@@ -384,7 +369,7 @@ struct EngineConf : public Confable {
    * The states with an asterisk are given defaults that are not affected by
    * the default timeout as these typically take longer due to I/O operations.
    */
-  std::map<std::string, boost::optional<std::chrono::milliseconds>> watchdog_state_timeouts{
+  std::map<std::string, std::optional<std::chrono::milliseconds>> watchdog_state_timeouts{
       {"CONNECT", std::chrono::milliseconds{300'000}},
       {"ABORT", std::chrono::milliseconds{90'000}},
       {"STOP", std::chrono::milliseconds{300'000}},
@@ -403,8 +388,8 @@ struct EngineConf : public Confable {
   CONFABLE_SCHEMA(EngineConf) {
     // clang-format off
     using namespace schema;  // NOLINT(build/namespaces)
-    auto dir_proto = []() { return make_prototype<boost::filesystem::path>().not_file(); };
-    auto file_proto = []() { return make_prototype<boost::filesystem::path>().not_dir().resolve(false); };
+    auto dir_proto = []() { return make_prototype<std::filesystem::path>().not_file(); };
+    auto file_proto = []() { return make_prototype<std::filesystem::path>().not_dir().resolve(false); };
     return Struct{
         {"ignore", make_schema(&ignore_sections, "JSON pointers to sections that should be ignored").extend(true)},
         {"security", Struct{
@@ -431,6 +416,8 @@ struct EngineConf : public Confable {
               {"config", make_schema(&output_file_config, file_proto(), "file to store config in")},
               {"result", make_schema(&output_file_result, file_proto(), "file to store simulation result in")},
               {"triggers", make_schema(&output_file_triggers, file_proto(), "file to store triggers in")},
+              {"signals", make_schema(&output_file_signals, file_proto(), "file to store signals in")},
+              {"signals_autocompletion", make_schema(&output_file_signals_autocompletion, file_proto(), "file to store signal autocompletion in")},
               {"api_recording", make_schema(&output_file_data_stream, file_proto(), "file to store api data stream")},
            }},
         }},
@@ -464,8 +451,8 @@ using EngineSchema = schema_type<EngineConf>::type;
  * good idea!
  */
 struct DefaultConf : public Confable {
-  boost::optional<std::string> name;
-  boost::optional<std::string> binding;
+  std::optional<std::string> name;
+  std::optional<std::string> binding;
   Conf args;
 
  public:  // Confable Overrides
@@ -506,7 +493,7 @@ class FactoryPlugin : public fable::schema::FactoryPointerless<C> {
  */
 struct SimulatorConf : public Confable {
   const std::string binding;
-  boost::optional<std::string> name;
+  std::optional<std::string> name;
   std::shared_ptr<SimulatorFactory> factory;
   Conf args;
 
@@ -518,7 +505,7 @@ struct SimulatorConf : public Confable {
   CONFABLE_SCHEMA(SimulatorConf) {
     using namespace schema;  // NOLINT(build/namespaces)
     return Struct{
-        {"binding", make_const_str(binding, "name of simulator binding").require()},
+        {"binding", make_const_schema(binding, "name of simulator binding").require()},
         {"name", make_schema(&name, id_prototype(), "identifier override for binding")},
         {"args", make_schema(&args, factory->schema(), "factory-specific arguments")},
     };
@@ -538,7 +525,7 @@ class SimulatorSchema : public FactoryPlugin<SimulatorConf, SimulatorFactory> {
  */
 struct ControllerConf : public Confable {
   const std::string binding;
-  boost::optional<std::string> name;
+  std::optional<std::string> name;
   std::string vehicle;
   std::shared_ptr<ControllerFactory> factory;
   Conf args;
@@ -552,7 +539,7 @@ struct ControllerConf : public Confable {
     // clang-format off
     using namespace schema;  // NOLINT(build/namespaces)
     return Struct{
-        {"binding", make_const_str(binding, "name of controller binding").require()},
+        {"binding", make_const_schema(binding, "name of controller binding").require()},
         {"name", make_schema(&name, id_prototype(), "identifier override for binding")},
         {"vehicle", make_schema(&vehicle, "vehicle controller is assigned to").c_identifier().require()},
         {"args", make_schema(&args, factory->schema(), "factory-specific arguments")},
@@ -622,7 +609,7 @@ struct FromSimulator : public Confable {
 
 struct ComponentConf : public Confable {
   const std::string binding;
-  boost::optional<std::string> name;
+  std::optional<std::string> name;
   std::vector<std::string> from;
   std::shared_ptr<ComponentFactory> factory;
   Conf args;
@@ -636,7 +623,7 @@ struct ComponentConf : public Confable {
     // clang-format off
     using namespace schema;  // NOLINT(build/namespaces)
     return Struct{
-        {"binding", make_const_str(binding, "name of binding").require()},
+        {"binding", make_const_schema(binding, "name of binding").require()},
         {"name", make_schema(&name, id_prototype(), "globally unique identifier for component")},
         {"from", Variant{
              make_schema(&from, "component inputs for binding"),
@@ -739,7 +726,7 @@ class VehicleSchema : public fable::schema::Base<VehicleSchema> {
   using MakeFunc = ComponentSchema::MakeFunc;
   using TypeFactory = ComponentSchema::TypeFactory;
 
-  explicit VehicleSchema(std::string&& desc = "") : Base(std::move(desc)) {}
+  explicit VehicleSchema(std::string desc = "") : Base(std::move(desc)) {}
 
  public:  // Special
   bool has_factory(const std::string& name) const { return components_.has_factory(name); }
@@ -753,9 +740,9 @@ class VehicleSchema : public fable::schema::Base<VehicleSchema> {
     return v.schema().json_schema();
   }
 
-  void validate(const Conf& c) const override {
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
     VehicleConf v{components_};
-    v.schema().validate(c);
+    return v.schema().validate(c, err);
   }
 
   Json serialize(const Type& x) const { return x.to_json(); }
@@ -785,7 +772,7 @@ class VehicleSchema : public fable::schema::Base<VehicleSchema> {
 // --------------------------------------------------------------------------------------------- //
 
 struct TriggerConf : public PersistentConfable {
-  boost::optional<std::string> label{boost::none};
+  std::optional<std::string> label{};
   Source source{Source::FILESYSTEM};
   Conf action{};
   Conf event{};
@@ -828,7 +815,7 @@ struct SimulationConf : public Confable {
   /**
    * Optional namespace for simulation events and actions.
    */
-  boost::optional<std::string> name{boost::none};
+  std::optional<std::string> name{};
 
   /**
    * Nominal model time step.
@@ -876,8 +863,8 @@ class StackIncompleteError : public Error {
  public:
   explicit StackIncompleteError(std::vector<std::string>&& missing);
 
-  std::string all_sections_missing(const std::string& sep = ", ") const;
-  const std::vector<std::string>& sections_missing() const { return sections_missing_; }
+  [[nodiscard]] std::string all_sections_missing(const std::string& sep = ", ") const;
+  [[nodiscard]] const std::vector<std::string>& sections_missing() const { return sections_missing_; }
 
  private:
   std::vector<std::string> sections_missing_;
@@ -885,10 +872,14 @@ class StackIncompleteError : public Error {
 
 using ConfReader = std::function<Conf(const std::string&)>;
 
+/**
+ * Stack represents the entire configuration of the engine and the simulation
+ * to be run.
+ */
 class Stack : public Confable {
  private:  // Constants (1)
   std::vector<std::string> reserved_ids_;
-  boost::optional<std::string> schema_ref_;
+  std::optional<std::string> schema_ref_;
 
  public:  // Configuration (13)
   std::string version;
@@ -924,9 +915,10 @@ class Stack : public Confable {
  public:  // Constructors
   Stack();
   Stack(const Stack& other);
-  Stack(Stack&& other);
-  Stack& operator=(Stack other);
-  ~Stack() = default;
+  Stack(Stack&& other) noexcept;
+  Stack& operator=(const Stack& other);
+  Stack& operator=(Stack&& other) noexcept;
+  ~Stack() override = default;
 
   friend void swap(Stack& left, Stack& right);
 
@@ -943,8 +935,13 @@ class Stack : public Confable {
    */
   void set_conf_reader(ConfReader fn) {
     assert(fn != nullptr);
-    conf_reader_func_ = fn;
+    conf_reader_func_ = std::move(fn);
   }
+
+  /**
+   * Open the given JSON file and merge it into the stack.
+   */
+  void merge_stackfile(const std::string& filepath);
 
   /**
    * Try to load and register one or more plugins based on the PluginConf.
@@ -1015,7 +1012,7 @@ class Stack : public Confable {
    * consistency and correctness (but not necessarily completeness, except for
    * any references made) of the entire configuration.
    */
-  void validate() const;
+  void validate_self() const;
 
   /**
    * Return true if this configuration would be valid.
@@ -1078,13 +1075,14 @@ class Stack : public Confable {
   /**
    * Validate a configuration.
    *
-   * This cannot normally be done with `schema().validate(c)`, because plugins
+   * This cannot normally be done with `schema().validate()`, because plugins
    * needed to be loaded in order to validate sections of the schema. This
    * requires partial application of the schema.
    *
-   * This should be equivalent to from_conf() followed by validate().
+   * This should be equivalent to from_conf() followed by validate_self().
    */
-  void validate(const Conf& c) const override;
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override;
+  void validate_or_throw(const Conf& c) const override;
 
   void to_json(Json& j) const override;
   void from_conf(const Conf& c) override { from_conf(c, 0); }

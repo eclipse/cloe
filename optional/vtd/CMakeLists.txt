@@ -30,7 +30,6 @@ target_link_libraries(vtd-object-lib
     cloe::osi
     Boost::boost
 )
-
 set_target_properties(vtd-object-lib PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON

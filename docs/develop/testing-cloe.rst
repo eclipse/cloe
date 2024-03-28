@@ -100,7 +100,7 @@ Each directory has different files, following the patterns below:
     Using cloe-launch automates that process and adds some flags for a one-stop
     shop::
 
-         # cloe-launch shell -P conanfile_default.py
+         # cloe-launch shell conanfile_default.py
 
 ``config_*.json``
     Each of these files provides some base configuration that can be re-used by
@@ -138,7 +138,7 @@ This requires the *bats* tool to be installed::
 Once installed, BATS can be used with individual files or with the entire
 directory::
 
-    # cloe-launch shell -P tests/conanfile_default.py -- -c "bats tests"
+    # cloe-launch shell tests/conanfile_default.py -- -c "bats tests"
     ✓ Expect check success    : test_minimator_smoketest.json                  : c7a427e7-eb2b-4ae7-85ec-a35b7540d4aa
     ✓ Expect run success      : test_minimator_smoketest.json                  : 7c67ceb9-3d1d-47e4-9342-0b39099c59d6
     ✓ Expect check/run success: test_minimator_smoketest.json [ts=5ms]         : 57254185-5480-4859-b2a5-6c3a211a22e0

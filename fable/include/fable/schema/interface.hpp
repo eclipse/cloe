@@ -24,20 +24,17 @@
 #pragma once
 
 #include <memory>       // for shared_ptr<>
+#include <optional>     // for optional<>
 #include <string>       // for string
 #include <type_traits>  // for enable_if_t<>, is_base_of<>
 #include <utility>      // for move
 
-#include <fable/conf.hpp>   // for Conf
-#include <fable/error.hpp>  // for SchemaError
-#include <fable/json.hpp>   // for Json
+#include <fable/conf.hpp>       // for Conf
+#include <fable/error.hpp>      // for SchemaError
+#include <fable/fable_fwd.hpp>  // for Confable
+#include <fable/json.hpp>       // for Json
 
-namespace fable {
-
-// Forward declarations:
-class Confable;
-
-namespace schema {
+namespace fable::schema {
 
 /**
  * Interface specifies all information for describing a JSON entity.
@@ -68,9 +65,15 @@ namespace schema {
  *
  */
 class Interface {
- public:
+ protected:
   Interface() = default;
-  virtual ~Interface() = default;
+  Interface(const Interface&) = default;
+  Interface(Interface&&) noexcept = default;
+  Interface& operator=(const Interface&) = default;
+  Interface& operator=(Interface&&) noexcept = default;
+
+ public:
+  virtual ~Interface() noexcept = default;
 
   /**
    * Return a new instance of the object.
@@ -78,7 +81,7 @@ class Interface {
    * This is implemented by Base and allows us to wrap implementors of
    * Interface with Schema.
    */
-  virtual Interface* clone() const = 0;
+  [[nodiscard]] virtual std::unique_ptr<Interface> clone() const = 0;
 
   /**
    * Return whether the accepted input type is a variant.
@@ -86,7 +89,7 @@ class Interface {
    * A variant type is one that is composed of other types, such as
    * the special types: any-of, one-of, and all-of.
    */
-  virtual bool is_variant() const { return false; }
+  [[nodiscard]] virtual bool is_variant() const { return false; }
 
   /**
    * Return the JSON type.
@@ -96,7 +99,7 @@ class Interface {
    * A type that is null is almost always a variant type of some sort, if
    * even only an optional type.
    */
-  virtual JsonType type() const = 0;
+  [[nodiscard]] virtual JsonType type() const = 0;
 
   /**
    * Return the type as a string.
@@ -114,22 +117,22 @@ class Interface {
    *     "array of boolean"
    *     "array of object"
    */
-  virtual std::string type_string() const = 0;
+  [[nodiscard]] virtual std::string type_string() const = 0;
 
   /**
    * Return whether this interface needs to be set.
    */
-  virtual bool is_required() const = 0;
+  [[nodiscard]] virtual bool is_required() const = 0;
 
   /**
    * Return human-readable description.
    */
-  virtual const std::string& description() const = 0;
+  [[nodiscard]] virtual const std::string& description() const = 0;
 
   /**
    * Set human-readable description.
    */
-  virtual void set_description(const std::string& s) = 0;
+  virtual void set_description(std::string s) = 0;
 
   /**
    * Return a compact JSON description of the schema.
@@ -155,7 +158,7 @@ class Interface {
    * object in an array. This isn't awfully consistent, but it's the best we
    * can do.
    */
-  virtual Json usage() const = 0;
+  [[nodiscard]] virtual Json usage() const = 0;
 
   /**
    * Return the JSON schema.
@@ -183,31 +186,64 @@ class Interface {
    *   - https://json-schema.org
    *   - https://json-schema.org/understanding-json-schema/
    */
-  virtual Json json_schema() const = 0;
+  [[nodiscard]] virtual Json json_schema() const = 0;
 
   /**
-   * Validate the input JSON configuration.
+   * Validate the input JSON configuration for correctness.
+   *
+   * - This method should only set `error` if there is an error.
+   *   This method should not reset `error` if there is no error.
+   *   Therefore, the content of `error` is only valid if the method returns false.
+   *   This allows you to chain validates and check at the end if there was an error.
+   * - This method should not throw if there is a schema error!
+   *
+   * \param c JSON to check
+   * \param error reference to store error if occurred
+   * \return true if valid
+   */
+  virtual bool validate(const Conf& c, std::optional<SchemaError>& error) const = 0;
+
+  /**
+   * Validate the input JSON configuration or throw an error.
    *
    * If you don't have a Conf but would like to validate a Json type,
    * then construct a Conf on the fly:
    *
-   *     s.validate(Conf{j});
+   *     s.validate_or_throw(Conf{j});
    *
-   * This function is not provided inline to prevent incorrect use.
+   * This overload is not provided inline to prevent incorrect use.
+   *
+   * \param c JSON to check
    */
-  virtual void validate(const Conf& c) const = 0;
+  virtual void validate_or_throw(const Conf& c) const final {
+    if (auto err = fail(c); err) {
+      throw std::move(*err);
+    }
+  }
+
+  /**
+   * Return input JSON configuration schema error, if any.
+   *
+   * If you don't have a Conf but would like to validate a Json type,
+   * then construct a Conf on the fly:
+   *
+   *     s.fail(Conf{j});
+   *
+   * This overload is not provided inline to prevent incorrect use.
+   *
+   * \param c JSON to check
+   * \return error if invalid
+   */
+  [[nodiscard]] virtual std::optional<SchemaError> fail(const Conf& c) const final {
+    std::optional<SchemaError> err;
+    validate(c, err);
+    return err;
+  }
 
   /**
    * Return whether the input JSON is valid.
    */
-  virtual bool is_valid(const Conf& c) const {
-    try {
-      validate(c);
-    } catch (...) {
-      return false;
-    }
-    return true;
-  }
+  [[nodiscard]] virtual bool is_valid(const Conf& c) const final { return !fail(c); }
 
   /**
    * Return the current value of the destination.
@@ -215,7 +251,7 @@ class Interface {
    * Warning: This is NOT an efficient operation, but it can be useful for
    * cases where speed is not important.
    */
-  virtual Json to_json() const {
+  [[nodiscard]] virtual Json to_json() const {
     Json j;
     to_json(j);
     return j;
@@ -258,21 +294,23 @@ using enable_if_schema_t = std::enable_if_t<std::is_base_of_v<Interface, S>>;
 
 // ------------------------------------------------------------------------- //
 
-class Box : public Interface {
+class Box final : public Interface {
  public:  // Constructors
   Box() = default;
   Box(const Box&) = default;
-  Box(Box&&) = default;
+  Box(Box&&) noexcept = default;
   Box& operator=(const Box&) = default;
+  Box& operator=(Box&&) noexcept = default;
+  ~Box() noexcept override = default;
 
-  Box(Interface* i) : impl_(i) { assert(impl_); }                             // NOLINT
+  Box(std::unique_ptr<Interface> i) : impl_(std::move(i)) { assert(impl_); }  // NOLINT
   Box(std::shared_ptr<Interface> i) : impl_(std::move(i)) { assert(impl_); }  // NOLINT
 
  public:  // Special
   /**
    * Return the underlying Interface.
    */
-  std::shared_ptr<Interface> get() { return impl_; }
+  [[nodiscard]] std::shared_ptr<Interface> get() { return impl_; }
 
   /**
    * Return this type as a pointer to T.
@@ -327,15 +365,17 @@ class Box : public Interface {
 
  public:  // Overrides
   using Interface::to_json;
-  Interface* clone() const override { return impl_->clone(); }
-  JsonType type() const override { return impl_->type(); }
-  std::string type_string() const override { return impl_->type_string(); }
-  bool is_required() const override { return impl_->is_required(); }
-  const std::string& description() const override { return impl_->description(); }
-  void set_description(const std::string& s) override { return impl_->set_description(s); }
-  Json usage() const override { return impl_->usage(); }
-  Json json_schema() const override { return impl_->json_schema(); };
-  void validate(const Conf& c) const override { impl_->validate(c); }
+  [[nodiscard]] std::unique_ptr<Interface> clone() const override { return impl_->clone(); }
+  [[nodiscard]] JsonType type() const override { return impl_->type(); }
+  [[nodiscard]] std::string type_string() const override { return impl_->type_string(); }
+  [[nodiscard]] bool is_required() const override { return impl_->is_required(); }
+  [[nodiscard]] const std::string& description() const override { return impl_->description(); }
+  void set_description(std::string s) override { return impl_->set_description(std::move(s)); }
+  [[nodiscard]] Json usage() const override { return impl_->usage(); }
+  [[nodiscard]] Json json_schema() const override { return impl_->json_schema(); };
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
+    return impl_->validate(c, err);
+  }
   void to_json(Json& j) const override { impl_->to_json(j); }
   void from_conf(const Conf& c) override { impl_->from_conf(c); }
   void reset_ptr() override { impl_->reset_ptr(); }
@@ -348,31 +388,45 @@ class Box : public Interface {
 
 // ------------------------------------------------------------------------- //
 
+/**
+ * The Base class implements the Interface partially and is meant to cover
+ * the most commonly used types.
+ *
+ * See most of the other schema types for how it is used.
+ */
 template <typename CRTP>
 class Base : public Interface {
- public:
+ protected:
   Base() = default;
+  Base(const Base<CRTP>&) = default;
+  Base(Base<CRTP>&&) noexcept = default;
+  Base<CRTP>& operator=(const Base<CRTP>&) = default;
+  Base<CRTP>& operator=(Base<CRTP>&&) noexcept = default;
+
   Base(JsonType t, std::string desc) : type_(t), desc_(std::move(desc)) {}
   explicit Base(JsonType t) : type_(t) {}
   explicit Base(std::string desc) : desc_(std::move(desc)) {}
-  virtual ~Base() = default;
 
-  Interface* clone() const override { return new CRTP(static_cast<CRTP const&>(*this)); }
-  operator Box() const { return Box{this->clone()}; }
+ public:
+  ~Base() noexcept override = default;
 
-  JsonType type() const override { return type_; }
-  std::string type_string() const override { return to_string(type_); }
+  [[nodiscard]] std::unique_ptr<Interface> clone() const override {
+    return std::make_unique<CRTP>(static_cast<CRTP const&>(*this));
+  }
+  [[nodiscard]] operator Box() const { return Box{this->clone()}; }
 
-  Json usage() const override {
-    auto required = required_ ? "!" : "";
+  [[nodiscard]] JsonType type() const override { return type_; }
+  [[nodiscard]] std::string type_string() const override { return to_string(type_); }
+
+  [[nodiscard]] Json usage() const override {
+    const char* required = required_ ? "!" : "";
     if (desc_.empty()) {
       return type_string() + required;
-    } else {
-      return fmt::format("{}{} :: {}", type_string(), required, desc_);
     }
+    return fmt::format("{}{} :: {}", type_string(), required, desc_);
   }
 
-  bool is_required() const override { return required_; }
+  [[nodiscard]] bool is_required() const override { return required_; }
   CRTP require() && {
     required_ = true;
     return std::move(*dynamic_cast<CRTP*>(this));
@@ -387,38 +441,66 @@ class Base : public Interface {
     return std::move(*dynamic_cast<CRTP*>(this));
   }
 
-  bool has_description() const { return !desc_.empty(); }
-  void set_description(const std::string& s) override { desc_ = s; }
-  void set_description(std::string&& s) { desc_ = std::move(s); }
-  const std::string& description() const override { return desc_; }
+  [[nodiscard]] bool has_description() const { return !desc_.empty(); }
+  void set_description(std::string s) override { desc_ = std::move(s); }
+  [[nodiscard]] const std::string& description() const override { return desc_; }
   CRTP description(std::string desc) && {
     desc_ = std::move(desc);
     return std::move(*dynamic_cast<CRTP*>(this));
   }
 
  protected:
-  void validate_type(const Conf& c) const {
+  /**
+   * Validate whether `c` is of the correct type.
+   *
+   * This method is provided for an implementation to call in its `fail()`
+   * implementation. It is not called automatically.
+   */
+  bool validate_type(const Conf& c, std::optional<SchemaError>& err) const {
     if (c->type() != type_) {
       if (c->type() == JsonType::number_unsigned && type_ == JsonType::number_integer) {
-        return;
+        return true;
       }
 
-      throw SchemaError{c, this->json_schema(), "require type {}, got {}", type_string(),
-                        to_string(c->type())};
+      return this->set_error(err, c, "require type {}, got {}", type_string(),
+                             to_string(c->type()));
     }
+    return true;
   }
 
   template <typename... Args>
-  [[noreturn]] void throw_error(const Conf& c, const char* format, Args... args) const {
-    throw SchemaError{c, this->json_schema(), format, args...};
+  [[nodiscard]] SchemaError error(const Conf& c, std::string_view format, Args&&... args) const {
+    return SchemaError{c, this->json_schema(), format, std::forward<Args>(args)...};
   }
 
-  [[noreturn]] void throw_error(const ConfError& e) const {
-    throw SchemaError{e, this->json_schema()};
+  [[nodiscard]] SchemaError error(const ConfError& e) const {
+    return SchemaError{e, this->json_schema()};
   }
 
-  [[noreturn]] void throw_wrong_type(const Conf& c) const {
-    throw_error(error::WrongType(c, type_));
+  [[nodiscard]] SchemaError wrong_type(const Conf& c) const {
+    return error(error::WrongType(c, type_));
+  }
+
+  template <typename... Args>
+  bool set_error(std::optional<SchemaError>& err, const Conf& c, std::string_view format,
+                 Args&&... args) const {
+    err.emplace(this->error(c, format, std::forward<Args>(args)...));
+    return false;
+  }
+
+  bool set_error(std::optional<SchemaError>& err, const ConfError& e) const {
+    err.emplace(this->error(e));
+    return false;
+  }
+
+  bool set_error(std::optional<SchemaError>& err, SchemaError&& e) const {
+    err.emplace(std::move(e));
+    return false;
+  }
+
+  bool set_wrong_type(std::optional<SchemaError>& err, const Conf& c) const {
+    err.emplace(this->wrong_type(c));
+    return false;
   }
 
   void augment_schema(Json& j) const {
@@ -463,5 +545,4 @@ auto make_prototype(S&& desc = "");
 template <typename T, typename S = std::string, std::enable_if_t<!std::is_base_of_v<Confable, T>, int> = 0>
 auto make_prototype(S&& desc = "");
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

@@ -23,10 +23,11 @@
 
 #pragma once
 
-#include <memory>  // for unique_ptr<>
+#include <memory>    // for unique_ptr<>
+#include <optional>  // for optional<>
 
-#include <fable/json.hpp>    // for Json
-#include <fable/conf.hpp>    // for Conf
+#include <fable/conf.hpp>       // for Conf, Json
+#include <fable/fable_fwd.hpp>  // for Schema, SchemaError
 
 #define CONFABLE_FRIENDS(xType)                                           \
   using ::fable::Confable::to_json;                                       \
@@ -39,18 +40,15 @@
 
 namespace fable {
 
-class Schema;
-
 class Confable {
  public:
-  Confable() noexcept;
-  Confable(const Confable&) noexcept;
-  Confable(Confable&&) noexcept;
-
+  Confable() noexcept = default;
+  Confable(const Confable& /*unused*/) noexcept;
+  Confable(Confable&&) noexcept = default;
   Confable& operator=(const Confable& other) noexcept;
   Confable& operator=(Confable&& other) noexcept;
 
-  virtual ~Confable() noexcept;
+  virtual ~Confable() noexcept = default;
 
   /**
    * Reset the internal schema cache.
@@ -65,7 +63,7 @@ class Confable {
    * This method uses `schema_impl` under the hood, which the object should
    * implement.
    */
-  Schema& schema();
+  [[nodiscard]] Schema& schema();
 
   /**
    * Return the object schema for description and validation.
@@ -73,19 +71,37 @@ class Confable {
    * This method uses `schema_impl` under the hood, which the object should
    * implement.
    */
-  const Schema& schema() const;
+  [[nodiscard]] const Schema& schema() const;
 
   /**
    * Validate a Conf without applying it.
+   *
+   * By default, this uses the validate_or_throw() method on schema(). If you want to
+   * guarantee anything extending beyond what's possible with schema, you can
+   * do that here.
+   *
+   * This method should NOT call from_conf without also overriding from_conf
+   * to prevent infinite recursion.
+   */
+  virtual void validate_or_throw(const Conf& c) const;
+
+  /**
+   * Validate a Conf without applying it and without throwing.
    *
    * By default, this uses the validate() method on schema(). If you want to
    * guarantee anything extending beyond what's possible with schema, you can
    * do that here.
    *
-   * This methodshould NOT call from_conf without also overriding from_conf
+   * This method should NOT call from_conf without also overriding from_conf
    * to prevent infinite recursion.
+   *
+   * This method should not reset err unless the method returns false.
+   *
+   * \param c JSON to validate
+   * \param err reference to store error in
+   * \return true if validate successful
    */
-  virtual void validate(const Conf& c) const;
+  virtual bool validate(const Conf& c, std::optional<SchemaError>& err) const;
 
   /**
    * Deserialize a Confable from a Conf.
@@ -109,7 +125,7 @@ class Confable {
   /**
    * Serialize a Confable to Json.
    */
-  Json to_json() const;
+  [[nodiscard]] Json to_json() const;
 
  protected:
   /**
@@ -119,7 +135,7 @@ class Confable {
    * object is created or moved, since Schema contains references to fields
    * that (should be) in the object.
    */
-  virtual Schema schema_impl();
+  [[nodiscard]] virtual Schema schema_impl();
 
  private:
   mutable std::unique_ptr<Schema> schema_;
@@ -131,8 +147,8 @@ namespace nlohmann {
 
 template <>
 struct adl_serializer<fable::Confable> {
-  static void to_json(json& j, const fable::Confable& c) { c.to_json(j); }
-  static void from_json(const json& j, fable::Confable& c) { c.from_conf(fable::Conf{j}); }
+  static void to_json(json& j, const fable::Confable& c);
+  static void from_json(const json& j, fable::Confable& c);
 };
 
 }  // namespace nlohmann

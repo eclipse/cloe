@@ -17,7 +17,6 @@
  */
 /**
  * \file fable/schema/const.hpp
- * \see  fable/schema/magic.hpp
  * \see  fable/schema/const_test.cpp
  * \see  fable/schema_test.cpp
  */
@@ -30,8 +29,7 @@
 #include <fable/schema/interface.hpp>  // for Base<>, Box
 #include <fable/schema/string.hpp>     // for String
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 template <typename T, typename P>
 class Const : public Base<Const<T, P>> {
@@ -39,22 +37,18 @@ class Const : public Base<Const<T, P>> {
   using Type = T;
   using PrototypeSchema = std::remove_cv_t<std::remove_reference_t<P>>;
 
-  Const(const Type& constant, std::string desc);
-  Const(const Type& constant, PrototypeSchema prototype, std::string desc)
+  Const(Type constant, std::string desc)
+      : Const(std::move(constant), make_prototype<Type>(), std::move(desc)) {}
+
+  Const(Type constant, PrototypeSchema prototype, std::string desc)
       : Base<Const<T, P>>(prototype.type(), std::move(desc))
       , prototype_(std::move(prototype))
-      , constant_(constant) {
+      , constant_(std::move(constant)) {
     prototype_.reset_ptr();
   }
 
-#if 0
-  // This is defined in: fable/schema/magic.hpp
-  Const(const T& constant, std::string desc)
-      : Const(constant, make_prototype<T>(), std::move(desc)) {}
-#endif
-
  public:  // Overrides
-  Json json_schema() const override {
+  [[nodiscard]] Json json_schema() const override {
     Json j{
         {"const", constant_},
     };
@@ -62,41 +56,47 @@ class Const : public Base<Const<T, P>> {
     return j;
   }
 
-  void validate(const Conf& c) const override {
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
     Type tmp = prototype_.deserialize(c);
     if (tmp != constant_) {
-      this->throw_error(c, "expected const value {}, got {}", constant_, tmp);
+      return this->set_error(err, c, "expected const value {}, got {}", constant_, tmp);
     }
+    return true;
   }
 
   using Interface::to_json;
   void to_json(Json& j) const override { j = serialize(constant_); }
 
-  void from_conf(const Conf& c) override { validate(c); }
+  void from_conf(const Conf& c) override { this->validate_or_throw(c); }
 
-  Json serialize(const Type& x) const { return prototype_.serialize(x); }
+  [[nodiscard]] Json serialize(const Type& x) const { return prototype_.serialize(x); }
 
-  Type deserialize(const Conf& c) const {
-    validate(c);
+  [[nodiscard]] Type deserialize(const Conf& c) const {
+    this->validate_or_throw(c);
     return constant_;
+  }
+
+  void serialize_into(Json& j, const Type& x) const { prototype_.serialize_into(j, x); }
+
+  void deserialize_into(const Conf& c, Type& x) const {
+    this->validate_or_throw(c);
+    x = constant_;
   }
 
   void reset_ptr() override {}
 
  private:
   PrototypeSchema prototype_;
-  const Type constant_;
+  Type constant_;
 };
 
 template <typename T, typename P, typename S>
-Const<T, P> make_const_schema(const T& constant, P&& prototype, S&& desc) {
-  return Const<T, P>(constant, std::forward<P>(prototype), std::forward<S>(desc));
+Const<T, P> make_const_schema(T&& constant, P&& prototype, S&& desc) {
+  return Const<T, P>(std::forward<T>(constant), std::forward<P>(prototype), std::forward<S>(desc));
+
+template <typename T, typename S>
+Const<T, decltype(make_prototype<T>())> make_const_schema(T&& constant, S&& desc) {
+  return Const<T, decltype(make_prototype<T>())>(std::forward<T>(constant), std::forward<S>(desc));
 }
 
-template <typename S1, typename S2>
-inline Const<std::string, String> make_const_str(S1&& constant, S2&& desc) {
-  return Const<std::string, String>(std::forward<S1>(constant), std::forward<S2>(desc));
-}
-
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

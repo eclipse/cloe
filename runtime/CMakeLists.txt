@@ -8,13 +8,12 @@ set(CLOE_VERSION "0.0.0-undefined" CACHE STRING "Cloe version as MAJOR.MINOR.PAT
 set(CLOE_VERSION_U32 0 CACHE STRING "Cloe version as (MAJOR<<16)|(MINOR<<8)|PATCH integer")
 
 include(GNUInstallDirs)
-include(cmake/TargetLinting.cmake)
 
 # Library -------------------------------------------------------------
-set(target cloe-runtime)
-set(alias cloe::runtime)
-
-find_package(fable REQUIRED)
+set(CLOE_FIND_PACKAGES ON CACHE BOOL "Call find_package() for cloe packages")
+if(CLOE_FIND_PACKAGES)
+    find_package(fable REQUIRED)
+endif()
 find_package(Boost COMPONENTS headers filesystem iostreams system REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(inja REQUIRED)
@@ -22,9 +21,10 @@ if(NOT TARGET pantor::inja)
     add_library(pantor::inja ALIAS inja::inja)
 endif()
 find_package(incbin REQUIRED)
+find_package(sol2 REQUIRED)
 
-file(GLOB ${target}_PUBLIC_HEADERS "include/**/*.hpp")
-add_library(${target} SHARED
+file(GLOB cloe-runtime_PUBLIC_HEADERS "include/**/*.hpp")
+add_library(cloe-runtime SHARED
     # find src -type f -name "*.cpp" \! -name "*_test.cpp"
     src/cloe/core/error.cpp
     src/cloe/core/duration.cpp
@@ -45,25 +45,25 @@ add_library(${target} SHARED
     src/cloe/utility/std_extensions.cpp
     src/cloe/utility/uid_tracker.cpp
     src/cloe/utility/xdg.cpp
+    src/cloe/data_broker.cpp
 
     # For IDE integration
-    ${${target}_PUBLIC_HEADERS}
+    ${cloe-runtime_PUBLIC_HEADERS}
 )
-add_library(${alias} ALIAS ${target})
-set_target_properties(${target} PROPERTIES
+add_library(cloe::runtime ALIAS cloe-runtime)
+set_target_properties(cloe-runtime PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
     VERSION ${CLOE_VERSION}
 )
-set_target_linting(${target})
 configure_file(src/cloe/version.hpp.in include/cloe/version.hpp @ONLY)
-target_include_directories(${target}
+target_include_directories(cloe-runtime
   PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
-target_link_libraries(${target}
+target_link_libraries(cloe-runtime
   PUBLIC
     Boost::headers
     Boost::filesystem
@@ -71,15 +71,17 @@ target_link_libraries(${target}
     Boost::system
     fable::fable
     spdlog::spdlog
+    sol2::sol2
   INTERFACE
     pantor::inja
     incbin::incbin
 )
-target_compile_definitions(${target}
+target_compile_definitions(cloe-runtime
   PRIVATE
     PROJECT_SOURCE_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}\"
   PUBLIC
     _USE_MATH_DEFINES=1
+    SOL_ALL_SAFETIES_ON=1
 )
 
 # Testing -------------------------------------------------------------
@@ -91,25 +93,37 @@ if(BUILD_TESTING)
     add_executable(test-cloe
         # find src -type f -name "*_test.cpp"
         src/cloe/version_test.cpp
+        src/cloe/core/duration_test.cpp
         src/cloe/utility/statistics_test.cpp
         src/cloe/utility/uid_tracker_test.cpp
+        src/cloe/data_broker_test.cpp
     )
     set_target_properties(test-cloe PROPERTIES
         CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
+    )
+    target_compile_options(test-cloe
+        PUBLIC
+        -g
+        -O0
+    )
+    target_compile_definitions(test-cloe
+        PUBLIC
+            SOL_ALL_SAFETIES_ON=1
     )
     target_link_libraries(test-cloe
       PRIVATE
         GTest::gtest
         GTest::gtest_main
         Boost::boost
-        ${target}
+        sol2::sol2
+        cloe-runtime
     )
     gtest_add_tests(TARGET test-cloe)
 endif()
 
 # Installation --------------------------------------------------------
-install(TARGETS ${target}
+install(TARGETS cloe-runtime
     LIBRARY
         DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE

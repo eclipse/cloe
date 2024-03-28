@@ -25,10 +25,11 @@
 
 #pragma once
 
+#include <fable/fable_fwd.hpp>
 #include <fable/conf.hpp>
 #include <fable/confable.hpp>
 #include <fable/enum.hpp>
 #include <fable/error.hpp>
 #include <fable/json.hpp>
-#include <fable/json/with_std.hpp>
+#include <fable/utility/memory.hpp>
 #include <fable/schema.hpp>

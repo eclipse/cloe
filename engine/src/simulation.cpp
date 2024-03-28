@@ -75,22 +75,29 @@
 
 #include "simulation.hpp"
 
-#include <cstdint>  // for uint64_t
-#include <fstream>  // for ofstream
-#include <future>   // for future<>, async
-#include <sstream>  // for stringstream
-#include <string>   // for string
-#include <thread>   // for sleep_for
+#include <cstdint>     // for uint64_t
+#include <filesystem>  // for filesystem::path
+#include <fstream>     // for ofstream
+#include <future>      // for future<>, async
+#include <sstream>     // for stringstream
+#include <string>      // for string
+#include <thread>      // for sleep_for
 
-#include <boost/filesystem.hpp>  // for is_directory, is_regular_file, ...
-
+#include <cloe/controller.hpp>                // for Controller
 #include <cloe/core/abort.hpp>                // for AsyncAbort
+#include <cloe/data_broker.hpp>               // for DataBroker
 #include <cloe/registrar.hpp>                 // for DirectCallback
+#include <cloe/simulator.hpp>                 // for Simulator
 #include <cloe/trigger/example_actions.hpp>   // for CommandFactory, BundleFactory, ...
 #include <cloe/trigger/set_action.hpp>        // for DEFINE_SET_STATE_ACTION, SetDataActionFactory
 #include <cloe/utility/resource_handler.hpp>  // for INCLUDE_RESOURCE, RESOURCE_HANDLER
+#include <cloe/vehicle.hpp>                   // for Vehicle
 #include <fable/utility.hpp>                  // for pretty_print
+#include <fable/utility/sol.hpp>              // for sol::object to_json
 
+#include "coordinator.hpp"            // for register_usertype_coordinator
+#include "lua_action.hpp"             // for LuaAction,
+#include "lua_api.hpp"                // for to_json(json, sol::object)
 #include "simulation_context.hpp"     // for SimulationContext
 #include "utility/command.hpp"        // for CommandFactory
 #include "utility/state_machine.hpp"  // for State, StateMachine
@@ -142,7 +149,7 @@ class SimulationMachine
       try {
         // Handle interrupts that have been inserted via push_interrupt.
         // Only one interrupt is stored.
-        boost::optional<StateId> interrupt;
+        std::optional<StateId> interrupt;
         while ((interrupt = pop_interrupt())) {
           id = handle_interrupt(id, *interrupt, ctx);
         }
@@ -251,7 +258,7 @@ class SimulationMachine
   }
 
 #define DEFINE_STATE(Id, S) DEFINE_STATE_STRUCT(SimulationMachine, SimulationContext, Id, S)
- private:
+ public:
   DEFINE_STATE(CONNECT, Connect);
   DEFINE_STATE(START, Start);
   DEFINE_STATE(STEP_BEGIN, StepBegin);
@@ -279,12 +286,8 @@ DEFINE_SET_STATE_ACTION(Stop, "stop", "stop simulation with neither success nor 
 DEFINE_SET_STATE_ACTION(Succeed, "succeed", "stop simulation with success", SimulationMachine, { ptr_->succeed(); })
 DEFINE_SET_STATE_ACTION(Fail, "fail", "stop simulation with failure", SimulationMachine, { ptr_->fail(); })
 DEFINE_SET_STATE_ACTION(Reset, "reset", "attempt to reset simulation", SimulationMachine, { ptr_->reset(); })
-
-DEFINE_SET_STATE_ACTION(KeepAlive, "keep_alive", "keep simulation alive after termination",
-                        SimulationContext, { ptr_->config.engine.keep_alive = true; })
-
-DEFINE_SET_STATE_ACTION(ResetStatistics, "reset_statistics", "reset simulation statistics",
-                        SimulationStatistics, { ptr_->reset(); })
+DEFINE_SET_STATE_ACTION(KeepAlive, "keep_alive", "keep simulation alive after termination", SimulationContext, { ptr_->config.engine.keep_alive = true; })
+DEFINE_SET_STATE_ACTION(ResetStatistics, "reset_statistics", "reset simulation statistics", SimulationStatistics, { ptr_->reset(); })
 
 DEFINE_SET_DATA_ACTION(RealtimeFactor, "realtime_factor", "modify the simulation speed", SimulationSync, "factor", double,
                         {
@@ -325,8 +328,7 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
     ctx.server->refresh_buffer();
   };
 
-  {
-    // 2. Initialize loggers
+  {  // 2. Initialize loggers
     update_progress("logging");
 
     for (const auto& c : ctx.config.logging) {
@@ -334,8 +336,14 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
     }
   }
 
-  {
-    // 3. Enroll endpoints and triggers for the server
+  {  // 3. Initialize Lua
+    auto types_tbl = sol::object(cloe::luat_cloe_engine_types(ctx.lua)).as<sol::table>();
+    register_usertype_coordinator(types_tbl, ctx.sync);
+
+    cloe::luat_cloe_engine_state(ctx.lua)["scheduler"] = std::ref(*ctx.coordinator);
+  }
+
+  {  // 4. Enroll endpoints and triggers for the server
     update_progress("server");
 
     auto rp = ctx.simulation_registrar();
@@ -429,6 +437,7 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
     r.register_action<actions::RealtimeFactorFactory>(&ctx.sync);
     r.register_action<actions::ResetStatisticsFactory>(&ctx.statistics);
     r.register_action<actions::CommandFactory>(ctx.commander.get());
+    r.register_action<actions::LuaFactory>(ctx.lua);
 
     // From: cloe/trigger/example_actions.hpp
     auto tr = ctx.coordinator->trigger_registrar(cloe::Source::TRIGGER);
@@ -438,8 +447,7 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
     r.register_action<cloe::actions::PushReleaseFactory>(tr);
   }
 
-  {
-    // 4. Initialize simulators
+  {  // 5. Initialize simulators
     update_progress("simulators");
 
     /**
@@ -483,8 +491,7 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
                             cloe::handler::StaticJson(ctx.simulator_ids()));
   }
 
-  {
-    // 5. Initialize vehicles
+  {  // 6. Initialize vehicles
     update_progress("vehicles");
 
     /**
@@ -674,8 +681,7 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
                             cloe::handler::StaticJson(ctx.vehicle_ids()));
   }
 
-  {
-    // 6. Initialize controllers
+  {  // 7. Initialize controllers
     update_progress("controllers");
 
     /**
@@ -728,33 +734,235 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
 
 // START --------------------------------------------------------------------------------------- //
 
-StateId SimulationMachine::Start::impl(SimulationContext& ctx) {
-  logger()->info("Starting simulation...");
-
-  // Begin execution progress
-  ctx.progress.exec_begin();
-
-  // Insert triggers from the config
+size_t insert_triggers_from_config(SimulationContext& ctx) {
   auto r = ctx.coordinator->trigger_registrar(cloe::Source::FILESYSTEM);
+  size_t count = 0;
   for (const auto& c : ctx.config.triggers) {
     if (!ctx.config.engine.triggers_ignore_source && source_is_transient(c.source)) {
       continue;
     }
     try {
       r->insert_trigger(c.conf());
+      count++;
     } catch (cloe::SchemaError& e) {
-      logger()->error("Error inserting trigger: {}", e.what());
+      ctx.logger()->error("Error inserting trigger: {}", e.what());
       std::stringstream s;
       fable::pretty_print(e, s);
-      logger()->error("> Message:\n    {}", s.str());
-      return ABORT;
+      ctx.logger()->error("> Message:\n    {}", s.str());
+      throw cloe::ConcludedError(e);
     } catch (cloe::TriggerError& e) {
-      logger()->error("Error inserting trigger ({}): {}", e.what(), c.to_json().dump());
-      return ABORT;
+      ctx.logger()->error("Error inserting trigger ({}): {}", e.what(), c.to_json().dump());
+      throw cloe::ConcludedError(e);
+    }
+  }
+  return count;
+}
+
+/**
+  * Pseudo-class which hosts the Cloe-Signals as properties inside of the Lua-VM
+  */
+class LuaCloeSignal {};
+
+StateId SimulationMachine::Start::impl(SimulationContext& ctx) {
+  logger()->info("Starting simulation...");
+
+  // Begin execution progress
+  ctx.progress.exec_begin();
+
+  {
+    // Bind lua state_view to databroker
+    auto* dbPtr = ctx.coordinator->data_broker();
+    if (!dbPtr) {
+      throw std::logic_error("Coordinator did not provide a DataBroker instance");
+    }
+    auto& db = *dbPtr;
+    // Alias signals via lua
+    {
+      bool aliasing_failure = false;
+      // Read cloe.alias_signals
+      sol::object signal_aliases = cloe::luat_cloe_engine_initial_input(ctx.lua)["signal_aliases"];
+      auto type = signal_aliases.get_type();
+      switch (type) {
+        // cloe.alias_signals: expected is a list (i.e. table) of 2-tuple each strings
+        case sol::type::table: {
+          sol::table alias_signals = signal_aliases.as<sol::table>();
+          auto tbl_size = std::distance(alias_signals.begin(), alias_signals.end());
+          //for (auto& kv : alias_signals)
+          for (int i = 0; i < tbl_size; i++) {
+            //sol::object value = kv.second;
+            sol::object value = alias_signals[i + 1];
+            sol::type type = value.get_type();
+            switch (type) {
+              // cloe.alias_signals[i]: expected is a 2-tuple (i.e. table) each strings
+              case sol::type::table: {
+                sol::table alias_tuple = value.as<sol::table>();
+                auto tbl_size = std::distance(alias_tuple.begin(), alias_tuple.end());
+                if (tbl_size != 2) {
+                  // clang-format off
+                  logger()->error(
+                      "One or more entries in 'cloe.alias_signals' does not consist out of a 2-tuple. "
+                      "Expected are entries in this format { \"regex\" , \"short-name\" }"
+                      );
+                  // clang-format on
+                  aliasing_failure = true;
+                  continue;
+                }
+
+                sol::object value;
+                sol::type type;
+                std::string old_name;
+                std::string alias_name;
+                value = alias_tuple[1];
+                type = value.get_type();
+                if (sol::type::string != type) {
+                  // clang-format off
+                  logger()->error(
+                      "One or more parts in a tuple in 'cloe.alias_signals' has an unexpected datatype '{}'. "
+                      "Expected are entries in this format { \"regex\" , \"short-name\" }",
+                      static_cast<int>(type));
+                  // clang-format on
+                  aliasing_failure = true;
+                } else {
+                  old_name = value.as<std::string>();
+                }
+
+                value = alias_tuple[2];
+                type = value.get_type();
+                if (sol::type::string != type) {
+                  // clang-format off
+                  logger()->error(
+                      "One or more parts in a tuple in 'cloe.alias_signals' has an unexpected datatype '{}'. "
+                      "Expected are entries in this format { \"regex\" , \"short-name\" }",
+                      static_cast<int>(type));
+                  // clang-format on
+                  aliasing_failure = true;
+                } else {
+                  alias_name = value.as<std::string>();
+                }
+                try {
+                  db.alias(old_name, alias_name);
+                  // clang-format off
+                  logger()->info(
+                      "Aliasing signal '{}' as '{}'.",
+                      old_name, alias_name);
+                  // clang-format on
+                } catch (const std::logic_error& ex) {
+                  // clang-format off
+                  logger()->error(
+                      "Aliasing signal specifier '{}' as '{}' failed with this error: {}",
+                      old_name, alias_name, ex.what());
+                  // clang-format on
+                  aliasing_failure = true;
+                } catch (...) {
+                  // clang-format off
+                  logger()->error(
+                      "Aliasing signal specifier '{}' as '{}' failed.",
+                      old_name, alias_name);
+                  // clang-format on
+                  aliasing_failure = true;
+                }
+              } break;
+              // cloe.alias_signals[i]: is not a table
+              default: {
+                // clang-format off
+                logger()->error(
+                    "One or more entries in 'cloe.alias_signals' has an unexpected datatype '{}'. "
+                    "Expected are entries in this format { \"regex\" , \"short-name\" }",
+                    static_cast<int>(type));
+                // clang-format on
+                aliasing_failure = true;
+              } break;
+            }
+          }
+
+        } break;
+        case sol::type::none:
+        case sol::type::lua_nil: {
+          // not defined -> nop
+        } break;
+        default: {
+          // clang-format off
+          logger()->error(
+              "Expected symbol 'cloe.alias_signals' has unexpected datatype '{}'. "
+              "Expected is a list of 2-tuples in this format { \"regex\" , \"short-name\" }",
+              static_cast<int>(type));
+          // clang-format on
+          aliasing_failure = true;
+        } break;
+      }
+      if (aliasing_failure) {
+        throw cloe::ModelError("Aliasing signals failed with above error. Aborting.");
+      }
+    }
+
+    // Inject requested signals into lua
+    {
+      auto& signals = db.signals();
+      bool binding_failure = false;
+      // Read cloe.require_signals
+      sol::object value = cloe::luat_cloe_engine_initial_input(ctx.lua)["signal_requires"];
+      auto type = value.get_type();
+      switch (type) {
+        // cloe.require_signals expected is a list (i.e. table) of strings
+        case sol::type::table: {
+          sol::table require_signals = value.as<sol::table>();
+          auto tbl_size = std::distance(require_signals.begin(), require_signals.end());
+
+          for (int i = 0; i < tbl_size; i++) {
+            sol::object value = require_signals[i + 1];
+
+            sol::type type = value.get_type();
+            if (type != sol::type::string) {
+              logger()->warn(
+                  "One entry of cloe.require_signals has a wrong data type: '{}'. "
+                  "Expected is a list of strings.",
+                  static_cast<int>(type));
+              binding_failure = true;
+              continue;
+            }
+            std::string signal_name = value.as<std::string>();
+
+            // virtually bind signal 'signal_name' to lua
+            auto iter = db[signal_name];
+            if (iter != signals.end()) {
+              try {
+                db.bind_signal(signal_name);
+                logger()->info("Binding signal '{}' as '{}'.", signal_name, signal_name);
+              } catch (const std::logic_error& ex) {
+                logger()->error("Binding signal '{}' failed with error: {}", signal_name,
+                                ex.what());
+              }
+            } else {
+              logger()->warn("Requested signal '{}' does not exist in DataBroker.", signal_name);
+              binding_failure = true;
+            }
+          }
+          // actually bind all virtually bound signals to lua
+          db.bind("signals", cloe::luat_cloe_engine(ctx.lua));
+        } break;
+        case sol::type::none:
+        case sol::type::lua_nil: {
+          logger()->warn(
+              "Expected symbol 'cloe.require_signals' appears to be undefined. "
+              "Expected is a list of string.");
+        } break;
+        default: {
+          logger()->error(
+              "Expected symbol 'cloe.require_signals' has unexpected datatype '{}'. "
+              "Expected is a list of string.",
+              static_cast<int>(type));
+          binding_failure = true;
+        } break;
+      }
+      if (binding_failure) {
+        throw cloe::ModelError("Binding signals to Lua failed with above error. Aborting.");
+      }
     }
   }
 
   // Process initial trigger list
+  insert_triggers_from_config(ctx);
+  ctx.coordinator->process_pending_lua_triggers(ctx.sync);
   ctx.coordinator->process(ctx.sync);
   ctx.callback_start->trigger(ctx.sync);
 
@@ -808,7 +1016,7 @@ StateId SimulationMachine::StepBegin::impl(SimulationContext& ctx) {
   //
   ctx.server->refresh_buffer();
 
-  // Run time-based triggers
+  // Run cycle- and time-based triggers
   ctx.callback_loop->trigger(ctx.sync);
   ctx.callback_time->trigger(ctx.sync);
 
@@ -841,7 +1049,9 @@ StateId SimulationMachine::StepSimulators::impl(SimulationContext& ctx) {
         throw cloe::ModelStop("simulator {} no longer operational", simulator.name());
       }
       if (sim_time != ctx.sync.time()) {
-        throw cloe::ModelError("simulator {} did not progress to required time: got {}ms, expected {}ms", simulator.name(), sim_time.count()/1'000'000, ctx.sync.time().count()/1'000'000);
+        throw cloe::ModelError(
+            "simulator {} did not progress to required time: got {}ms, expected {}ms",
+            simulator.name(), sim_time.count() / 1'000'000, ctx.sync.time().count() / 1'000'000);
       }
     } catch (cloe::ModelReset& e) {
       throw;
@@ -1167,7 +1377,7 @@ StateId SimulationMachine::KeepAlive::impl(SimulationContext& ctx) {
 // ABORT --------------------------------------------------------------------------------------- //
 
 StateId SimulationMachine::Abort::impl(SimulationContext& ctx) {
-  auto previous_state = state_machine()->previous_state();
+  const auto* previous_state = state_machine()->previous_state();
   if (previous_state == KEEP_ALIVE) {
     return DISCONNECT;
   } else if (previous_state == CONNECT) {
@@ -1191,16 +1401,82 @@ StateId SimulationMachine::Abort::impl(SimulationContext& ctx) {
 
 // --------------------------------------------------------------------------------------------- //
 
-Simulation::Simulation(const cloe::Stack& config, const std::string& uuid)
-    : logger_(cloe::logger::get("cloe")), config_(config), uuid_(uuid) {}
+Simulation::Simulation(cloe::Stack&& config, sol::state&& lua, const std::string& uuid)
+    : config_(std::move(config))
+    , lua_(std::move(lua))
+    , logger_(cloe::logger::get("cloe"))
+    , uuid_(uuid) {}
+
+struct SignalReport {
+  std::string name;
+  std::vector<std::string> names;
+
+  friend void to_json(cloe::Json& j, const SignalReport& r) {
+    j = cloe::Json{
+        {"name", r.name},
+        {"names", r.names},
+    };
+  }
+};
+struct SignalsReport {
+  std::vector<SignalReport> signals;
+
+  friend void to_json(cloe::Json& j, const SignalsReport& r) {
+    j = cloe::Json{
+        {"signals", r.signals},
+    };
+  }
+};
+
+cloe::Json dump_signals(cloe::DataBroker& db) {
+  SignalsReport report;
+
+  const auto& signals = db.signals();
+  for (const auto& [key, signal] : signals) {
+    // create signal
+    auto& signalreport = report.signals.emplace_back();
+    // copy the signal-names
+    signalreport.name = key;
+    std::copy(signal->names().begin(), signal->names().end(),
+              std::back_inserter(signalreport.names));
+
+    const auto& metadata = signal->metadatas();
+  }
+
+  auto json = cloe::Json{report};
+  return json;
+}
+
+std::vector<std::string> dump_signals_autocompletion(cloe::DataBroker& db) {
+  auto result = std::vector<std::string>{};
+  result.emplace_back("--- @meta");
+  result.emplace_back("--- @class signals");
+
+  const auto& signals = db.signals();
+  for (const auto& [key, signal] : signals) {
+    const auto* tag = signal->metadata<cloe::LuaAutocompletionTag>();
+    if (tag) {
+      const auto lua_type = to_string(tag->datatype);
+      const auto& lua_helptext = tag->text;
+      auto line = fmt::format("--- @field {} {} {}", key, lua_type, lua_helptext);
+      result.emplace_back(std::move(line));
+    } else {
+      auto line = fmt::format("--- @field {}", key);
+      result.emplace_back(std::move(line));
+    }
+  }
+  return result;
+}
 
 SimulationResult Simulation::run() {
   // Input:
-  SimulationContext ctx;
+  SimulationContext ctx{lua_.lua_state()};
+  ctx.db = std::make_unique<cloe::DataBroker>(ctx.lua);
   ctx.server = make_server(config_.server);
-  ctx.coordinator.reset(new Coordinator{});
-  ctx.registrar.reset(new Registrar{ctx.server->server_registrar(), ctx.coordinator});
-  ctx.commander.reset(new CommandExecuter{logger()});
+  ctx.coordinator = std::make_unique<Coordinator>(ctx.lua, ctx.db.get());
+  ctx.registrar = std::make_unique<Registrar>(ctx.server->server_registrar(), ctx.coordinator.get(),
+                                              ctx.db.get());
+  ctx.commander = std::make_unique<CommandExecuter>(logger());
   ctx.sync = SimulationSync(config_.simulation.model_step_width);
   ctx.config = config_;
   ctx.uuid = uuid_;
@@ -1215,10 +1491,11 @@ SimulationResult Simulation::run() {
 
   // Abort handler:
   SimulationMachine machine;
-  abort_fn_ = [this, &ctx, &machine]() {
+  abort_fn_ = [this, &r, &ctx, &machine]() {
     static size_t requests = 0;
 
     logger()->info("Signal caught.");
+    r.errors.emplace_back("user sent abort signal (e.g. with Ctrl+C)");
     requests += 1;
     if (ctx.progress.is_init_ended()) {
       if (!ctx.progress.is_exec_ended()) {
@@ -1275,9 +1552,11 @@ SimulationResult Simulation::run() {
     // Run the simulation
     machine.run(ctx);
   } catch (cloe::ConcludedError& e) {
-    // Nothing
+    r.errors.emplace_back(e.what());
+    ctx.outcome = SimulationOutcome::Aborted;
   } catch (std::exception& e) {
-    throw;
+    r.errors.emplace_back(e.what());
+    ctx.outcome = SimulationOutcome::Aborted;
   }
 
   try {
@@ -1286,6 +1565,7 @@ SimulationResult Simulation::run() {
     ctx.commander->run_all(config_.engine.hooks_post_disconnect);
   } catch (cloe::ConcludedError& e) {
     // TODO(ben): ensure outcome is correctly saved
+    r.errors.emplace_back(e.what());
   }
 
   // Wait for any running children to terminate.
@@ -1303,6 +1583,14 @@ SimulationResult Simulation::run() {
   r.statistics = ctx.statistics;
   r.elapsed = ctx.progress.elapsed();
   r.triggers = ctx.coordinator->history();
+  r.report = sol::object(cloe::luat_cloe_engine_state(ctx.lua)["report"]);
+  // Don't create output file data unless the output files are being written
+  if (ctx.config.engine.output_file_signals) {
+    r.signals = dump_signals(*ctx.db);
+  }
+  if (ctx.config.engine.output_file_signals_autocompletion) {
+    r.signals_autocompletion = dump_signals_autocompletion(*ctx.db);
+  }
 
   abort_fn_ = nullptr;
   return r;
@@ -1314,12 +1602,12 @@ size_t Simulation::write_output(const SimulationResult& r) const {
   }
 
   size_t files_written = 0;
-  auto write_file = [&](auto filename, cloe::Json output) {
+  auto write_file = [&](auto filename, const cloe::Json& output) {
     if (!filename) {
       return;
     }
 
-    boost::filesystem::path filepath = r.get_output_filepath(*filename);
+    std::filesystem::path filepath = r.get_output_filepath(*filename);
     if (write_output_file(filepath, output)) {
       files_written++;
     }
@@ -1328,12 +1616,14 @@ size_t Simulation::write_output(const SimulationResult& r) const {
   write_file(r.config.engine.output_file_result, r);
   write_file(r.config.engine.output_file_config, r.config);
   write_file(r.config.engine.output_file_triggers, r.triggers);
+  write_file(r.config.engine.output_file_signals, r.signals);
+  write_file(r.config.engine.output_file_signals_autocompletion, r.signals_autocompletion);
   logger()->info("Wrote {} output files.", files_written);
 
   return files_written;
 }
 
-bool Simulation::write_output_file(const boost::filesystem::path& filepath,
+bool Simulation::write_output_file(const std::filesystem::path& filepath,
                                    const cloe::Json& j) const {
   if (!is_writable(filepath)) {
     return false;
@@ -1350,15 +1640,15 @@ bool Simulation::write_output_file(const boost::filesystem::path& filepath,
   return true;
 }
 
-bool Simulation::is_writable(const boost::filesystem::path& filepath) const {
+bool Simulation::is_writable(const std::filesystem::path& filepath) const {
   // Make sure we're not clobbering anything if we shouldn't.
   auto native = filepath.native();
-  if (boost::filesystem::exists(filepath)) {
+  if (std::filesystem::exists(filepath)) {
     if (!config_.engine.output_clobber_files) {
       logger()->error("Will not clobber file: {}", native);
       return false;
     }
-    if (!boost::filesystem::is_regular_file(filepath)) {
+    if (!std::filesystem::is_regular_file(filepath)) {
       logger()->error("Cannot clobber non-regular file: {}", native);
       return false;
     }
@@ -1366,8 +1656,8 @@ bool Simulation::is_writable(const boost::filesystem::path& filepath) const {
 
   // Make sure the directory exists.
   auto dirpath = filepath.parent_path();
-  if (!boost::filesystem::is_directory(dirpath)) {
-    bool ok = boost::filesystem::create_directories(dirpath);
+  if (!std::filesystem::is_directory(dirpath)) {
+    bool ok = std::filesystem::create_directories(dirpath);
     if (!ok) {
       logger()->error("Error creating leading directories: {}", dirpath.native());
       return false;

@@ -22,20 +22,23 @@
 
 #include "basic.hpp"
 
-#include <chrono>   // for duration<>
-#include <memory>   // for shared_ptr<>, unique_ptr<>
-#include <string>   // for string
-#include <tuple>    // for tie
-#include <utility>  // for pair, make_pair
-#include <vector>   // for vector<>
+#include <chrono>    // for duration<>
+#include <memory>    // for shared_ptr<>, unique_ptr<>
+#include <optional>  // for optional
+#include <string>    // for string
+#include <tuple>     // for tie
+#include <utility>   // for pair, make_pair
+#include <vector>    // for vector<>
 
-#include <boost/optional.hpp>  // for optional<>
+#include <fable/schema.hpp>  // for Schema
+#include <sol/reference.hpp>
 
 #include <cloe/component/driver_request.hpp>            // for DriverRequest
 #include <cloe/component/latlong_actuator.hpp>          // for LatLongActuator
 #include <cloe/component/object_sensor.hpp>             // for ObjectSensor
 #include <cloe/component/utility/ego_sensor_canon.hpp>  // for EgoSensor, EgoSensorCanon
 #include <cloe/controller.hpp>                          // for Controller, Json, etc.
+#include <cloe/data_broker.hpp>                         // for DataBroker
 #include <cloe/handler.hpp>                             // for ToJson, FromConf
 #include <cloe/models.hpp>                              // for CloeComponent
 #include <cloe/plugin.hpp>                              // for EXPORT_CLOE_PLUGIN
@@ -100,10 +103,10 @@ struct AdaptiveCruiseControl {
   AccConfiguration config;
   std::shared_ptr<Vehicle> vehicle{nullptr};
 
-  bool enabled{false};                     // whether the function can be activated
-  bool active{false};                      // whether the function is currently active
-  size_t distance_algorithm{0};            // index of target distance algorithm
-  boost::optional<double> target_speed{};  // target speed in [km/h]
+  bool enabled{false};                   // whether the function can be activated
+  bool active{false};                    // whether the function is currently active
+  size_t distance_algorithm{0};          // index of target distance algorithm
+  std::optional<double> target_speed{};  // target speed in [km/h]
 
  public:
   explicit AdaptiveCruiseControl(const AccConfiguration& c) : config(c) {}
@@ -394,6 +397,81 @@ class BasicController : public Controller {
   }
 
   void enroll(Registrar& r) override {
+    auto& db = r.data_broker();
+    if (this->veh_) {
+      auto& vehicle = this->veh_->name();
+      {
+        std::string name1 = fmt::format("vehicles.{}.{}.acc", vehicle, name());
+        auto acc_signal = db.declare<cloe::controller::basic::AccConfiguration>(name1);
+        acc_signal->set_getter<cloe::controller::basic::AccConfiguration>(
+            [this]() -> const cloe::controller::basic::AccConfiguration& {
+              return this->acc_.config;
+            });
+        acc_signal->set_setter<cloe::controller::basic::AccConfiguration>(
+            [this](const cloe::controller::basic::AccConfiguration& value) {
+              this->acc_.config = value;
+            });
+      }
+      {
+        std::string name1 = fmt::format("vehicles.{}.{}.aeb", vehicle, name());
+        auto aeb_signal = db.declare<cloe::controller::basic::AebConfiguration>(name1);
+        aeb_signal->set_getter<cloe::controller::basic::AebConfiguration>(
+            [this]() -> const cloe::controller::basic::AebConfiguration& {
+              return this->aeb_.config;
+            });
+        aeb_signal->set_setter<cloe::controller::basic::AebConfiguration>(
+            [this](const cloe::controller::basic::AebConfiguration& value) {
+              this->aeb_.config = value;
+            });
+      }
+      {
+        std::string name1 = fmt::format("vehicles.{}.{}.lka", vehicle, name());
+        auto lka_signal = db.declare<cloe::controller::basic::LkaConfiguration>(name1);
+        lka_signal->set_getter<cloe::controller::basic::LkaConfiguration>(
+            [this]() -> const cloe::controller::basic::LkaConfiguration& {
+              return this->lka_.config;
+            });
+        lka_signal->set_setter<cloe::controller::basic::LkaConfiguration>(
+            [this](const cloe::controller::basic::LkaConfiguration& value) {
+              this->lka_.config = value;
+            });
+      }
+    }
+
+    auto lua = r.register_lua_table();
+
+    {
+      auto acc = lua.new_usertype<AccConfiguration>("AccConfiguration", sol::no_constructor);
+      acc["ego_sensor"] = sol::readonly(&AccConfiguration::ego_sensor);
+      acc["world_sensor"] = sol::readonly(&AccConfiguration::world_sensor);
+      acc["latlong_actuator"] = sol::readonly(&AccConfiguration::latlong_actuator);
+      acc["limit_acceleration"] = &AccConfiguration::limit_acceleration;
+      acc["limit_deceleration"] = &AccConfiguration::limit_deceleration;
+      acc["derivative_factor_speed_control"] = &AccConfiguration::kd;
+      acc["proportional_factor_speed_control"] = &AccConfiguration::kp;
+      acc["integral_factor_speed_control"] = &AccConfiguration::ki;
+      acc["derivative_factor_dist_control"] = &AccConfiguration::kd_m;
+      acc["proportional_factor_dist_control"] = &AccConfiguration::kp_m;
+      acc["integral_factor_dist_control"] = &AccConfiguration::ki_m;
+
+      auto inst = lua.create("acc");
+      inst["config"] = std::ref(acc_.config);
+      inst["enabled"] = &acc_.enabled;
+      inst["active"] = &acc_.active;
+      inst["distance_algorithm"] = sol::property(
+          [this]() -> std::string { return distance::ALGORITHMS[acc_.distance_algorithm].first; },
+          [this](const std::string& name) {
+            for (size_t i = 0; i < distance::ALGORITHMS.size(); i++) {
+              if (distance::ALGORITHMS[i].first == name) {
+                acc_.distance_algorithm = i;
+                return;
+              }
+            }
+            // FIXME: Throw an error here
+          });
+      inst["target_speed"] = &acc_.target_speed;
+    }
+
     r.register_action(std::make_unique<utility::ContactFactory<Duration>>(&hmi_));
 
     // clang-format off

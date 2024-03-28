@@ -22,8 +22,7 @@
 
 #include <fable/utility.hpp>
 
-#include <boost/algorithm/string.hpp>  // for replace_all
-
+#include <algorithm>  // for replace
 #include <fstream>    // for ifstream
 #include <iostream>   // for cin, ostream
 #include <iterator>   // for istreambuf_iterator
@@ -41,6 +40,10 @@ Json read_json_from_file(const char* filepath) {
   }
 
   return parse_json(ifs);
+}
+
+Json read_json_from_file(const std::string& filepath) {
+  return read_json_from_file(filepath.c_str());
 }
 
 Json read_json_from_stdin() {
@@ -77,6 +80,9 @@ Json read_json_with_interpolation(const std::string& filepath_or_stdin, const En
 
 Conf read_conf_from_file(const char* filepath) { return Conf{std::string(filepath)}; }
 
+Conf read_conf_from_file(const std::string& filepath) {
+  return read_conf_from_file(filepath.c_str());
+}
 Conf read_conf_from_stdin() { return Conf{read_json_from_stdin()}; }
 
 Conf read_conf(const std::string& filepath_or_stdin) {
@@ -96,7 +102,13 @@ Conf read_conf_with_interpolation(const std::string& filepath_or_stdin, const En
 }
 
 std::string indent_string(std::string s, const std::string& indent) {
-  boost::replace_all(s, "\n", "\n" + indent);
+  std::string search = "\n";
+  std::string replace = "\n" + indent;
+  size_t pos = 0;
+  while ((pos = s.find(search, pos)) != std::string::npos) {
+      s.replace(pos, search.length(), replace);
+      pos += replace.length();
+  }
   return indent + s;
 }
 

@@ -23,20 +23,48 @@
 
 #pragma once
 
-#include <limits>   // for numeric_limits<>
-#include <string>   // for string
-#include <utility>  // for move
+#include <filesystem>  // for path
+#include <limits>      // for numeric_limits<>
+#include <string>      // for string
+#include <utility>     // for move
 
-#include <boost/filesystem/path.hpp>  // for path
-
+#include <fable/fable_fwd.hpp>         // for Environment
 #include <fable/schema/interface.hpp>  // for Base<>
+#include <fable/utility/path.hpp>      // for adl_serializer<>
 
-namespace fable {
+namespace fable::schema {
 
-// Forward declarations:
-class Environment;  // from <fable/environment.hpp>
+/**
+ * Helper type trait class to use with std::enable_if and friends.
+ *
+ * The value `is_path<T>::value` is true if T is one of:
+ * - std::filesystem::path
+ * - boost::filesystem::path, if boost_path.hpp is included
+ *
+ * \see fable/schema/boost_path.hpp
+ */
+template <typename T>
+struct is_path : std::false_type {};
 
-namespace schema {
+template <typename T>
+inline constexpr bool is_path_v = is_path<T>::value;
+
+template <>
+struct is_path<std::filesystem::path> : std::true_type {};
+
+/**
+ * State represents valid states a path can be in relative to the filesystem.
+ */
+enum class PathState {
+  Any,         /// any valid path
+  Absent,      /// path does not exist
+  Exists,      /// path exists
+  Executable,  /// path exists in search path or locally and has executable permission
+  FileExists,  /// path exists and is a file
+  DirExists,   /// path exists and is a directory
+  NotFile,     /// path does not exist or is a directory
+  NotDir,      /// path does not exist or is a file
+};
 
 /**
  * Path de-/serializes a string that represents a filesystem path.
@@ -52,10 +80,18 @@ namespace schema {
  *
  * The Path schema type allows the user to specify these properties and will
  * validate these during deserialization.
+ *
+ * Path is a template class that supports both:
+ * - std::filesystem::path
+ * - boost::filesystem::path, if boost_path.hpp is included
  */
-class Path : public Base<Path> {
+template <typename T>
+class Path : public Base<Path<T>> {
+  static_assert(is_path_v<T>);
+
  public:  // Types and Constructors
-  using Type = boost::filesystem::path;
+  using Type = T;
+  using State = PathState;
 
   /**
    * State represents valid states a path can be in relative to the filesystem.
@@ -71,13 +107,13 @@ class Path : public Base<Path> {
     NotDir,      /// path does not exist or is a file
   };
 
-  Path(Type* ptr, std::string desc) : Base(JsonType::string, std::move(desc)), ptr_(ptr) {}
+  Path(Type* ptr, std::string desc) : Base<Path<T>>(JsonType::string, std::move(desc)), ptr_(ptr) {}
 
  public:  // Special
   /**
    * Return the required state of the path in the filesystem.
    */
-  State state() const { return req_state_; }
+  [[nodiscard]] State state() const { return req_state_; }
 
   /**
    * Set the required state of the path in the filesystem.
@@ -114,7 +150,7 @@ class Path : public Base<Path> {
    *
    * By default this is true.
    */
-  bool resolve() const { return resolve_; }
+  [[nodiscard]] bool resolve() const { return resolve_; }
 
   /**
    * Set whether the configuration file location should be used to resolve the
@@ -134,42 +170,42 @@ class Path : public Base<Path> {
   }
   void set_resolve(bool value) { resolve_ = value; }
 
-  bool normalize() const { return normalize_; }
+  [[nodiscard]] bool normalize() const { return normalize_; }
   Path normalize(bool value) && {
     normalize_ = value;
     return std::move(*this);
   }
   void set_normalize(bool value) { normalize_ = value; }
 
-  bool interpolate() const { return interpolate_; }
+  [[nodiscard]] bool interpolate() const { return interpolate_; }
   void set_interpolate(bool value) { interpolate_ = value; }
   Path interpolate(bool value) && {
     interpolate_ = value;
     return std::move(*this);
   }
 
-  Environment* environment() const { return env_; }
+  [[nodiscard]] Environment* environment() const { return env_; }
   void set_environment(Environment* env) { env_ = env; }
   Path environment(Environment* env) && {
     env_ = env;
     return std::move(*this);
   }
 
-  size_t min_length() const { return min_length_; }
+  [[nodiscard]] size_t min_length() const { return min_length_; }
   void set_min_length(size_t value) { min_length_ = value; }
   Path min_length(size_t value) && {
     min_length_ = value;
     return std::move(*this);
   }
 
-  size_t max_length() const { return max_length_; }
+  [[nodiscard]] size_t max_length() const { return max_length_; }
   void set_max_length(size_t value) { max_length_ = value; }
   Path max_length(size_t value) && {
     max_length_ = value;
     return std::move(*this);
   }
 
-  const std::string& pattern() const { return pattern_; }
+  [[nodiscard]] const std::string& pattern() const { return pattern_; }
   void set_pattern(const std::string& value) { pattern_ = value; }
   Path pattern(const std::string& value) && {
     pattern_ = value;
@@ -177,8 +213,8 @@ class Path : public Base<Path> {
   }
 
  public:  // Overrides
-  Json json_schema() const override;
-  void validate(const Conf& c) const override;
+  [[nodiscard]] Json json_schema() const override;
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override;
 
   using Interface::to_json;
   void to_json(Json& j) const override {
@@ -191,14 +227,18 @@ class Path : public Base<Path> {
     *ptr_ = deserialize(c);
   }
 
-  Json serialize(const Type& x) const { return x.native(); }
+  [[nodiscard]] Json serialize(const Type& x) const { return x.native(); }
 
-  Type deserialize(const Conf& c) const;
+  [[nodiscard]] Type deserialize(const Conf& c) const;
+
+  void serialize_into(Json& j, const Type& x) const { j = serialize(x); }
+
+  void deserialize_into(const Conf& c, Type& x) const { x = deserialize(c); }
 
   void reset_ptr() override { ptr_ = nullptr; }
 
  private:
-  Type resolve_path(const Conf&, const Type&) const;
+  [[nodiscard]] Type resolve_path(const Conf&, const Type&) const;
 
  private:
   State req_state_{State::Any};
@@ -213,20 +253,9 @@ class Path : public Base<Path> {
   Type* ptr_{nullptr};
 };
 
-template <typename S>
-inline Path make_schema(boost::filesystem::path* ptr, S&& desc) {
+template <typename T, typename S, std::enable_if_t<is_path_v<T>, bool> = true>
+inline Path<T> make_schema(T* ptr, S&& desc) {
   return Path(ptr, std::forward<S>(desc));
 }
 
-}  // namespace schema
-}  // namespace fable
-
-namespace nlohmann {
-
-template <>
-struct adl_serializer<boost::filesystem::path> {
-  static void to_json(json& j, const boost::filesystem::path& p) { j = p.native(); }
-  static void from_json(const json& j, boost::filesystem::path& p) { p = j.get<std::string>(); }
-};
-
-}  // namespace nlohmann
+}  // namespace fable::schema

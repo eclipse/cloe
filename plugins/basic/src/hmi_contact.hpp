@@ -194,7 +194,7 @@ class ContactMap : public Confable {
 
   void from_conf(const Conf& c) override {
     for (auto& elem : buttons_) {
-      c.try_from(elem.first, &elem.second.state);
+      c.try_from(elem.first, elem.second.state);
     }
   }
 
@@ -207,7 +207,7 @@ class UseContact : public Action {
   UseContact(const std::string& name, ContactMap<D>* m, const Conf& data)
       : Action(name), hmi_(m), data_(data) {}
   ActionPtr clone() const override { return std::make_unique<UseContact<D>>(name(), hmi_, data_); }
-  void operator()(const Sync&, TriggerRegistrar&) override { from_json(*data_, *hmi_); }
+  CallbackResult operator()(const Sync&, TriggerRegistrar&) override { from_json(*data_, *hmi_); return CallbackResult::Ok; }
 
  protected:
   void to_json(Json& j) const override { j = *data_; }

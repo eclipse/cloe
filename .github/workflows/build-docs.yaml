@@ -1,6 +1,15 @@
+---
 name: Build Documentation
 
 on:
+  push:
+    branches:
+      - master
+      - develop
+      - "release/**"
+    paths:
+      - "docs/**"
+      - "*.hpp"
   pull_request:
     paths:
       - "docs/**"

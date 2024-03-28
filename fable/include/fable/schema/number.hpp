@@ -30,12 +30,11 @@
 
 #include <fable/schema/interface.hpp>  // for Base<>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 template <typename T>
 class Number : public Base<Number<T>> {
-  static_assert(std::is_arithmetic<T>::value, "arithmetic value required");
+  static_assert(std::is_arithmetic_v<T>, "arithmetic value required");
 
  public:  // Types and Constructors
   using Type = T;
@@ -52,45 +51,46 @@ class Number : public Base<Number<T>> {
   Number(Type* ptr, std::string desc)
       : Base<Number<T>>(JsonType::number_float, std::move(desc)), ptr_(ptr) {}
 
-
  public:  // Special
-  T minimum() const { return value_min_; }
-  bool exclusive_minimum() const { return exclusive_min_; }
+  [[nodiscard]] T minimum() const { return value_min_; }
+  [[nodiscard]] bool exclusive_minimum() const { return exclusive_min_; }
   Number<T> minimum(T value) &&;
   Number<T> exclusive_minimum(T value) &&;
 
-  T maximum() const { return value_max_; }
-  bool exclusive_maximum() const { return exclusive_max_; }
+  [[nodiscard]] T maximum() const { return value_max_; }
+  [[nodiscard]] bool exclusive_maximum() const { return exclusive_max_; }
   Number<T> maximum(T value) &&;
   Number<T> exclusive_maximum(T value) &&;
 
-  std::pair<T, T> bounds() const;
+  [[nodiscard]] std::pair<T, T> bounds() const;
   Number<T> bounds(T min, T max) &&;
   Number<T> bounds_with(T min, T max, std::initializer_list<T> whitelisted) &&;
 
-  const std::set<T>& whitelist() const { return whitelist_; }
+  [[nodiscard]] const std::set<T>& whitelist() const { return whitelist_; }
   Number<T> whitelist(T x) &&;
   Number<T> whitelist(std::initializer_list<T> xs) &&;
   void insert_whitelist(T x);
 
-  const std::set<T>& blacklist() const { return blacklist_; }
+  [[nodiscard]] const std::set<T>& blacklist() const { return blacklist_; }
   Number<T> blacklist(T x) &&;
   Number<T> blacklist(std::initializer_list<T> xs) &&;
   void insert_blacklist(T x);
 
  public:  // Overrides
-  Json json_schema() const override;
-  void validate(const Conf& c) const override;
+  [[nodiscard]] Json json_schema() const override;
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override;
   using Interface::to_json;
   void to_json(Json& j) const override;
   void from_conf(const Conf& c) override;
-  Json serialize(const Type& x) const;
-  Type deserialize(const Conf& c) const;
+  [[nodiscard]] Json serialize(const Type& x) const;
+  [[nodiscard]] Type deserialize(const Conf& c) const;
+  void serialize_into(Json& j, const Type& x) const;
+  void deserialize_into(const Conf& c, Type& x) const;
   void reset_ptr() override;
 
  private:
   template <typename B>
-  void check_bounds(const Conf& c) const;
+  bool validate_bounds(const Conf& c, std::optional<SchemaError>& err) const;
 
  private:
   bool exclusive_min_{false};
@@ -107,5 +107,4 @@ inline Number<T> make_schema(T* ptr, S&& desc) {
   return Number<T>(ptr, std::forward<S>(desc));
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

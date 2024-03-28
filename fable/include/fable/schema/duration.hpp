@@ -29,10 +29,10 @@
 #include <string>   // for string
 #include <utility>  // for move
 
-#include <fable/schema/interface.hpp>  // for Base<>
+#include <fable/schema/interface.hpp>   // for Base<>
+#include <fable/utility/templates.hpp>  // for is_safe_cast<>, typeinfo<>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 template <typename T, typename Period>
 class Duration : public Base<Duration<T, Period>> {
@@ -52,8 +52,8 @@ class Duration : public Base<Duration<T, Period>> {
       : Base<Duration<T, Period>>(JsonType::number_float, std::move(desc)), ptr_(ptr) {}
 
  public:  // Special
-  T minimum() const { return value_min_; }
-  bool exclusive_minimum() const { return exclusive_min_; }
+  [[nodiscard]] T minimum() const { return value_min_; }
+  [[nodiscard]] bool exclusive_minimum() const { return exclusive_min_; }
   Duration<T, Period> minimum(T value) && {
     value_min_ = value;
     exclusive_min_ = false;
@@ -65,8 +65,8 @@ class Duration : public Base<Duration<T, Period>> {
     return std::move(*this);
   }
 
-  T maximum() const { return value_max_; }
-  bool exclusive_maximum() const { return exclusive_max_; }
+  [[nodiscard]] T maximum() const { return value_max_; }
+  [[nodiscard]] bool exclusive_maximum() const { return exclusive_max_; }
   Duration<T, Period> maximum(T value) && {
     value_max_ = value;
     exclusive_max_ = false;
@@ -78,7 +78,7 @@ class Duration : public Base<Duration<T, Period>> {
     return std::move(*this);
   }
 
-  std::pair<T, T> bounds() const { return std::make_pair(value_min_, value_max_); }
+  [[nodiscard]] std::pair<T, T> bounds() const { return std::make_pair(value_min_, value_max_); }
   Duration<T, Period> bounds(T min, T max) && {
     exclusive_min_ = false;
     value_min_ = min;
@@ -88,7 +88,7 @@ class Duration : public Base<Duration<T, Period>> {
   }
 
  public:  // Overrides
-  Json json_schema() const override {
+  [[nodiscard]] Json json_schema() const override {
     Json j{
         {"type", this->type_string()},
         {exclusive_min_ ? "exclusiveMinimum" : "minimum", value_min_},
@@ -98,26 +98,20 @@ class Duration : public Base<Duration<T, Period>> {
     return j;
   }
 
-  void validate(const Conf& c) const override {
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
     switch (c->type()) {
-      case JsonType::number_unsigned: {
-        check_bounds<uint64_t>(c);
-        break;
-      }
-      case JsonType::number_integer: {
-        check_bounds<int64_t>(c);
-        break;
-      }
-      case JsonType::number_float: {
+      case JsonType::number_unsigned:
+        return validate_bounds<uint64_t>(c, err);
+      case JsonType::number_integer:
+        return validate_bounds<int64_t>(c, err);
+      case JsonType::number_float:
         if (this->type() != JsonType::number_float) {
-          this->throw_wrong_type(c);
+          return this->set_wrong_type(err, c);
+        } else {
+          return validate_bounds<double>(c, err);
         }
-        check_bounds<double>(c);
-        break;
-      }
-
       default:
-        this->throw_wrong_type(c);
+        return this->set_wrong_type(err, c);
     }
   }
 
@@ -132,9 +126,13 @@ class Duration : public Base<Duration<T, Period>> {
     *ptr_ = deserialize(c);
   }
 
-  Json serialize(const Type& x) const { return x.count(); }
+  [[nodiscard]] Json serialize(const Type& x) const { return x.count(); }
 
-  Type deserialize(const Conf& c) const { return Type(c.get<T>()); }
+  [[nodiscard]] Type deserialize(const Conf& c) const { return Type(c.get<T>()); }
+
+  void serialize_into(Json& j, const Type& x) const { j = x.count(); }
+
+  void deserialize_into(const Conf& c, Type& x) const { x = deserialize(c); }
 
   void reset_ptr() override { ptr_ = nullptr; }
 
@@ -143,37 +141,41 @@ class Duration : public Base<Duration<T, Period>> {
    * Check that the min and max bounds are held by c.
    */
   template <typename B>
-  void check_bounds(const Conf& c) const {
-    auto v = c.get<B>();
-    if (!std::numeric_limits<B>::is_signed && value_min_ < 0) {
-      // If B is unsigned and value_min_ is less than 0, there is no way
-      // that v cannot fulfill the minimum requirements. Trying to use the
-      // other branches will "underflow" the value_min_ which will invalidate
-      // any comparison.
-    } else if (exclusive_min_) {
-      if (v <= static_cast<B>(value_min_)) {
-        this->throw_error(c, "expected exclusive minimum of {}, got {}", value_min_, v);
-      }
-    } else {
-      if (v < static_cast<B>(value_min_)) {
-        this->throw_error(c, "expected minimum of {}, got {}", value_min_, v);
+  bool validate_bounds(const Conf& c, std::optional<SchemaError>& err) const {
+    auto original = c.get<B>();
+    auto value = static_cast<T>(original);
+    if constexpr (!std::is_floating_point_v<T>) {
+      if (!is_cast_safe<T>(original)) {
+        return this->set_error(err, c,
+                               "failed to convert input to destination type {}, got {}( {} ) = {}",
+                               typeinfo<T>::name, typeinfo<B>::name, original, value);
       }
     }
 
-    if (!std::numeric_limits<B>::is_signed && value_max_ < 0) {
-      // If B is unsigned, but our maximum value is somewhere below 0, then v
-      // will by definition always be out-of-bounds.
-      this->throw_error(c, "expected {}maximum of {}, got {}", (exclusive_max_ ? "exclusive " : ""),
-                        value_max_, v);
-    } else if (exclusive_max_) {
-      if (v >= static_cast<B>(value_max_)) {
-        this->throw_error(c, "expected exclusive maximum of {}, got {}", value_max_, v);
+    // Check minimum value:
+    if (exclusive_min_) {
+      if (value <= value_min_) {
+        return this->set_error(err, c, "expected exclusive minimum of {}, got {}", value_min_,
+                               value);
       }
     } else {
-      if (v > static_cast<B>(value_max_)) {
-        this->throw_error(c, "expected maximum of {}, got {}", value_max_, v);
+      if (value < value_min_) {
+        return this->set_error(err, c, "expected minimum of {}, got {}", value_min_, value);
       }
     }
+
+    if (exclusive_max_) {
+      if (value >= value_max_) {
+        return this->set_error(err, c, "expected exclusive maximum of {}, got {}", value_max_,
+                               value);
+      }
+    } else {
+      if (value > value_max_) {
+        return this->set_error(err, c, "expected maximum of {}, got {}", value_max_, value);
+      }
+    }
+
+    return true;
   }
 
  private:
@@ -189,5 +191,4 @@ inline Duration<Rep, Period> make_schema(std::chrono::duration<Rep, Period>* ptr
   return Duration<Rep, Period>(ptr, std::forward<S>(desc));
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

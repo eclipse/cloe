@@ -29,19 +29,15 @@
 #include <string>
 #include <utility>
 
-#include <cloe/handler.hpp>  // for Handler
+#include <cloe/handler.hpp>  // for Handler, Response
 
 #include "oak/route_muxer.hpp"  // for Muxer
 
 namespace oak {
 
-class Server;
+class Server; // from oak/server.hpp
 
-using Handler = cloe::Handler;
-
-using Response = cloe::Response;
-
-using Middleware = std::function<Handler(Handler)>;
+using Middleware = std::function<cloe::Handler(cloe::Handler)>;
 
 using Logger = std::function<void(const std::string&)>;
 
@@ -72,7 +68,7 @@ class Registrar {
   Registrar with_middleware(Middleware m) const;
   std::string prefix() const { return prefix_; }
   Middleware middleware() const { return middleware_; }
-  virtual void register_handler(const std::string& route, Handler h);
+  virtual void register_handler(const std::string& route, cloe::Handler h);
 
  protected:
   Registrar(const std::string& prefix, Middleware m) : prefix_(prefix), middleware_(m) {}
@@ -112,7 +108,7 @@ class ProxyRegistrar {
   std::string prefix() const { return prefix_; }
   Middleware middleware() const { return middleware_; }
 
-  void register_handler(const std::string& route, T select, Handler h) {
+  void register_handler(const std::string& route, T select, cloe::Handler h) {
     assert(route.size() != 0 && route[0] == '/');
     assert(registrars_.size() != 0);
     if (middleware_) {
@@ -150,7 +146,7 @@ class StaticRegistrar : public Registrar {
   }
   virtual ~StaticRegistrar() = default;
 
-  void register_handler(const std::string& route, Handler h) override;
+  void register_handler(const std::string& route, cloe::Handler h) override;
 
   void set_prefix(const std::string& prefix) { prefix_ = prefix; }
   void set_logger(Logger logger) { logger_ = logger; }
@@ -185,7 +181,7 @@ class LockedRegistrar : public StaticRegistrar {
  public:
   using StaticRegistrar::StaticRegistrar;
 
-  void register_handler(const std::string& route, Handler h) override;
+  void register_handler(const std::string& route, cloe::Handler h) override;
 
   /**
    * Return a unique lock guard so that the backing data can be modified.
@@ -225,7 +221,7 @@ class BufferRegistrar : public StaticRegistrar {
   /**
    * Do not register handlers that want to make use of Request.
    */
-  void register_handler(const std::string& route, Handler h) override;
+  void register_handler(const std::string& route, cloe::Handler h) override;
 
   /**
    * Refresh the entire buffer by calling every single registered
@@ -247,8 +243,8 @@ class BufferRegistrar : public StaticRegistrar {
 
  protected:
   mutable std::shared_mutex access_;
-  Muxer<Response> buffer_;
-  Muxer<Handler> handlers_;
+  Muxer<cloe::Response> buffer_;
+  Muxer<cloe::Handler> handlers_;
 };
 
 }  // namespace oak

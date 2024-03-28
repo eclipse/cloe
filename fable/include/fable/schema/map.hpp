@@ -23,20 +23,17 @@
 
 #pragma once
 
-#include <limits>   // for numeric_limits<>
-#include <map>      // for map<>
-#include <memory>   // for shared_ptr<>
-#include <regex>    // for regex, regex_match
-#include <string>   // for string
-#include <utility>  // for move
-#include <vector>   // for vector<>
-
-#include <boost/optional.hpp>  // for optional<>
+#include <limits>    // for numeric_limits<>
+#include <map>       // for map<>
+#include <optional>  // for optional<>
+#include <regex>     // for regex, regex_match
+#include <string>    // for string
+#include <utility>   // for move
+#include <vector>    // for vector<>
 
 #include <fable/schema/interface.hpp>  // for Base<>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 /**
  * Map maintains a key-value mapping where the list of keys is unknown and
@@ -52,30 +49,26 @@ class Map : public Base<Map<T, P>> {
   using Type = std::map<std::string, T>;
   using PrototypeSchema = std::remove_cv_t<std::remove_reference_t<P>>;
 
-  Map(Type* ptr, std::string desc);
+  Map(Type* ptr, std::string desc) : Map(ptr, make_prototype<T>(), std::move(desc)) {}
+
   Map(Type* ptr, PrototypeSchema prototype)
       : Base<Map<T, P>>(JsonType::object), prototype_(std::move(prototype)), ptr_(ptr) {
     prototype_.reset_ptr();
   }
+
   Map(Type* ptr, PrototypeSchema prototype, std::string desc)
       : Base<Map<T, P>>(JsonType::object, std::move(desc)), prototype_(std::move(prototype)), ptr_(ptr) {
     prototype_.reset_ptr();
   }
 
-#if 0
-  // This is defined in: fable/schema/magic.hpp
-  Map(Type* ptr, std::string desc)
-      : Map(ptr, make_prototype<T>(), std::move(desc)) {}
-#endif
-
  public:  // Special
-  bool unique_properties() const { return unique_properties_; }
+  [[nodiscard]] bool unique_properties() const { return unique_properties_; }
   Map<T, P> unique_properties(bool value) && {
     unique_properties_ = value;
     return std::move(*this);
   }
 
-  const std::vector<std::string>& required() const { return required_; }
+  [[nodiscard]] const std::vector<std::string>& required() const { return required_; }
   Map<T, P> require_properties(const std::vector<std::string>& values) && {
     required_ = values;
     return std::move(*this);
@@ -85,14 +78,14 @@ class Map : public Base<Map<T, P>> {
     return std::move(*this);
   }
 
-  const std::string& pattern() const { return pattern_; }
+  [[nodiscard]] const std::string& pattern() const { return pattern_; }
   Map<T, P> pattern(const std::string& value) && {
     pattern_ = value;
     return std::move(*this);
   }
 
  public:  // Overrides
-  Json json_schema() const override {
+  [[nodiscard]] Json json_schema() const override {
     Json j{
         {"type", "object"},
         {"additionalProperties", prototype_.json_schema()},
@@ -113,29 +106,44 @@ class Map : public Base<Map<T, P>> {
     return j;
   }
 
-  void validate(const Conf& c) const override {
-    this->validate_type(c);
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
+    if (!this->validate_type(c, err)) {
+      return false;
+    }
+
     if (c->size() < min_properties_) {
-      this->throw_error(c, "expect at least {} properties, got {}", max_properties_, c->size());
+      return this->set_error(err, c, "expect at least {} properties, got {}", max_properties_, c->size());
     }
     assert(required_.size() <= max_properties_);
     if (c->size() > max_properties_) {
-      this->throw_error(c, "expect at most {} properties, got {}", max_properties_, c->size());
-    }
-    for (auto& k : required_) {
-      c.assert_has(k);
+      return this->set_error(err, c, "expect at most {} properties, got {}", max_properties_, c->size());
     }
 
-    boost::optional<std::regex> pattern;
-    if (!pattern_.empty()) {
-      *pattern = std::regex(pattern_);
-    }
-    for (const auto& kv : c->items()) {
-      prototype_.validate(c.at(kv.key()));
-      if (pattern && !std::regex_match(kv.key(), *pattern)) {
-        this->throw_error(c, "expect property name to match regex '{}': {}", pattern_, kv.key());
+    for (const auto& k : required_) {
+      if (!c.has(k)) {
+        return this->set_error(err, c, "missing property: {}", k);
       }
     }
+
+    std::optional<std::regex> pattern;
+    if (!pattern_.empty()) {
+      try {
+        *pattern = std::regex(pattern_);
+      } catch (std::regex_error& e) {
+        // NOTE: This is actually a programmer error, and we should probably catch
+        // it at the point where the pattern is set.
+        return this->set_error(err, c, "invalid regex '{}': {}", pattern_, e.what());
+      }
+    }
+    for (const auto& kv : c->items()) {
+      if (!prototype_.validate(c.at(kv.key()), err)) {
+        return false;
+      }
+      if (pattern && !std::regex_match(kv.key(), *pattern)) {
+        return this->set_error(err, c, "expect property name to match regex '{}': {}", pattern_, kv.key());
+      }
+    }
+    return true;
   }
 
   using Interface::to_json;
@@ -146,30 +154,38 @@ class Map : public Base<Map<T, P>> {
 
   void from_conf(const Conf& c) override {
     assert(ptr_ != nullptr);
-    for (auto& i : c->items()) {
-      const auto key = i.key();
+    for (const auto& i : c->items()) {
+      const auto& key = i.key();
       if (unique_properties_ && ptr_->count(key)) {
-        this->throw_error(c, "key {} has already been defined", key);
+        throw this->error(c, "key {} has already been defined", key);
       }
       ptr_->insert(std::make_pair(key, deserialize_item(c, key)));
     }
   }
 
-  Json serialize(const Type& xm) const {
+  [[nodiscard]] Json serialize(const Type& x) const {
     Json j;
-    for (const auto& kv : xm) {
-      j[kv.first] = prototype_.serialize(kv.second);
-    }
+    serialize_into(j, x);
     return j;
   }
 
-  Type deserialize(const Conf& c) const {
+  [[nodiscard]] Type deserialize(const Conf& c) const {
     Type tmp;
-    for (auto& i : c->items()) {
-      const auto key = i.key();
-      tmp.insert(std::make_pair(key, deserialize_item(c, key)));
-    }
+    deserialize_into(c, tmp);
     return tmp;
+  }
+
+  void serialize_into(Json& j, const Type& x) const {
+    for (const auto& kv : x) {
+      j[kv.first] = prototype_.serialize(kv.second);
+    }
+  }
+
+  void deserialize_into(const Conf& c, Type& x) const {
+    for (const auto& i : c->items()) {
+      const auto& key = i.key();
+      x.insert(std::make_pair(key, deserialize_item(c, key)));
+    }
   }
 
   T deserialize_item(const Conf& c, const std::string& key) const {
@@ -193,5 +209,9 @@ Map<T, P> make_schema(std::map<std::string, T>* ptr, P&& prototype, S&& desc) {
   return Map<T, P>(ptr, std::forward<P>(prototype), std::forward<S>(desc));
 }
 
-}  // namespace schema
-}  // namespace fable
+template <typename T, typename S>
+Map<T, decltype(make_prototype<T>())> make_schema(std::map<std::string, T>* ptr, S&& desc) {
+  return Map<T, decltype(make_prototype<T>())>(ptr, std::forward<S>(desc));
+}
+
+}  // namespace fable::schema

@@ -28,6 +28,7 @@
 #include <boost/filesystem/path.hpp>  // for path
 
 #include <fable/enum.hpp>  // for ENUM_SERIALIZATION
+#include <sol/state.hpp>   // for state
 
 #include "simulation_context.hpp"
 #include "stack.hpp"  // for Stack
@@ -41,9 +42,14 @@ struct SimulationResult {
   SimulationSync sync;
   cloe::Duration elapsed;
   SimulationOutcome outcome;
+  std::vector<std::string> errors;
   SimulationStatistics statistics;
   cloe::Json triggers;
-  boost::optional<boost::filesystem::path> output_dir;
+  cloe::Json report;
+  cloe::Json signals;  // dump of all signals in DataBroker right before the simulation started
+  std::vector<std::string>
+      signals_autocompletion;  // pseudo lua file used for vscode autocompletion
+  std::optional<std::filesystem::path> output_dir;
 
  public:
   /**
@@ -59,8 +65,8 @@ struct SimulationResult {
    * and output path are set automatically. Thus, if they are empty, then
    * that is because the user explicitly set them so.
    */
-  boost::filesystem::path get_output_filepath(const boost::filesystem::path& filename) const {
-    boost::filesystem::path filepath;
+  std::filesystem::path get_output_filepath(const std::filesystem::path& filename) const {
+    std::filesystem::path filepath;
     if (filename.is_absolute()) {
       filepath = filename;
     } else if (output_dir) {
@@ -93,15 +99,20 @@ struct SimulationResult {
 
   friend void to_json(cloe::Json& j, const SimulationResult& r) {
     j = cloe::Json{
-        {"uuid", r.uuid},       {"statistics", r.statistics}, {"simulation", r.sync},
-        {"elapsed", r.elapsed}, {"outcome", r.outcome},
+        {"elapsed", r.elapsed},
+        {"errors", r.errors},
+        {"outcome", r.outcome},
+        {"report", r.report},
+        {"simulation", r.sync},
+        {"statistics", r.statistics},
+        {"uuid", r.uuid},
     };
   }
 };
 
 class Simulation {
  public:
-  Simulation(const cloe::Stack& config, const std::string& uuid);
+  Simulation(cloe::Stack&& config, sol::state&& lua, const std::string& uuid);
   ~Simulation() = default;
 
   /**
@@ -125,12 +136,12 @@ class Simulation {
   /**
    * Write the given JSON output into the file. Return true if successful.
    */
-  bool write_output_file(const boost::filesystem::path& filepath, const cloe::Json& j) const;
+  bool write_output_file(const std::filesystem::path& filepath, const cloe::Json& j) const;
 
   /**
    * Check if the given filepath may be opened, respecting clobber options.
    */
-  bool is_writable(const boost::filesystem::path& filepath) const;
+  bool is_writable(const std::filesystem::path& filepath) const;
 
   /**
    * Set whether simulation progress should be reported.
@@ -145,8 +156,9 @@ class Simulation {
   void signal_abort();
 
  private:
-  cloe::Logger logger_;
   cloe::Stack config_;
+  sol::state lua_;
+  cloe::Logger logger_;
   std::string uuid_;
   std::function<void()> abort_fn_;
 

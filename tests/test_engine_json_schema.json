@@ -1,0 +1,1647 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "description": "valid URI to schema describing this cloe stack version",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "controllers": {
+      "description": "controller configuration",
+      "items": {
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "args": {
+                "additionalProperties": false,
+                "properties": {
+                  "acc": {
+                    "additionalProperties": false,
+                    "description": "ACC configuration",
+                    "properties": {
+                      "derivative_factor_dist_control": {
+                        "description": "factor to tune the D term of the PID distance controller",
+                        "maximum": 1.7976931348623157e+308,
+                        "minimum": -1.7976931348623157e+308,
+                        "type": "number"
+                      },
+                      "derivative_factor_speed_control": {
+                        "description": "factor to tune the D term of the PID speed controller",
+                        "maximum": 1.7976931348623157e+308,
+                        "minimum": -1.7976931348623157e+308,
+                        "type": "number"
+                      },
+                      "ego_sensor": {
+                        "description": "ego sensor component to read from",
+                        "type": "string"
+                      },
+                      "integral_factor_dist_control": {
+                        "description": "factor to tune the I term of the PID distance controller",
+                        "maximum": 1.7976931348623157e+308,
+                        "minimum": -1.7976931348623157e+308,
+                        "type": "number"
+                      },
+                      "integral_factor_speed_control": {
+                        "description": "factor to tune the I term of the PID speed controller",
+                        "maximum": 1.7976931348623157e+308,
+                        "minimum": -1.7976931348623157e+308,
+                        "type": "number"
+                      },
+                      "latlong_actuator": {
+                        "description": "actuator to write to",
+                        "type": "string"
+                      },
+                      "limit_acceleration": {
+                        "description": "acceleration limit in [m/s^2]",
+                        "maximum": 1.7976931348623157e+308,
+                        "minimum": -1.7976931348623157e+308,
+                        "type": "number"
+                      },
+                      "limit_deceleration": {
+                        "description": "how much deceleration is allowed, in [m/s^2]",
+                        "maximum": 1.7976931348623157e+308,
+                        "minimum": -1.7976931348623157e+308,
+                        "type": "number"
+                      },
+                      "proportional_factor_dist_control": {
+                        "description": "factor to tune the P term of the PID distance controller",
+                        "maximum": 1.7976931348623157e+308,
+                        "minimum": -1.7976931348623157e+308,
+                        "type": "number"
+                      },
+                      "proportional_factor_speed_control": {
+                        "description": "factor to tune the P term of the PID speed controller",
+                        "maximum": 1.7976931348623157e+308,
+                        "minimum": -1.7976931348623157e+308,
+                        "type": "number"
+                      },
+                      "world_sensor": {
+                        "description": "world_sensor component to read from",
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "aeb": {
+                    "additionalProperties": false,
+                    "description": "AEB configuration",
+                    "properties": {
+                      "always_full_stop": {
+                        "description": "whether to brake to a full-stop on activation",
+                        "type": "boolean"
+                      },
+                      "ego_sensor": {
+                        "description": "ego sensor component to read from",
+                        "type": "string"
+                      },
+                      "enabled": {
+                        "description": "whether automatic emergency braking is enabled",
+                        "type": "boolean"
+                      },
+                      "latlong_actuator": {
+                        "description": "actuator to write to",
+                        "type": "string"
+                      },
+                      "limit_deceleration": {
+                        "description": "how much deceleration is allowed, in [m/s^2]",
+                        "maximum": 1.7976931348623157e+308,
+                        "minimum": -1.7976931348623157e+308,
+                        "type": "number"
+                      },
+                      "world_sensor": {
+                        "description": "world_sensor component to read from",
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "driver_request": {
+                    "description": "component providing driver request",
+                    "type": "string"
+                  },
+                  "lka": {
+                    "additionalProperties": false,
+                    "description": "LKA configuration",
+                    "properties": {
+                      "adjustment_rad": {
+                        "description": "wheel angle adjustment in [rad]",
+                        "maximum": 1.7976931348623157e+308,
+                        "minimum": -1.7976931348623157e+308,
+                        "type": "number"
+                      },
+                      "enabled": {
+                        "description": "whether lane keeping assist is enabled",
+                        "type": "boolean"
+                      },
+                      "latlong_actuator": {
+                        "description": "actuator to write to",
+                        "type": "string"
+                      },
+                      "lerp_factor": {
+                        "description": "linear interpolation factor with domain (0-1]",
+                        "maximum": 1.7976931348623157e+308,
+                        "minimum": -1.7976931348623157e+308,
+                        "type": "number"
+                      },
+                      "tolerance": {
+                        "description": "absolute tolerance in [m]",
+                        "maximum": 1.7976931348623157e+308,
+                        "minimum": -1.7976931348623157e+308,
+                        "type": "number"
+                      },
+                      "world_sensor": {
+                        "description": "world_sensor component to read from",
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  }
+                },
+                "type": "object"
+              },
+              "binding": {
+                "const": "basic",
+                "description": "name of factory"
+              },
+              "name": {
+                "description": "globally unique identifier for controller",
+                "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+                "type": "string"
+              },
+              "vehicle": {
+                "description": "vehicle controller is assigned to",
+                "type": "string"
+              }
+            },
+            "required": [
+              "binding"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "args": {
+                "additionalProperties": false,
+                "properties": {},
+                "type": "object"
+              },
+              "binding": {
+                "const": "demo_printer",
+                "description": "name of factory"
+              },
+              "name": {
+                "description": "globally unique identifier for controller",
+                "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+                "type": "string"
+              },
+              "vehicle": {
+                "description": "vehicle controller is assigned to",
+                "type": "string"
+              }
+            },
+            "required": [
+              "binding"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "args": {
+                "additionalProperties": false,
+                "properties": {
+                  "halt_progress_at": {
+                    "description": "time in ns at which to halt all progress",
+                    "maximum": 9223372036854775807,
+                    "minimum": -9223372036854775808,
+                    "type": "integer"
+                  },
+                  "progress_per_step": {
+                    "description": "progress to make each step",
+                    "maximum": 9223372036854775807,
+                    "minimum": -9223372036854775808,
+                    "type": "integer"
+                  }
+                },
+                "type": "object"
+              },
+              "binding": {
+                "const": "demo_stuck",
+                "description": "name of factory"
+              },
+              "name": {
+                "description": "globally unique identifier for controller",
+                "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+                "type": "string"
+              },
+              "vehicle": {
+                "description": "vehicle controller is assigned to",
+                "type": "string"
+              }
+            },
+            "required": [
+              "binding"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "args": {
+                "additionalProperties": false,
+                "properties": {
+                  "components": {
+                    "description": "array of components to be extracted",
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "output_file": {
+                    "description": "file path to write groundtruth output to",
+                    "type": "string"
+                  },
+                  "output_type": {
+                    "description": "type of output file to write",
+                    "enum": [
+                      "json.bz2",
+                      "json.gz",
+                      "json.zip",
+                      "json",
+                      "msgpack.bz2",
+                      "msgpack.gz",
+                      "msgpack.zip",
+                      "msgpack"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "binding": {
+                "const": "gndtruth_extractor",
+                "description": "name of factory"
+              },
+              "name": {
+                "description": "globally unique identifier for controller",
+                "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+                "type": "string"
+              },
+              "vehicle": {
+                "description": "vehicle controller is assigned to",
+                "type": "string"
+              }
+            },
+            "required": [
+              "binding"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "args": {
+                "additionalProperties": false,
+                "properties": {},
+                "type": "object"
+              },
+              "binding": {
+                "const": "nop",
+                "description": "name of factory"
+              },
+              "name": {
+                "description": "globally unique identifier for controller",
+                "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+                "type": "string"
+              },
+              "vehicle": {
+                "description": "vehicle controller is assigned to",
+                "type": "string"
+              }
+            },
+            "required": [
+              "binding"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "args": {
+                "additionalProperties": false,
+                "properties": {
+                  "init_phase": {
+                    "description": "time during which initialization is performed",
+                    "maximum": 9223372036854775807,
+                    "minimum": -9223372036854775808,
+                    "type": "integer"
+                  },
+                  "lane_sensor_components": {
+                    "description": "array of lane-sensor components to be checked",
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              },
+              "binding": {
+                "const": "virtue",
+                "description": "name of factory"
+              },
+              "name": {
+                "description": "globally unique identifier for controller",
+                "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+                "type": "string"
+              },
+              "vehicle": {
+                "description": "vehicle controller is assigned to",
+                "type": "string"
+              }
+            },
+            "required": [
+              "binding"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "type": "array"
+    },
+    "defaults": {
+      "additionalProperties": false,
+      "properties": {
+        "components": {
+          "description": "component default configurations",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "args": {
+                "description": "defaults to set for binding/name combination"
+              },
+              "binding": {
+                "description": "name of binding",
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "name": {
+                "description": "globally unique identifier for component",
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+                    "type": "string"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "args"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "controllers": {
+          "description": "controller default configurations",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "args": {
+                "description": "defaults to set for binding/name combination"
+              },
+              "binding": {
+                "description": "name of binding",
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "name": {
+                "description": "globally unique identifier for component",
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+                    "type": "string"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "args"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "simulators": {
+          "description": "simulator default configurations",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "args": {
+                "description": "defaults to set for binding/name combination"
+              },
+              "binding": {
+                "description": "name of binding",
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "name": {
+                "description": "globally unique identifier for component",
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+                    "type": "string"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "args"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "engine": {
+      "additionalProperties": false,
+      "description": "engine configuration",
+      "properties": {
+        "hooks": {
+          "additionalProperties": false,
+          "properties": {
+            "post_disconnect": {
+              "description": "post-disconnect hooks to execute",
+              "items": {
+                "anyOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "args": {
+                        "description": "arguments to executable",
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "ignore_failure": {
+                        "description": "whether to ignore execution failure",
+                        "type": "boolean"
+                      },
+                      "log_output": {
+                        "description": "how to log command output",
+                        "enum": [
+                          "never",
+                          "on_error",
+                          "always"
+                        ],
+                        "type": "string"
+                      },
+                      "mode": {
+                        "description": "synchronization mode to use",
+                        "enum": [
+                          "sync",
+                          "async",
+                          "detach"
+                        ],
+                        "type": "string"
+                      },
+                      "path": {
+                        "comment": "path should be executable",
+                        "description": "path to executable",
+                        "minLength": 1,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "path"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "command": {
+                        "description": "command to execute within shell",
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "ignore_failure": {
+                        "description": "whether to ignore execution failure",
+                        "type": "boolean"
+                      },
+                      "log_output": {
+                        "description": "how to log command output",
+                        "enum": [
+                          "never",
+                          "on_error",
+                          "always"
+                        ],
+                        "type": "string"
+                      },
+                      "mode": {
+                        "description": "synchronization mode to use",
+                        "enum": [
+                          "sync",
+                          "async",
+                          "detach"
+                        ],
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "command"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "description": "command to execute within shell",
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            "pre_connect": {
+              "description": "pre-connect hooks to execute",
+              "items": {
+                "anyOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "args": {
+                        "description": "arguments to executable",
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "ignore_failure": {
+                        "description": "whether to ignore execution failure",
+                        "type": "boolean"
+                      },
+                      "log_output": {
+                        "description": "how to log command output",
+                        "enum": [
+                          "never",
+                          "on_error",
+                          "always"
+                        ],
+                        "type": "string"
+                      },
+                      "mode": {
+                        "description": "synchronization mode to use",
+                        "enum": [
+                          "sync",
+                          "async",
+                          "detach"
+                        ],
+                        "type": "string"
+                      },
+                      "path": {
+                        "comment": "path should be executable",
+                        "description": "path to executable",
+                        "minLength": 1,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "path"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "command": {
+                        "description": "command to execute within shell",
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "ignore_failure": {
+                        "description": "whether to ignore execution failure",
+                        "type": "boolean"
+                      },
+                      "log_output": {
+                        "description": "how to log command output",
+                        "enum": [
+                          "never",
+                          "on_error",
+                          "always"
+                        ],
+                        "type": "string"
+                      },
+                      "mode": {
+                        "description": "synchronization mode to use",
+                        "enum": [
+                          "sync",
+                          "async",
+                          "detach"
+                        ],
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "command"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "description": "command to execute within shell",
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                ]
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
+        "ignore": {
+          "description": "JSON pointers to sections that should be ignored",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "keep_alive": {
+          "description": "keep simulation alive after termination",
+          "type": "boolean"
+        },
+        "output": {
+          "additionalProperties": false,
+          "properties": {
+            "clobber": {
+              "description": "whether to clobber existing files or not",
+              "type": "boolean"
+            },
+            "files": {
+              "additionalProperties": false,
+              "properties": {
+                "api_recording": {
+                  "description": "file to store api data stream",
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "comment": "path should either not exist or be a file",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "config": {
+                  "description": "file to store config in",
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "comment": "path should either not exist or be a file",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "result": {
+                  "description": "file to store simulation result in",
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "comment": "path should either not exist or be a file",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "signals": {
+                  "description": "file to store signals in",
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "comment": "path should either not exist or be a file",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "signals_autocompletion": {
+                  "description": "file to store signal autocompletion in",
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "comment": "path should either not exist or be a file",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "triggers": {
+                  "description": "file to store triggers in",
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "comment": "path should either not exist or be a file",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "type": "object"
+            },
+            "path": {
+              "description": "directory to dump output files in, relative to registry path",
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "comment": "path should either not exist or be a directory",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "type": "object"
+        },
+        "plugin_path": {
+          "description": "list of directories to scan for plugins",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "plugins": {
+          "additionalProperties": false,
+          "properties": {
+            "allow_clobber": {
+              "description": "replace same-named plugins",
+              "type": "boolean"
+            },
+            "ignore_failure": {
+              "description": "ignore plugin loading errors",
+              "type": "boolean"
+            },
+            "ignore_missing": {
+              "description": "ignore not-exist errors",
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
+        "polling_interval": {
+          "description": "milliseconds to sleep when polling for next state",
+          "maximum": 9223372036854775807,
+          "minimum": -9223372036854775808,
+          "type": "integer"
+        },
+        "registry_path": {
+          "description": "cloe registry directory",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "comment": "path should either not exist or be a directory",
+              "type": "string"
+            }
+          ]
+        },
+        "security": {
+          "additionalProperties": false,
+          "properties": {
+            "enable_command_action": {
+              "description": "whether to enable the command action",
+              "type": "boolean"
+            },
+            "enable_hooks_section": {
+              "description": "whether to enable engine hooks",
+              "type": "boolean"
+            },
+            "enable_include_section": {
+              "description": "whether to allow config files to include other files",
+              "type": "boolean"
+            },
+            "max_include_depth": {
+              "description": "how many recursive includes are allowed",
+              "maximum": 18446744073709551615,
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "triggers": {
+          "additionalProperties": false,
+          "properties": {
+            "ignore_source": {
+              "description": "ignore trigger source when reading in triggers",
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
+        "watchdog": {
+          "additionalProperties": false,
+          "properties": {
+            "default_timeout": {
+              "description": "default timeout if not overridden, 0 for no timeout",
+              "maximum": 9223372036854775807,
+              "minimum": -9223372036854775808,
+              "type": "integer"
+            },
+            "mode": {
+              "description": "modus operandi of watchdog [one of: off, log, abort, kill]",
+              "enum": [
+                "off",
+                "log",
+                "abort",
+                "kill"
+              ],
+              "type": "string"
+            },
+            "state_timeouts": {
+              "additionalProperties": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "maximum": 9223372036854775807,
+                    "minimum": -9223372036854775808,
+                    "type": "integer"
+                  }
+                ]
+              },
+              "description": "timeout specific to a given state, 0 for no timeout",
+              "type": "object"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "include": {
+      "description": "include configurations",
+      "items": {
+        "comment": "path should exist and be a file",
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "logging": {
+      "description": "logging configuration",
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "level": {
+            "description": "level of the logger",
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "enum": [
+                  "trace",
+                  "debug",
+                  "info",
+                  "warning",
+                  "error",
+                  "fatal",
+                  "off"
+                ],
+                "type": "string"
+              }
+            ]
+          },
+          "name": {
+            "description": "name of the logger to configure",
+            "type": "string"
+          },
+          "pattern": {
+            "description": "pattern of the logger",
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "plugins": {
+      "description": "plugin configuration",
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "allow_clobber": {
+            "description": "replace same-named plugins",
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          },
+          "ignore_failure": {
+            "description": "ignore plugin loading errors",
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          },
+          "ignore_missing": {
+            "description": "ignore not-exist errors",
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          },
+          "name": {
+            "description": "alternative name plugin is available by",
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+                "type": "string"
+              }
+            ]
+          },
+          "path": {
+            "description": "absolute or relative path to plugin",
+            "minLength": 1,
+            "type": "string"
+          },
+          "prefix": {
+            "description": "prefix the plugin name with this",
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "server": {
+      "additionalProperties": false,
+      "description": "server configuration",
+      "properties": {
+        "api_prefix": {
+          "description": "endpoint prefix for API resources",
+          "type": "string"
+        },
+        "listen": {
+          "description": "whether web server is enabled",
+          "type": "boolean"
+        },
+        "listen_address": {
+          "description": "address web server should listen at",
+          "type": "string"
+        },
+        "listen_port": {
+          "description": "port web server should listen at",
+          "maximum": 65535,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "listen_threads": {
+          "description": "threads web server should use",
+          "maximum": 65535,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "static_prefix": {
+          "description": "endpoint prefix for static resources",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "simulation": {
+      "additionalProperties": false,
+      "description": "simulation configuration",
+      "properties": {
+        "abort_on_controller_failure": {
+          "description": "abort simulation on controller failure",
+          "type": "boolean"
+        },
+        "controller_retry_limit": {
+          "description": "times to retry controller processing before aborting",
+          "maximum": 9223372036854775807,
+          "minimum": -9223372036854775808,
+          "type": "integer"
+        },
+        "controller_retry_sleep": {
+          "description": "time to sleep before retrying controller process",
+          "maximum": 9223372036854775807,
+          "minimum": -9223372036854775808,
+          "type": "integer"
+        },
+        "model_step_width": {
+          "description": "default model time step in ns",
+          "maximum": 9223372036854775807,
+          "minimum": -9223372036854775808,
+          "type": "integer"
+        },
+        "namespace": {
+          "description": "namespace for simulation events and actions",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "simulators": {
+      "description": "simulator configuration",
+      "items": {
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "args": {
+                "additionalProperties": false,
+                "properties": {
+                  "vehicles": {
+                    "description": "list of vehicle names to make available",
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              },
+              "binding": {
+                "const": "minimator",
+                "description": "name of factory"
+              },
+              "name": {
+                "description": "globally unique identifier for simulator",
+                "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "binding"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "args": {
+                "additionalProperties": false,
+                "properties": {
+                  "vehicles": {
+                    "description": "list of vehicle names to make available",
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              },
+              "binding": {
+                "const": "nop",
+                "description": "name of factory"
+              },
+              "name": {
+                "description": "globally unique identifier for simulator",
+                "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "binding"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "type": "array"
+    },
+    "triggers": {
+      "description": "triggers",
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "anyOf": [
+              {
+                "description": "inline format",
+                "pattern": "^[a-zA-Z0-9_/]+(=.*)?$",
+                "type": "string"
+              },
+              {
+                "additionalProperties": true,
+                "properties": {
+                  "name": {
+                    "pattern": "^([a-zA-Z_][a-zA-Z0-9_]*/?)+$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name"
+                ],
+                "type": "object"
+              }
+            ],
+            "description": "action"
+          },
+          "at": {
+            "description": "time at which trigger was executed"
+          },
+          "conceal": {
+            "description": "whether trigger should be concealed in history",
+            "type": "boolean"
+          },
+          "event": {
+            "anyOf": [
+              {
+                "description": "inline format",
+                "pattern": "^[a-zA-Z0-9_/]+(=.*)?$",
+                "type": "string"
+              },
+              {
+                "additionalProperties": true,
+                "properties": {
+                  "name": {
+                    "pattern": "^([a-zA-Z_][a-zA-Z0-9_]*/?)+$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name"
+                ],
+                "type": "object"
+              }
+            ],
+            "description": "event"
+          },
+          "label": {
+            "description": "description of trigger",
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "optional": {
+            "description": "whether errors creating event or action should be ignored",
+            "type": "boolean"
+          },
+          "since": {
+            "description": "time since which trigger was in queue"
+          },
+          "source": {
+            "description": "source from which trigger originates",
+            "enum": [
+              "filesystem",
+              "network",
+              "model",
+              "trigger",
+              "instance",
+              "lua"
+            ],
+            "type": "string"
+          },
+          "sticky": {
+            "description": "whether trigger should be sticky",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "event",
+          "action"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "vehicles": {
+      "description": "vehicle configuration",
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "components": {
+            "additionalProperties": {
+              "oneOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "args": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "enable": {
+                          "description": "enable or disable component",
+                          "type": "boolean"
+                        },
+                        "noise": {
+                          "description": "configure noisy parameters",
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "distribution": {
+                                "description": "set distribution binding and arguments",
+                                "oneOf": [
+                                  {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "binding": {
+                                        "const": "normal",
+                                        "description": "name of factory"
+                                      },
+                                      "mean": {
+                                        "description": "mean value of normal distribution",
+                                        "maximum": 1.7976931348623157e+308,
+                                        "minimum": -1.7976931348623157e+308,
+                                        "type": "number"
+                                      },
+                                      "std_deviation": {
+                                        "description": "standard deviation of normal distribution",
+                                        "maximum": 1.7976931348623157e+308,
+                                        "minimum": -1.7976931348623157e+308,
+                                        "type": "number"
+                                      }
+                                    },
+                                    "required": [
+                                      "binding"
+                                    ],
+                                    "type": "object"
+                                  }
+                                ]
+                              },
+                              "target": {
+                                "description": "data field of the lane boundary the noise should be applied to",
+                                "enum": [
+                                  "dy_start",
+                                  "dx_start",
+                                  "heading_start",
+                                  "curv_hor_start",
+                                  "curv_hor_change",
+                                  "dx_end"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "reuse_seed": {
+                          "description": "whether to get a new seed on reset",
+                          "type": "boolean"
+                        },
+                        "seed": {
+                          "description": "set random engine seed (effective on reset)",
+                          "maximum": 18446744073709551615,
+                          "minimum": 0,
+                          "type": "integer"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "binding": {
+                      "const": "noisy_lane_sensor",
+                      "description": "name of factory"
+                    },
+                    "from": {
+                      "anyOf": [
+                        {
+                          "description": "component input for binding",
+                          "type": "string"
+                        },
+                        {
+                          "description": "component inputs for binding",
+                          "items": {
+                            "type": "string"
+                          },
+                          "type": "array"
+                        }
+                      ]
+                    },
+                    "name": {
+                      "description": "globally unique identifier for component",
+                      "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "binding"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "args": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "enable": {
+                          "description": "enable or disable component",
+                          "type": "boolean"
+                        },
+                        "noise": {
+                          "description": "configure noisy parameters",
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "distribution": {
+                                "description": "set distribution binding and arguments",
+                                "oneOf": [
+                                  {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "binding": {
+                                        "const": "normal",
+                                        "description": "name of factory"
+                                      },
+                                      "mean": {
+                                        "description": "mean value of normal distribution",
+                                        "maximum": 1.7976931348623157e+308,
+                                        "minimum": -1.7976931348623157e+308,
+                                        "type": "number"
+                                      },
+                                      "std_deviation": {
+                                        "description": "standard deviation of normal distribution",
+                                        "maximum": 1.7976931348623157e+308,
+                                        "minimum": -1.7976931348623157e+308,
+                                        "type": "number"
+                                      }
+                                    },
+                                    "required": [
+                                      "binding"
+                                    ],
+                                    "type": "object"
+                                  }
+                                ]
+                              },
+                              "target": {
+                                "description": "data field of the object the noise should be applied to",
+                                "enum": [
+                                  "translation",
+                                  "velocity",
+                                  "acceleration"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "reuse_seed": {
+                          "description": "whether to get a new seed on reset",
+                          "type": "boolean"
+                        },
+                        "seed": {
+                          "description": "set random engine seed (effective on reset)",
+                          "maximum": 18446744073709551615,
+                          "minimum": 0,
+                          "type": "integer"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "binding": {
+                      "const": "noisy_object_sensor",
+                      "description": "name of factory"
+                    },
+                    "from": {
+                      "anyOf": [
+                        {
+                          "description": "component input for binding",
+                          "type": "string"
+                        },
+                        {
+                          "description": "component inputs for binding",
+                          "items": {
+                            "type": "string"
+                          },
+                          "type": "array"
+                        }
+                      ]
+                    },
+                    "name": {
+                      "description": "globally unique identifier for component",
+                      "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "binding"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "args": {
+                      "additionalProperties": false,
+                      "properties": {},
+                      "type": "object"
+                    },
+                    "binding": {
+                      "const": "speedometer",
+                      "description": "name of factory"
+                    },
+                    "from": {
+                      "anyOf": [
+                        {
+                          "description": "component input for binding",
+                          "type": "string"
+                        },
+                        {
+                          "description": "component inputs for binding",
+                          "items": {
+                            "type": "string"
+                          },
+                          "type": "array"
+                        }
+                      ]
+                    },
+                    "name": {
+                      "description": "globally unique identifier for component",
+                      "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "binding"
+                  ],
+                  "type": "object"
+                }
+              ]
+            },
+            "description": "component configuration of vehicle",
+            "type": "object"
+          },
+          "from": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "index": {
+                        "description": "index of vehicle in simulator",
+                        "maximum": 18446744073709551615,
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "simulator": {
+                        "description": "simulator",
+                        "minLength": 1,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "simulator",
+                      "index"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "name": {
+                        "description": "name of vehicle in simulator",
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "simulator": {
+                        "description": "simulator",
+                        "minLength": 1,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "simulator",
+                      "name"
+                    ],
+                    "type": "object"
+                  }
+                ],
+                "description": "simulator source"
+              },
+              {
+                "description": "vehicle source",
+                "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+                "type": "string"
+              }
+            ]
+          },
+          "name": {
+            "description": "globally unique identifier for vehicle",
+            "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "from"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "version": {
+      "description": "version of stackfile",
+      "enum": [
+        "4",
+        "4.0",
+        "4.1"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "version"
+  ],
+  "type": "object"
+}

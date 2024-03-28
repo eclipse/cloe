@@ -29,12 +29,18 @@
 #include <utility>     // for move
 #include <vector>      // for vector<>
 
+#include <fable/utility/sol.hpp>
+#include <sol/optional.hpp>
+
 #include <cloe/core.hpp>       // for Json, Duration, Logger
 #include <cloe/handler.hpp>    // for HandlerType, Request
 #include <cloe/registrar.hpp>  // for Registrar
 #include <cloe/sync.hpp>       // for Sync
 #include <cloe/trigger.hpp>    // for Trigger
 using namespace cloe;          // NOLINT(build/namespaces)
+
+#include "lua_action.hpp"
+#include "lua_api.hpp"
 
 namespace engine {
 
@@ -50,7 +56,8 @@ void to_json(Json& j, const HistoryTrigger& t) {
   j["at"] = t.when;
 }
 
-Coordinator::Coordinator() : executer_registrar_(trigger_registrar(Source::TRIGGER)) {}
+Coordinator::Coordinator(sol::state_view lua, cloe::DataBroker* db)
+    : lua_(lua), executer_registrar_(trigger_registrar(Source::TRIGGER)), db_(db) {}
 
 class TriggerRegistrar : public cloe::TriggerRegistrar {
  public:
@@ -62,6 +69,8 @@ class TriggerRegistrar : public cloe::TriggerRegistrar {
     return manager_.make_trigger(source_, c);
   }
 
+  // TODO: Should these queue_trigger becomes inserts? Because if they are coming from
+  // C++ then they should be from a single thread.
   void insert_trigger(const Conf& c) override { manager_.queue_trigger(source_, c); }
   void insert_trigger(TriggerPtr&& t) override { manager_.queue_trigger(std::move(t)); }
 
@@ -168,44 +177,82 @@ void Coordinator::register_event(const std::string& key, EventFactoryPtr&& ef,
       std::bind(&Coordinator::execute_trigger, this, std::placeholders::_1, std::placeholders::_2));
 }
 
-void Coordinator::execute_trigger(TriggerPtr&& t, const Sync& sync) {
+sol::table Coordinator::register_lua_table(const std::string& field) {
+  auto tbl = lua_.create_table();
+  luat_cloe_engine_plugins(lua_)[field] = tbl;
+  return tbl;
+}
+
+cloe::CallbackResult Coordinator::execute_trigger(TriggerPtr&& t, const Sync& sync) {
   logger()->debug("Execute trigger {}", inline_json(*t));
-  (t->action())(sync, *executer_registrar_);
+  auto result = (t->action())(sync, *executer_registrar_);
   if (!t->is_conceal()) {
-    history_.emplace_back(HistoryTrigger{sync.time(), std::move(t)});
+    history_.emplace_back(sync.time(), std::move(t));
+  }
+  return result;
+}
+
+void Coordinator::execute_action_from_lua(const Sync& sync, const sol::object& obj) {
+  // TODO: Make this trackable by making it a proper trigger and using execute trigger
+  // instead of calling the action here directly.
+  auto ap = make_action(obj);
+  (*ap)(sync, *executer_registrar_);
+}
+
+void Coordinator::insert_trigger_from_lua(const Sync& sync, const sol::object& obj) {
+  store_trigger(make_trigger(obj), sync);
+}
+
+size_t Coordinator::process_pending_lua_triggers(const Sync& sync) {
+  auto triggers = sol::object(luat_cloe_engine_initial_input(lua_)["triggers"]);
+  size_t count = 0;
+  for (auto& kv : triggers.as<sol::table>()) {
+    store_trigger(make_trigger(kv.second), sync);
+    count++;
+  }
+  luat_cloe_engine_initial_input(lua_)["triggers_processed"] = count;
+  return count;
+}
+
+size_t Coordinator::process_pending_web_triggers(const Sync& sync) {
+  // The only thing we need to do here is distribute the triggers from the
+  // input queue into their respective storage locations. We are responsible
+  // for thread safety here!
+  size_t count = 0;
+  std::unique_lock guard(input_mutex_);
+  while (!input_queue_.empty()) {
+    store_trigger(std::move(input_queue_.front()), sync);
+    input_queue_.pop_front();
+    count++;
+  }
+  return count;
+}
+
+void Coordinator::store_trigger(TriggerPtr&& tp, const Sync& sync) {
+  tp->set_since(sync.time());
+
+  // Decide where to put the trigger
+  auto key = tp->event().name();
+  if (storage_.count(key) == 0) {
+    // This is a programming error, since we should not be able to come this
+    // far at all.
+    throw std::logic_error("cannot insert trigger with unregistered event");
+  }
+  try {
+    logger()->debug("Insert trigger {}", inline_json(*tp));
+    storage_[key]->emplace(std::move(tp), sync);
+  } catch (TriggerError& e) {
+    logger()->error("Error inserting trigger: {}", e.what());
+    if (!allow_errors_) {
+      throw;
+    }
   }
 }
 
 Duration Coordinator::process(const Sync& sync) {
-  // The only thing we need to do here is distribute the triggers from the
-  // input queue into their respective storage locations. We are responsible
-  // for thread safety here!
   auto now = sync.time();
-  std::unique_lock guard(input_mutex_);
-  while (!input_queue_.empty()) {
-    auto tp = std::move(input_queue_.front());
-    input_queue_.pop_front();
-    tp->set_since(now);
-
-    // Decide where to put the trigger
-    auto key = tp->event().name();
-    if (storage_.count(key) == 0) {
-      // This is a programming error, since we should not be able to come this
-      // far at all.
-      throw std::logic_error("cannot insert trigger with unregistered event");
-    }
-    try {
-      logger()->debug("Insert trigger {}", inline_json(*tp));
-      storage_[key]->emplace(std::move(tp), sync);
-    } catch (TriggerError& e) {
-      logger()->error("Error inserting trigger: {}", e.what());
-      if (!allow_errors_) {
-        throw;
-      }
-    }
-  }
-
-  return now;
+  process_pending_web_triggers(sync);
+  return sync.time();
 }
 
 namespace {
@@ -282,6 +329,30 @@ TriggerPtr Coordinator::make_trigger(Source s, const Conf& c) const {
   return t;
 }
 
+ActionPtr Coordinator::make_action(const sol::object& lua) const {
+  if (lua.get_type() == sol::type::function) {
+    return std::make_unique<actions::LuaFunction>("luafunction", lua);
+  } else {
+    return make_action(Conf{Json(lua)});
+  }
+}
+
+TriggerPtr Coordinator::make_trigger(const sol::table& lua) const {
+  sol::optional<std::string> label = lua["label"];
+  EventPtr ep = make_event(Conf{Json(lua["event"])});
+  ActionPtr ap = make_action(sol::object(lua["action"]));
+  sol::optional<std::string> action_source = lua["action_source"];
+  if (!label && action_source) {
+    label = *action_source;
+  } else {
+    label = "";
+  }
+  sol::optional<bool> sticky = lua["sticky"];
+  auto tp = std::make_unique<Trigger>(*label, Source::LUA, std::move(ep), std::move(ap));
+  tp->set_sticky(sticky.value_or(false));
+  return tp;
+}
+
 void Coordinator::queue_trigger(TriggerPtr&& t) {
   if (t == nullptr) {
     // This only really happens if a trigger is an optional trigger.
@@ -289,6 +360,20 @@ void Coordinator::queue_trigger(TriggerPtr&& t) {
   }
   std::unique_lock guard(input_mutex_);
   input_queue_.emplace_back(std::move(t));
+}
+
+void register_usertype_coordinator(sol::table& lua, const Sync& sync) {
+  // clang-format off
+  lua.new_usertype<Coordinator>("Coordinator",
+    sol::no_constructor,
+    "insert_trigger", [&sync](Coordinator& self, const sol::object& obj) {
+      self.insert_trigger_from_lua(sync, obj);
+    },
+    "execute_action", [&sync](Coordinator& self, const sol::object& obj) {
+      self.execute_action_from_lua(sync, obj);
+    }
+  );
+  // clang-format on
 }
 
 }  // namespace engine

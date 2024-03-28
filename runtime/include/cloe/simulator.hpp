@@ -52,7 +52,7 @@
     std::unique_ptr<::cloe::SimulatorFactory> clone() const override {           \
       return std::make_unique<std::decay<decltype(*this)>::type>(*this);         \
     }                                                                            \
-    std::unique_ptr<::cloe::Simulator> make(const ::cloe::Conf&) const override; \
+    std::unique_ptr<::cloe::Simulator> make(const ::fable::Conf&) const override; \
                                                                                  \
    protected:                                                                    \
     ::cloe::Schema schema_impl() override { return config_.schema(); }           \
@@ -70,7 +70,7 @@
  *    xSimulatorType(const std::string&, const xConfigType&)
  */
 #define DEFINE_SIMULATOR_FACTORY_MAKE(xFactoryType, xSimulatorType)                    \
-  std::unique_ptr<::cloe::Simulator> xFactoryType::make(const ::cloe::Conf& c) const { \
+  std::unique_ptr<::cloe::Simulator> xFactoryType::make(const ::fable::Conf& c) const { \
     decltype(config_) conf{config_};                                                   \
     if (!c->is_null()) {                                                               \
       conf.from_conf(c);                                                               \
@@ -227,7 +227,7 @@ class SimulatorFactory : public ModelFactory {
    *
    * - This method may throw Error.
    */
-  virtual std::unique_ptr<Simulator> make(const Conf& c) const = 0;
+  virtual std::unique_ptr<Simulator> make(const fable::Conf& c) const = 0;
 };
 
 }  // namespace cloe

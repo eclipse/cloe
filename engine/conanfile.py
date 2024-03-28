@@ -21,12 +21,16 @@ class CloeEngine(ConanFile):
         # server dependencies are incompatible with your target system.
         "server": [True, False],
 
+        # Whether the LRDB integration is compiled and built into the Cloe engine.
+        "lrdb": [True, False],
+
         # Make the compiler be strict and pedantic.
         # Disable if you upgrade compilers and run into new warnings preventing
         # the build from completing. May be removed in the future.
         "pedantic": [True, False],
     }
     default_options = {
+        "lrdb": True,
         "server": True,
         "pedantic": True,
 
@@ -36,7 +40,9 @@ class CloeEngine(ConanFile):
     no_copy_source = True
     exports_sources = [
         "src/*",
+        "lua/*",
         "webui/*",
+        "vendor/*",
         "CMakeLists.txt",
     ]
 
@@ -52,6 +58,7 @@ class CloeEngine(ConanFile):
         self.requires(f"cloe-runtime/{self.version}@cloe/develop")
         self.requires(f"cloe-models/{self.version}@cloe/develop")
         self.requires("cli11/2.3.2", private=True)
+        self.requires("sol2/3.3.1")
         if self.options.server:
             self.requires(f"cloe-oak/{self.version}@cloe/develop", private=True)
         self.requires("boost/[>=1.65.1]")
@@ -69,6 +76,7 @@ class CloeEngine(ConanFile):
         tc.cache_variables["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
         tc.cache_variables["CLOE_PROJECT_VERSION"] = self.version
         tc.cache_variables["CLOE_ENGINE_WITH_SERVER"] = self.options.server
+        tc.cache_variables["CLOE_ENGINE_WITH_LRDB"] = self.options.lrdb
         tc.cache_variables["TargetLintingExtended"] = self.options.pedantic
         tc.generate()
 
@@ -113,7 +121,12 @@ class CloeEngine(ConanFile):
             self.cpp_info.system_libs.append("dl")
         if self.in_local_cache:
             bindir = os.path.join(self.package_folder, "bin")
-        else:
-            bindir = os.path.join(self.build_folder, str(self.settings.build_type), "bin")
+            luadir = os.path.join(self.package_folder, "lib/cloe/lua")
+        else: # editable mode
+            bindir = os.path.join(self.build_folder)
+            luadir = os.path.join(self.source_folder, "lua")
+
         self.output.info(f"Appending PATH environment variable: {bindir}")
-        self.env_info.PATH.append(bindir)
+        self.runenv_info.prepend_path("PATH", bindir)
+        self.output.info(f"Appending CLOE_LUA_PATH environment variable: {luadir}")
+        self.runenv_info.prepend_path("CLOE_LUA_PATH", luadir)

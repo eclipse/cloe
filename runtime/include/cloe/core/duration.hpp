@@ -48,6 +48,25 @@ using Seconds = std::chrono::duration<double>;
 
 std::string to_string(const Duration& ns);
 
+/**
+ * Convert a string containing a number and a unit to a duration.
+ *
+ * The following units are supported:
+ *
+ *     ns
+ *     us
+ *     ms
+ *     s
+ *
+ * Will throw an exception on malformed or out-of-range input.
+ *
+ * Note: This parse function preserves precision even for floating
+ * point numbers. For example, 0.1 is not exactly representable
+ * as a floating point number, but together with a unit, we can
+ * scale it so that it is represented exactly.
+ */
+Duration parse_duration(const std::string& fmt);
+
 // Occasionally, we want to have a human-readable and a machine-readable
 // representation of a duration. This function does exactly that.
 nlohmann::json to_convenient_json(const Duration& ns);

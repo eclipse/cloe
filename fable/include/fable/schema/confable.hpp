@@ -28,25 +28,20 @@
 #include <string>   // for string
 #include <utility>  // for move
 
+#include <fable/fable_fwd.hpp>         // for Confable
 #include <fable/schema/interface.hpp>  // for Interface
 
-namespace fable {
-
-// Forward declarations:
-class Confable;
-
-namespace schema {
+namespace fable::schema {
 
 template <typename T, std::enable_if_t<std::is_base_of_v<Confable, T>, int> = 0>
 class FromConfable : public Base<FromConfable<T>> {
  public:  // Types and Constructors
   using Type = T;
 
-  FromConfable(std::string desc = "") {
-    schema_ = Type().schema(); // NOLINT
-    schema_.reset_ptr();
+  explicit FromConfable(std::string desc = "")
+      : Base<FromConfable<T>>(std::move(desc)), schema_(Type().schema()) {
+    schema_.reset_ptr();  // type was temporary
     this->type_ = schema_.type();
-    this->desc_ = std::move(desc);
   }
 
   FromConfable(Type* ptr, std::string desc)
@@ -57,21 +52,20 @@ class FromConfable : public Base<FromConfable<T>> {
   }
 
  public:  // Special
-  Box get_confable_schema() const { return schema_.clone(); }
+  [[nodiscard]] Box get_confable_schema() const { return schema_.clone(); }
 
  public:  // Overrides
-  Json json_schema() const override {
+  [[nodiscard]] Json json_schema() const override {
     Json j = schema_.json_schema();
     this->augment_schema(j);
     return j;
   }
 
-  void validate(const Conf& c) const override {
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
     if (ptr_ == nullptr) {
-      schema_.validate(c);
-    } else {
-      ptr_->validate(c);
+      return schema_.validate(c, err);
     }
+    return ptr_->validate(c, err);
   }
 
   using Interface::to_json;
@@ -85,13 +79,17 @@ class FromConfable : public Base<FromConfable<T>> {
     ptr_->from_conf(c);
   }
 
-  Json serialize(const Type& x) const { return x.to_json(); }
+  [[nodiscard]] Json serialize(const Type& x) const { return x.to_json(); }
 
-  Type deserialize(const Conf& c) const {
+  [[nodiscard]] Type deserialize(const Conf& c) const {
     Type tmp;
     tmp.from_conf(c);
     return tmp;
   }
+
+  void serialize_into(Json& j, const Type& x) const { x.to_json(j); }
+
+  void deserialize_into(const Conf& c, Type& x) const { x.from_conf(c); }
 
   void reset_ptr() override {
     ptr_ = nullptr;
@@ -109,5 +107,4 @@ FromConfable<T> make_schema(T* ptr, S&& desc) {
   return FromConfable<T>(ptr, std::forward<S>(desc));
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

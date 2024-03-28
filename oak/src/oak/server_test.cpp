@@ -38,9 +38,9 @@
 #include <cloe/registrar.hpp>
 #include <fable/utility/gtest.hpp>
 
+#include "oak/curl.hpp"       // for Curl
 #include "oak/registrar.hpp"  // for Registrar
 #include "oak/server.hpp"     // for Server
-#include "oak/curl.hpp"       // for Curl
 
 using namespace std;  // NOLINT(build/namespaces)
 
@@ -144,7 +144,7 @@ TEST(oak_server, get_handler) {
   // Create registrar
   oak::StaticRegistrar registrar(server.get(), "", nullptr);
   // Register one pseudo-endpoint
-  std::vector<std::string> data{ "1", "2", "3" };
+  std::vector<std::string> data{"1", "2", "3"};
   registrar.register_handler("/simulators", cloe::handler::StaticJson(data));
 
   // Read the pseudo-endpoint
@@ -184,7 +184,7 @@ TEST(oak_server, post_handler) {
               response.write(json);
               response.set_status(cloe::StatusCode::OK);
             } catch (const std::exception& ex) {
-              response.bad_request(cloe::Json{
+              response.bad_request(fable::Json{
                   {"error", ex.what()},
               });
             }
@@ -192,7 +192,7 @@ TEST(oak_server, post_handler) {
           }
           default: {
             response.not_allowed(cloe::RequestMethod::POST,
-                                 cloe::Json{
+                                 fable::Json{
                                      {"error", "only GET or POST method allowed"},
                                  });
           }
@@ -200,7 +200,8 @@ TEST(oak_server, post_handler) {
       });
 
   // Read the pseudo-endpoint
-  auto result = exec(oak::Curl::post(address_, port_, "echo", R"({"a": "b", "c": "d"})", "application/json"));
+  auto result =
+      exec(oak::Curl::post(address_, port_, "echo", R"({"a": "b", "c": "d"})", "application/json"));
 
   // Compare result
   fable::assert_eq(fable::parse_json(result.c_str()), R"({

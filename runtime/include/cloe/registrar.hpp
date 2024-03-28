@@ -26,8 +26,11 @@
 #include <string>   // for string
 #include <utility>  // for move
 
+#include <sol/table.hpp>
+#include <cloe/cloe_fwd.hpp> // for DataBroker
 #include <cloe/handler.hpp>  // for Handler
 #include <cloe/trigger.hpp>  // for ActionFactory, EventFactory, Callback, ...
+#include <fable/json.hpp>    // for Json
 
 namespace cloe {
 
@@ -46,7 +49,7 @@ class DirectCallback : public Callback {
   bool empty() const { return triggers_.empty(); }
 
   void emplace(TriggerPtr&& t, const Sync&) override { triggers_.emplace_back(std::move(t)); }
-  void to_json(Json& j) const override { j = triggers_; }
+  void to_json(fable::Json& j) const override { j = triggers_; }
 
   void trigger(const Sync& sync, const Ctx&... args) {
     auto it = triggers_.begin();
@@ -54,7 +57,10 @@ class DirectCallback : public Callback {
       auto& condition = dynamic_cast<E&>((*it)->event());
       if (condition(sync, args...)) {
         if ((*it)->is_sticky()) {
-          this->execute((*it)->clone(), sync);
+          auto result = this->execute((*it)->clone(), sync);
+          if (result == CallbackResult::Unpin) {
+            it = triggers_.erase(it);
+          }
         } else {
           // Remove from trigger list and advance.
           this->execute(std::move(*it), sync);
@@ -165,6 +171,8 @@ class Registrar {
    */
   virtual void register_action(std::unique_ptr<ActionFactory>&&) = 0;
 
+  virtual DataBroker& data_broker() const = 0;
+
   /**
    * Construct and register an ActionFactory.
    *
@@ -192,6 +200,11 @@ class Registrar {
    * \see  cloe/trigger.hpp
    */
   virtual void register_event(std::unique_ptr<EventFactory>&& f, std::shared_ptr<Callback> c) = 0;
+
+  /**
+   * Provide a Lua table for registration of functions and variables.
+   */
+  virtual sol::table register_lua_table() = 0;
 
   /**
    * Register an EventFactory and return a DirectCallback for storage of

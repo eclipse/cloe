@@ -46,12 +46,13 @@ class Fable(ConanFile):
             self.version = git.run("describe --dirty=-dirty")[1:]
 
     def requirements(self):
-        self.requires("boost/[>=1.65.1]")
         self.requires("fmt/9.1.0")
         self.requires("nlohmann_json/3.11.2")
 
     def build_requirements(self):
         self.test_requires("gtest/1.13.0")
+        self.test_requires("boost/[>=1.65.1]")
+        self.test_requires("sol2/3.3.1")
 
     def layout(self):
         cmake.cmake_layout(self)
@@ -88,14 +89,19 @@ class Fable(ConanFile):
         if self.should_install:
             cm.install()
 
-    def package_id(self):
-        self.info.requires["boost"].full_package_mode()
-
     def package_info(self):
         self.cpp_info.set_property("cmake_find_mode", "both")
         self.cpp_info.set_property("cmake_file_name", "fable")
         self.cpp_info.set_property("cmake_target_name", "fable::fable")
         self.cpp_info.set_property("pkg_config_name", "fable")
+
+        # Linking to libstdc++fs is required on GCC < 9.
+        # (GCC compilers with version < 7 have no std::filesystem support.)
+        # No consideration has been made yet for other compilers,
+        # please add them here as necessary.
+        if self.settings.get_safe("compiler") == "gcc" and self.settings.get_safe("compiler.version") in ["7", "8"]:
+            self.cpp_info.system_libs = ["stdc++fs"]
+
         if not self.in_local_cache:
             self.cpp_info.libs = ["fable"]
             self.cpp_info.includedirs.append(os.path.join(self.build_folder, "include"))

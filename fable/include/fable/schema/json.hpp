@@ -28,8 +28,7 @@
 
 #include <fable/schema/interface.hpp>  // for Base<>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 /**
  * FromJson uses the `from_json` and `to_json` methods for deserializing and
@@ -52,7 +51,7 @@ class FromJson : public Base<FromJson<T>> {
       : Base<FromJson<T>>(t, std::move(desc)), ptr_(ptr) {}
 
  public:  // Overrides
-  Json json_schema() const override {
+  [[nodiscard]] Json json_schema() const override {
     Json j{
         {"type", this->type_string()},
     };
@@ -60,24 +59,42 @@ class FromJson : public Base<FromJson<T>> {
     return j;
   }
 
-  void validate(const Conf& c) const override { this->validate_type(c); }
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
+    return this->validate_type(c, err);
+  }
 
   using Interface::to_json;
   void to_json(Json& j) const override {
     assert(ptr_ != nullptr);
-    j = static_cast<const Type&>(*ptr_);
+    serialize_into(j, *ptr_);
   }
 
   void from_conf(const Conf& c) override {
     assert(ptr_ != nullptr);
-    *ptr_ = c.get<Type>();
+    deserialize_into(c, *ptr_);
   }
 
   void reset_ptr() override { ptr_ = nullptr; }
+
+  [[nodiscard]] Json serialize(const Type& x) const {
+    return Json(x);
+  }
+
+  void serialize_into(Json& j, const Type& x) const {
+    ::nlohmann::adl_serializer<Type>::to_json(j, x);
+  }
+
+  template<typename = std::enable_if<std::is_default_constructible_v<Type>>>
+  [[nodiscard]] Type deserialize(const Conf& c) const {
+    return c->get<Type>();
+  }
+
+  void deserialize_into(const Conf& c, Type& x) const {
+    c->get_to(x);
+  }
 
  private:
   Type* ptr_{nullptr};
 };
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

@@ -25,14 +25,13 @@
 using namespace std;  // NOLINT(build/namespaces)
 
 #include <gtest/gtest.h>
-#include <boost/optional.hpp>
 
 #include <fable/confable.hpp>       // for Confable
 #include <fable/schema.hpp>         // for Optional
 #include <fable/utility/gtest.hpp>  // for assert_schema_eq, ...
 
 struct MyOptionalStruct : public fable::Confable {
-  boost::optional<std::string> str;
+  std::optional<std::string> str;
 
   CONFABLE_SCHEMA(MyOptionalStruct) {
     using namespace fable::schema;  // NOLINT(build/namespaces)
@@ -102,15 +101,107 @@ TEST(fable_schema_optional, from_json) {
 
 TEST(fable_schema_optional, make_prototype) {
   auto a = fable::make_prototype<bool>();
+  auto b = fable::make_schema(static_cast<std::optional<bool>*>(nullptr), "");
+  auto c = fable::make_prototype<std::optional<bool>>();
+}
+
+struct MyDurationStruct : public fable::Confable {
+  std::optional<std::chrono::milliseconds> dura;
+  std::map<std::string, std::optional<bool>> map_of_bools;
+
+  CONFABLE_SCHEMA(MyDurationStruct) {
+    using namespace fable::schema;  // NOLINT(build/namespaces)
+    return Struct{
+        {"dura", make_schema(&dura, "optional duration")},
+        {"map_of_bools", make_schema(&map_of_bools, "optional map of bools")},
+    };
+  }
+};
+
+// ---------------------------------------------------------------- //
+
+#include <fable/schema/boost_optional.hpp> // for Optional
+
+struct MyBoostOptionalStruct : public fable::Confable {
+  boost::optional<std::string> str;
+
+  CONFABLE_SCHEMA(MyBoostOptionalStruct) {
+    using namespace fable::schema;  // NOLINT(build/namespaces)
+    return Struct{
+        {"str", make_schema(&str, "optional string")},
+    };
+  }
+};
+
+TEST(fable_schema_boost_optional, schema) {
+  MyBoostOptionalStruct tmp;
+
+  fable::assert_schema_eq(tmp, R"({
+    "type": "object",
+    "properties": {
+      "str": {
+        "description": "optional string",
+        "oneOf": [
+          { "type": "null" },
+          { "type": "string" }
+        ]
+      }
+    },
+    "additionalProperties": false
+  })");
+}
+
+TEST(fable_schema_boost_optional, validate) {
+  MyBoostOptionalStruct tmp;
+
+  fable::assert_validate(tmp, R"({
+    "str": null
+  })");
+  ASSERT_FALSE(tmp.str);
+
+  fable::assert_validate(tmp, R"({
+    "str": "hello"
+  })");
+  ASSERT_FALSE(tmp.str);
+
+  fable::assert_from_conf(tmp, R"({
+    "str": "hello"
+  })");
+  ASSERT_TRUE(tmp.str);
+  ASSERT_EQ(*(tmp.str), "hello");
+}
+
+TEST(fable_schema_boost_optional, to_json) {
+  MyBoostOptionalStruct tmp1;
+
+  fable::assert_to_json(tmp1, "{}");
+
+  MyBoostOptionalStruct tmp2;
+  tmp2.str = "hello";
+  fable::assert_to_json(tmp2, R"({
+    "str": "hello"
+  })");
+}
+
+TEST(fable_schema_boost_optional, from_json) {
+  MyBoostOptionalStruct tmp;
+  fable::assert_from_conf(tmp, R"({
+    "str": "hello"
+  })");
+  ASSERT_EQ(*tmp.str, "hello");
+}
+
+TEST(fable_schema_boost_optional, make_prototype) {
+  auto a = fable::make_prototype<bool>();
   auto b = fable::make_schema(static_cast<boost::optional<bool>*>(nullptr), "");
   auto c = fable::make_prototype<boost::optional<bool>>();
 }
 
-struct MyDurationStruct : public fable::Confable {
+struct MyBoostDurationStruct : public fable::Confable {
   boost::optional<std::chrono::milliseconds> dura;
   std::map<std::string, boost::optional<bool>> map_of_bools;
 
-  CONFABLE_SCHEMA(MyDurationStruct) {
+  CONFABLE_SCHEMA(MyBoostDurationStruct) {
     using namespace fable::schema;  // NOLINT(build/namespaces)
     return Struct{
         {"dura", make_schema(&dura, "optional duration")},

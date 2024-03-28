@@ -23,16 +23,11 @@
 #pragma once
 
 #include <string>  // for string
+#include <ostream> // for ostream
 
-#include <fable/conf.hpp>  // for Conf
-#include <fable/json.hpp>  // for Json
+#include <fable/fable_fwd.hpp>
 
 namespace fable {
-
-// Forward declarations:
-class ConfError;    // from <fable/error.hpp>
-class SchemaError;  // from <fable/error.hpp>
-class Environment;  // from <fable/environment.hpp>
 
 /**
  * Read a file and parse the contents to JSON.
@@ -44,9 +39,7 @@ Json read_json_from_file(const char* filepath);
 
 Json read_json_from_stdin();
 
-inline Json read_json_from_file(const std::string& filepath) {
-  return read_json_from_file(filepath.c_str());
-}
+Json read_json_from_file(const std::string& filepath);
 
 Json read_json(const std::string& filepath_or_stdin);
 
@@ -57,9 +50,7 @@ Conf read_conf_from_file(const char* filepath);
 
 Conf read_conf_from_stdin();
 
-inline Conf read_conf_from_file(const std::string& filepath) {
-  return read_conf_from_file(filepath.c_str());
-}
+Conf read_conf_from_file(const std::string& filepath);
 
 Conf read_conf(const std::string& filepath_or_stdin);
 

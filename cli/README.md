@@ -20,6 +20,27 @@ This is easiest with the `Makefile`, which automates the whole process:
 make editable
 ```
 
+## Usage
+
+<!-- TODO: Update this usage! -->
+```
+cloe-launch [-v] clean                             CONANFILE
+
+cloe-launch [-v] prepare                           CONANFILE [CONAN_INSTALL_ARGS]
+
+cloe-launch [-v] activate [-c]                     CONANFILE [CONAN_INSTALL_ARGS]
+    cloe-launch -v activate -c tests/conanfile.py -o cloe-engine:server=True
+
+cloe-launch [-v] deploy  [-c] [-f] [-r] [-D PATH]  CONANFILE [CONAN_INSTALL_ARGS]
+
+cloe-launch [-v] exec    [-c] [-e VAR] [-E] [-d]   CONANFILE [CONAN_INSTALL_ARGS] -- [ENGINE_ARGS]
+
+    cloe-launch exec tests/conanfile.py -o cloe-engine:server=False -- -l debug run
+
+cloe-launch [-v] shell   [-c] [-e VAR] [-E]        CONANFILE [CONAN_INSTALL_ARGS] -- [SHELL_ARGS]
+
+```
+
 ## Design Considerations
 
 The CLI interface to `cloe-engine` should do as little as possible and as much
@@ -53,6 +74,6 @@ packages. As such, we'd like to make use of the local instance of this Python
 module without resorting to installing it first. This is possible by setting
 the `PYTHONPATH` variable and using the `cloe_launch` module:
 
-    PYTHONPATH="${CLOE_ROOT}/cli" cloe_launch
+    PYTHONPATH="${CLOE_ROOT}/cli" python -m cloe_launch
 
 [1]: https://pipxproject.github.io/pipx/

@@ -32,8 +32,7 @@
 #include <fable/enum.hpp>
 #include <fable/schema/interface.hpp>  // for Base<>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 template <typename T>
 class Enum : public Base<Enum<T>> {
@@ -52,10 +51,10 @@ class Enum : public Base<Enum<T>> {
   }
 
  public:  // Special
-  const std::vector<std::string>& keys() const { return keys_; }
+  [[nodiscard]] const std::vector<std::string>& keys() const { return keys_; }
 
  public:  // Overrides
-  Json json_schema() const override {
+  [[nodiscard]] Json json_schema() const override {
     Json j{
         {"type", this->type_string()},
         {"enum", keys_},
@@ -64,11 +63,12 @@ class Enum : public Base<Enum<T>> {
     return j;
   }
 
-  void validate(const Conf& c) const override {
-    std::string s = c.get<std::string>();
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
+    auto s = c.get<std::string>();
     if (mapping_from_.count(s) == 0) {
-      this->throw_error(c, "invalid value for enum: {}", s);
+      return this->set_error(err, c, "invalid value for enum: {}", s);
     }
+    return true;
   }
 
   using Interface::to_json;
@@ -89,15 +89,19 @@ class Enum : public Base<Enum<T>> {
     try {
       return mapping_from_.at(s);
     } catch (std::out_of_range& e) {
-      this->throw_error(c, "invalid value for enum: {}", s);
+      throw this->error(c, "invalid value for enum: {}", s);
     }
   }
+
+  void serialize_into(Json& j, const Type& x) const { j = mapping_to_.at(x); }
+
+  void deserialize_into(const Conf& c, Type& x) const { x = deserialize(c); }
 
   void reset_ptr() override { ptr_ = nullptr; }
 
  private:
-  const std::map<T, std::string>& mapping_to_;
-  const std::map<std::string, T>& mapping_from_;
+  const std::map<T, std::string>& mapping_to_;    // NOLINT: type-specific global ref
+  const std::map<std::string, T>& mapping_from_;  // NOLINT: type-specific global ref
   std::vector<std::string> keys_;
   Type* ptr_{nullptr};
 };
@@ -107,5 +111,4 @@ inline Enum<T> make_schema(T* ptr, S&& desc) {
   return Enum<T>(ptr, std::forward<S>(desc));
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

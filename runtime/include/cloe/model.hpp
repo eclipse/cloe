@@ -48,14 +48,13 @@
 
 #pragma once
 
-#include <cloe/core.hpp>    // for Duration, Error, Confable
-#include <cloe/entity.hpp>  // for Entity
+#include <fable/confable.hpp>  // for Confable
+
+#include <cloe/cloe_fwd.hpp>  // for Sync, Registrar
+#include <cloe/core.hpp>      // for Duration, Error
+#include <cloe/entity.hpp>    // for Entity
 
 namespace cloe {
-
-// Forward declaration:
-class Sync;       // from cloe/sync.hpp
-class Registrar;  // from cloe/registrar.hpp
 
 /**
  * ModelError indicates that an error in a model has occurred.
@@ -65,16 +64,14 @@ class ModelError : public Error {
   using Error::Error;
   virtual ~ModelError() noexcept = default;
 
-  const std::string& explanation() const { return Error::explanation(); }
-
-  ModelError explanation(const std::string& explanation) && {
-    this->set_explanation(explanation);
+  ModelError explanation(std::string explanation) && {
+    this->set_explanation(std::move(explanation));
     return std::move(*this);
   }
 
   template <typename... Args>
-  ModelError explanation(const char* format, const Args&... args) && {
-    this->set_explanation(fmt::format(format, args...));
+  ModelError explanation(std::string_view format, Args&&... args) && {
+    this->set_explanation(fmt::format(fmt::runtime(format), std::forward<Args>(args)...));
     return std::move(*this);
   }
 };
@@ -90,16 +87,14 @@ class ModelAbort : public ModelError {
   using ModelError::ModelError;
   virtual ~ModelAbort() noexcept = default;
 
-  const std::string& explanation() const { return Error::explanation(); }
-
-  ModelError explanation(const std::string& explanation) && {
-    this->set_explanation(explanation);
+  ModelAbort explanation(std::string explanation) && {
+    this->set_explanation(std::move(explanation));
     return std::move(*this);
   }
 
   template <typename... Args>
-  ModelError explanation(const char* format, const Args&... args) && {
-    this->set_explanation(fmt::format(format, args...));
+  ModelAbort explanation(std::string_view format, Args&&... args) && {
+    this->set_explanation(fmt::format(fmt::runtime(format), std::forward<Args>(args)...));
     return std::move(*this);
   }
 };
@@ -113,16 +108,14 @@ class ModelReset : public ModelError {
   using ModelError::ModelError;
   virtual ~ModelReset() noexcept = default;
 
-  const std::string& explanation() const { return Error::explanation(); }
-
-  ModelError explanation(const std::string& explanation) && {
-    this->set_explanation(explanation);
+  ModelReset explanation(std::string explanation) && {
+    this->set_explanation(std::move(explanation));
     return std::move(*this);
   }
 
   template <typename... Args>
-  ModelError explanation(const char* format, const Args&... args) && {
-    this->set_explanation(fmt::format(format, args...));
+  ModelReset explanation(std::string_view format, Args&&... args) && {
+    this->set_explanation(fmt::format(fmt::runtime(format), std::forward(args)...));
     return std::move(*this);
   }
 };
@@ -136,16 +129,14 @@ class ModelStop : public ModelError {
   using ModelError::ModelError;
   virtual ~ModelStop() noexcept = default;
 
-  const std::string& explanation() const { return Error::explanation(); }
-
-  ModelError explanation(const std::string& explanation) && {
-    this->set_explanation(explanation);
+  ModelStop explanation(std::string explanation) && {
+    this->set_explanation(std::move(explanation));
     return std::move(*this);
   }
 
   template <typename... Args>
-  ModelError explanation(const char* format, const Args&... args) && {
-    this->set_explanation(fmt::format(format, args...));
+  ModelStop explanation(std::string_view format, Args&&... args) && {
+    this->set_explanation(fmt::format(fmt::runtime(format), std::forward<Args>(args)...));
     return std::move(*this);
   }
 };
@@ -409,7 +400,7 @@ class Model : public Entity {
  * The ModelFactory class serves as a base class for all other factory classes
  * that make models.
  */
-class ModelFactory : public Entity, public Confable {
+class ModelFactory : public Entity, public fable::Confable {
  public:
   using Entity::Entity;
   virtual ~ModelFactory() = default;
