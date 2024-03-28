@@ -26,8 +26,7 @@
 #include <string>     // for string
 #include <utility>    // for move, make_pair
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 void Struct::set_property(const std::string& key, Box&& s) {
   auto it = std::find(properties_required_.begin(), properties_required_.end(), key);
@@ -181,5 +180,4 @@ void Struct::reset_ptr() {
   }
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

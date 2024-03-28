@@ -27,8 +27,7 @@
 
 #include <fable/schema/interface.hpp>  // for Interface, Box
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 /**
  * The CustomDeserializer allows the user to replace the deserialization of a
@@ -97,5 +96,4 @@ class CustomDeserializer : public schema::Interface {
   std::function<void(CustomDeserializer*, const Conf&)> from_conf_fn_{};
 };
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

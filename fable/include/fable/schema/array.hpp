@@ -33,8 +33,7 @@
 #include <fable/json.hpp>              // for Json
 #include <fable/schema/interface.hpp>  // for Base<>, Box
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 /**
  * The Array schema provides support for using the std::array<> schema.
@@ -394,5 +393,4 @@ Array<T, N, decltype(make_prototype<T>())> make_schema(std::array<T, N>* ptr, S&
   return Array<T, N, decltype(make_prototype<T>())>(ptr, std::forward<S>(desc));
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

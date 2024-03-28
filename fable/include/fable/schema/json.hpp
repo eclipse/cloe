@@ -28,8 +28,7 @@
 
 #include <fable/schema/interface.hpp>  // for Base<>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 /**
  * FromJson uses the `from_json` and `to_json` methods for deserializing and
@@ -85,5 +84,4 @@ class FromJson : public Base<FromJson<T>> {
   Type* ptr_{nullptr};
 };
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

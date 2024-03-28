@@ -33,8 +33,7 @@
 
 #include <fable/schema/interface.hpp>  // for Base<>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 /**
  * Map maintains a key-value mapping where the list of keys is unknown and
@@ -227,5 +226,4 @@ Map<T, decltype(make_prototype<T>())> make_schema(std::map<std::string, T>* ptr,
   return Map<T, decltype(make_prototype<T>())>(ptr, std::forward<S>(desc));
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

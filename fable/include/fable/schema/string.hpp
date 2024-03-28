@@ -33,8 +33,7 @@
 #include <fable/fable_fwd.hpp>         // for Environment
 #include <fable/schema/interface.hpp>  // for Base<>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 /**
  * \macro FABLE_REGEX_C_PATTERN specifies the regex for the
@@ -265,5 +264,4 @@ inline String make_schema(std::string* ptr, S&& desc) {
   return String(ptr, std::forward<S>(desc));
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

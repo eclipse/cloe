@@ -32,8 +32,7 @@
 
 #include <fable/schema/interface.hpp>  // for Base<>, Box
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 template <typename T, typename P>
 class Vector : public Base<Vector<T, P>> {
@@ -196,5 +195,4 @@ Vector<T, decltype(make_prototype<T>())> make_schema(std::vector<T>* ptr, S&& de
   return Vector<T, decltype(make_prototype<T>())>(ptr, std::forward<S>(desc));
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

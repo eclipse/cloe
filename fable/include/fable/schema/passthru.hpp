@@ -29,8 +29,7 @@
 #include <fable/schema/ignore.hpp>     // for Ignore
 #include <fable/schema/interface.hpp>  // for Base<>, Box
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 /**
  * Passthru stores JSON data and optionally validates it.
@@ -103,5 +102,4 @@ Passthru<P> make_schema(Conf* ptr, P&& prototype, S&& desc) {
   return Passthru<P>(ptr, std::forward<P>(prototype), std::forward<S>(desc));
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

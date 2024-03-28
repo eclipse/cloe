@@ -29,8 +29,7 @@
 #include <fable/schema/interface.hpp>  // for Base<>, Box
 #include <fable/schema/string.hpp>     // for String
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 template <typename T, typename P>
 class Const : public Base<Const<T, P>> {
@@ -101,5 +100,4 @@ Const<T, decltype(make_prototype<std::remove_cv_t<std::remove_reference_t<T>>>()
   return {std::forward<T>(constant), std::forward<S>(desc)};
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

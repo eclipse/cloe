@@ -31,8 +31,7 @@
 
 #include <fable/error.hpp>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 Variant::Variant(std::string desc, std::vector<Box>&& vec)
     : desc_(std::move(desc)), schemas_(std::move(vec)) {
@@ -144,5 +143,4 @@ void Variant::reset_ptr() {
   }
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

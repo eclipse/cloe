@@ -37,8 +37,7 @@
 #include <fable/schema/struct.hpp>     // for Struct
 #include <fable/schema/variant.hpp>    // for Variant
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 /**
  * FactoryBase is the base class for Factory and FactoryPointerless.
@@ -423,5 +422,4 @@ class Factory : public FactoryBase<T, Factory<T>> {
   Type* ptr_{nullptr};
 };
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

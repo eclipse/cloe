@@ -30,8 +30,7 @@
 
 #include <fable/schema/interface.hpp>  // for Base<>
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 template <typename T>
 class Number : public Base<Number<T>> {
@@ -121,5 +120,4 @@ inline Number<T> make_schema(T* ptr, S&& desc) {
   return Number<T>(ptr, std::forward<S>(desc));
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema

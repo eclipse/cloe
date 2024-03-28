@@ -31,8 +31,7 @@
 #include <fable/fable_fwd.hpp>         // for Confable
 #include <fable/schema/interface.hpp>  // for Interface
 
-namespace fable {
-namespace schema {
+namespace fable::schema {
 
 template <typename T, std::enable_if_t<std::is_base_of_v<Confable, T>, int> = 0>
 class FromConfable : public Base<FromConfable<T>> {
@@ -110,5 +109,4 @@ FromConfable<T> make_schema(T* ptr, S&& desc) {
   return FromConfable<T>(ptr, std::forward<S>(desc));
 }
 
-}  // namespace schema
-}  // namespace fable
+}  // namespace fable::schema
