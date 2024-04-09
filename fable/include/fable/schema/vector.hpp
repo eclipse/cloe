@@ -24,9 +24,7 @@
 #pragma once
 
 #include <limits>       // for numeric_limits<>
-#include <memory>       // for shared_ptr<>
 #include <string>       // for string
-#include <type_traits>  // for enable_if_t<>, is_convertible<>
 #include <utility>      // for move
 #include <vector>       // for vector<>
 

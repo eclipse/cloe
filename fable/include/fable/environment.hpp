@@ -23,13 +23,11 @@
 
 #pragma once
 
-#include <cassert>  // for assert
-#include <map>      // for map<>
-#include <string>   // for string
-#include <utility>  // for pair<>, move, make_pair
-#include <optional> // for optional<>
-
-#include <fable/fable_fwd.hpp>
+#include <cassert>   // for assert
+#include <map>       // for map<>
+#include <optional>  // for optional<>
+#include <string>    // for string
+#include <utility>   // for pair<>, move, make_pair
 
 namespace fable {
 

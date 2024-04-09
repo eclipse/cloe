@@ -50,15 +50,16 @@
 
 #pragma once
 
+#include <filesystem>  // for path
 #include <functional>  // for function<>
 #include <string>      // for string
+#include <utility>     // for move
 #include <vector>      // for vector<>
-#include <filesystem>  // for path
 
 #include <fmt/format.h>  // for fmt::format
 
-#include <fable/fable_fwd.hpp>
-#include <fable/json.hpp>  // for Json
+#include <fable/fable_fwd.hpp>  // for ConfError
+#include <fable/json.hpp>       // for Json
 
 namespace fable {
 

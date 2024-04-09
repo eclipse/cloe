@@ -35,19 +35,11 @@
 
 #pragma once
 
-#include <map>      // for map<>
-#include <string>   // for string
-#include <utility>  // for move, forward
-#include <vector>   // for vector<>
-#include <array>    // for array<>
+#include <type_traits>  // for enable_if_t, is_base_of_v
 
-#include <fable/fable_fwd.hpp>        // for Confable
-#include <fable/schema/array.hpp>     // for Array<>
-#include <fable/schema/confable.hpp>  // for FromConfable<>
-#include <fable/schema/const.hpp>     // for Const<>
-#include <fable/schema/map.hpp>       // for Map<>
-#include <fable/schema/optional.hpp>  // for Optional<>
-#include <fable/schema/vector.hpp>    // for Vector<>
+#include <fable/fable_fwd.hpp>         // for Confable
+#include <fable/schema/confable.hpp>   // for FromConfable<>
+#include <fable/schema/interface.hpp>  // for make_prototype
 
 namespace fable::schema {
 
