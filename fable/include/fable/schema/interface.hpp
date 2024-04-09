@@ -462,7 +462,8 @@ class Base : public Interface {
         return true;
       }
 
-      return this->set_error(err, c, "require type {}, got {}", type_string(), to_string(c->type()));
+      return this->set_error(err, c, "require type {}, got {}", type_string(),
+                             to_string(c->type()));
     }
     return true;
   }
@@ -481,7 +482,8 @@ class Base : public Interface {
   }
 
   template <typename... Args>
-  bool set_error(std::optional<SchemaError>& err, const Conf& c, std::string_view format, Args&&... args) const {
+  bool set_error(std::optional<SchemaError>& err, const Conf& c, std::string_view format,
+                 Args&&... args) const {
     err.emplace(this->error(c, format, std::forward<Args>(args)...));
     return false;
   }

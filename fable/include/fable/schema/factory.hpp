@@ -335,13 +335,12 @@ class FactoryBase : public Base<CRTP> {
 
   void deserialize_into(const Conf& c, Type& x) const { x = deserialize(c); }
 
-  void from_conf(const Conf& c) override {
+  void from_conf(const Conf& /* unused */) override {
     throw std::logic_error("FactoryBase::from_conf() should not be used");
   }
 
   using Interface::to_json;
-
-  void to_json(Json& j) const override {
+  void to_json(Json& /* unused */) const override {
     throw std::logic_error("FactoryBase::to_json() should not be used");
   }
 

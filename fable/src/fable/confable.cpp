@@ -44,14 +44,14 @@ Confable& Confable::operator=(Confable&& other) noexcept {
   return *this;
 }
 
-void Confable::reset_schema() { schema_.reset(); }
-
 Schema& Confable::schema() {
   if (!schema_) {
     schema_ = std::make_unique<Schema>(schema_impl());
   }
   return *schema_;
 }
+
+void Confable::reset_schema() { schema_.reset(); }
 
 const Schema& Confable::schema() const { return const_cast<Confable*>(this)->schema(); }
 

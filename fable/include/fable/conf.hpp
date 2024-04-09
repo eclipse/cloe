@@ -63,6 +63,16 @@
 
 namespace fable {
 
+/**
+ * Conf wraps a JSON with context that allows for more user-friendly errors.
+ *
+ * In general, a Conf wraps JSON content that comes from the filesystem and
+ * is used for configuration purposes. Even if a class requires only a subset
+ * of the JSON, Conf maintains the connection to the original file, which
+ * allows errors to be returned that refer to the file and location.
+ *
+ * Conf is best used together with the Confable and Schema types.
+ */
 class Conf {
  public:
   Conf() = default;

@@ -54,16 +54,16 @@ class Ignore : public Base<Ignore> {
     return j;
   }
 
-  bool validate(const Conf& c, std::optional<SchemaError>& err) const override { return true; }
+  bool validate(const Conf& /*unused*/, std::optional<SchemaError>& /*unused*/) const override { return true; }
   using Interface::to_json;
   void to_json(Json& j) const override { j = nullptr; }
-  void from_conf(const Conf&) override {}
+  void from_conf(const Conf& /*unused*/) override {}
   void reset_ptr() override {}
 
   [[nodiscard]] Json serialize(const Type& /*unused*/) const { return nullptr; }
   [[nodiscard]] Type deserialize(const Conf& /*unused*/) const { return {}; }
-  void serialize_into(Json&, const Type&) const {}
-  void deserialize_into(const Conf&, Type&) const {}
+  void serialize_into(Json& /*unused*/, const Type& /*unused*/) const {}
+  void deserialize_into(const Conf& /*unused*/, Type& /*unused*/) const {}
 };
 
 }  // namespace fable::schema
