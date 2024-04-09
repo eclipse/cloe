@@ -39,6 +39,7 @@ target_link_libraries(${libstack}
   PUBLIC
     cloe::runtime
     fable::fable
+    Boost::headers
     Threads::Threads
     ${CMAKE_DL_LIBS}
 )
