@@ -34,15 +34,15 @@
 
 namespace fable {
 
-Conf::Conf(const std::string& file) : file_(file) {
+Conf::Conf(std::string file) : file_(std::move(file)) {
   std::ifstream ifs(file_);
   if (ifs.fail()) {
-    throw Error("could not open file {}: {}", file, strerror(errno));
+    throw Error("could not open file {}: {}", file_, strerror(errno));
   }
   try {
     data_ = parse_json(ifs);
   } catch (std::exception& e) {
-    throw Error("unable to parse file {}: {}", file, e.what());
+    throw Error("unable to parse file {}: {}", file_, e.what());
   }
 }
 
