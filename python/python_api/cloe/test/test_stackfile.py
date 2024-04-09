@@ -15,8 +15,10 @@ def the_glorious_test(runner: TestRunner):
     print("test sync time", runner.sync.time)
 
 
-sim = Simulation()
-#sim.bind_plugin_types(Path("/home/ohf4fe/dev/sil/cloe/build/linux-x86_64-gcc-8/"
+sim = Simulation(stack=dict(version="4",
+                            include=[str(Path(__file__).parent / "config_minimator_smoketest.json")],
+                            server=dict(listen=False, listen_port=23456)))
+# sim.bind_plugin_types(Path("/home/ohf4fe/dev/sil/cloe/build/linux-x86_64-gcc-8/"
 #                           "Debug/lib/_basic_bindings.cpython-310-x86_64-linux-gnu.so"))
 sim.log_level = "err"
 sim.driver.require_signal("vehicles.default.basic.acc")
