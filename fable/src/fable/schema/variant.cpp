@@ -110,6 +110,7 @@ std::optional<size_t> Variant::validate_index(const Conf& conf,
     if (schemas_[i].validate(conf, tmp)) {
       matches.push_back(i);
     } else {
+      assert(tmp);
       errors.emplace_back(std::move(*tmp));
     }
   }
@@ -133,6 +134,7 @@ size_t Variant::variant_index(const Conf& c) const {
   if (index) {
     return *index;
   } else {
+    assert(err);
     throw std::move(*err);
   }
 }

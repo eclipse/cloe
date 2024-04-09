@@ -58,6 +58,7 @@ const Schema& Confable::schema() const { return const_cast<Confable*>(this)->sch
 void Confable::validate_or_throw(const Conf& c) const {
   std::optional<SchemaError> err;
   if (!validate(c, err)) {
+    assert(err);
     throw std::move(*err);
   }
 }
