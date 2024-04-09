@@ -219,7 +219,9 @@ class Simulation:
                 if len(str(binding_dir)) > 1:
                     binding_path = Path(binding_dir)
                     if binding_path.exists():
-                        binding_libs += [f.absolute() for f in binding_path.glob("*")]
+                        binding_libs += [f.absolute() for f in binding_path.glob("*.so")]
             binding_libs = sorted(list(set(binding_libs)))  # unique and sorted
             for lib in binding_libs:
                 self.bind_plugin_types(lib)
+        else:
+            print("no cloe python bindings environment variable defined.")
