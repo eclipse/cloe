@@ -98,8 +98,7 @@ class Array : public Base<Array<T, N, P>> {
   using Type = std::array<T, N>;
   using PrototypeSchema = P;
 
-  Array(Type* ptr, std::string desc)
-      : Array<T, N, P>(ptr, make_prototype<T>(), std::move(desc)) {}
+  Array(Type* ptr, std::string desc) : Array<T, N, P>(ptr, make_prototype<T>(), std::move(desc)) {}
 
   Array(Type* ptr, PrototypeSchema prototype)
       : Base<Array<T, N, P>>(), prototype_(std::move(prototype)), ptr_(ptr) {}
@@ -149,7 +148,9 @@ class Array : public Base<Array<T, N, P>> {
   }
 
  public:  // Overrides
-  [[nodiscard]] std::string type_string() const override { return "array of " + prototype_.type_string(); }
+  [[nodiscard]] std::string type_string() const override {
+    return "array of " + prototype_.type_string();
+  }
 
   [[nodiscard]] Json json_schema() const override {
     Json j;
@@ -170,6 +171,7 @@ class Array : public Base<Array<T, N, P>> {
 
   bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
     if (option_require_all_) {
+      // Only support array input that sets all indices.
       if (!this->validate_type(c, err)) {
         return false;
       }
@@ -316,7 +318,11 @@ class Array : public Base<Array<T, N, P>> {
     assert(c->type() == JsonType::object);
     for (const auto& kv : c->items()) {
       const auto& key = kv.key();
-      this->parse_index(c, key);
+      try {
+        std::ignore = this->parse_index(key);
+      } catch (std::exception& e) {
+        return this->set_error(err, c, e.what());
+      }
       if (prototype_.validate(c.at(key), err)) {
         return false;
       }
@@ -336,24 +342,36 @@ class Array : public Base<Array<T, N, P>> {
    * In the future, we may support indexing from the back of an array.
    * In that case, we can implement it in this method.
    */
-  size_t parse_index(const Conf& c, const std::string& s) const {
+  [[nodiscard]] size_t parse_index(const std::string& s) const {
     // We'd like to just be able to use std::stoul, but unfortunately
     // the standard library seems to think strings like "234x" are ok.
     if (s.empty()) {
-      throw this->error(c, "invalid index key in object, require integer, got ''");
-    } else if (s.size() > 1 && s[0] == '0') {
-      throw this->error(c, "invalid index key in object, require base-10 value, got '{}'", s);
+      throw std::invalid_argument("invalid index key in object, require integer, got ''");
+    }
+    if (s.size() > 1 && s[0] == '0') {
+      throw std::invalid_argument(
+          fmt::format("invalid index key in object, require base-10 value, got '{}'", s));
     }
     for (char ch : s) {
       if (ch < '0' || ch > '9') {
-        throw this->error(c, "invalid index key in object, require integer, got '{}'", s);
+        throw std::invalid_argument(
+            fmt::format("invalid index key in object, require integer, got '{}'", s));
       }
     }
     size_t idx = std::stoul(s);
     if (idx >= N) {
-      throw this->error(c, "out-of-range index key in object, require < {}, got '{}'", N, s);
+      throw std::invalid_argument(
+          fmt::format("out-of-range index key in object, require < {}, got '{}'", N, s));
     }
     return idx;
+  }
+
+  [[nodiscard]] size_t parse_index(const Conf& c, const std::string& s) const {
+    try {
+      return parse_index(s);
+    } catch (std::exception& e) {
+      throw this->error(c, e.what());
+    }
   }
 
   [[nodiscard]] SchemaError wrong_type(const Conf& c) const {
