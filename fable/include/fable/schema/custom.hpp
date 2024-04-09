@@ -87,11 +87,16 @@ class CustomDeserializer : public schema::Interface {
 
   friend void to_json(Json& j, const CustomDeserializer& b) { b.impl_->to_json(j); }
 
-  // TODO: Implement or explain why we don't need the following methods:
-  // - serialize
-  // - serialize_into
-  // - deserialize
-  // - deserialize_into
+  // NOTE: The following methods cannot be implemented because
+  // CustomDeserializer does not have an associated type:
+  //
+  //     Json serialize(const Type&) const;
+  //     void serialize_into(Json&, const Type&) const;
+  //     Type deserialize(const Conf&) const;
+  //     void deserialize_into(const Conf&, Type&) const;
+  //
+  // This means that `CustomDeserializer` cannot be used as a prototype schema
+  // directly, for example with `optional`. Use `Confable` instead.
 
  private:
   std::shared_ptr<schema::Interface> impl_{nullptr};
