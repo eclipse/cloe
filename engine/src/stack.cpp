@@ -452,7 +452,6 @@ void Stack::from_conf(const Conf& _conf, size_t depth) {
       //     throw SchemaError{
       //       c,
       //       this->schema().json_schema(),
-      //       Json{},
       //       "require version compatible with {}, got {}",
       //       CLOE_STACK_VERSION,
       //       ver,
@@ -597,7 +596,7 @@ void Stack::from_conf(const Conf& _conf, size_t depth) {
         apply_plugin_conf(plugins[i]);
       } catch (Error& e) {
         auto ec = c.at("plugins").to_array()[i];
-        throw SchemaError{ec, plugins_schema.json_schema(), Json{}, e.what()};
+        throw SchemaError{ec, plugins_schema.json_schema(), e.what()};
       }
     }
     c.erase("plugins");
@@ -629,7 +628,7 @@ bool Stack::validate(const Conf &c, std::optional<SchemaError> &err) const {
     err.emplace(e);
     return false;
   } catch (Error& e) {
-    err.emplace(SchemaError(c, schema().json_schema(), "{}", e.what()));
+    err.emplace(SchemaError(c, schema().json_schema(), e.what()));
     return false;
   }
   return true;
