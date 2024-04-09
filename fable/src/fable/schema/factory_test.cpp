@@ -198,7 +198,7 @@ struct MyFactoryStructWithoutArgs : public fable::Confable {
             {
               "prime", {
                 Struct{
-                  {"n", fable::make_prototype<uint8_t>().bounds_with(1,6, {}).require()},
+                  {"n", fable::make_prototype<uint8_t>().bounds_with(1, 6, {}).require()},
                 },
                 [](const fable::Conf& c) -> int {
                   static const std::vector<int> primes{2, 3, 5, 7, 11, 13};

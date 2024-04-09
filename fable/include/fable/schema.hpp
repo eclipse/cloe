@@ -200,11 +200,9 @@ class Schema : public schema::Interface {
 
   // Interface
   template <typename T, std::enable_if_t<std::is_base_of_v<schema::Interface, T>, int> = 0>
-  Schema(const T& value) : impl_(value.clone()) {}                      // NOLINT(runtime/explicit)
-  Schema(schema::Interface* i) : impl_(i) { assert(impl_); }            // NOLINT(runtime/explicit)
-  Schema(std::shared_ptr<schema::Interface> i) : impl_(std::move(i)) {  // NOLINT(runtime/explicit)
-    assert(impl_);
-  }
+  Schema(const T& value) : impl_(value.clone()) {}
+  Schema(std::unique_ptr<schema::Interface> ptr) : impl_(std::move(ptr)) { assert(impl_); }
+  Schema(std::shared_ptr<schema::Interface> ptr) : impl_(std::move(ptr)) { assert(impl_); }
 
   // Ignore
   Schema() : impl_(new schema::Ignore("")) {}
@@ -246,7 +244,7 @@ class Schema : public schema::Interface {
  public:  // Overrides
   using Interface::to_json;
   [[nodiscard]] operator schema::Box() const { return schema::Box{impl_}; }
-  [[nodiscard]] Interface* clone() const override { return impl_->clone(); }
+  [[nodiscard]] std::unique_ptr<Interface> clone() const override { return impl_->clone(); }
   [[nodiscard]] JsonType type() const override { return impl_->type(); }
   [[nodiscard]] std::string type_string() const override { return impl_->type_string(); }
   [[nodiscard]] bool is_required() const override { return impl_->is_required(); }
