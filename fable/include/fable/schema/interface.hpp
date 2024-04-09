@@ -65,9 +65,15 @@ namespace fable::schema {
  *
  */
 class Interface {
- public:
+ protected:
   Interface() = default;
-  virtual ~Interface() = default;
+  Interface(const Interface&) = default;
+  Interface(Interface&&) noexcept = default;
+  Interface& operator=(const Interface&) = default;
+  Interface& operator=(Interface&&) noexcept = default;
+
+ public:
+  virtual ~Interface() noexcept = default;
 
   /**
    * Return a new instance of the object.
@@ -288,12 +294,14 @@ using enable_if_schema_t = std::enable_if_t<std::is_base_of_v<Interface, S>>;
 
 // ------------------------------------------------------------------------- //
 
-class Box : public Interface {
+class Box final : public Interface {
  public:  // Constructors
   Box() = default;
   Box(const Box&) = default;
-  Box(Box&&) = default;
+  Box(Box&&) noexcept = default;
   Box& operator=(const Box&) = default;
+  Box& operator=(Box&&) noexcept = default;
+  ~Box() noexcept override = default;
 
   Box(std::unique_ptr<Interface> i) : impl_(std::move(i)) { assert(impl_); }  // NOLINT
   Box(std::shared_ptr<Interface> i) : impl_(std::move(i)) { assert(impl_); }  // NOLINT
@@ -388,12 +396,19 @@ class Box : public Interface {
  */
 template <typename CRTP>
 class Base : public Interface {
- public:
+ protected:
   Base() = default;
+  Base(const Base<CRTP>&) = default;
+  Base(Base<CRTP>&&) noexcept = default;
+  Base<CRTP>& operator=(const Base<CRTP>&) = default;
+  Base<CRTP>& operator=(Base<CRTP>&&) noexcept = default;
+
   Base(JsonType t, std::string desc) : type_(t), desc_(std::move(desc)) {}
   explicit Base(JsonType t) : type_(t) {}
   explicit Base(std::string desc) : desc_(std::move(desc)) {}
-  virtual ~Base() = default;
+
+ public:
+  ~Base() noexcept override = default;
 
   [[nodiscard]] std::unique_ptr<Interface> clone() const override {
     return std::make_unique<CRTP>(static_cast<CRTP const&>(*this));

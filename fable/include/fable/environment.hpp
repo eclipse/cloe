@@ -35,12 +35,17 @@ namespace fable {
 
 class Environment {
  public:
+  ~Environment() = default;
   Environment() = default;
+  Environment(const Environment&) = default;
+  Environment(Environment&&) = default;
+  Environment& operator=(const Environment&) = default;
+  Environment& operator=(Environment&&) = default;
+
   Environment(std::initializer_list<std::pair<std::string const, std::string>> init)
       : defines_(init) {}
   Environment(const std::map<std::string, std::string>& defines) : defines_(defines) {}
   Environment(std::map<std::string, std::string>&& defines) : defines_(std::move(defines)) {}
-  ~Environment() = default;
 
   [[nodiscard]] bool prefer_external() const { return prefer_external_; }
   void prefer_external(bool value) { prefer_external_ = value; }
