@@ -64,7 +64,7 @@ class Enum : public Base<Enum<T>> {
   }
 
   bool validate(const Conf& c, std::optional<SchemaError>& err) const override {
-    std::string s = c.get<std::string>();
+    auto s = c.get<std::string>();
     if (mapping_from_.count(s) == 0) {
       return this->set_error(err, c, "invalid value for enum: {}", s);
     }

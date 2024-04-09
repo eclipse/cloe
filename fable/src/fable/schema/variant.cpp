@@ -74,7 +74,7 @@ Variant::Variant(std::string desc, std::vector<Box>&& vec)
 }
 
 Json Variant::usage() const {
-  auto required = required_ ? "!" : "";
+  const char* required = required_ ? "!" : "";
   if (desc_.empty()) {
     return type_string() + required;
   } else {

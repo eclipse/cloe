@@ -419,7 +419,7 @@ class Base : public Interface {
   [[nodiscard]] std::string type_string() const override { return to_string(type_); }
 
   [[nodiscard]] Json usage() const override {
-    auto required = required_ ? "!" : "";
+    const auto* required = required_ ? "!" : "";
     if (desc_.empty()) {
       return type_string() + required;
     } else {
