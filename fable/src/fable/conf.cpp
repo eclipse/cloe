@@ -73,12 +73,12 @@ Conf Conf::at(const JsonPointer& key) const {
 
 size_t Conf::erase(const std::string& key) { return data_.erase(key); }
 
+// NOLINTNEXTLINE(misc-no-recursion)
 size_t Conf::erase(const JsonPointer& key) {
-  auto n = 0;
+  std::size_t n = 0;
   try {
     Json& parent = data_.at(key.parent_pointer());
-    // The const_cast is necessary because of a bug in the nlohmann::json_pointer type.
-    n = parent.erase(const_cast<JsonPointer&>(key).back());
+    n = parent.erase(key.back());
     if (parent.empty()) {
       n += erase(key.parent_pointer());
     }
