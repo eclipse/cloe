@@ -23,11 +23,11 @@
 
 #pragma once
 
-#include <memory>  // for unique_ptr<>
+#include <memory>    // for unique_ptr<>
+#include <optional>  // for optional<>
 
-#include <fable/fable_fwd.hpp>
-#include <fable/json.hpp>    // for Json
-#include <fable/conf.hpp>    // for Conf
+#include <fable/conf.hpp>       // for Conf, Json
+#include <fable/fable_fwd.hpp>  // for Schema, SchemaError
 
 #define CONFABLE_FRIENDS(xType)                                           \
   using ::fable::Confable::to_json;                                       \

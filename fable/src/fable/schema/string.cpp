@@ -26,6 +26,7 @@
 #include <limits>     // for numeric_limits
 #include <regex>      // for regex, regex_match
 #include <string>     // for string
+#include <utility>    // for move
 
 #include <fable/environment.hpp>  // for interpolate_vars
 
