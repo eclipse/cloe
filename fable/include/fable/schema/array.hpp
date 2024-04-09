@@ -179,12 +179,14 @@ class Array : public Base<Array<T, N, P>> {
       return true;
     }
 
-    if (c->type() == JsonType::array) {
-      return this->validate_array(c, err);
-    } else if (c->type() == JsonType::object) {
-      return this->validate_object(c, err);
-    } else {
-      return this->set_wrong_type(err, c);
+    // If not require-all, then we can also support object notation.
+    switch (c->type()) {
+      case JsonType::array:
+        return this->validate_array(c, err);
+      case JsonType::object:
+        return this->validate_object(c, err);
+      default:
+        return this->set_wrong_type(err, c);
     }
   }
 

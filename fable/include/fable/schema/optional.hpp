@@ -119,11 +119,10 @@ class Optional : public Base<Optional<T, P>> {
   }
 
   [[nodiscard]] Json serialize(const Type& x) const {
-    if (x) {
-      return prototype_.serialize(x.value());
-    } else {
+    if (!x) {
       return nullptr;
     }
+    return prototype_.serialize(x.value());
   }
 
   [[nodiscard]] Type deserialize(const Conf& c) const {

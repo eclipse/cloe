@@ -172,9 +172,8 @@ std::string Conf::resolve_file(const std::string& filepath) const {
 [[noreturn]] void Conf::throw_unexpected(const std::string& key, const std::string& msg) const {
   if (msg.empty()) {
     throw error::UnexpectedProperty(*this, key);
-  } else {
-    throw ConfError{*this, msg};
   }
+  throw ConfError{*this, msg};
 }
 
 [[noreturn]] void Conf::throw_missing(const std::string& key) const {
@@ -184,9 +183,8 @@ std::string Conf::resolve_file(const std::string& filepath) const {
 [[noreturn]] void Conf::throw_wrong_type(const std::string& key) const {
   if (key.empty()) {
     throw error::WrongType(*this);
-  } else {
-    throw error::WrongType(*this, key);
   }
+  throw error::WrongType(*this, key);
 }
 
 [[noreturn]] void Conf::throw_wrong_type(const std::string& key, JsonType type) const {

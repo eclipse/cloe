@@ -314,7 +314,7 @@ class FactoryBase : public Base<CRTP> {
 
     Conf args;
     if (args_subset_) {
-      if (args_key_ != "") {
+      if (!args_key_.empty()) {
         if (c.has(args_key_)) {
           args = c.at(args_key_);
         }
@@ -364,7 +364,7 @@ class FactoryBase : public Base<CRTP> {
       Struct base{
           {factory_key_, make_const_schema(kv.first, "name of factory").require()},
       };
-      if (args_key_ == "") {
+      if (args_key_.empty()) {
         base.set_properties_from(kv.second.schema);
       } else {
         base.set_property(args_key_, kv.second.schema.clone());
