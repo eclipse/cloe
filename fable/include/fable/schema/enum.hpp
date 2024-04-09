@@ -101,8 +101,8 @@ class Enum : public Base<Enum<T>> {
   void reset_ptr() override { ptr_ = nullptr; }
 
  private:
-  const std::map<T, std::string>& mapping_to_;
-  const std::map<std::string, T>& mapping_from_;
+  const std::map<T, std::string>& mapping_to_;    // NOLINT: type-specific global ref
+  const std::map<std::string, T>& mapping_from_;  // NOLINT: type-specific global ref
   std::vector<std::string> keys_;
   Type* ptr_{nullptr};
 };

@@ -241,8 +241,6 @@ class Schema : public schema::Interface {
     return j;
   }
 
-  friend void to_json(Json& j, const Schema& s) { s.impl_->to_json(j); }
-
  public:  // Overrides
   using Interface::to_json;
   [[nodiscard]] operator schema::Box() const { return schema::Box{impl_}; }
@@ -260,6 +258,8 @@ class Schema : public schema::Interface {
   void to_json(Json& j) const override { impl_->to_json(j); }
   void from_conf(const Conf& c) override { impl_->from_conf(c); }
   void reset_ptr() override { impl_->reset_ptr(); }
+
+  friend void to_json(Json& j, const Schema& s) { s.impl_->to_json(j); }
 
  private:
   std::shared_ptr<schema::Interface> impl_{nullptr};
