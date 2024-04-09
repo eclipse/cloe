@@ -68,11 +68,11 @@ class ConfError;
 class Conf {
  public:
   Conf() = default;
-  explicit Conf(const Json& data) : data_(data) {}
-  explicit Conf(const std::string& file);
-  Conf(const Json& data, const std::string& file) : file_(file), data_(data) {}
-  Conf(const Json& data, const std::string& file, const std::string& root)
-      : file_(file), root_(root), data_(data) {}
+  explicit Conf(Json data) : data_(std::move(data)) {}
+  explicit Conf(std::string file);
+  Conf(Json data, std::string file) : file_(std::move(file)), data_(std::move(data)) {}
+  Conf(Json data, std::string file, std::string root)
+      : file_(std::move(file)), root_(std::move(root)), data_(std::move(data)) {}
 
   /**
    * Return whether this configuration was read from a file.
