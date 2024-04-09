@@ -95,6 +95,7 @@ TEST(fable_schema_string, interpolate) {
     {"TEST", "true"},
     {"NAME", "world"}
   };
+  env.prefer_external(false);
   auto s = fable::schema::make_schema(&t, "interpolate").interpolate(true).environment(&env);
 
   EXPECT_ANY_THROW(assert_from_conf(s, TO_CONF("${}")));
