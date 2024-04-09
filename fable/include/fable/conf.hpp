@@ -258,16 +258,16 @@ class Conf {
    * - Throws a ConfError if the value is of the wrong type.
    */
   template <typename T>
-  void try_from(const std::string& key, T* val) const {
+  void try_from(const std::string& key, T& val) const {
     if (data_.count(key)) {
-      *val = get<T>(key);
+      val = get<T>(key);
     }
   }
 
   template <typename T>
-  void try_from(const JsonPointer& key, T* val) const {
+  void try_from(const JsonPointer& key, T& val) const {
     try {
-      *val = data_.at(key).get<T>();
+      val = data_.at(key).get<T>();
     } catch (nlohmann::detail::out_of_range& e) {
       return;
     } catch (nlohmann::detail::type_error& e) {
@@ -276,7 +276,7 @@ class Conf {
   }
 
   template <typename T>
-  void try_from_pointer(const std::string& key, T* val) const {
+  void try_from_pointer(const std::string& key, T& val) const {
     try_from(JsonPointer(key), val);
   }
 
