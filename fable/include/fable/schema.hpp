@@ -173,9 +173,11 @@ struct schema_type {
 class Schema : public schema::Interface {
  public:
   // Operators
+  ~Schema() noexcept override = default;
   Schema(const Schema&) = default;
   Schema(Schema&&) = default;
   Schema& operator=(const Schema&) = default;
+  Schema& operator=(Schema&&) = default;
 
   // Struct
   Schema(std::string desc, schema::PropertyList<> props)

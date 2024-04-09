@@ -44,14 +44,13 @@ class Schema;
 
 class Confable {
  public:
-  Confable() noexcept;
-  Confable(const Confable&) noexcept;
-  Confable(Confable&&) noexcept;
-
+  Confable() noexcept = default;
+  Confable(const Confable& /*unused*/) noexcept;
+  Confable(Confable&&) noexcept = default;
   Confable& operator=(const Confable& other) noexcept;
   Confable& operator=(Confable&& other) noexcept;
 
-  virtual ~Confable() noexcept;
+  virtual ~Confable() noexcept = default;
 
   /**
    * Reset the internal schema cache.

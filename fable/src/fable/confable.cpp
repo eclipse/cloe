@@ -28,11 +28,7 @@
 
 namespace fable {
 
-Confable::Confable() noexcept {};
-
-Confable::Confable(const Confable&) noexcept : schema_(nullptr) {}
-
-Confable::Confable(Confable&&) noexcept : schema_(nullptr) {}
+Confable::Confable(const Confable& /*unused*/) noexcept : schema_(nullptr) {}
 
 Confable& Confable::operator=(const Confable& other) noexcept {
   if (this != &other) {
@@ -47,8 +43,6 @@ Confable& Confable::operator=(Confable&& other) noexcept {
   }
   return *this;
 }
-
-Confable::~Confable() noexcept {};
 
 void Confable::reset_schema() { schema_.reset(); }
 
