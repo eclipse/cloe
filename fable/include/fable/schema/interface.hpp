@@ -422,9 +422,8 @@ class Base : public Interface {
     const auto* required = required_ ? "!" : "";
     if (desc_.empty()) {
       return type_string() + required;
-    } else {
-      return fmt::format("{}{} :: {}", type_string(), required, desc_);
     }
+    return fmt::format("{}{} :: {}", type_string(), required, desc_);
   }
 
   [[nodiscard]] bool is_required() const override { return required_; }

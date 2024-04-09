@@ -134,9 +134,8 @@ class Environment {
 inline std::string interpolate_vars(const std::string& s, const Environment* env = nullptr) {
   if (env != nullptr) {
     return env->interpolate(s);
-  } else {
-    return Environment().interpolate(s);
   }
+  return Environment().interpolate(s);
 }
 
 }  // namespace fable
