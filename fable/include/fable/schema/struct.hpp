@@ -206,11 +206,16 @@ class Struct : public Base<Struct> {
   void to_json(Json& j) const override;
   void from_conf(const Conf& c) override;
 
-  // TODO: Implement or explain why we don't need the following methods:
-  // - serialize
-  // - serialize_into
-  // - deserialize
-  // - deserialize_into
+  // NOTE: The following methods cannot be implemented because
+  // Struct does not have an associated type:
+  //
+  //     Json serialize(const Type&) const;
+  //     void serialize_into(Json&, const Type&) const;
+  //     Type deserialize(const Conf&) const;
+  //     void deserialize_into(const Conf&, Type&) const;
+  //
+  // This means that `Struct` cannot be used as a prototype schema
+  // directly, for example with `optional`. Use `Confable` instead.
 
  private:
   void set_properties(const std::map<std::string, Box>& props);
