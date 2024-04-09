@@ -75,7 +75,7 @@ class Interface {
    * This is implemented by Base and allows us to wrap implementors of
    * Interface with Schema.
    */
-  [[nodiscard]] virtual Interface* clone() const = 0;
+  [[nodiscard]] virtual std::unique_ptr<Interface> clone() const = 0;
 
   /**
    * Return whether the accepted input type is a variant.
@@ -295,7 +295,7 @@ class Box : public Interface {
   Box(Box&&) = default;
   Box& operator=(const Box&) = default;
 
-  Box(Interface* i) : impl_(i) { assert(impl_); }                             // NOLINT
+  Box(std::unique_ptr<Interface> i) : impl_(std::move(i)) { assert(impl_); }  // NOLINT
   Box(std::shared_ptr<Interface> i) : impl_(std::move(i)) { assert(impl_); }  // NOLINT
 
  public:  // Special
@@ -357,7 +357,7 @@ class Box : public Interface {
 
  public:  // Overrides
   using Interface::to_json;
-  [[nodiscard]] Interface* clone() const override { return impl_->clone(); }
+  [[nodiscard]] std::unique_ptr<Interface> clone() const override { return impl_->clone(); }
   [[nodiscard]] JsonType type() const override { return impl_->type(); }
   [[nodiscard]] std::string type_string() const override { return impl_->type_string(); }
   [[nodiscard]] bool is_required() const override { return impl_->is_required(); }
@@ -395,7 +395,9 @@ class Base : public Interface {
   explicit Base(std::string desc) : desc_(std::move(desc)) {}
   virtual ~Base() = default;
 
-  [[nodiscard]] Interface* clone() const override { return new CRTP(static_cast<CRTP const&>(*this)); }
+  [[nodiscard]] std::unique_ptr<Interface> clone() const override {
+    return std::make_unique<CRTP>(static_cast<CRTP const&>(*this));
+  }
   [[nodiscard]] operator Box() const { return Box{this->clone()}; }
 
   [[nodiscard]] JsonType type() const override { return type_; }

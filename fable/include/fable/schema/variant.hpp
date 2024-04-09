@@ -63,7 +63,9 @@ class Variant : public Interface {
   Variant(std::string desc, std::vector<Box>&& vec);
 
  public:  // Base
-  [[nodiscard]] Interface* clone() const override { return new Variant(*this); }
+  [[nodiscard]] std::unique_ptr<Interface> clone() const override {
+    return std::make_unique<Variant>(*this);
+  }
   [[nodiscard]] operator Box() const { return Box{this->clone()}; }
   [[nodiscard]] JsonType type() const override { return type_; }
   [[nodiscard]] std::string type_string() const override { return type_string_; }

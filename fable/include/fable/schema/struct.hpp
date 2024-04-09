@@ -184,7 +184,7 @@ class Struct : public Base<Struct> {
   template <typename S, typename = enable_if_schema_t<S>>
   void set_additional_properties(const S& s) {
     additional_properties_ = true;
-    additional_prototype_.reset(s.clone());
+    additional_prototype_ = s.clone();
     additional_prototype_->reset_ptr();
   }
 

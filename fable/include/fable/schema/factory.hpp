@@ -57,11 +57,17 @@ class FactoryBase : public Base<CRTP> {
  public:  // Types
   using Type = T;
   using MakeFunc = std::function<T(const Conf& c)>;
-  struct TypeFactory {
-    TypeFactory(const Box& s, MakeFunc f) : schema(s), func(f) { schema.reset_ptr(); }
 
-    Box schema;
-    MakeFunc func;
+  /**
+   * TypeFactory is basically a pair with names for better readability.
+   */
+  struct TypeFactory {
+    TypeFactory(Box s, MakeFunc f) : schema(std::move(s)), func(std::move(f)) {
+      schema.reset_ptr();
+    }
+
+    Box schema;     // NOLINT
+    MakeFunc func;  // NOLINT
   };
 
   using TransformFunc = std::function<Box(Struct&&)>;
@@ -69,6 +75,38 @@ class FactoryBase : public Base<CRTP> {
   using FactoryPairList = std::initializer_list<std::pair<std::string, TypeFactory>>;
 
  public:  // Constructors
+  ~FactoryBase() noexcept override = default;
+
+ protected:
+  FactoryBase(const FactoryBase& other)
+      : Base<CRTP>(other)
+      , transform_func_(other.transform_func_)
+      , available_(other.available_)
+      , factory_key_(other.factory_key_)
+      , args_key_(other.args_key_)
+      , args_subset_(other.args_subset_) {
+    reset_schema();
+  }
+
+  FactoryBase& operator=(const FactoryBase& other) {
+    if (&other == this) {
+      return *this;
+    }
+    Base<CRTP>::operator=(other);
+    transform_func_ = other.transform_func_;
+    available_ = other.available_;
+    factory_key_ = other.factory_key_;
+    args_key_ = other.args_key_;
+    args_subset_ = other.args_subset_;
+    reset_schema();
+    return *this;
+  }
+
+  FactoryBase(FactoryBase&&) noexcept = default;
+
+  FactoryBase& operator=(FactoryBase&&) noexcept = default;
+
+ public:
   /**
    * Construct an empty factory.
    *
@@ -137,7 +175,7 @@ class FactoryBase : public Base<CRTP> {
    * Common choices could be: factory, type, binding.
    */
   void set_factory_key(const std::string& keyword) {
-    assert(keyword != "");
+    assert(!keyword.empty());
     factory_key_ = keyword;
     reset_schema();
   }
@@ -176,7 +214,7 @@ class FactoryBase : public Base<CRTP> {
    *
    * The default behavior is the identity function.
    */
-  void set_transform_schema(TransformFunc f) { transform_func_ = f; }
+  void set_transform_schema(TransformFunc f) { transform_func_ = std::move(f); }
 
   /**
    * Return the schema and factory function associated with the given key.
@@ -198,7 +236,7 @@ class FactoryBase : public Base<CRTP> {
    */
   bool add_factory(const std::string& key, Box&& s, MakeFunc f) {
     if (!available_.count(key)) {
-      available_.insert(std::make_pair(key, TypeFactory{std::move(s), f}));
+      available_.insert(std::make_pair(key, TypeFactory{std::move(s), std::move(f)}));
       reset_schema();
       return true;
     }
@@ -212,7 +250,7 @@ class FactoryBase : public Base<CRTP> {
     if (!available_.count(key)) {
       available_.erase(key);
     }
-    available_.insert(std::make_pair(key, TypeFactory{std::move(s), f}));
+    available_.insert(std::make_pair(key, TypeFactory{std::move(s), std::move(f)}));
     reset_schema();
   }
 
@@ -316,7 +354,7 @@ class FactoryBase : public Base<CRTP> {
     if (available_.size() == 0) {
       return;
     }
-    schema_.reset(new Variant(factory_schemas()));
+    schema_ = std::make_unique<Variant>(factory_schemas());
   }
 
   [[nodiscard]] std::vector<Box> factory_schemas() const {
@@ -353,7 +391,7 @@ class FactoryBase : public Base<CRTP> {
   }
 
  protected:
-  std::shared_ptr<Variant> schema_;
+  std::unique_ptr<Variant> schema_;
   TransformFunc transform_func_;
   FactoryMap available_;
   std::string factory_key_{"factory"};
@@ -366,7 +404,16 @@ class FactoryBase : public Base<CRTP> {
  * instance but is only usable through it's make() method.
  */
 template <typename T>
-class FactoryPointerless : public FactoryBase<T, FactoryPointerless<T>> {};
+class FactoryPointerless : public FactoryBase<T, FactoryPointerless<T>> {
+ public:
+  using FactoryBase<T, FactoryPointerless<T>>::FactoryBase;
+  FactoryPointerless() = default;
+  FactoryPointerless(const FactoryPointerless<T>& other) = default;
+  FactoryPointerless(FactoryPointerless<T>&& other) noexcept = default;
+  FactoryPointerless<T>& operator=(const FactoryPointerless<T>& other) = default;
+  FactoryPointerless<T>& operator=(FactoryPointerless<T>&& other) noexcept = default;
+  ~FactoryPointerless() override = default;
+};
 
 /**
  * Factory is a factory schema that extends FactoryPointerless in that it
@@ -386,6 +433,11 @@ class Factory : public FactoryBase<T, Factory<T>> {
 
  public:  // Constructors
   using FactoryBase<T, Factory<T>>::FactoryBase;
+  Factory(const Factory<T>& other) = default;
+  Factory(Factory<T>&& other) noexcept = default;
+  Factory<T>& operator=(const Factory<T>& other) = default;
+  Factory<T>& operator=(Factory<T>&& other) noexcept = default;
+  ~Factory() override = default;
 
   Factory(Type* ptr, std::string desc) : FactoryBase<T, Factory<T>>(std::move(desc)), ptr_(ptr) {}
 

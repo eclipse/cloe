@@ -56,7 +56,7 @@ Schema& Confable::schema() {
   if (!schema_) {
     schema_ = std::make_unique<Schema>(schema_impl());
   }
-  return *schema_.get();
+  return *schema_;
 }
 
 const Schema& Confable::schema() const { return const_cast<Confable*>(this)->schema(); }

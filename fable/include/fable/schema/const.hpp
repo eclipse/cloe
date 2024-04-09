@@ -87,7 +87,7 @@ class Const : public Base<Const<T, P>> {
 
  private:
   PrototypeSchema prototype_;
-  const Type constant_;
+  Type constant_;
 };
 
 template <typename T, typename P, typename S>

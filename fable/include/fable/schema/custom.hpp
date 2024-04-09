@@ -54,7 +54,9 @@ class CustomDeserializer : public schema::Interface {
   }
 
  public:  // Overrides
-  [[nodiscard]] Interface* clone() const override { return new CustomDeserializer(*this); }
+  [[nodiscard]] std::unique_ptr<Interface> clone() const override {
+    return std::make_unique<CustomDeserializer>(*this);
+  }
 
   using Interface::to_json;
   [[nodiscard]] JsonType type() const override { return impl_->type(); }
