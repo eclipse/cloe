@@ -83,3 +83,12 @@ Json Confable::to_json() const {
 Schema Confable::schema_impl() { return schema::Struct(); }
 
 }  // namespace fable
+
+namespace nlohmann {
+
+void adl_serializer<fable::Confable>::to_json(json& j, const fable::Confable& c) { c.to_json(j); }
+void adl_serializer<fable::Confable>::from_json(const json& j, fable::Confable& c) {
+  c.from_conf(fable::Conf{j});
+}
+
+}  // namespace nlohmann

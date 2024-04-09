@@ -147,8 +147,8 @@ namespace nlohmann {
 
 template <>
 struct adl_serializer<fable::Confable> {
-  static void to_json(json& j, const fable::Confable& c) { c.to_json(j); }
-  static void from_json(const json& j, fable::Confable& c) { c.from_conf(fable::Conf{j}); }
+  static void to_json(json& j, const fable::Confable& c);
+  static void from_json(const json& j, fable::Confable& c);
 };
 
 }  // namespace nlohmann
