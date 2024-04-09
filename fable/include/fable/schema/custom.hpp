@@ -40,16 +40,19 @@ namespace fable::schema {
 class CustomDeserializer : public schema::Interface {
  public:  // Constructors
   CustomDeserializer(Box&& s) : impl_(std::move(s).reset_pointer().get()) {}
-  CustomDeserializer(Box&& s, std::function<void(CustomDeserializer*, const Conf&)> f)
-      : impl_(std::move(s).reset_pointer().get()), from_conf_fn_(f) {}
+  CustomDeserializer(Box&& s, std::function<void(CustomDeserializer*, const Conf&)> deserialize_fn)
+      : impl_(std::move(s).reset_pointer().get()), from_conf_fn_(std::move(deserialize_fn)) {}
 
  public:  // Special
   [[nodiscard]] operator Box() const { return Box{this->clone()}; }
 
-  void set_from_conf(std::function<void(CustomDeserializer*, const Conf&)> f) { from_conf_fn_ = f; }
+  void set_from_conf(std::function<void(CustomDeserializer*, const Conf&)> deserialize_fn) {
+    from_conf_fn_ = std::move(deserialize_fn);
+  }
 
-  [[nodiscard]] CustomDeserializer with_from_conf(std::function<void(CustomDeserializer*, const Conf&)> f) && {
-    set_from_conf(f);
+  [[nodiscard]] CustomDeserializer with_from_conf(
+      std::function<void(CustomDeserializer*, const Conf&)> deserialize_fn) && {
+    set_from_conf(std::move(deserialize_fn));
     return std::move(*this);
   }
 
