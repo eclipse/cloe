@@ -131,7 +131,7 @@ class Map : public Base<Map<T, P>> {
       return this->set_error(err, c, "expect at most {} properties, got {}", max_properties_, c->size());
     }
 
-    for (auto& k : required_) {
+    for (const auto& k : required_) {
       if (!c.has(k)) {
         return this->set_error(err, c, "missing property: {}", k);
       }
@@ -166,8 +166,8 @@ class Map : public Base<Map<T, P>> {
 
   void from_conf(const Conf& c) override {
     assert(ptr_ != nullptr);
-    for (auto& i : c->items()) {
-      const auto key = i.key();
+    for (const auto& i : c->items()) {
+      const auto& key = i.key();
       if (unique_properties_ && ptr_->count(key)) {
         throw this->error(c, "key {} has already been defined", key);
       }
@@ -194,8 +194,8 @@ class Map : public Base<Map<T, P>> {
   }
 
   void deserialize_into(const Conf& c, Type& x) const {
-    for (auto& i : c->items()) {
-      const auto key = i.key();
+    for (const auto& i : c->items()) {
+      const auto& key = i.key();
       x.insert(std::make_pair(key, deserialize_item(c, key)));
     }
   }
