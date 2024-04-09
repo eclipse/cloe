@@ -63,8 +63,6 @@
 
 namespace fable {
 
-class ConfError;
-
 class Conf {
  public:
   Conf() = default;

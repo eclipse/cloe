@@ -40,8 +40,6 @@
 
 namespace fable {
 
-class Schema;
-
 class Confable {
  public:
   Confable() noexcept = default;
