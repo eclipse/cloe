@@ -36,12 +36,12 @@
 namespace fable::schema {
 
 /**
- * \macro FABLE_REGEX_C_PATTERN specifies the regex for the
+ * FABLE_REGEX_C_PATTERN specifies the regex for the
  * String::c_identifier() method.
  *
  * Overriding it will not have any effect.
  */
-#define FABLE_REGEX_C_IDENTIFIER "^[a-zA-Z_][a-zA-Z0-9_]*$"
+constexpr auto FABLE_REGEX_C_IDENTIFIER = "^[a-zA-Z_][a-zA-Z0-9_]*$";
 
 /**
  * String de-/serializes a string.
