@@ -18,6 +18,6 @@
     },
     {"event": "start",   "action": "log=info: Running esmini/basic smoketest."},
     {"event": "start",   "action": "realtime_factor=-1"},
-    {"event": "time=20", "action": "succeed"}
+    {"event": "time=12", "action": "succeed"}
   ]
 }
