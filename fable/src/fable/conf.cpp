@@ -49,7 +49,7 @@ Conf::Conf(std::string file) : file_(std::move(file)) {
 bool Conf::has(const JsonPointer& key) const {
   try {
     return data_.contains(key);
-  } catch (nlohmann::detail::exception&) {
+  } catch (Json::exception&) {
     // Exception is probably one of json::out_of_range or json::parse_error.
     return false;
   }
@@ -82,9 +82,10 @@ size_t Conf::erase(const JsonPointer& key) {
     if (parent.empty()) {
       n += erase(key.parent_pointer());
     }
-  } catch (nlohmann::detail::exception&) {
+  } catch (Json::exception&) {
     // Exception is probably one of json::out_of_range or json::parse_error.
     // If the key doesn't exist, then there is nothing we need to delete.
+    std::ignore;
   }
   return n;
 }

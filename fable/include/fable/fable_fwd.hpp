@@ -34,7 +34,6 @@ namespace fable {
 // from json.hpp
 using Json = nlohmann::json;
 using JsonPointer = nlohmann::json_pointer<std::string>;
-using JsonType = nlohmann::detail::value_t;
 
 // from conf.hpp
 class Conf;
