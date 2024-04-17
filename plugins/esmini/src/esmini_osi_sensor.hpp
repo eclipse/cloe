@@ -38,26 +38,6 @@
 
 namespace cloe_esmini {
 
-// TODO(tobias): This should eventually be fixed in ESMini.
-void fix_esmini_osi_ground_truth(osi3::GroundTruth& gt) {
-  // Fix moving objects.
-  for (int i = 0; i < gt.moving_object_size(); ++i) {
-    osi3::MovingObject* obj = gt.mutable_moving_object(i);
-    if (obj->has_vehicle_attributes()) {
-      // Fix wrong sign of esmini bbcenter_to_rear output.
-      auto vec = obj->mutable_vehicle_attributes()->mutable_bbcenter_to_rear();
-      vec->set_x(-1.0 * vec->x());
-      vec->set_y(-1.0 * vec->y());
-      vec->set_z(-1.0 * vec->z());
-      // Fix wrong object reference point z-coordinate: Should be bbcenter, not street level.
-      if (obj->has_base()) {
-        auto pos = obj->mutable_base()->mutable_position();
-        pos->set_z(pos->z() - vec->z());
-      }
-    }
-  }
-}
-
 class ESMiniOsiReceiver : public cloe::utility::OsiTransceiver {
  public:
   ~ESMiniOsiReceiver() override = default;
@@ -126,7 +106,6 @@ class ESMiniOsiReceiver : public cloe::utility::OsiTransceiver {
       if (!gt.has_timestamp()) {
         throw cloe::ModelError("ESMiniOsiSensor: No timestamp in GroundTruth.");
       }
-      fix_esmini_osi_ground_truth(gt);
       msgs.push_back(std::make_shared<osi3::GroundTruth>(std::move(gt)));
     }
   }
