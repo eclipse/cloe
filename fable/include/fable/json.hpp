@@ -75,7 +75,7 @@ using JsonPointer = nlohmann::json_pointer<std::string>;
  * This makes it easier to talk/write about operations that deal on the
  * underlying type that is stored in a Json value.
  */
-using JsonType = nlohmann::detail::value_t;
+using JsonType = nlohmann::json::value_t;
 
 /**
  * Return a string representation of a JSON type.

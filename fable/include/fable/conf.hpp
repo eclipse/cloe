@@ -166,7 +166,7 @@ class Conf {
   [[nodiscard]] T get() const {
     try {
       return data_.get<T>();
-    } catch (nlohmann::detail::type_error&) {
+    } catch (Json::type_error&) {
       throw_wrong_type();
     }
   }
@@ -180,9 +180,9 @@ class Conf {
   [[nodiscard]] T get(const std::string& key) const {
     try {
       return data_.at(key).get<T>();
-    } catch (nlohmann::detail::out_of_range&) {
+    } catch (Json::out_of_range&) {
       throw_missing(key);
-    } catch (nlohmann::detail::type_error&) {
+    } catch (Json::type_error&) {
       throw_wrong_type(key);
     }
   }
@@ -191,9 +191,9 @@ class Conf {
   [[nodiscard]] T get(const JsonPointer& key) const {
     try {
       return data_.at(key).get<T>();
-    } catch (nlohmann::detail::out_of_range&) {
+    } catch (Json::out_of_range&) {
       throw_missing(key.to_string());
-    } catch (nlohmann::detail::type_error&) {
+    } catch (Json::type_error&) {
       throw_wrong_type(key.to_string());
     }
   }
@@ -214,7 +214,7 @@ class Conf {
     }
     try {
       return data_.at(key).get<T>();
-    } catch (nlohmann::detail::type_error&) {
+    } catch (Json::type_error&) {
       throw_wrong_type(key);
     }
   }
@@ -223,9 +223,9 @@ class Conf {
   [[nodiscard]] T get_or(const JsonPointer& key, T def) const {
     try {
       return data_.at(key).get<T>();
-    } catch (nlohmann::detail::out_of_range&) {
+    } catch (Json::out_of_range&) {
       return def;
-    } catch (nlohmann::detail::type_error&) {
+    } catch (Json::type_error&) {
       throw_wrong_type(key.to_string());
     }
   }
@@ -252,7 +252,7 @@ class Conf {
   void with(const JsonPointer& key, std::function<void(const T&)> fn) const {
     try {
       fn(get<T>(key));
-    } catch (nlohmann::detail::out_of_range&) {
+    } catch (Json::out_of_range&) {
       return;
     }
   }
@@ -278,9 +278,9 @@ class Conf {
   void try_from(const JsonPointer& key, T& val) const {
     try {
       val = data_.at(key).get<T>();
-    } catch (nlohmann::detail::out_of_range& e) {
+    } catch (Json::out_of_range& e) {
       return;
-    } catch (nlohmann::detail::type_error& e) {
+    } catch (Json::type_error& e) {
       throw_wrong_type(key.to_string());
     }
   }
