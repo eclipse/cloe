@@ -63,24 +63,24 @@ Conf Conf::at(const std::string& key) const {
   };
 }
 
-Conf Conf::at(const JsonPointer& key) const {
+Conf Conf::at(const JsonPointer& ptr) const {
   return Conf{
-      data_.at(key),
+      data_.at(ptr),
       file_,
-      root_ + key.to_string(),
+      root_ + ptr.to_string(),
   };
 }
 
 size_t Conf::erase(const std::string& key) { return data_.erase(key); }
 
 // NOLINTNEXTLINE(misc-no-recursion)
-size_t Conf::erase(const JsonPointer& key) {
+size_t Conf::erase(const JsonPointer& ptr, bool preserve_empty) {
   std::size_t n = 0;
   try {
-    Json& parent = data_.at(key.parent_pointer());
-    n = parent.erase(key.back());
-    if (parent.empty()) {
-      n += erase(key.parent_pointer());
+    Json& parent = data_.at(ptr.parent_pointer());
+    n = parent.erase(ptr.back());
+    if (!preserve_empty && parent.empty() && !ptr.empty()) {
+      n += erase(ptr.parent_pointer());
     }
   } catch (Json::exception&) {
     // Exception is probably one of json::out_of_range or json::parse_error.
@@ -113,9 +113,9 @@ void Conf::assert_has(const std::string& key) const {
   }
 }
 
-void Conf::assert_has(const JsonPointer& key) const {
-  if (!has(key)) {
-    throw_missing(key.to_string());
+void Conf::assert_has(const JsonPointer& ptr) const {
+  if (!has(ptr)) {
+    throw_missing(ptr);
   }
 }
 
@@ -129,9 +129,9 @@ void Conf::assert_has_not(const std::string& key, const std::string& msg) const 
   }
 }
 
-void Conf::assert_has_not(const JsonPointer& key, const std::string& msg) const {
-  if (has(key)) {
-    throw_unexpected(key.to_string(), msg);
+void Conf::assert_has_not(const JsonPointer& ptr, const std::string& msg) const {
+  if (has(ptr)) {
+    throw_unexpected(ptr, msg);
   }
 }
 
@@ -142,10 +142,10 @@ void Conf::assert_has_type(const std::string& key, JsonType t) const {
   }
 }
 
-void Conf::assert_has_type(const JsonPointer& key, JsonType t) const {
-  assert_has(key);
-  if (data_.at(key).type() != t) {
-    throw_wrong_type(key.to_string(), t);
+void Conf::assert_has_type(const JsonPointer& ptr, JsonType t) const {
+  assert_has(ptr);
+  if (data_.at(ptr).type() != t) {
+    throw_wrong_type(ptr, t);
   }
 }
 
@@ -177,8 +177,19 @@ std::string Conf::resolve_file(const std::string& filepath) const {
   throw ConfError{*this, msg};
 }
 
+[[noreturn]] void Conf::throw_unexpected(const JsonPointer& ptr, const std::string& msg) const {
+  if (msg.empty()) {
+    throw error::UnexpectedProperty(*this, ptr);
+  }
+  throw ConfError{*this, msg};
+}
+
 [[noreturn]] void Conf::throw_missing(const std::string& key) const {
   throw error::MissingProperty(*this, key);
+}
+
+[[noreturn]] void Conf::throw_missing(const JsonPointer& ptr) const {
+  throw error::MissingProperty(*this, ptr);
 }
 
 [[noreturn]] void Conf::throw_wrong_type(const std::string& key) const {
@@ -188,8 +199,19 @@ std::string Conf::resolve_file(const std::string& filepath) const {
   throw error::WrongType(*this, key);
 }
 
-[[noreturn]] void Conf::throw_wrong_type(const std::string& key, JsonType type) const {
-  throw error::WrongType(*this, key, type);
+[[noreturn]] void Conf::throw_wrong_type(const JsonPointer& ptr) const {
+  if (ptr.empty()) {
+    throw error::WrongType(*this);
+  }
+  throw error::WrongType(*this, ptr);
+}
+
+[[noreturn]] void Conf::throw_wrong_type(const std::string& key, JsonType expected) const {
+  throw error::WrongType(*this, key, expected);
+}
+
+[[noreturn]] void Conf::throw_wrong_type(const JsonPointer& ptr, JsonType expected) const {
+  throw error::WrongType(*this, ptr, expected);
 }
 
 }  // namespace fable

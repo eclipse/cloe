@@ -45,7 +45,7 @@ class Error : public std::exception {
   Error(const Error&) = default;
   Error(Error&&) = default;
   Error& operator=(const Error&) = default;
-  Error& operator=(Error &&) = default;
+  Error& operator=(Error&&) = default;
   ~Error() noexcept override = default;
 
   Error(std::string what) : message_(std::move(what)) {}
@@ -65,7 +65,7 @@ class ConfError : public Error {
   ConfError(const ConfError&) = default;
   ConfError(ConfError&&) = default;
   ConfError& operator=(const ConfError&) = default;
-  ConfError& operator=(ConfError &&) = default;
+  ConfError& operator=(ConfError&&) = default;
   ~ConfError() noexcept override = default;
 
   ConfError(Conf conf, const std::string& msg) : Error(msg), data_(std::move(conf)) {}
@@ -99,8 +99,16 @@ inline ConfError MissingProperty(const Conf& conf, const std::string& key) {
   return ConfError{conf, "required property missing: {}", key};
 }
 
+inline ConfError MissingProperty(const Conf& conf, const JsonPointer& ptr) {
+  return ConfError{conf, "required property missing: {}", ptr.to_string()};
+}
+
 inline ConfError UnexpectedProperty(const Conf& conf, const std::string& key) {
   return ConfError{conf, "unexpected property present: {}", key};
+}
+
+inline ConfError UnexpectedProperty(const Conf& conf, const JsonPointer& ptr) {
+  return ConfError{conf, "unexpected property present: {}", ptr.to_string()};
 }
 
 inline ConfError WrongType(const Conf& conf, JsonType type) {
@@ -109,15 +117,26 @@ inline ConfError WrongType(const Conf& conf, JsonType type) {
   return ConfError{conf, "property must have type {}, got {}", want, got};
 }
 
-inline ConfError WrongType(const Conf& conf, const std::string& key, JsonType type) {
-  std::string want = to_string(type);
+inline ConfError WrongType(const Conf& conf, const std::string& key, JsonType expected) {
+  std::string want = to_string(expected);
   std::string got = to_string((*conf)[key].type());
-  return ConfError{conf, "property must have type {}, got {}", want, got};
+  return ConfError{conf, "property '{}' must have type {}, got {}", key, want, got};
+}
+
+inline ConfError WrongType(const Conf& conf, const JsonPointer& ptr, JsonType expected) {
+  std::string want = to_string(expected);
+  std::string got = to_string((*conf)[ptr].type());
+  return ConfError{conf, "property '{}' must have type {}, got {}", ptr.to_string(), want, got};
 }
 
 inline ConfError WrongType(const Conf& conf, const std::string& key) {
   std::string got = to_string((*conf)[key].type());
-  return ConfError{conf, "property has wrong type {}", got};
+  return ConfError{conf, "property '{}' has wrong type {}", key, got};
+}
+
+inline ConfError WrongType(const Conf& conf, const JsonPointer& ptr) {
+  std::string got = to_string((*conf)[ptr].type());
+  return ConfError{conf, "property '{}' has wrong type {}", ptr.to_string(), got};
 }
 
 inline ConfError WrongType(const Conf& conf) {
@@ -136,7 +155,7 @@ class SchemaError : public ConfError {
   SchemaError(const SchemaError&) = default;
   SchemaError(SchemaError&&) = default;
   SchemaError& operator=(const SchemaError&) = default;
-  SchemaError& operator=(SchemaError &&) = default;
+  SchemaError& operator=(SchemaError&&) = default;
   ~SchemaError() noexcept override = default;
 
   /**
