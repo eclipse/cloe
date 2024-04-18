@@ -63,6 +63,7 @@ else()
 endif()
 
 # Testing ------------------------------------------------------------
+set(CMAKE_CTEST_ARGUMENTS "--output-on-failure")
 include(CTest)
 if(BUILD_TESTING)
     find_package(GTest REQUIRED)
@@ -74,6 +75,7 @@ if(BUILD_TESTING)
         # find src -type f -name "*_test.cpp"
         src/fable/version_test.cpp
         src/fable/environment_test.cpp
+        src/fable/conf_test.cpp
         src/fable/schema/array_test.cpp
         src/fable/schema/const_test.cpp
         src/fable/schema/custom_test.cpp
