@@ -40,6 +40,61 @@
 
 namespace fable {
 
+/**
+ * Confable is a base-class that you can inherit for your own types to
+ * provide native fable integration.
+ *
+ * This provides easy deserialization with validation
+ * and serialization, primarily by providing the schema_impl() definition.
+ *
+ * Example:
+ *
+ *     class Foo : public fable::Confable {
+ *       double bar;
+ *
+ *       fable::Schema schema_impl() override {
+ *         return fable::Schema{
+ *           {"bar", fable::make_schema(&bar, "bar description")},
+ *         };
+ *       }
+ *
+ *       using fable::Confable::to_json;
+ *       friend void to_json(::fable::Json& j, const xType& t) {
+ *         t.to_json(j);
+ *       }
+ *       friend void from_json(const ::fable::Json& j, xType& t) {
+ *         t.from_conf(::fable::Conf{j});
+ *       }
+ *     };
+ *
+ * In order to eliminate some of this boilerplate, the following macro simplifies
+ * things and keeps it short and to the point:
+ *
+ *     class Foo : public fable::Confable {
+ *       double bar;
+ *
+ *       CONFABLE_SCHEMA(Foo) {
+ *         using namespace fable;
+ *         return Schema{
+ *           {"bar", make_schema(&bar, "bar description")},
+ *         };
+ *       }
+ *     };
+ *
+ * Your class now be used with `Schema` and `make_schema` definitions, and it
+ * just works:
+ *
+ *     class ExtraFine : public fable::Confable {
+ *       Foo foo;
+ *
+ *       CONFABLE_SCHEMA(ExtraFine) {
+ *         using namespace fable;
+ *         return Schema{
+ *           {"foo", make_schema(&foo, "foo description")},
+ *         };
+ *       }
+ *     };
+ */
 class Confable {
  public:
   Confable() noexcept = default;
