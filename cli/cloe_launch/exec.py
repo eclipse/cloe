@@ -335,6 +335,7 @@ class Engine:
         for arg in self.conan_args:
             conan_cmd.append(arg)
         conan_cmd.append(self.profile_path)
+        logging.debug(f"Exec: {' '.join(conan_cmd)}")
         result = subprocess.run(conan_cmd, check=False, capture_output=self.capture_output)
         if result.returncode == 0:
             # Short-circuit out if everything is fine.
