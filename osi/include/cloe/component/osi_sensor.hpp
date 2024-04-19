@@ -23,7 +23,8 @@
 
 #include <osi3/osi_sensordata.pb.h>  // for SensorData
 
-#include <cloe/component.hpp>  // for Component
+#include <cloe/component.hpp>          // for Component, Json
+#include <cloe/utility/osi_utils.hpp>  // for osi_to_json
 
 namespace cloe {
 
@@ -41,6 +42,11 @@ class OsiSensor : public Component {
    * Return OSI-SensorData
    */
   [[nodiscard]] virtual const osi3::SensorData& get() const = 0;
+
+  /**
+   * Writes JSON representation into j.
+   */
+  fable::Json active_state() const override;
 };
 
 }  // namespace cloe

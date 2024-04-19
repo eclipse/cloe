@@ -16,6 +16,7 @@ message(STATUS "-> Building cloe-osi library.")
 file(GLOB cloe-osi_PUBLIC_HEADERS "include/**/*.hpp")
 add_library(cloe-osi
     # find src -type f -name "*.cpp" \! -name "*_test.cpp"
+    src/cloe/component/osi_sensor.cpp
     src/cloe/utility/osi_ground_truth.cpp
     src/cloe/utility/osi_message_handler.cpp
     src/cloe/utility/osi_transceiver_tcp.cpp
