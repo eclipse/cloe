@@ -46,6 +46,12 @@ namespace cloe::utility {
 inline Logger osi_logger() { return logger::get("vtd/osi"); }
 
 /**
+ * Serialize OSI message to a json string.
+ */
+template <typename OSI_T>
+void osi_to_json(const OSI_T& msg, std::string* json_string);
+
+/**
  * Write OSI message to a .json file.
  */
 template <typename OSI_T>
