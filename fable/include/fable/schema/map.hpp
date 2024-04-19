@@ -140,7 +140,7 @@ class Map : public Base<Map<T, P>> {
     std::optional<std::regex> pattern;
     if (!pattern_.empty()) {
       try {
-        *pattern = std::regex(pattern_);
+        pattern.emplace(pattern_);
       } catch (std::regex_error& e) {
         // NOTE: This is actually a programmer error, and we should probably catch
         // it at the point where the pattern is set.
