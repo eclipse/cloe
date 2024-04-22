@@ -45,7 +45,7 @@ class CloeRuntime(ConanFile):
 
     def requirements(self):
         self.requires(f"fable/{self.version}@cloe/develop")
-        self.requires("boost/[>=1.65.1]")
+        self.requires("boost/1.74.0")
         self.requires("inja/3.4.0")
         self.requires("spdlog/1.11.0")
         self.requires("incbin/cci.20211107")

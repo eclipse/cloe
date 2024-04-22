@@ -42,7 +42,7 @@ class CloeModels(ConanFile):
 
     def requirements(self):
         self.requires(f"cloe-runtime/{self.version}@cloe/develop")
-        self.requires("boost/[>=1.65.1]")
+        self.requires("boost/1.74.0")
         self.requires("eigen/3.4.0")
 
     def build_requirements(self):

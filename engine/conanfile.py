@@ -54,7 +54,7 @@ class CloeEngine(ConanFile):
         self.requires("cli11/2.3.2", private=True)
         if self.options.server:
             self.requires(f"cloe-oak/{self.version}@cloe/develop", private=True)
-        self.requires("boost/[>=1.65.1]")
+        self.requires("boost/1.74.0")
         self.requires("fmt/9.1.0", override=True)
         self.requires("nlohmann_json/3.11.2", override=True)
 

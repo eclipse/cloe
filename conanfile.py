@@ -57,7 +57,7 @@ class Cloe(ConanFile):
         if self.options.with_vtd:
             cloe_requires("cloe-plugin-vtd")
 
-        boost_version = "[>=1.65.0]"
+        boost_version = "1.74.0"
         if self.options.with_engine:
             cloe_requires("cloe-engine")
 
