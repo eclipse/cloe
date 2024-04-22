@@ -157,6 +157,11 @@ check_engine_with_server() {
     cloe-engine run test_engine_ignore.json
 }
 
+@test "$(testname 'Expect check failure' 'test_engine_unavailable_*.json' '6cf4ded3-8a57-4dee-afac-bb03a8068e41')" {
+    run cloe-engine -l info check -d test_engine_unavailable_*.json
+    test $status -eq $CLOE_EXIT_UNKNOWN
+}
+
 @test "$(testname 'Expect check failure' 'test_engine_include_nonexistent.json' 'bad115cc-0397-48e6-9a51-bdcfeaf6b024')" {
     run cloe-engine check test_engine_include_nonexistent.json
     assert_check_failure $status $output

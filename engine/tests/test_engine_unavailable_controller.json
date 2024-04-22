@@ -1,0 +1,30 @@
+// This test checks that cloe-engine will find the error that the controller
+// binding does not exist.
+//
+// The stack file is complete except for the incorrect "controller" binding.
+{
+  "version": "4",
+  "server": {
+    "listen_port": 23456
+  },
+  "vehicles": [
+    {
+      "from": {
+        "simulator": "nop",
+        "index": 0
+      },
+      "name": "default"
+    }
+  ],
+  "simulators": [
+    {
+      "binding": "nop"
+    }
+  ],
+  "controllers": [
+    {
+      "binding": "misspelled",
+      "vehicle": "default"
+    }
+  ]
+}
