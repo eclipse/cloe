@@ -5,7 +5,7 @@
 cli11/2.3.2
 fable/[>=0.20.0, include_prerelease=True]@cloe/develop
 fmt/9.1.0
-boost/[>=1.65.1]
+boost/1.74.0
 
 [generators]
 CMakeDeps

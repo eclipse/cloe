@@ -40,7 +40,7 @@ class CloeOsi(ConanFile):
         self.requires(f"cloe-models/{self.version}@cloe/develop")
         self.requires(f"cloe-runtime/{self.version}@cloe/develop")
         self.requires("open-simulation-interface/3.5.0@cloe/stable")
-        self.requires("boost/[>=1.65.0]")
+        self.requires("boost/1.74.0")
         self.requires("eigen/3.4.0")
         self.requires("zlib/1.2.13", override=True)
 

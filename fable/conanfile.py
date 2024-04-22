@@ -51,7 +51,7 @@ class Fable(ConanFile):
 
     def build_requirements(self):
         self.test_requires("gtest/1.13.0")
-        self.test_requires("boost/[>=1.65.1]")
+        self.test_requires("boost/1.74.0")
         self.test_requires("sol2/3.3.0")
 
     def layout(self):
