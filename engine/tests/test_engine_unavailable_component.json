@@ -1,0 +1,35 @@
+// This test checks that cloe-engine will find the error that the component
+// binding does not exist.
+//
+// The stack file is complete except for the incorrect "component" binding.
+{
+  "version": "4",
+  "server": {
+    "listen_port": 23456
+  },
+  "vehicles": [
+    {
+      "from": {
+        "simulator": "nop",
+        "index": 0
+      },
+      "name": "default",
+      "components": {
+        "test_failure": {
+          "binding": "misspelled"
+        }
+    }
+    }
+  ],
+  "simulators": [
+    {
+      "binding": "nop"
+    }
+  ],
+  "controllers": [
+    {
+      "binding": "basic",
+      "vehicle": "default"
+    }
+  ]
+}

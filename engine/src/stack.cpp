@@ -34,6 +34,7 @@
 namespace fs = boost::filesystem;
 
 #include <cloe/utility/std_extensions.hpp>  // for join_vector
+#include <fable/utility.hpp> // for indent_string
 
 namespace cloe {
 
@@ -459,7 +460,8 @@ void Stack::from_conf(const Conf& _conf, size_t depth) {
       //
       // But that would result in a very verbose error message, so we shall
       // throw a more user-friendly error message instead.
-      throw Error{"require version compatible with {}, got {}", CLOE_STACK_VERSION, ver}.explanation(R"(
+      throw Error{"require version compatible with {}, got {}", CLOE_STACK_VERSION, ver}
+          .explanation(R"(
             It looks like you are attempting to load a stack file with an
             incompatible version.
 
@@ -534,14 +536,14 @@ void Stack::from_conf(const Conf& _conf, size_t depth) {
               If you feel that you need more than the default allowed recursion
               depth (64), you are free to increase the limit within the stack file:
 
-                {{
-                  "engine": {{
-                    "security": {{
+                {
+                  "version": "4",
+                  "engine": {
+                    "security": {
                       "max_include_depth": 1024
-                    }}
-                  }},
-                  ...
-                }}
+                    }
+                  }
+                }
 
               This should be done sparingly. If you have such an inclusion depth,
               chances are the structure of the stack files is sub-optimal.
@@ -619,7 +621,7 @@ void Stack::validate_or_throw(const Conf& c) const {
   copy.validate_self();
 }
 
-bool Stack::validate(const Conf &c, std::optional<SchemaError> &err) const {
+bool Stack::validate(const Conf& c, std::optional<SchemaError>& err) const {
   Stack copy(*this);
   try {
     copy.from_conf(c);
@@ -738,6 +740,82 @@ void Stack::check_completeness() const {
   if (!missing.empty()) {
     throw StackIncompleteError(std::move(missing));
   }
+}
+
+[[noreturn]] void throw_missing_plugin_error(Conf conf,
+                                             std::string_view plugin_type,
+                                             std::string_view plugin_name,
+                                             const std::vector<std::string>& available_plugins) {
+  throw Error{"unknown {} plugin: {}", plugin_type, plugin_name}.explanation(
+      R"(
+              Error located in JSON segment at {}:
+
+{}
+
+              The plugin referred to by the "binding" field is not available.
+              The following {} plugins are available:
+
+                  {}
+
+              If the plugin you are looking for is not in that list, then you need
+              to get cloe-engine to load the plugin first.
+              There are several mechanisms for loading plugins:
+
+              1. Add directory to CLOE_PLUGIN_PATH environment variable:
+
+                 export CLOE_PLUGIN_PATH="$CLOE_PLUGIN_PATH:/path/to/dir/containing/plugin"
+
+              2. Add directory containing plugin from the command-line:
+
+                 cloe-engine --plugin-path=/path/to/dir/containing/plugin run config.json
+
+              3. Specify path to plugin in a stackfile directly:
+
+                 {{
+                   "version": "4",
+                   "plugins": [
+                     {{
+                       "path": "/path/to/dir/containing/plugin"
+                     }},
+                     {{
+                       "path": "/path/to/plugin.so"
+                     }}
+                   ]
+                 }}
+
+              )",
+      conf.root(), fable::indent_string(conf->dump(2), "                  "), plugin_type,
+      fable::join_vector(available_plugins, "\n                  "));
+}
+
+bool SimulatorSchema::validate(const Conf& c, std::optional<SchemaError>& err) const {
+  assert(schema_ != nullptr);
+  auto factory = c.get<std::string>(factory_key_);
+  if (available_.count(factory) == 0) {
+    // Override error message.
+    throw_missing_plugin_error(c, "simulator", factory, get_factory_keys());
+  }
+  return schema_->validate(c, err);
+}
+
+bool ControllerSchema::validate(const Conf& c, std::optional<SchemaError>& err) const {
+  assert(schema_ != nullptr);
+  auto factory = c.get<std::string>(factory_key_);
+  if (available_.count(factory) == 0) {
+    // Override error message.
+    throw_missing_plugin_error(c, "controller", factory, get_factory_keys());
+  }
+  return schema_->validate(c, err);
+}
+
+bool ComponentSchema::validate(const Conf& c, std::optional<SchemaError>& err) const {
+  assert(schema_ != nullptr);
+  auto factory = c.get<std::string>(factory_key_);
+  if (available_.count(factory) == 0) {
+    // Override error message.
+    throw_missing_plugin_error(c, "component", factory, get_factory_keys());
+  }
+  return schema_->validate(c, err);
 }
 
 }  // namespace cloe

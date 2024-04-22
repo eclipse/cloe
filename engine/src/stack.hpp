@@ -536,6 +536,8 @@ class SimulatorSchema : public FactoryPlugin<SimulatorConf, SimulatorFactory> {
  public:
   SimulatorSchema();
   virtual ~SimulatorSchema() = default;
+
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override;
 };
 
 // --------------------------------------------------------------------------------------------- //
@@ -572,6 +574,8 @@ class ControllerSchema : public FactoryPlugin<ControllerConf, ControllerFactory>
  public:
   ControllerSchema();
   virtual ~ControllerSchema() = default;
+
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override;
 };
 
 // --------------------------------------------------------------------------------------------- //
@@ -664,6 +668,8 @@ class ComponentSchema : public FactoryPlugin<ComponentConf, ComponentFactory> {
  public:
   ComponentSchema();
   virtual ~ComponentSchema() = default;
+
+  bool validate(const Conf& c, std::optional<SchemaError>& err) const override;
 };
 
 // TODO(ben): Add AliasConf as alternative to ComponentConf.
