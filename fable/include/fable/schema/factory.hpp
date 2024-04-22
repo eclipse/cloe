@@ -224,6 +224,17 @@ class FactoryBase : public Base<CRTP> {
   }
 
   /**
+   * Return the set of added factory keys.
+   */
+  [[nodiscard]] std::vector<std::string> get_factory_keys() const {
+    std::vector<std::string> keys;
+    for (const auto& [key, value] : available_) {
+      keys.emplace_back(key);
+    }
+    return keys;
+  }
+
+  /**
    * Return whether a factory with the given key is available.
    */
   [[nodiscard]] bool has_factory(const std::string& key) const { return available_.count(key); }
