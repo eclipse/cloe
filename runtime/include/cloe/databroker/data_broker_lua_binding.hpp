@@ -207,6 +207,18 @@ class LuaDataBrokerBinding : public DataBrokerBinding {
     declare<uint64_t>();
     declare<float>();
     declare<double>();
+
+    declare<std::optional<bool>>();
+    declare<std::optional<int8_t>>();
+    declare<std::optional<uint8_t>>();
+    declare<std::optional<int16_t>>();
+    declare<std::optional<uint16_t>>();
+    declare<std::optional<int32_t>>();
+    declare<std::optional<uint32_t>>();
+    declare<std::optional<int64_t>>();
+    declare<std::optional<uint64_t>>();
+    declare<std::optional<float>>();
+    declare<std::optional<double>>();
   }
 
   void bind(std::string_view signals_name) override {
