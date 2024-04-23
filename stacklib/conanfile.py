@@ -48,6 +48,9 @@ class CloeModels(ConanFile):
         self.requires(f"fable/{self.version}@cloe/develop")
         self.requires("boost/[>=1.65.1]")
 
+    def build_requirements(self):
+        self.test_requires("gtest/1.13.0")
+
     def layout(self):
         cmake.cmake_layout(self)
 
