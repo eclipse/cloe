@@ -50,6 +50,7 @@ class CloeRuntime(ConanFile):
         self.requires("spdlog/1.11.0")
         self.requires("incbin/cci.20211107")
         self.requires("sol2/3.3.1")
+        self.requires("pybind11/2.10.1")
 
     def build_requirements(self):
         self.test_requires("gtest/1.13.0")
