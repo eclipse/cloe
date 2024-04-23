@@ -58,6 +58,82 @@ readable perspective on new releases.
 
       Note that the most recent release is at the *top* of the document.
 
+0.23.0 (2024-04-23)
+-------------------
+
+This is the sixth public minor release of the Cloe packages.
+Read all about the changes :doc:`here <news/release-0.23.0>`.
+
+Please note that there have been several breaking changes in the interface of
+the fable library. See the news article linked above and feel free to raise an
+issue if there are any questions.
+
+The following is a *selection* of interesting commits.
+
+
+**Engine:**
+
+- engine: Provide better error messages for missing plugins `[9dd06d0a] <https://github.com/eclipse/cloe/commit/9dd06d0addb30bcbf70e713a80c81f6a6ea40530>`_
+- engine: Fix command execution `[60e45599] <https://github.com/eclipse/cloe/commit/60e45599083d06d21d49cf89465a27fee8210d33>`_
+
+**Core Libraries:**
+
+- fable: Add get_factory_keys() to Factory schema `[4aa7ad06] <https://github.com/eclipse/cloe/commit/4aa7ad0642f437ac435045981860fa741786bcd9>`_
+- fable: Improve Conf documentation and fix pointer related bugs `[19a7e50c] <https://github.com/eclipse/cloe/commit/19a7e50c066663c546527acbbdebda3102540b26>`_
+- fable: Fix use of nlohmann::detail namespace `[b0f57ead] <https://github.com/eclipse/cloe/commit/b0f57eaddeb2d29b1340d2fc321d987029c2f976>`_
+- fable: Fix failing unit-test when NAME defined in environment `[1b874bbd] <https://github.com/eclipse/cloe/commit/1b874bbd0083479edb7ef7e3cbf29ce265aab435>`_
+- fable: Fix regression with FromJson not finding (de-)serializer `[b7bec6a1] <https://github.com/eclipse/cloe/commit/b7bec6a1c8910e5cc3cb8828b0aed1e0b03ca18f>`_
+- fable: Provide helper for json to sol::object conversion `[7872c162] <https://github.com/eclipse/cloe/commit/7872c16200ba04e6fadafea5ffe2db8232121206>`_
+- fable: Add from_json to adl_serializer<sol::object> `[45e333c4] <https://github.com/eclipse/cloe/commit/45e333c490d4be99041cffbb2d13c3061b8543f5>`_
+- fable: Fix {N,D}::validate_bounds() incorrect validation `[5146b3f0] <https://github.com/eclipse/cloe/commit/5146b3f07c7f9eeb20d0cb7ff58f969dffc7bd3c>`_
+- fable: Add ends_with and starts_with helper functions `[5e951439] <https://github.com/eclipse/cloe/commit/5e951439731b79164dd401ac93023a0a5d80c078>`_
+- fable: Add optional to_json support for sol::object `[5e585ebc] <https://github.com/eclipse/cloe/commit/5e585ebc5f73d230c0d1112ec97546d2832ca904>`_
+- fable: Remove work-around of nlohmann_json bug `[1858474f] <https://github.com/eclipse/cloe/commit/1858474fdb4d9b67c94d9c897891ce467db6658e>`_
+- fable: Use references instead of pointers for Conf::try_from* `[ead82b74] <https://github.com/eclipse/cloe/commit/ead82b746169289132f655f5298529299256746e>`_
+- fable: Use pass-by-value + move in Conf constructor `[d4c1b8bc] <https://github.com/eclipse/cloe/commit/d4c1b8bc91fc17de4d6922d58f6a504bb2be3d29>`_
+- fable: Complete (de)?serialize(_into)? method implementations `[8559fc1e] <https://github.com/eclipse/cloe/commit/8559fc1e358bc6e9fd9de1f1d8ac86a4dce4ee07>`_
+- fable: Use unique_ptr instead of raw pointers `[a22360df] <https://github.com/eclipse/cloe/commit/a22360dfb7465b70174826c7384241197605ef4c>`_
+- fable: Use [[nodiscard]] where relevant `[368ef143] <https://github.com/eclipse/cloe/commit/368ef143a9042c51a408a3e67e8aab02908896a0>`_
+- fable: Change validate to a non-throwing interface `[e6b94dc5] <https://github.com/eclipse/cloe/commit/e6b94dc5cceadbba420a0b8339cad9602eb4883a>`_
+- fable: Force compilation stop when C++ standard less than 17 `[e4ae6b7f] <https://github.com/eclipse/cloe/commit/e4ae6b7fc0c40557703151a39bac79f7e3eee5a9>`_
+- fable: Fix segfault in GCC 8 `[2e34ce6f] <https://github.com/eclipse/cloe/commit/2e34ce6f8dc1b602aa825a95e371ae54cc948b9d>`_
+- fable: Perfect-forward arguments to fmt::format `[43b4f34a] <https://github.com/eclipse/cloe/commit/43b4f34a43ffb59b03a4a84a696c66c33bebcd79>`_
+- fable: Simplify make_prototype definition file `[7c9b960d] <https://github.com/eclipse/cloe/commit/7c9b960dfbca7738e7af5497168acba52374e504>`_
+- fable: Pass description and prototype arguments by value `[8f9875af] <https://github.com/eclipse/cloe/commit/8f9875af1fde180873e5beb3ad3afbf464cb7b25>`_
+- fable: Use string_view in string utility functions `[e629df4f] <https://github.com/eclipse/cloe/commit/e629df4f6a0de7be2fa2815d5b8419048b45fa1f>`_
+- fable: Remove Boost dependency `[a98ef5aa] <https://github.com/eclipse/cloe/commit/a98ef5aaadbc24d49b126d4575fae3030e81911e>`_
+- fable: Add fable::schema::Array type for std::array types `[ffaeedf5] <https://github.com/eclipse/cloe/commit/ffaeedf5e5fdc074509cc76901f911238c95f611>`_
+- fable: Enable serializing and deserializing into refs `[4b9dab8c] <https://github.com/eclipse/cloe/commit/4b9dab8c3a31607f05bc0c2da85d9b49d4b7536e>`_
+- fable: Rename fable::schema::Array to Vector `[a923588d] <https://github.com/eclipse/cloe/commit/a923588dd6147d147107de311b5563103bce9a25>`_
+- fable: Implement Path schema for std::filesystem::path and boost::filesystem::path `[d5ddf0fe] <https://github.com/eclipse/cloe/commit/d5ddf0fe3f5304aa2569e55d893ca2e4448738bb>`_
+- fable: Implement Optional schema for std::optional and boost::optional `[e2776cab] <https://github.com/eclipse/cloe/commit/e2776cab2809673582873f23dfe5a1b7b6320e3b>`_
+- fable: Add fable/utility/chrono.hpp utility functions `[0c3e3681] <https://github.com/eclipse/cloe/commit/0c3e36813eaf20f2a6566ff79573bb178ebe7210>`_
+- fable: Add fable/utility/string.hpp utility functions `[3bc7a964] <https://github.com/eclipse/cloe/commit/3bc7a964fae778261aa706099285e4ddc78496c9>`_
+- fable: Move fable/json/with_boost.hpp to fable/utility/boost_optional.hpp `[64169319] <https://github.com/eclipse/cloe/commit/6416931911295c5f927fc6687f8c4526aa5f97da>`_
+- fable: Move fable/json/with_std.hpp to fable/utility/memory.hpp `[9d7752ed] <https://github.com/eclipse/cloe/commit/9d7752ed84b9e37009195c0ce69ce445e65efdde>`_
+- fable: Move fable/json/with_eigen.hpp to fable/utility/eigen.hpp `[80759d08] <https://github.com/eclipse/cloe/commit/80759d08bd4261924ff2bcdfbcc85e77d153fc35>`_
+- fable: Rename magic.hpp to xmagic.hpp `[8e85db4e] <https://github.com/eclipse/cloe/commit/8e85db4e9110b0c91fa669bbbeecf8c83a14e4f2>`_
+- fable: Provide fable/fable_fwd.hpp header for forward declarations `[107d7566] <https://github.com/eclipse/cloe/commit/107d7566d616fb2336d870059c3db1aacc103278>`_
+- fable: Improve documentation of fable::schema::{Interface, Base} `[ac46bfa8] <https://github.com/eclipse/cloe/commit/ac46bfa879b251f64df2d53f5fc812d8a2b1db84>`_
+- fable: Simplify CMakeLists.txt to not use ${target} variable `[406b1208] <https://github.com/eclipse/cloe/commit/406b1208cbd00f7a67b98edf7b74569776941456>`_
+- fable,runtime: Use fmt::runtime() to ensure C++20 compatibility `[eafa8f31] <https://github.com/eclipse/cloe/commit/eafa8f31def4cce0ad729e0b0b6f61660116f4b0>`_
+
+- oak: Use fable and cloe namespace for respective types `[3d1862b1] <https://github.com/eclipse/cloe/commit/3d1862b1fdd5c48a9c9c350d95b29d9f88389d45>`_
+
+- models: Use fable namespace for fable types `[22fb91fd] <https://github.com/eclipse/cloe/commit/22fb91fd1a00a3e58ffa06dd718a7ac4d8e35dfa>`_
+
+- runtime: Use fable namespace for fable types `[baa35ee9] <https://github.com/eclipse/cloe/commit/baa35ee90277a0ded838fe3171b6283851c15f92>`_
+- runtime: Take string arguments by value where reasonable `[04f5b1c3] <https://github.com/eclipse/cloe/commit/04f5b1c37a5f68fcec51a33b6a7684e30692f4ee>`_
+
+**Plugins:**
+
+- esmini: Fix smoketest duration `[021052d9] <https://github.com/eclipse/cloe/commit/021052d97ed7cf20b539ac41177426e5b32f8a07>`_
+- esmini: Remove modifications to osi data `[5fec0d3b] <https://github.com/eclipse/cloe/commit/5fec0d3bfabd5351f9084b15cbe9bfea05ca146b>`_
+
+**Tooling & Dependencies:**
+
+- tooling: Pin boost version to 1.74.0 `[5a370d9d] <https://github.com/eclipse/cloe/commit/5a370d9d8e27ef9235195e83240a2d0519cea095>`_
+
 0.22.0 (2024-03-28)
 -------------------
 

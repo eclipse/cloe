@@ -23,10 +23,29 @@ News
    :hidden:
    :maxdepth: 1
 
+   news/release-0.23.0
    news/release-0.22.0
    news/release-0.21.0
    news/release-0.20.0
    news/release-0.19.0
+
+:doc:`Version 0.23.0 Release <news/release-0.23.0>`
+---------------------------------------------------
+
+This version brings full C++17 support to Fable, with the following highlights:
+
+- Schema support for `std::filesystem::path`
+- Schema support for `std::optional`
+- Schema support for `std::array`
+
+Boost is now an optional dependency, and requires inclusion of an extra header
+to use.
+
+The old `Array` schema, which was for `std::vector`, has been renamed to
+`Vector`, and its header moved to `fable/schema/vector.hpp`.
+
+Read all about these and the other many changes :doc:`here
+<news/release-0.23.0>`.
 
 :doc:`Version 0.22.0 Release <news/release-0.22.0>`
 ---------------------------------------------------

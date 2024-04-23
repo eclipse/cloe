@@ -1,5 +1,5 @@
 {
-  "$id": "~/.conan/data/cloe-plugin-esmini/0.22.0/cloe/develop/package/fa457566a141d1d0598bd25a28fe5401872e798d/lib/cloe/simulator_esmini.so",
+  "$id": "~/.conan/data/cloe-plugin-esmini/0.23.0/cloe/develop/package/7149721f3ac80a9bb380685b5f98a9c41f24e775/lib/cloe/simulator_esmini.so",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "additionalProperties": false,
   "description": "basic OpenScenario player",

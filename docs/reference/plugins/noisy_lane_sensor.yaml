@@ -1,6 +1,6 @@
 Name: noisy_lane_sensor
 Type: component
-Path: ~/.conan/data/cloe-plugin-noisy-sensor/0.22.0/cloe/develop/package/88e43b731b463b3c3359213daffc30089aa50747/lib/cloe/component_noisy_lane_sensor.so
+Path: ~/.conan/data/cloe-plugin-noisy-sensor/0.23.0/cloe/develop/package/2de4bf77c73ae74c023ce41bfefbe300c8a251a4/lib/cloe/component_noisy_lane_sensor.so
 Usage: {
   "enable": "boolean :: enable or disable component",
   "noise": "array of object :: configure noisy parameters",

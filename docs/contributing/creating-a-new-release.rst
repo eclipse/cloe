@@ -62,9 +62,17 @@ to use a separate, temporary Conan data directory::
     mkdir $CONAN_USER_HOME
     make setup-conan
 
+If you have ``vtd`` packages anywhere, you can make these available to the
+environment::
+
+    mkdir -p $CONAN_USER_HOME/.conan/data/vtd
+    sudo mount -o bind ~/.conan/data/vtd $CONAN_USER_HOME/.conan/data/vtd
+
+Run ``conan search`` to check that your cache only has the expected packages.
+
 Then, compile the entire project locally::
 
-    make purge-all export export-vendor smoketest-deps smoketest
+    make purge-all export-vendor export smoketest-deps smoketest
 
 This should run through without errors. Then make sure to do the same with
 the optional packages::

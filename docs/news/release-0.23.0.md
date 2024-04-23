@@ -107,8 +107,14 @@ with several breaking changes.
 **Fixed:**
 
 - Fix rare segfault in GCC 8.
+
 - Fix number and duration bound incorrect validation.
+
 - Force compilation stop when C++ standard is less than 17.
+
+- Fix use of `nlohmann::detail` namespace.
+
+- Fix bugs related to use of JSON pointer with `Conf`.
 
 **Changed:**
 
@@ -157,7 +163,7 @@ with several breaking changes.
   >
   >     class ConanFile:
   >       def requirements(self):
-  >         self.requires("boost/1.78")
+  >         self.requires("boost/1.74.0")
   >
   > In your C++ code, ensure that you include the new header files for each
   > type you use:
