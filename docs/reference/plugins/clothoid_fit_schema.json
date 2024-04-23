@@ -1,5 +1,5 @@
 {
-  "$id": "~/.conan/data/cloe-plugin-clothoid-fit/0.22.0/cloe/develop/package/111f790e14bb6b27a6267d6ae47395578f02f8d1/lib/cloe/component_clothoid_fit.so",
+  "$id": "~/.conan/data/cloe-plugin-clothoid-fit/0.23.0/cloe/develop/package/556c3c63fcf76b84b98e159b0bdbd4072cb85dfd/lib/cloe/component_clothoid_fit.so",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "additionalProperties": false,
   "description": "fit clothoids to polylines",
