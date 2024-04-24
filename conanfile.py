@@ -66,6 +66,8 @@ class Cloe(ConanFile):
         "simulation/webui/*",
         "engine/vendor/*",
 
+        "python/python_api/*.py",
+
         "plugins/*/src/*",
         "plugins/*/include/*",
         "plugins/*/ui/*",
@@ -96,6 +98,8 @@ class Cloe(ConanFile):
         self.requires("esmini/2.37.4@cloe/stable")
         if self.options.engine_server:
             self.requires("oatpp/1.3.0")
+        if self.options.python_api:
+            self.requires("pybind11/2.10.1")
 
     def build_requirements(self):
         self.test_requires("gtest/1.13.0")
@@ -126,6 +130,7 @@ class Cloe(ConanFile):
         tc.cache_variables["CLOE_VERSION_U32"] = str(version_u32)
         tc.cache_variables["CLOE_ENGINE_WITH_SERVER"] = self.options.engine_server
         tc.cache_variables["CLOE_ENGINE_WITH_LRDB"] = self.options.engine_lrdb
+        tc.cache_variables["CLOE_PYTHON_API"] = self.options.python_api
         tc.generate()
 
     def build(self):
@@ -141,6 +146,9 @@ class Cloe(ConanFile):
         if self.should_install:
             cm = cmake.CMake(self)
             cm.install()
+
+            files.copy(self, "*.py", os.path.join(self.source_folder, "python/python_api"),
+                       os.path.join(self.package_folder, "lib/cloe/python"))
 
             # Package license files for compliance
             for meta, dep in self.dependencies.items():
@@ -188,11 +196,13 @@ class Cloe(ConanFile):
             self.cpp_info.includedirs.append(os.path.join(self.build_folder, "include"))
             bindir = os.path.join(self.build_folder, "bin")
             luadir = os.path.join(self.source_folder, "engine/lua")
-            libdir = os.path.join(self.build_folder, "lib");
+            pydir = os.path.join(self.source_folder, "python/python_api")
+            libdir = os.path.join(self.build_folder, "lib")
         else:
             self.cpp_info.builddirs.append(os.path.join("lib", "cmake", "cloe"))
             bindir = os.path.join(self.package_folder, "bin")
             luadir = os.path.join(self.package_folder, "lib/cloe/lua")
+            pydir = os.path.join(self.package_folder, "lib/cloe/python")
             libdir = None
 
         self.output.info(f"Appending PATH environment variable: {bindir}")
@@ -202,3 +212,7 @@ class Cloe(ConanFile):
         if libdir is not None:
             self.output.info(f"Appending LD_LIBRARY_PATH environment variable: {libdir}")
             self.runenv_info.append_path("LD_LIBRARY_PATH", libdir)
+        if self.options.python_api:
+            self.output.info(f"Appending PYHTONPATH and CLOE_PYTHON_BINDINGS environment variables: {pydir}")
+            self.runenv_info.prepend_path("PYTHONPATH", str(pydir))
+            self.runenv_info.prepend_path("CLOE_PYTHON_BINDINGS", str(pydir))
