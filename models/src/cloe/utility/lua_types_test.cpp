@@ -22,6 +22,7 @@
 #include <gtest/gtest.h>
 
 #include <cloe/utility/lua_types.hpp>
+#include <cloe/databroker/data_broker_lua_binding.hpp>
 
 #include <Eigen/Dense>  // for Eigen
 
@@ -39,10 +40,12 @@ TEST(lua_types_test, object) {
   //       Expected Result: I) The value of the member changed
   sol::state state;
   sol::state_view view(state);
-  DataBroker db{view};
-
+  cloe::databroker::LuaDataBrokerBinding binding {view};
+  binding.declare<cloe::Object>();
   // Register all types
-  cloe::utility::register_lua_types(db);
+  cloe::utility::register_lua_types(binding);
+
+  DataBroker db{&binding};
 
   // 1) Implement a signal
   auto gamma = db.implement<cloe::Object>("gamma");
@@ -75,11 +78,11 @@ TEST(lua_types_test, vector3d) {
   //       Expected Result: I) The value of the member changed
   //                        II) The value-changed event was received
   sol::state state;
-  sol::state_view view(state);
-  DataBroker db{view};
-
+  sol::state_view const view(state);
+  cloe::databroker::LuaDataBrokerBinding binding {view};
   // Register all types
-  cloe::utility::register_lua_types(db);
+  cloe::utility::register_lua_types(binding);
+  DataBroker db{&binding};
 
   // 1) Implement a signal
   auto gamma = db.implement<Eigen::Vector3d>("gamma");

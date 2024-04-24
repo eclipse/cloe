@@ -23,6 +23,8 @@ class Cloe(ConanFile):
         "cloe-runtime",
         "cloe-models",
         "cloe-oak",
+        "cloe-simulation",
+        "cloe-stacklib",
         "cloe-engine",
         "cloe-plugins-core",
         "cloe-plugin-basic",
@@ -38,7 +40,8 @@ class Cloe(ConanFile):
         "fPIC": [True, False],
         "fable_allow_comments": [True, False],
         "engine_server": [True, False],
-        "engine_lrdb": [True, False]
+        "engine_lrdb": [True, False],
+        "python_api": [True, False]
     }
     default_options = {
         "shared": True,
@@ -46,6 +49,7 @@ class Cloe(ConanFile):
         "fable_allow_comments": True,
         "engine_server": True,
         "engine_lrdb": True,
+        "python_api": True
     }
     generators = "CMakeDeps", "VirtualRunEnv"
     no_copy_source = True
@@ -53,12 +57,13 @@ class Cloe(ConanFile):
         "*/cmake/*",
         "*/src/*",
         "*/include/*",
+        "*/test/*",
         "*/CMakeLists.txt",
 
         "fable/examples/*",
 
         "engine/lua/*",
-        "engine/webui/*",
+        "simulation/webui/*",
         "engine/vendor/*",
 
         "plugins/*/src/*",
@@ -86,8 +91,9 @@ class Cloe(ConanFile):
         self.requires("eigen/3.4.0")
         self.requires("cli11/2.3.2", private=True)
         self.requires("sol2/3.3.1")
-        self.requires("boost/[>=1.65.1]")
-        self.requires("esmini/2.37.4")
+        self.requires("boost/1.74.0")
+        self.requires("zlib/1.2.12", override=True)
+        self.requires("esmini/2.37.4@cloe/stable")
         if self.options.engine_server:
             self.requires("oatpp/1.3.0")
 
@@ -113,11 +119,11 @@ class Cloe(ConanFile):
         tc.cache_variables["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
         tc.cache_variables["CMAKE_MODULE_PATH"] = self.source_folder + "/runtime/cmake"
         tc.cache_variables["FABLE_VERSION"] = self.version
-        tc.cache_variables["FABLE_VERSION_U32"] = version_u32
+        tc.cache_variables["FABLE_VERSION_U32"] = str(version_u32)
         tc.cache_variables["FABLE_ALLOW_COMMENTS"] = self.options.fable_allow_comments
         tc.cache_variables["CLOE_PROJECT_VERSION"] = self.version
         tc.cache_variables["CLOE_VERSION"] = self.version
-        tc.cache_variables["CLOE_VERSION_U32"] = version_u32
+        tc.cache_variables["CLOE_VERSION_U32"] = str(version_u32)
         tc.cache_variables["CLOE_ENGINE_WITH_SERVER"] = self.options.engine_server
         tc.cache_variables["CLOE_ENGINE_WITH_LRDB"] = self.options.engine_lrdb
         tc.generate()

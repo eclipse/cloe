@@ -31,9 +31,9 @@
 #include <fable/utility/string.hpp>  // for join_vector
 
 #include "error_handler.hpp"  // for format_cloe_error
-#include "lua_api.hpp"
-#include "stack.hpp"
-#include "utility/command.hpp"  // for CommandExecuter, CommandResult
+#include <cloe/lua/lua_api.hpp>
+#include "cloe/stacklib/stack.hpp"
+#include "cloe/simulation/utility/command.hpp"  // for CommandExecuter, CommandResult
 
 // This variable is set from CMakeLists.txt, but in case it isn't,
 // we will assume that the server is disabled.
@@ -305,10 +305,10 @@ void register_cloe(sol::state_view& lua) {
 
 }  // anonymous namespace
 
-sol::state new_lua(const LuaOptions& opt, Stack& stack) {
+std::unique_ptr<sol::state> new_lua(const LuaOptions& opt, Stack& stack) {
   // clang-format off
-  sol::state lua;
-  lua.open_libraries(
+  auto lua = std::make_unique<sol::state>();
+  lua->open_libraries(
     sol::lib::base,
     sol::lib::coroutine,
     sol::lib::debug,
@@ -319,15 +319,15 @@ sol::state new_lua(const LuaOptions& opt, Stack& stack) {
     sol::lib::string,
     sol::lib::table
   );
-  lua.set_exception_handler(&lua_exception_handler);
+  lua->set_exception_handler(&lua_exception_handler);
   // clang-format on
 
-  register_package_path(lua, opt);
-  register_cloe_engine(lua, stack);
-  register_cloe_engine_types(lua);
-  register_cloe_engine_fs(lua);
+  register_package_path(*lua, opt);
+  register_cloe_engine(*lua, stack);
+  register_cloe_engine_types(*lua);
+  register_cloe_engine_fs(*lua);
   if (opt.auto_require_cloe) {
-    register_cloe(lua);
+    register_cloe(*lua);
   }
   return lua;
 }

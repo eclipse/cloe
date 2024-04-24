@@ -32,6 +32,7 @@
 
 #include <cloe/controller.hpp>  // for Controller, ControllerFactory, ...
 #include <cloe/models.hpp>      // for CloeComponent
+#include <sol/state_view.hpp>
 
 namespace cloe {
 namespace controller {

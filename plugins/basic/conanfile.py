@@ -42,6 +42,7 @@ class CloeControllerBasic(ConanFile):
     def requirements(self):
         self.requires(f"cloe-runtime/{self.version}@cloe/develop")
         self.requires(f"cloe-models/{self.version}@cloe/develop")
+        self.requires(f"cloe-databroker-bindings/{self.version}@cloe/develop")
 
     def build_requirements(self):
         self.test_requires("gtest/1.13.0")
@@ -79,6 +80,6 @@ class CloeControllerBasic(ConanFile):
         self.cpp_info.set_property("cmake_file_name", self.name)
         self.cpp_info.set_property("pkg_config_name", self.name)
 
-        if not self.in_local_cache: # editable mode
-            libdir = os.path.join(self.build_folder, "lib");
+        if not self.in_local_cache:  # editable mode
+            libdir = os.path.join(self.build_folder, "lib")
             self.runenv_info.append_path("LD_LIBRARY_PATH", libdir)

@@ -27,9 +27,9 @@
 #include <fmt/format.h>
 #include <fable/utility/string.hpp>  // for ends_with
 
-#include "lua_api.hpp"        // for lua_safe_script_file
+#include <cloe/lua/lua_api.hpp>        // for lua_safe_script_file
 #include "main_commands.hpp"  // for Stack, new_stack, LuaOptions, new_lua
-#include "stack.hpp"          // for Stack
+#include "cloe/stacklib/stack.hpp"          // for Stack
 
 namespace engine {
 
@@ -165,7 +165,7 @@ int shell(const ShellOptions& opt, const std::vector<std::string>& filepaths) {
   cloe::Stack stack = cloe::new_stack(stack_opt);
   auto lopt = opt.lua_options;
   lopt.auto_require_cloe = true;
-  sol::state lua = cloe::new_lua(lopt, stack);
+  auto lua = cloe::new_lua(lopt, stack);
 
   // Collect input files and strings to execute
   std::vector<std::string> actions{};
@@ -178,12 +178,12 @@ int shell(const ShellOptions& opt, const std::vector<std::string>& filepaths) {
   // Determine whether we should be interactive or not
   bool interactive = opt.interactive ? *opt.interactive : opt.commands.empty() && filepaths.empty();
   if (!interactive) {
-    auto errors = noninteractive_shell(lua, *opt.error, actions, opt.ignore_errors);
+    auto errors = noninteractive_shell(*lua, *opt.error, actions, opt.ignore_errors);
     if (errors != 0) {
       return EXIT_FAILURE;
     }
   } else {
-    interactive_shell(lua, *opt.output, actions, opt.ignore_errors);
+    interactive_shell(*lua, *opt.output, actions, opt.ignore_errors);
   }
   return EXIT_SUCCESS;
 }

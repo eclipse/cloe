@@ -21,10 +21,11 @@
  */
 
 #include <cloe/utility/lua_types.hpp>
-
-#include <Eigen/Dense>
-
 #include <cloe/component/object.hpp>
+#include <cloe/databroker/data_broker_lua_binding.hpp>
+#include <cloe/data_broker.hpp>
+
+#include <fmt/format.h>
 
 namespace sol {
 template <>
@@ -183,7 +184,7 @@ void traverse_namespace_impl(sol::state_view view, const std::vector<const char*
   * \param table_fn Callback accepting a SOL-table which reflects the given namespace
   */
 template <typename T>
-void traverse_namespace(DataBroker& db, const std::vector<const char*>& ns,
+void traverse_namespace(databroker::LuaDataBrokerBinding& db, const std::vector<const char*>& ns,
                         std::function<void(sol::table&)> table_fn) {
   db.declare_type<T>([&](sol::state_view view) { traverse_namespace_impl(view, ns, table_fn); });
 }
@@ -198,8 +199,8 @@ void traverse_namespace(DataBroker& db, const std::vector<const char*>& ns,
   * \param type_name ASCIIZ string describing the name of the class to be registered
   */
 template <typename T, typename CtorType>
-sol::usertype<T> register_usertype(DataBroker& db, const std::vector<const char*>& ns,
-                                   const char* type_name) {
+sol::usertype<T> register_usertype(databroker::LuaDataBrokerBinding& db,
+                                   const std::vector<const char*>& ns, const char* type_name) {
   sol::usertype<T> result;
   traverse_namespace<T>(
       db, ns, [&](sol::table& table) { result = table.new_usertype<T>(type_name, CtorType()); });
@@ -216,8 +217,8 @@ sol::usertype<T> register_usertype(DataBroker& db, const std::vector<const char*
   * \param args Pairs of ASCIIZ-String of one enum-value & the enum-value itself
   */
 template <typename T, typename... Args>
-void register_enum(DataBroker& db, const std::vector<const char*>& ns, const char* type_name,
-                   Args&&... args) {
+void register_enum(databroker::LuaDataBrokerBinding& db,
+                   const std::vector<const char*>& ns, const char* type_name, Args&&... args) {
   traverse_namespace<T>(
       db, ns, [&](sol::table& table) { table.new_enum(type_name, std::forward<Args>(args)...); });
 }
@@ -232,7 +233,7 @@ void register_enum(DataBroker& db, const std::vector<const char*>& ns, const cha
   * \param member_names ASCIIZ string array describing the names of the vector properties
   */
 template <typename T, std::size_t... ints>
-void register_vector(DataBroker& db, const std::vector<const char*>& ns, const char* type_name,
+void register_vector(cloe::databroker::LuaDataBrokerBinding& db, const std::vector<const char*>& ns, const char* type_name,
                      const char* member_names[], std::index_sequence<ints...>) {
   sol::usertype<T> usertype =
       register_usertype<T, typename MatrixTypeTraits<T>::Ctors>(db, ns, type_name);
@@ -264,10 +265,11 @@ void register_vector(DataBroker& db, const std::vector<const char*>& ns, const c
   if constexpr (3 == sizeof...(ints)) {
     usertype["cross"] = [](const T& that, const T& arg) -> T { return that.cross(arg); };
   }
+  db.declare<T>();
 }
 
 template <typename T>
-void register_vector(DataBroker& db, const std::vector<const char*>& ns, const char* class_name,
+void register_vector(cloe::databroker::LuaDataBrokerBinding& db, const std::vector<const char*>& ns, const char* class_name,
                      const char* member_names[]) {
   register_vector<T>(db, ns, class_name, member_names,
                      std::make_index_sequence<MatrixTypeTraits<T>::Rows>{});
@@ -275,7 +277,7 @@ void register_vector(DataBroker& db, const std::vector<const char*>& ns, const c
 
 std::vector namespace_cloe_object = {"cloe", "Object"};
 
-void register_gaspedal_sensor(DataBroker& db, const std::string& vehicle,
+void register_gaspedal_sensor(cloe::DataBroker& db, const std::string& vehicle,
                               std::function<const double&()> gaspedal_getter) {
   {
     using type = double;
@@ -285,14 +287,14 @@ void register_gaspedal_sensor(DataBroker& db, const std::string& vehicle,
         "Normalized gas pedal position for the '{}' vehicle<br><br>"
         "Range [min-max]: [0-1]",
         vehicle);
-    signal->add<cloe::LuaAutocompletionTag>(
-        cloe::LuaAutocompletionTag::LuaDatatype::Number,
-        cloe::LuaAutocompletionTag::PhysicalQuantity::Dimensionless,
+    signal->add<cloe::databroker::LuaAutocompletionTag>(
+        cloe::databroker::LuaAutocompletionTag::LuaDatatype::Number,
+        cloe::databroker::LuaAutocompletionTag::PhysicalQuantity::Dimensionless,
         documentation);
     signal->add<cloe::SignalDocumentation>(documentation);
   }
 }
-void register_wheel_sensor(DataBroker& db,
+void register_wheel_sensor(cloe::DataBroker& db,
                            const std::string& vehicle,
                            const std::string& wheel_name,
                            std::function<const ::cloe::Wheel&()>
@@ -308,9 +310,9 @@ void register_wheel_sensor(DataBroker& db,
         "velocity: Compression of the spring in [m]<br>"
         "spring_compression: Compression of the spring in [m]",
         vehicle);
-    signal->add<cloe::LuaAutocompletionTag>(
-        cloe::LuaAutocompletionTag::LuaDatatype::Class,
-        cloe::LuaAutocompletionTag::PhysicalQuantity::Dimensionless,
+    signal->add<cloe::databroker::LuaAutocompletionTag>(
+        cloe::databroker::LuaAutocompletionTag::LuaDatatype::Class,
+        cloe::databroker::LuaAutocompletionTag::PhysicalQuantity::Dimensionless,
         documentation);
     signal->add<cloe::SignalDocumentation>(documentation);
   }
@@ -322,9 +324,10 @@ void register_wheel_sensor(DataBroker& db,
     auto documentation =
         fmt::format("Sensor for the rotation around y-axis of the {} wheel of the '{}' vehicle",
                     wheel_name, vehicle);
-    signal->add<cloe::LuaAutocompletionTag>(cloe::LuaAutocompletionTag::LuaDatatype::Number,
-                                            cloe::LuaAutocompletionTag::PhysicalQuantity::Radian,
-                                            documentation);
+    signal->add<cloe::databroker::LuaAutocompletionTag>(
+        cloe::databroker::LuaAutocompletionTag::LuaDatatype::Number,
+        cloe::databroker::LuaAutocompletionTag::PhysicalQuantity::Radian,
+        documentation);
     signal->add<cloe::SignalDocumentation>(documentation);
   }
   {
@@ -335,9 +338,10 @@ void register_wheel_sensor(DataBroker& db,
     auto documentation =
         fmt::format("Sensor for the translative velocity of the {} wheel of the '{}' vehicle",
                     wheel_name, vehicle);
-    signal->add<cloe::LuaAutocompletionTag>(cloe::LuaAutocompletionTag::LuaDatatype::Number,
-                                            cloe::LuaAutocompletionTag::PhysicalQuantity::Velocity,
-                                            documentation);
+    signal->add<cloe::databroker::LuaAutocompletionTag>(
+        cloe::databroker::LuaAutocompletionTag::LuaDatatype::Number,
+        cloe::databroker::LuaAutocompletionTag::PhysicalQuantity::Velocity,
+        documentation);
     signal->add<cloe::SignalDocumentation>(documentation);
   }
   {
@@ -349,14 +353,15 @@ void register_wheel_sensor(DataBroker& db,
     auto documentation =
         fmt::format("Wheel sensor for spring compression of the {} wheel of the '{}' vehicle",
                     wheel_name, vehicle);
-    signal->add<cloe::LuaAutocompletionTag>(cloe::LuaAutocompletionTag::LuaDatatype::Number,
-                                            cloe::LuaAutocompletionTag::PhysicalQuantity::Radian,
-                                            documentation);
+    signal->add<cloe::databroker::LuaAutocompletionTag>(
+        cloe::databroker::LuaAutocompletionTag::LuaDatatype::Number,
+        cloe::databroker::LuaAutocompletionTag::PhysicalQuantity::Radian,
+        documentation);
     signal->add<cloe::SignalDocumentation>(documentation);
   }
 }
 
-void register_lua_types(DataBroker& db) {
+void register_lua_types(cloe::databroker::LuaDataBrokerBinding& db) {
   register_vector<Eigen::Vector2i>(db, namespace_eigen, "Vector2i", vector_names_xyzw);
   register_vector<Eigen::Vector3i>(db, namespace_eigen, "Vector3i", vector_names_xyzw);
   register_vector<Eigen::Vector4i>(db, namespace_eigen, "Vector4i", vector_names_xyzw);
@@ -368,6 +373,10 @@ void register_lua_types(DataBroker& db) {
   register_vector<Eigen::Vector2d>(db, namespace_eigen, "Vector2d", vector_names_xyzw);
   register_vector<Eigen::Vector3d>(db, namespace_eigen, "Vector3d", vector_names_xyzw);
   register_vector<Eigen::Vector4d>(db, namespace_eigen, "Vector4d", vector_names_xyzw);
+
+  db.declare<Eigen::Isometry3d>();
+  db.declare<cloe::Object>();
+  db.declare<std::vector<std::shared_ptr<cloe::Object>>>();
 
   // clang-format off
   register_enum<::cloe::Object::Type>(

@@ -16,11 +16,6 @@ class CloeEngine(ConanFile):
     description = "Cloe engine to execute simulations"
     settings = "os", "compiler", "build_type", "arch"
     options = {
-        # Whether the server feature is compiled and built into the Cloe engine.
-        # Not building this may make compiling the engine possible if the web
-        # server dependencies are incompatible with your target system.
-        "server": [True, False],
-
         # Whether the LRDB integration is compiled and built into the Cloe engine.
         "lrdb": [True, False],
 
@@ -31,10 +26,10 @@ class CloeEngine(ConanFile):
     }
     default_options = {
         "lrdb": True,
-        "server": True,
         "pedantic": True,
 
         "fable:allow_comments": True,
+        "cloe-simulation:server": False
     }
     generators = "CMakeDeps", "VirtualRunEnv"
     no_copy_source = True
@@ -47,7 +42,7 @@ class CloeEngine(ConanFile):
     ]
 
     def set_version(self):
-        version_file = Path(self.recipe_folder) / "../VERSION"
+        version_file = Path(self.recipe_folder) / ".." / "VERSION"
         if version_file.exists():
             self.version = files.load(self, version_file).strip()
         else:
@@ -57,10 +52,10 @@ class CloeEngine(ConanFile):
     def requirements(self):
         self.requires(f"cloe-runtime/{self.version}@cloe/develop")
         self.requires(f"cloe-models/{self.version}@cloe/develop")
+        self.requires(f"cloe-stacklib/{self.version}@cloe/develop")
+        self.requires(f"cloe-simulation/{self.version}@cloe/develop")
         self.requires("cli11/2.3.2", private=True)
         self.requires("sol2/3.3.1")
-        if self.options.server:
-            self.requires(f"cloe-oak/{self.version}@cloe/develop", private=True)
         self.requires("boost/[>=1.65.1]")
         self.requires("fmt/9.1.0", override=True)
         self.requires("nlohmann_json/3.11.2", override=True)
@@ -75,7 +70,6 @@ class CloeEngine(ConanFile):
         tc = cmake.CMakeToolchain(self)
         tc.cache_variables["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
         tc.cache_variables["CLOE_PROJECT_VERSION"] = self.version
-        tc.cache_variables["CLOE_ENGINE_WITH_SERVER"] = self.options.server
         tc.cache_variables["CLOE_ENGINE_WITH_LRDB"] = self.options.lrdb
         tc.cache_variables["TargetLintingExtended"] = self.options.pedantic
         tc.generate()

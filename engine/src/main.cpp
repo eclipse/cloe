@@ -25,7 +25,7 @@
 #include <cloe/core/error.hpp>
 #include <cloe/core/logger.hpp>
 
-#include "config.hpp"
+#include "cloe/stacklib/config.hpp"
 #include "main_commands.hpp"
 
 int main(int argc, char** argv) {

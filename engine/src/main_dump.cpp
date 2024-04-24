@@ -23,7 +23,7 @@
 #include <cloe/core/error.hpp>
 
 #include "main_commands.hpp" // for DumpOptions, new_stack
-#include "stack.hpp" // for Stack
+#include "cloe/stacklib/stack.hpp" // for Stack
 
 namespace engine {
 

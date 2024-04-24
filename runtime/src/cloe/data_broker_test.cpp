@@ -21,10 +21,12 @@
  */
 
 #include "cloe/data_broker.hpp"
+#include "cloe/databroker/data_broker_lua_binding.hpp"
 
 #include <gtest/gtest.h>
 
 #include <functional>
+#include <sol/state.hpp>
 
 using cloe::Container;
 using cloe::DataBroker;
@@ -533,7 +535,8 @@ TEST(databroker, to_lua_1) {
   //                        II) The value-changed event was received
   sol::state state;
   sol::state_view view(state);
-  DataBroker db{view};
+  cloe::databroker::LuaDataBrokerBinding binding {view};
+  DataBroker db{&binding};
   // 1) Implement a signal
   auto gamma = db.implement<double>("gamma");
   auto gamma2 = 2.71828;
@@ -601,10 +604,12 @@ TEST(databroker, to_lua_2) {
   //       Expected Result: 2) The value of the member changed
   sol::state state;
   sol::state_view view(state);
-  DataBroker db{view};
+  cloe::databroker::LuaDataBrokerBinding binding {view};
+  DataBroker db{&binding};
   // 1) Implement a signal
   auto euler = db.implement<CustomData>("euler");
   auto euler2 = 0.0;
+  binding.declare<CustomData>();
   db.subscribe<CustomData>("euler", [&](const CustomData &value) { euler2 = value.b; });
   auto gamma = db.implement<CustomData>("gamma");
   // bind signals
@@ -687,7 +692,9 @@ TEST(databroker, to_lua_3) {
   //                        II) The value-changed event was received
   sol::state state;
   sol::state_view view(state);
-  DataBroker db{view};
+  cloe::databroker::LuaDataBrokerBinding binding {view};
+  binding.declare<CustomEnum>();
+  DataBroker db{&binding};
   // 1) Implement a signal
   auto tau = db.implement<CustomEnum>("tau");
   tau = CustomEnum::Exception;
@@ -794,7 +801,9 @@ void to_lua(sol::state_view view, km * /* value */) {
 TEST(databroker, to_lua_4) {
   sol::state state;
   sol::state_view view(state);
-  DataBroker db{view};
+  cloe::databroker::LuaDataBrokerBinding binding {view};
+  binding.declare<km>();
+  DataBroker db{&binding};
   // 1) Implement a signal
   auto tau = db.implement<km>("tau");
 
@@ -824,7 +833,9 @@ TEST(databroker, to_lua_5) {
   //                        II) The value-changed event was received
   sol::state state;
   sol::state_view view(state);
-  DataBroker db{view};
+  cloe::databroker::LuaDataBrokerBinding binding {view};
+  binding.declare<std::optional<int>>();
+  DataBroker db{&binding};
   // 1) Implement a signal
   auto optional1 = db.implement<std::optional<int>>("optional1");
   auto optional2 = db.implement<std::optional<int>>("optional2");

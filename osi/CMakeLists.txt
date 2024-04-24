@@ -6,8 +6,11 @@ include(GNUInstallDirs)
 include(TargetLinting)
 
 # Module -------------------------------------------------------------
-find_package(cloe-models REQUIRED)
-find_package(cloe-runtime REQUIRED)
+set(CLOE_FIND_PACKAGES ON CACHE BOOL "Call find_package() for cloe packages")
+if(CLOE_FIND_PACKAGES)
+    find_package(cloe-models REQUIRED)
+    find_package(cloe-runtime REQUIRED)
+endif()
 find_package(Eigen3 REQUIRED)
 find_package(Boost COMPONENTS headers REQUIRED)
 find_package(open_simulation_interface REQUIRED)

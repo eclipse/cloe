@@ -26,11 +26,13 @@
 #include <string>   // for string
 #include <utility>  // for move
 
-#include <sol/table.hpp>
-#include <cloe/cloe_fwd.hpp> // for DataBroker
-#include <cloe/handler.hpp>  // for Handler
+#include <cloe/cloe_fwd.hpp>  // for DataBroker
+#include <cloe/handler.hpp>   // for Handler
+#include <cloe/simulation_driver.hpp>
 #include <cloe/trigger.hpp>  // for ActionFactory, EventFactory, Callback, ...
 #include <fable/json.hpp>    // for Json
+#include <sol/table.hpp>
+#include "lua/lua_simulation_driver.hpp"
 
 namespace cloe {
 
@@ -201,10 +203,9 @@ class Registrar {
    */
   virtual void register_event(std::unique_ptr<EventFactory>&& f, std::shared_ptr<Callback> c) = 0;
 
-  /**
-   * Provide a Lua table for registration of functions and variables.
-   */
-  virtual sol::table register_lua_table() = 0;
+  virtual cloe::SimulationDriver& simulation_driver() = 0;
+
+  virtual cloe::LuaSimulationDriver* lua_simulation_driver() = 0;
 
   /**
    * Register an EventFactory and return a DirectCallback for storage of

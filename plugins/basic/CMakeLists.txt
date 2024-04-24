@@ -6,6 +6,7 @@ set(CLOE_FIND_PACKAGES ON CACHE BOOL "Call find_package() for cloe packages")
 if(CLOE_FIND_PACKAGES)
     find_package(cloe-runtime REQUIRED)
     find_package(cloe-models REQUIRED)
+    find_package(cloe-databroker-bindings REQUIRED)
 endif()
 
 include(CloePluginSetup)

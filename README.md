@@ -244,7 +244,7 @@ Run `make -f Makefile.docker help` to get an impression of what is possible:
           --rm
 
 Because Docker images may be built in environments that have a proxy running,
-the Makefile will automatically add the proxy variables if they are are
+the Makefile will automatically add the proxy variables if they are
 detected in the host environment.
 
 The section `User configuration` shows variables that can be set to modify
