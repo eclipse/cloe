@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <unordered_map>
 #include <string>
+#include <tuple>
 #include <string_view>
 #include <utility>
 #include <type_traits>
@@ -195,30 +196,16 @@ class LuaDataBrokerBinding : public DataBrokerBinding {
   */
   using lua_signal_adapter_t = std::function<void(const SignalPtr&, sol::state_view, std::string_view)>;
 
-  explicit LuaDataBrokerBinding(sol::state_view lua) : lua_(std::move(lua)), signals_object_(lua_) {
-    declare<bool>();
-    declare<int8_t>();
-    declare<uint8_t>();
-    declare<int16_t>();
-    declare<uint16_t>();
-    declare<int32_t>();
-    declare<uint32_t>();
-    declare<int64_t>();
-    declare<uint64_t>();
-    declare<float>();
-    declare<double>();
+  template<typename Types, auto... Indices>
+  void declare_types_with_optional(std::index_sequence<Indices...>) {
+    (declare<std::tuple_element_t<Indices, Types>>(), ...);
+    (declare<std::optional<std::tuple_element_t<Indices, Types>>>(), ...);
+  }
 
-    declare<std::optional<bool>>();
-    declare<std::optional<int8_t>>();
-    declare<std::optional<uint8_t>>();
-    declare<std::optional<int16_t>>();
-    declare<std::optional<uint16_t>>();
-    declare<std::optional<int32_t>>();
-    declare<std::optional<uint32_t>>();
-    declare<std::optional<int64_t>>();
-    declare<std::optional<uint64_t>>();
-    declare<std::optional<float>>();
-    declare<std::optional<double>>();
+  explicit LuaDataBrokerBinding(sol::state_view lua) : lua_(std::move(lua)), signals_object_(lua_) {
+    using types = std::tuple<bool, int8_t, uint8_t, int16_t, uint16_t, int32_t, uint32_t, int64_t,
+                             uint64_t, float, double, std::string>;
+    declare_types_with_optional<types>(std::make_index_sequence<std::tuple_size_v<types>>());
   }
 
   void bind(std::string_view signals_name) override {
