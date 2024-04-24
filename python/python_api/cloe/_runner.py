@@ -177,6 +177,7 @@ class Simulation:
 
     def bind_plugin_types(self, lib: Path):
         import importlib
+        import importlib.util
         import sys
         components = str(lib.name).split('.')
         module_name = components[0]
@@ -194,11 +195,7 @@ class Simulation:
     def __init__(self, stack: Optional[Dict[str, Any]] = None):
         self.databroker_adapter = DataBrokerAdapter()
         self.driver = SimulationDriver(self.databroker_adapter)
-        if "CLOE_PLUGIN_PATH" not in os.environ:
-            # todo this is just here for debugging
-            plugin_paths = ["/home/ohf4fe/dev/sil/cloe/build/linux-x86_64-gcc-8/Debug/lib/cloe"]
-        else:
-            plugin_paths = os.environ["CLOE_PLUGIN_PATH"].split(":")
+        plugin_paths = os.environ["CLOE_PLUGIN_PATH"].split(":")
         full_config_stack = Stack(plugin_paths)
         if not stack:
             # todo this is just here for debugging
@@ -211,11 +208,11 @@ class Simulation:
 
         self._sim = _Simulation(full_config_stack, self.driver, uuid="123")
 
-        if "CLOE_PYTHON_BINDINGS" in os.environ:
+        if "BASIC_CLOE_PYTHON_BINDINGS" in os.environ:
             import importlib.util
             import sys
             binding_libs = []
-            for binding_dir in os.environ["CLOE_PYTHON_BINDINGS"].split(":"):
+            for binding_dir in os.environ["BASIC_CLOE_PYTHON_BINDINGS"].split(":"):
                 if len(str(binding_dir)) > 1:
                     binding_path = Path(binding_dir)
                     if binding_path.exists():

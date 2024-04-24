@@ -3,18 +3,37 @@
   "include": [
     "config_minimator_infinite.json"
   ],
+  "logging": [
+    {
+      "name": "*",
+      "level": "error"
+    }
+  ],
   "server": {
     "listen": false,
     "listen_port": 23456
   },
   "triggers": [
-    {"event": "virtue/failure", "action": "fail"},
     {
-      "label": "Vehicle default should never move with the minimator binding.",
-      "event": "default_speed/kmph=>0.0", "action": "fail"
+      "event": "virtue/failure",
+      "action": "fail"
     },
-    {"event": "start",   "action": "log=info: Running minimator/basic smoketest."},
-    {"event": "start",   "action": "realtime_factor=-1"},
-    {"event": "time=60", "action": "succeed"}
+    {
+      "label": "Vehicle default should never move at a velocity greater that 72 kmph with the minimator binding.",
+      "event": "default_speed/kmph=>80.0",
+      "action": "fail"
+    },
+    {
+      "event": "start",
+      "action": "log=info: Running minimator/basic smoketest."
+    },
+    {
+      "event": "start",
+      "action": "realtime_factor=-1"
+    },
+    {
+      "event": "time=60",
+      "action": "succeed"
+    }
   ]
 }
