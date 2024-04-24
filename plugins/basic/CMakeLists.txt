@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 
 project(cloe_plugin_basic LANGUAGES CXX)
 
+find_package(pybind11 CONFIG REQUIRED)
 set(CLOE_FIND_PACKAGES ON CACHE BOOL "Call find_package() for cloe packages")
 if(CLOE_FIND_PACKAGES)
     find_package(cloe-runtime REQUIRED)
@@ -21,6 +22,17 @@ cloe_add_plugin(
     COMPILE_DEFINITIONS
         PROJECT_SOURCE_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}\"
 )
+
+pybind11_add_module(_basic_bindings
+        src/basic_bindings.cpp
+)
+target_include_directories(_basic_bindings PRIVATE src/)
+target_link_libraries(_basic_bindings PUBLIC cloe::runtime cloe::models cloe::databroker-bindings)
+set_target_properties(_basic_bindings PROPERTIES
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED ON
+)
+install(TARGETS _basic_bindings LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/cloe/python)
 
 include(CTest)
 if(BUILD_TESTING)

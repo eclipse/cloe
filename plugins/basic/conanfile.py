@@ -83,3 +83,7 @@ class CloeControllerBasic(ConanFile):
         if not self.in_local_cache:  # editable mode
             libdir = os.path.join(self.build_folder, "lib")
             self.runenv_info.append_path("LD_LIBRARY_PATH", libdir)
+
+        # todo editable mode
+        self.runenv_info.prepend_path("CLOE_PYTHON_BINDINGS",
+                                      str(Path(self.package_folder) / 'lib' / 'cloe' / 'python'))
