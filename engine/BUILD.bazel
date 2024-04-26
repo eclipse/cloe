@@ -1,0 +1,106 @@
+cc_library(
+    name = "stacklib",
+    hdrs = [
+        "src/stack.hpp",
+        "src/plugin.hpp",
+    ],
+    srcs = [
+        "src/stack.cpp",
+        "src/plugin.cpp",
+    ],
+    includes = [ "src" ],
+    deps = [
+        "//fable",
+        "//runtime",
+        "@boost//:algorithm",
+        "@boost//:optional",
+        "@boost//:filesystem",
+    ],
+    linkopts = [
+        "-ldl",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_test(
+    name = "stack-test",
+    srcs = [
+        "src/stack_test.cpp",
+    ],
+    deps = [
+        ":stacklib",
+        "//models",
+        "@gtest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "enginelib",
+    hdrs = [
+        "src/coordinator.hpp",
+        "src/plugins/nop_controller.hpp",
+        "src/plugins/nop_simulator.hpp",
+        "src/registrar.hpp",
+        "src/server.hpp",
+        "src/simulation.hpp",
+        "src/simulation_context.hpp",
+        "src/utility/command.hpp",
+        "src/utility/defer.hpp",
+        "src/utility/progress.hpp",
+        "src/utility/state_machine.hpp",
+        "src/utility/time_event.hpp",
+    ],
+    srcs = [
+        "src/coordinator.cpp",
+        "src/plugins/nop_controller.cpp",
+        "src/plugins/nop_simulator.cpp",
+        "src/server.cpp",
+        "src/simulation.cpp",
+        "src/simulation_context.cpp",
+        "src/utility/command.cpp",
+    ],
+    includes = [ "src" ],
+    additional_compiler_inputs = glob(["webui/**"]),
+    deps = [
+        ":stacklib",
+        "//fable",
+        "//runtime",
+        "//models",
+        "//oak",
+        "@boost//:algorithm",
+        "@boost//:conversion",
+        "@boost//:filesystem",
+        "@boost//:optional",
+        "@boost//:process",
+        "@boost//:uuid",
+    ],
+    defines = [
+        "CLOE_ENGINE_VERSION=\\\"0.23.0\\\"",
+        "CLOE_ENGINE_TIMESTAMP=\\\"unknown\\\"",
+        "CLOE_ENGINE_WITH_SERVER=1",
+        "PROJECT_SOURCE_DIR=\\\"engine\\\"",
+    ],
+    linkopts = [
+        "-lpthread",
+    ],
+)
+
+cc_binary(
+    name = "engine",
+    srcs = [
+        "src/main_check.hpp",
+        "src/main_dump.hpp",
+        "src/main_run.hpp",
+        "src/main_stack.hpp",
+        "src/main_usage.hpp",
+        "src/main_version.hpp",
+        "src/main.cpp",
+        "src/main_stack.cpp",
+    ],
+    includes = [ "src" ],
+    deps = [
+        ":enginelib",
+        "@cli11",
+    ],
+    visibility = ["//visibility:public"],
+)

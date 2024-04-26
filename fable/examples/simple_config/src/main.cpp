@@ -84,7 +84,7 @@ int main(int argc, char **argv) {
   try {
     std::cout << fmt::format("Loading config from {}", filename) << std::endl;
     config.from_conf(fable::read_conf(filename));
-  } catch (fable::Error e) {
+  } catch (fable::Error& e) {
     std::cerr << fmt::format("\n\n{0:=^{1}}\n", " JSON-Validation ", header_width) << std::endl;
     std::cerr << fmt::format("Error: {}", e.what()) << std::endl;
     return 1;

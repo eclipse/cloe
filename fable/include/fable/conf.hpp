@@ -57,7 +57,6 @@
 #include <vector>      // for vector<>
 
 #include <fmt/format.h>  // for fmt::format
-
 #include <fable/fable_fwd.hpp>  // for ConfError
 #include <fable/json.hpp>       // for Json
 

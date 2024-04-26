@@ -1,0 +1,21 @@
+filegroup(
+    name = "inputs",
+    srcs = [
+        "example_addressbook.json",
+        "invalid_addressbook.json",
+    ]
+)
+
+cc_binary(
+    name = "contacts",
+    srcs = [
+        "src/main.cpp",
+    ],
+    deps = [
+        "//fable",
+        "@cli11",
+    ],
+    data = [
+        ":inputs",
+    ]
+)

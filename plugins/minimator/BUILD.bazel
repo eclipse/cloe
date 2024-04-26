@@ -1,0 +1,21 @@
+cc_library(
+    name = "minimator",
+    hdrs = glob(["include/**"]),
+    srcs = glob(["src/**"], exclude=["src/*_test.cpp"]),
+    includes = [ "include" ],
+    deps = [
+        "//runtime",
+        "//models",
+    ]
+)
+
+cc_test(
+    name = "minimator_test",
+    srcs = [
+        "src/minimator_config_test.cpp",
+    ],
+    deps = [
+        ":minimator",
+        "@gtest//:gtest_main",
+    ]
+)

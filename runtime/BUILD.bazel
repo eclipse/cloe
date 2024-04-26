@@ -1,0 +1,56 @@
+load(
+    "@cmake_configure_file//:cmake_configure_file.bzl",
+    "cmake_configure_file",
+)
+
+CLOE_VERSION = "0.23.0"
+CLOE_VERSION_U32 = (0<<24) | (0 << 16) | (23 << 8) | 0
+
+cmake_configure_file(
+    name = "cloe_version_hpp",
+    src = "src/cloe/version.hpp.in",
+    out = "include/cloe/version.hpp",
+    defines = [
+        "CLOE_VERSION={}".format(CLOE_VERSION),
+        "CLOE_VERSION_U32={}".format(CLOE_VERSION_U32),
+    ]
+)
+
+cc_library(
+    name = "runtime",
+    srcs = glob(["src/**/*.cpp"], exclude=["src/**/*_test.cpp"]),
+    hdrs = glob(["include/**/*.hpp"]) + [":cloe_version_hpp"],
+    includes = [ "include" ],
+    deps = [
+        "//fable",
+        "@fmt",
+        "@spdlog",
+        "@inja",
+        "@incbin",
+        "@boost//:accumulators",
+        "@boost//:algorithm",
+        "@boost//:assign",
+        "@boost//:bimap",
+        "@boost//:conversion",
+        "@boost//:filesystem",
+        "@boost//:iostreams",
+        "@boost//:optional",
+        "@boost//:process",
+        "@boost//:range",
+        "@boost//:system",
+    ],
+    defines = [
+        "_USE_MATH_DEFINES=1",
+    ],
+    visibility = ["//visibility:public"],
+    linkstatic = False,
+)
+
+cc_test(
+    name = "runtime_test",
+    srcs = glob(["src/**/*_test.cpp"]),
+    deps = [
+        ":runtime",
+        "@gtest//:gtest_main",
+    ],
+)

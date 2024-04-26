@@ -1,0 +1,17 @@
+cc_library(
+    name = "demo_stuck",
+    srcs = ["src/demo_stuck.cpp"],
+    deps = [
+        "//runtime",
+        "//models",
+    ]
+)
+
+cc_library(
+    name = "demo_printer",
+    srcs = ["src/demo_printer.cpp"],
+    deps = [
+        "//runtime",
+        "//models",
+    ]
+)

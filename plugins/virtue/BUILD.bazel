@@ -1,0 +1,10 @@
+cc_library(
+    name = "virtue",
+    srcs = [
+        "src/virtue.cpp"
+    ],
+    deps = [
+        "//runtime",
+        "//models",
+    ]
+)

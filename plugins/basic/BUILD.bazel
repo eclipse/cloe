@@ -1,0 +1,22 @@
+cc_library(
+    name = "controller_basic",
+    hdrs = glob(["src/*.hpp"]),
+    srcs = glob(["src/*.cpp"], exclude=["src/*_test.cpp"]),
+    additional_compiler_inputs = glob(["ui/**"]),
+    copts = [
+        "-DPROJECT_SOURCE_DIR=\\\"plugins/basic\\\"",
+    ],
+    deps = [
+        "//runtime",
+        "//models",
+    ]
+)
+
+cc_test(
+    name = "basic_test",
+    srcs = glob(["src/*_test.cpp"]),
+    deps = [
+        ":controller_basic",
+        "@gtest//:gtest_main",
+    ]
+)

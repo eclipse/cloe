@@ -14,27 +14,7 @@ find_package(fmt REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
 file(GLOB fable_PUBLIC_HEADERS "include/**/*.hpp")
-add_library(fable
-    # find src -type f -name "*.cpp" \! -name "*_test.cpp"
-    src/fable/conf.cpp
-    src/fable/confable.cpp
-    src/fable/environment.cpp
-    src/fable/json.cpp
-    src/fable/schema.cpp
-    src/fable/schema/boolean.cpp
-    src/fable/schema/number.cpp
-    src/fable/schema/path.cpp
-    src/fable/schema/string.cpp
-    src/fable/schema/struct.cpp
-    src/fable/schema/variant.cpp
-    src/fable/utility.cpp
-    src/fable/utility/chrono.cpp
-    src/fable/utility/path.cpp
-    src/fable/utility/string.cpp
-
-    # For IDE integration
-    ${fable_PUBLIC_HEADERS}
-)
+add_library(fable GLOB)
 add_library(fable::fable ALIAS fable)
 set_target_properties(fable PROPERTIES
     CXX_STANDARD 17
@@ -72,28 +52,7 @@ if(BUILD_TESTING)
     include(GoogleTest)
 
     add_executable(test-fable
-        # find src -type f -name "*_test.cpp"
-        src/fable/version_test.cpp
-        src/fable/environment_test.cpp
-        src/fable/conf_test.cpp
-        src/fable/schema/array_test.cpp
-        src/fable/schema/const_test.cpp
-        src/fable/schema/custom_test.cpp
-        src/fable/schema/enum_test.cpp
-        src/fable/schema/factory_advanced_test.cpp
-        src/fable/schema/factory_test.cpp
-        src/fable/schema/ignore_test.cpp
-        src/fable/schema/map_nested_test.cpp
-        src/fable/schema/map_test.cpp
-        src/fable/schema/number_test.cpp
-        src/fable/schema/optional_test.cpp
-        src/fable/schema/path_test.cpp
-        src/fable/schema/string_test.cpp
-        src/fable/schema/struct_test.cpp
-        src/fable/schema_test.cpp
-        src/fable/utility/chrono_test.cpp
-        src/fable/utility/string_test.cpp
-        src/fable/utility/sol_test.cpp
+        GLOB
     )
     set_target_properties(test-fable PROPERTIES
         CXX_STANDARD 17
@@ -113,32 +72,3 @@ if(BUILD_TESTING)
     )
     gtest_add_tests(TARGET test-fable)
 endif()
-
-# Installation -------------------------------------------------------
-install(TARGETS fable
-    EXPORT fableTargets
-    LIBRARY
-    ARCHIVE
-    RUNTIME
-)
-install(DIRECTORY include/
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-)
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-)
-install(EXPORT fableTargets
-    NAMESPACE fable::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/fable
-)
-include(CMakePackageConfigHelpers)
-write_basic_package_version_file(
-    "fableConfigVersion.cmake"
-    VERSION ${FABLE_VERSION}
-    COMPATIBILITY AnyNewerVersion
-)
-install(FILES
-    "cmake/fableConfig.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/fableConfigVersion.cmake"
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/fable
-)

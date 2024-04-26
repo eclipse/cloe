@@ -63,14 +63,13 @@
 #include <iostream>  // for std::{cout, cerr}
 #include <string>    // for std::string<>
 #include <vector>    // for std::vector<>
+#include <optional>  // for std::optional<>
 
 #include <fmt/format.h>        // for fmt::format
 #include <CLI/CLI.hpp>         // for CLI::App
-#include <boost/optional.hpp>  // for boost::optional<>
 
 #include <fable/confable.hpp>               // for fable::{Confable, CONFABLE_SCHEMA}
 #include <fable/schema.hpp>                 // for fable::{Schema, String}
-#include <fable/schema/boost_optional.hpp>  // for fable::{Optional, make_schema}
 #include <fable/utility.hpp>                // for fable::{read_conf}
 
 // All structs that are used directly with fable for serialization and
@@ -170,16 +169,16 @@ struct Contact : public fable::Confable {
   std::string firstName;
   std::string lastName;
   bool isAlive{false};
-  boost::optional<uint8_t> age{0};
+  std::optional<uint8_t> age{0};
 
-  boost::optional<Address> address;
+  std::optional<Address> address;
   std::vector<PhoneNumber> phoneNumbers;
   std::vector<std::string> children;
-  boost::optional<std::string> spouse;
+  std::optional<std::string> spouse;
 
   Contact() = default;
   Contact(
-      std::string first, std::string last, bool alive, boost::optional<uint8_t> age) noexcept
+      std::string first, std::string last, bool alive, std::optional<uint8_t> age) noexcept
       : firstName(std::move(first)), lastName(std::move(last)), isAlive(alive), age(age) {}
 
   Contact with_address(Address&& addr) && {
@@ -222,7 +221,7 @@ int main(int argc, char** argv) {
       Contact("John", "Smith", true, 42)
           .with_address({"Generate Road 12", "Nowhere", "NA", "00000"})
           .with_phone({PhoneType::Home, "+1 650 0000 000"}),
-      Contact("Jane", "Doe", false, boost::none),
+      Contact("Jane", "Doe", false, std::nullopt),
   };
 
   // If we don't have a Confable, we can create a Schema on the fly and pass

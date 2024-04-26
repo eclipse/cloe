@@ -1,0 +1,18 @@
+cc_library(
+    name = "controller_gndtruth_extractor",
+    hdrs = glob(["src/*.hpp"]),
+    srcs = glob(["src/*.cpp"], exclude=["src/*_test.cpp"]),
+    deps = [
+        "//runtime",
+        "//models",
+    ]
+)
+
+cc_test(
+    name = "gndtruth_extractor_test",
+    srcs = glob(["src/*_test.cpp"]),
+    deps = [
+        ":controller_gndtruth_extractor",
+        "@gtest//:gtest_main",
+    ]
+)

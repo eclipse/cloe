@@ -1,0 +1,10 @@
+cc_library(
+    name = "speedometer",
+    srcs = [
+        "src/speedometer.cpp"
+    ],
+    deps = [
+        "//runtime",
+        "//models",
+    ]
+)

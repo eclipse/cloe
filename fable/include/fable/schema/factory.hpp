@@ -23,7 +23,6 @@
 #pragma once
 
 #include <functional>   // for function<>
-#include <limits>       // for numeric_limits<>
 #include <map>          // for map<>
 #include <memory>       // for shared_ptr<>
 #include <string>       // for string
