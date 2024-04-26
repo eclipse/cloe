@@ -4,6 +4,8 @@ from conan import ConanFile
 from conan.tools import cmake, files, env
 from conan.tools.system import package_manager
 
+from conans.tools import os_info
+
 required_conan_version = ">=1.52.0"
 
 
@@ -57,13 +59,16 @@ class ESMini(ConanFile):
     def system_requirements(self):
         packages = None
         if self.options.with_osg:
-            # TODO: add all system requirements
             packages = [
                 "libfontconfig1-dev",
-                "libgl-dev",
                 "libxrandr-dev",
                 "libxinerama-dev",
             ]
+            if os_info.linux_distro == "ubuntu":
+                if os_info.os_version < "20":
+                    packages.append("libgl1-mesa-dev")
+                else:
+                    packages.append("libgl-dev")
         if packages:
             apt = package_manager.Apt(self)
             apt.install(packages, update=True, check=True)
