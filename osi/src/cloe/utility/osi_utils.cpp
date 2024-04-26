@@ -34,6 +34,7 @@
 #include <osi3/osi_sensordata.pb.h>  // for SensorData, DetectedEntityHeader
 
 namespace cloe::utility {
+
 using Eigen::Vector3d;
 
 template <typename OSI_T>
@@ -44,6 +45,10 @@ void osi_to_json(const OSI_T& msg, std::string* json_string) {
   google::protobuf::util::MessageToJsonString(msg, json_string, options);
 }
 
+template void osi_to_json(const osi3::SensorData& msg, std::string* json_string);
+template void osi_to_json(const osi3::SensorView& msg, std::string* json_string);
+template void osi_to_json(const osi3::GroundTruth& msg,std::string* json_string);
+
 template <typename OSI_T>
 void osi_to_file(const OSI_T& msg, const std::string& fname) {
   std::string json;
@@ -52,6 +57,7 @@ void osi_to_file(const OSI_T& msg, const std::string& fname) {
   out << json;
   out.close();
 }
+
 template void osi_to_file(const osi3::SensorData& msg, const std::string& fname);
 template void osi_to_file(const osi3::SensorView& msg, const std::string& fname);
 template void osi_to_file(const osi3::GroundTruth& msg, const std::string& fname);
