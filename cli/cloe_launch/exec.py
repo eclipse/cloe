@@ -582,7 +582,7 @@ class Engine:
 
     def _set_build_policy(self, build_policy: Optional[List[str]]):
         if build_policy is None:
-            build_policy = ["outdated", "cascade"]
+            build_policy = ["missing", "cascade"]
         for policy in build_policy:
             if policy == "":
                 self.conan_args.append("--build")
