@@ -194,3 +194,47 @@ TEST(lane_boundary, clothoid_line) {
   EXPECT_NEAR(lb.curv_hor_change, 0.0, tol);
   EXPECT_NEAR(lb.dx_end, (lb.points.back() - lb.points.front()).norm(), tol);
 }
+
+TEST(frustum_exceed, error) {
+  cloe::LaneBoundary lb;
+  // Polyline in x-direction, culling (x-range). Cull at near-plane.
+  bool frustum_culling = true;
+  lb.points =
+      get_line_lb_points(Eigen::Vector3d(10.0, 0.0, 0.0), Eigen::Vector3d(10.0, 25.0, 0.0), 6);
+
+  auto logger = cloe::logger::get("clothoid");
+
+  cloe::Frustum frustum;
+  // fov within limits, do not throw
+  frustum.fov_h = M_2X_PI;
+  frustum.fov_v = M_2X_PI - 0.01;
+  EXPECT_NO_THROW(cloe::component::fit_clothoid(logger, frustum_culling, frustum, lb));
+
+  // horizontal field of view exceed limits, expect runtime error
+  frustum.fov_h = M_2X_PI + 0.01;
+  frustum.fov_v = M_2X_PI;
+  EXPECT_THROW(cloe::component::fit_clothoid(logger, frustum_culling, frustum, lb),
+               std::runtime_error);
+
+  // vertical field of view exceed limits, expect runtime error
+  frustum.fov_h = M_2X_PI;
+  frustum.fov_v = M_2X_PI + 0.01;
+  EXPECT_THROW(cloe::component::fit_clothoid(logger, frustum_culling, frustum, lb),
+               std::runtime_error);
+
+  // horizontal offset exceeds limits
+  frustum.fov_h = M_PI;
+  frustum.fov_v = M_2X_PI;
+  frustum.offset_h = 0.5 * M_PI + 0.01;
+  EXPECT_THROW(cloe::component::fit_clothoid(logger, frustum_culling, frustum, lb),
+               std::runtime_error);
+
+  // within limits
+  frustum.offset_h = 0.5 * M_PI - 0.01;
+  EXPECT_NO_THROW(cloe::component::fit_clothoid(logger, frustum_culling, frustum, lb));
+
+  // exeeds limits
+  frustum.offset_h = -0.5 * M_PI - 0.01;
+  EXPECT_THROW(cloe::component::fit_clothoid(logger, frustum_culling, frustum, lb),
+               std::runtime_error);
+}

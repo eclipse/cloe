@@ -56,6 +56,7 @@ if(BUILD_TESTING)
         src/cloe/component/latlong_actuator_test.cpp
         src/cloe/component/utility/steering_utils_test.cpp
         src/cloe/utility/actuation_level_test.cpp
+        src/cloe/utility/frustum_culling_test.cpp
     )
     set_target_properties(test-models PROPERTIES
         CXX_STANDARD 17

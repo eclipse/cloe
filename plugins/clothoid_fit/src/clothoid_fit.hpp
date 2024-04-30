@@ -101,6 +101,19 @@ uint8_t get_plane_mask(const Frustum& frustum, const Eigen::Vector3d& pt) {
   double fov_h_u = 0.5 * frustum.fov_h + frustum.offset_h;
   double fov_v_l = -0.5 * frustum.fov_v + frustum.offset_v;
   double fov_v_u = 0.5 * frustum.fov_v + frustum.offset_v;
+
+  if (fov_h_l < -M_PI || fov_h_u > M_PI || fov_v_l < -M_PI || fov_v_u > M_PI) {
+    // clang-format off
+    throw std::runtime_error(fmt::format(
+        "The get_plane_mask function of the clothoid fit plugin only works in the range [-M_PI, M_PI]."
+        "However, the following values were calculated and at least one condition was not met: \n"
+        "fov_h_l: {}; has to be greater equal to -M_PI, \n"
+        "fov_h_u: {}; has to be smaller equal to M_PI, \n"
+        "fov_v_l: {}; has to be greater equal to -M_PI,\n" 
+        "fov_v_u: {}; has to be smaller equal to M_PI. \n",
+        fov_h_l, fov_h_u, fov_v_l, fov_v_u));
+    // clang-format on
+  }
   double range_mult = cos(frustum.offset_h) * cos(frustum.offset_v);
   uint8_t plane_mask{0};
   // Horizontal field of view.
