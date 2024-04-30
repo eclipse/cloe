@@ -46,6 +46,7 @@ class Cloe(ConanFile):
         cloe_requires("cloe-models")
         cloe_requires("cloe-plugin-basic")
         cloe_requires("cloe-plugin-clothoid-fit")
+        cloe_requires("cloe-plugin-frustum-culling")
         cloe_requires("cloe-plugin-gndtruth-extractor")
         cloe_requires("cloe-plugin-minimator")
         cloe_requires("cloe-plugin-mocks")
