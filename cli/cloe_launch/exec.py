@@ -76,7 +76,7 @@ class PluginSetup:
 
 def _find_plugin_setups(file: Path) -> List[Type[PluginSetup]]:
     """Open a Python module and find all PluginSetups."""
-    name = os.path.splitext(file)[0]
+    name = str(file.with_suffix(""))
     spec = importlib.util.spec_from_file_location(name, file)
     if spec is None:
         return []
