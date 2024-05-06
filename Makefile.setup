@@ -146,7 +146,6 @@ install-python-deps::
 		"conan<2.0.0" \
 		libtmux \
 		toml \
-		rich \
 		pipx \
 		;
 
