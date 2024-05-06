@@ -14,14 +14,17 @@ make install
 ## Usage
 
 ```
+cloe-launch [-v] config [--edit] [--write]
+
 cloe-launch [-v] clean                             CONANFILE
 
 cloe-launch [-v] prepare                           CONANFILE [CONAN_INSTALL_ARGS]
 
 cloe-launch [-v] activate [-c]                     CONANFILE [CONAN_INSTALL_ARGS]
+
     cloe-launch -v activate -c tests/conanfile.py -o cloe-engine:server=True
 
-cloe-launch [-v] deploy  [-c] [-f] [-r] [-D PATH]  CONANFILE [CONAN_INSTALL_ARGS]
+cloe-launch [-v] deploy  [-D PATH]                 CONANFILE [CONAN_INSTALL_ARGS]
 
 cloe-launch [-v] exec    [-c] [-e VAR] [-E] [-d]   CONANFILE [CONAN_INSTALL_ARGS] -- [ENGINE_ARGS]
 

@@ -58,6 +58,45 @@ readable perspective on new releases.
 
       Note that the most recent release is at the *top* of the document.
 
+0.24.0 (2024-05-06)
+-------------------
+
+This is the seventh public minor release of the Cloe packages.
+Read all about the changes :doc:`here <news/release-0.24.0>`.
+
+Please note that there is a breaking change in the interface of the
+``cloe-launch`` tool, which *will* affect every single use of the tool.
+
+**CLI:**
+
+- cli: Fix help text for deploy command `[4c193c1a] <https://github.com/eclipse/cloe/commit/4c193c1a186335daf83f5e434f133cc7487409d0>`_
+- cli: Add missing copyright headers `[02101bac] <https://github.com/eclipse/cloe/commit/02101baca32fef9412942969a52823a3f822977c>`_
+- cli: Replace os.path with pathlib method `[857eec68] <https://github.com/eclipse/cloe/commit/857eec683b46ddeaeac00835bdcbc07b2b54c89f>`_
+- cli: Add config subcommand `[871eb2f1] <https://github.com/eclipse/cloe/commit/871eb2f1b6b27fc33e880af6b842c886dc7af7a5>`_
+- cli: Unpin click and toml versions `[4c36d5bf] <https://github.com/eclipse/cloe/commit/4c36d5bf8a8e5af318c15d9a79862626e0f10d4a>`_
+- cli: Show conan command being executed in verbose mode `[f7f2aee5] <https://github.com/eclipse/cloe/commit/f7f2aee5475d1f569dfb8676f00ec5f06b09ff89>`_
+- cli: Fix cloe-launch prepare not showing output. `[98ec84e4] <https://github.com/eclipse/cloe/commit/98ec84e4eb203fd97863045861c16713fce2a2f4>`_
+- cli: Prevent . from being added to CLOE_PLUGIN_PATH `[d914acda] <https://github.com/eclipse/cloe/commit/d914acdabf95d4303c83505c1fcd5c95f0c63548>`_
+- cli: Add --ignore-plugin-setups option `[093bd23a] <https://github.com/eclipse/cloe/commit/093bd23ab4f4b2e17ffbaa16379046752d48eee7>`_
+- cli: Provide help for common errors `[7c8c71f9] <https://github.com/eclipse/cloe/commit/7c8c71f9d39d007c47f438489e9cddc3d8d164b2>`_
+- cli: Update default build policy from outdated to cascade `[8438361d] <https://github.com/eclipse/cloe/commit/8438361d5c128cf321b7c281e7adda3790f11aee>`_
+- cli: Fix rpath list being modified `[a7f44169] <https://github.com/eclipse/cloe/commit/a7f441690879a6805a38424a9e20ceca3eb56278>`_
+- cli: Fix allow_interspersed_args not inherited anymore `[74097b72] <https://github.com/eclipse/cloe/commit/74097b724f4cd5b4913035d3da4dbe220a942bde>`_
+- cli: Fix broken Makefile failing to install . `[bfe9b834] <https://github.com/eclipse/cloe/commit/bfe9b834113b693548e33d548a8f1099f1b49255>`_
+- cli: Fix conanfile.py referring to missing setup.py `[32b2bba2] <https://github.com/eclipse/cloe/commit/32b2bba25b48d128d23baa36f06ef13623f8484c>`_
+- cli: Fix usage error in README `[6c85cc56] <https://github.com/eclipse/cloe/commit/6c85cc56eb7ddaa19b90fdf0e853ac8e1974c116>`_
+- cli: Improve cloe-launch command help messages `[a4093b83] <https://github.com/eclipse/cloe/commit/a4093b830c927a5592b68958d7e340533891ff51>`_
+- cli: Simplify conan argument passing `[0b4052f7] <https://github.com/eclipse/cloe/commit/0b4052f718d100230df62f170a5de66d13ad9573>`_
+- cli: Refactor cloe_utils into binutils and procutils `[ab0250e9] <https://github.com/eclipse/cloe/commit/ab0250e93f85510c7520fd05e6eebb6d1c1004e5>`_
+- cli: Improve error handling of patch_rpath `[479e6188] <https://github.com/eclipse/cloe/commit/479e6188af9e3c37166767964e9213624ee8023f>`_
+- cli: Disable pylint logging-fstring-interpolation `[d8a0c645] <https://github.com/eclipse/cloe/commit/d8a0c64575bc99e4dc283e22349b5907bcd995b7>`_
+- cli: Fail when patchelf does not exist `[9d746eb2] <https://github.com/eclipse/cloe/commit/9d746eb239064d38b3771f3e6e1a453db49ea326>`_
+- cli: Add deploy command `[1984ca41] <https://github.com/eclipse/cloe/commit/1984ca4118a0b66cdfbe3d3f14e75d151a8858b3>`_
+
+**Plugins:**
+
+- frustum_culling: Add frustum culling as a cloe plugin `[9f921ec2] <https://github.com/eclipse/cloe/commit/9f921ec2aa757536e01b143fb763a141180b6b95>`_
+
 0.23.0 (2024-04-23)
 -------------------
 
@@ -69,7 +108,6 @@ the fable library. See the news article linked above and feel free to raise an
 issue if there are any questions.
 
 The following is a *selection* of interesting commits.
-
 
 **Engine:**
 

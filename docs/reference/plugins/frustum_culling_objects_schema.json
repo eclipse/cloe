@@ -1,0 +1,108 @@
+{
+  "$id": "~/.conan/data/cloe-plugin-frustum-culling/0.24.0/cloe/develop/package/7ecda101666cc57e74197e36a88beb3d4fdbf3be/lib/cloe/component_frustum_culling_objects.so",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "description": "transform objects to given reference frame and apply frustum culling",
+  "properties": {
+    "frustum": {
+      "additionalProperties": false,
+      "description": "sensor frustum",
+      "properties": {
+        "clip_far": {
+          "description": "far clipping plane [m]",
+          "maximum": 1.7976931348623157e+308,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "clip_near": {
+          "description": "near clipping plane [m]",
+          "maximum": 1.7976931348623157e+308,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "fov_h": {
+          "description": "horizontal field of view [rad]",
+          "maximum": 6.283185307179586,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "fov_v": {
+          "description": "vertical field of view [rad]",
+          "maximum": 6.283185307179586,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        "offset_h": {
+          "description": "horizontal field-of-view offset [rad]",
+          "maximum": 6.283185307179586,
+          "minimum": -6.283185307179586,
+          "type": "number"
+        },
+        "offset_v": {
+          "description": "vertical field-of-view offset [rad]",
+          "maximum": 6.283185307179586,
+          "minimum": -6.283185307179586,
+          "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "reference_frame": {
+      "additionalProperties": false,
+      "description": "sensor frame of reference",
+      "properties": {
+        "pitch": {
+          "description": "pitch angle relative to ego reference frame [rad]",
+          "maximum": 1.7976931348623157e+308,
+          "minimum": -1.7976931348623157e+308,
+          "type": "number"
+        },
+        "roll": {
+          "description": "roll angle relative to ego reference frame [rad]",
+          "maximum": 1.7976931348623157e+308,
+          "minimum": -1.7976931348623157e+308,
+          "type": "number"
+        },
+        "x": {
+          "description": "x-position in ego reference frame [m]",
+          "maximum": 1.7976931348623157e+308,
+          "minimum": -1.7976931348623157e+308,
+          "type": "number"
+        },
+        "y": {
+          "description": "y-position in ego reference frame [m]",
+          "maximum": 1.7976931348623157e+308,
+          "minimum": -1.7976931348623157e+308,
+          "type": "number"
+        },
+        "yaw": {
+          "description": "yaw angle relative to ego reference frame [rad]",
+          "maximum": 1.7976931348623157e+308,
+          "minimum": -1.7976931348623157e+308,
+          "type": "number"
+        },
+        "z": {
+          "description": "z-position in ego reference frame [m]",
+          "maximum": 1.7976931348623157e+308,
+          "minimum": -1.7976931348623157e+308,
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "z",
+        "roll",
+        "pitch",
+        "yaw"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "reference_frame",
+    "frustum"
+  ],
+  "title": "frustum_culling_objects",
+  "type": "object"
+}

@@ -1,0 +1,32 @@
+Name: frustum_culling_objects
+Type: component
+Path: ~/.conan/data/cloe-plugin-frustum-culling/0.24.0/cloe/develop/package/7ecda101666cc57e74197e36a88beb3d4fdbf3be/lib/cloe/component_frustum_culling_objects.so
+Usage: {
+  "frustum": "object! :: sensor frustum",
+  "reference_frame": "object! :: sensor frame of reference"
+}
+Defaults: {
+  "frustum": {
+    "clip_far": 480.0,
+    "clip_near": 0.0,
+    "fov_h": 6.283185307179586,
+    "fov_v": 6.283185307179586,
+    "offset_h": 0.0,
+    "offset_v": 0.0
+  },
+  "reference_frame": {
+    "pose": {
+      "rotation": {
+        "w": 0.0,
+        "x": 0.5,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "translation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      }
+    }
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "$id": "~/.conan/data/cloe-plugin-mocks/0.23.0/cloe/develop/package/2de4bf77c73ae74c023ce41bfefbe300c8a251a4/lib/cloe/controller_demo_stuck.so",
+  "$id": "~/.conan/data/cloe-plugin-mocks/0.24.0/cloe/develop/package/b604e04f9a20730e6de510c8305e28e783869866/lib/cloe/controller_demo_stuck.so",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "additionalProperties": false,
   "description": "slowly progressing demo controller",

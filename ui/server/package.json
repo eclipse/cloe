@@ -1,6 +1,6 @@
 {
   "name": "cloe-ui-server",
-  "version": "0.1.0",
+  "version": "0.24.0",
   "cloe-compatibility": "0.18",
   "license": "Apache-2.0",
   "private": true,

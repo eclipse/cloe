@@ -6,7 +6,7 @@
 
 [project]
 name = "cloe-launch"
-version = "0.23.0"
+version = "0.24.0"
 description = "Launch cloe-engine with Conan profiles."
 license = { text = "Apache-2.0" }
 authors = [

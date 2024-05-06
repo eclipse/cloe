@@ -23,11 +23,31 @@ News
    :hidden:
    :maxdepth: 1
 
+   news/release-0.24.0
    news/release-0.23.0
    news/release-0.22.0
    news/release-0.21.0
    news/release-0.20.0
    news/release-0.19.0
+
+
+:doc:`Version 0.24.0 Release <news/release-0.24.0>`
+---------------------------------------------------
+
+This is a small release that contains two changes:
+
+Firstly, the ``cloe-launch`` interface is significantly improved and simplified:
+
+- Launch profiles are no longer "managed"; instead use Conan recipes directly.
+- Arguments to Conan can be passed as-is after specifying the Conan recipe.
+- Common Conan errors are summarized for the user.
+- New command ``config`` lets you manage the launcher configuration.
+- New command ``deploy`` lets you create a binary deployment of a Conan recipe.
+
+Secondly, this release includes the new ``frustum_culling`` plugin.
+
+Read more about these changes and more :doc:`here <news/release-0.24.0>`.
+
 
 :doc:`Version 0.23.0 Release <news/release-0.23.0>`
 ---------------------------------------------------
@@ -44,8 +64,7 @@ to use.
 The old `Array` schema, which was for `std::vector`, has been renamed to
 `Vector`, and its header moved to `fable/schema/vector.hpp`.
 
-Read all about these and the other many changes :doc:`here
-<news/release-0.23.0>`.
+Read all about these and the other many changes :doc:`here <news/release-0.23.0>`.
 
 :doc:`Version 0.22.0 Release <news/release-0.22.0>`
 ---------------------------------------------------
