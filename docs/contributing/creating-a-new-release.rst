@@ -89,6 +89,8 @@ Places in the documentation which require attention at every release have
 a ``TODO(release)`` comment which explains what needs to be done.
 Search for those with your editor!
 
+- Ensure ``NOTICE.md`` is up-to-date.
+
 This includes the documentation for the following steps:
 
 1. Generate the plugin documentation
@@ -102,8 +104,6 @@ For now we are releasing all parts of Cloe in lock-step, even though they
 are separate packages sometimes.
 
 1. Update cloe-launch version in ``cli/pyproject.yaml``.
-   Run ``dephell`` afterwards to update ``cli/setup.py``, or if you are confident
-   only the version has changed, do it yourself.
 
 2. Update smoketest conanfiles requires to ``cloe-launch-profile``, if necessary.
    It's ok for them to depend on older versions, if they are still compatible.
@@ -149,7 +149,7 @@ Replace ``X.Y.Z`` with the corresponding values.
 
 Then, push the tag to Github::
 
-    git push vX.Y.Z
+    git push origin vX.Y.Z
 
 G. Trigger Read-the-Docs
 ------------------------

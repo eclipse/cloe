@@ -111,5 +111,11 @@ installed with the help of Conan):
   - Source: https://github.com/oatpp/oatpp
   - Conan-Package: oatpp
 
+- Open-Simulation-Interface
+  - License: MPL2
+  - License-Source: https://github.com/OpenSimulationInterface/open-simulation-interface/blob/master/LICENSE
+  - Source: https://github.com/OpenSimulationInterface/open-simulation-interface
+  - Conan-Package: open-simulation-interface
+
 Additional third-party content that is used for the web user-interface
 is listed in the `ui/LICENSE-3RD-PARTY.txt` file.
