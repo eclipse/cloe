@@ -1,12 +1,19 @@
 import logging
-import subprocess
-import shlex
 import os
 import re
+import select
+import shlex
+import subprocess
+import textwrap
 
 from collections import OrderedDict
 from pathlib import Path
 from typing import Dict, List, Optional, Mapping, Union
+
+from rich.console import Console
+from rich.style import Style
+from rich.live import Live
+from rich.text import Text
 
 
 class Environment:
@@ -315,4 +322,107 @@ def system(
             logging.error(result.stdout)
         if must_succeed:
             raise ChildProcessError()
+    return result
+
+
+class TransientResult:
+    command: List[str]
+    env: Optional[Dict[str, str]]
+    merged_output: List[str]
+    stdout_lines: List[str]
+    stderr_lines: List[str]
+    return_code: int
+
+    def __init__(self, command: List[str], env: Optional[Dict[str, str]]):
+        self.command = command
+        self.env = env
+
+def _readlines_noblock(fd):
+    lines = []
+    while True:
+        line = fd.readline()
+        if line == '':
+            break
+        lines.append(line)
+    return lines
+
+
+def transient_system(
+    command: List[str],
+    environment: Optional[Dict[str, str]] = None,
+    capture_output: bool = True,
+    transient_title: Optional[str] = None,
+    transient_lines: int = 10,
+    transient_indent: str = "",
+) -> TransientResult:
+    """Run a command with transient output, clearing the output when the command is finished."""
+    result = TransientResult(command, environment)
+
+    result.merged_output = []
+    result.stdout_lines = []
+    result.stderr_lines = []
+    console = Console(highlight=False, markup=False)
+    with Live(console=console, refresh_per_second=10, transient=True) as live:
+        last_lines: List[str] = [transient_title] if transient_title else []
+        if capture_output:
+            live.update(Text("\n".join(last_lines), style="dim"))
+
+        def update_output(line):
+            if capture_output:
+                if len(last_lines) >= transient_lines:
+                    # Remove the oldest line
+                    last_lines.pop(1 if transient_title else 0)
+                last_lines.append(
+                    transient_indent
+                    + textwrap.shorten(
+                        line.strip(),
+                        width=(live.console.width - len(transient_indent)),
+                        placeholder="...",
+                    )
+                )
+
+                # Clear previous lines and print the last 10 lines
+                live.update(Text("\n".join(last_lines), style="dim"))
+            else:
+                live.console.print(line, style="dim", end='')
+
+        with subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+            env=environment,
+            bufsize=1,
+        ) as process:
+            assert process.stdout is not None
+            assert process.stderr is not None
+
+            poll = select.poll()
+            poll.register(process.stdout, select.POLLIN | select.POLLHUP)
+            poll.register(process.stderr, select.POLLIN | select.POLLHUP)
+            os.set_blocking(process.stdout.fileno(), False)
+            os.set_blocking(process.stderr.fileno(), False)
+            alive = 2
+
+            events = poll.poll()
+            while alive > 0 and len(events) > 0:
+                for fd, event in events:
+                    if event & select.POLLIN:
+                        if fd == process.stdout.fileno():
+                            lines = _readlines_noblock(process.stdout)
+                            result.stdout_lines.extend(lines)
+                        if fd == process.stderr.fileno():
+                            lines = _readlines_noblock(process.stderr)
+                            result.stderr_lines.extend(lines)
+                        result.merged_output.extend(lines)
+                        for line in lines:
+                            update_output(line)
+                    if event & select.POLLHUP:
+                        poll.unregister(fd)
+                        alive = alive - 1
+                    if alive > 0:
+                        events = poll.poll()
+
+            result.return_code = process.wait()
+
     return result
