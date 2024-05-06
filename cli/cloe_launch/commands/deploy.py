@@ -19,7 +19,7 @@
 """
 Implementation for cloe-launch command deploy.
 
-Usage: cloe-launch [-v] deploy [-c] [-f] [-r] [-D PATH] CONANFILE [CONAN_INSTALL_ARGS]
+Usage: cloe-launch [-v] deploy [-D PATH] CONANFILE [CONAN_INSTALL_ARGS]
 """
 
 import sys
@@ -43,12 +43,6 @@ from ._options import cli_command
     prompt="Destination directory",
 )
 @click.option(
-    "-f",
-    "--force",
-    is_flag=True,
-    help="Overwrite existing files.",
-)
-@click.option(
     "--rpath/--no-rpath",
     is_flag=True,
     default=True,
@@ -60,7 +54,6 @@ from ._options import cli_command
 def cli_deploy(
     conf: Configuration,
     dest: str,
-    force: bool,
     rpath: bool,
     conanfile: str,
     args: List[str],
@@ -69,6 +62,8 @@ def cli_deploy(
 
     This may involve downloading missing and available packages and building
     outdated packages.
+
+    Existing files will be overwritten.
 
     Usage Examples:
 
