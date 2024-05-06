@@ -40,6 +40,7 @@ from .deploy import cli_deploy
 from .exec import cli_exec
 from .prepare import cli_prepare
 from .shell import cli_shell
+from .config import cli_config
 
 
 @click.group(context_settings={"allow_interspersed_args": False})
@@ -129,6 +130,7 @@ def main():
     cli.add_command(cli_deploy)
     cli.add_command(cli_prepare)
     cli.add_command(cli_shell)
+    cli.add_command(cli_config)
 
     try:
         cli()
