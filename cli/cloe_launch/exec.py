@@ -28,7 +28,7 @@ from typing import Optional
 from typing import Type
 
 from cloe_launch import Configuration, procutils, binutils
-from cloe_launch.procutils import Environment
+from cloe_launch.procutils import Environment, transient_system
 
 
 class PluginSetup:
@@ -335,9 +335,17 @@ class Engine:
         for arg in self.conan_args:
             conan_cmd.append(arg)
         conan_cmd.append(self.profile_path)
-        logging.debug(f"Exec: {' '.join(conan_cmd)}")
-        result = subprocess.run(conan_cmd, check=False, capture_output=self.capture_output)
-        if result.returncode == 0:
+
+        command_str = " ".join(conan_cmd)
+        logging.debug(f"Exec: {command_str}")
+        result = transient_system(
+            conan_cmd,
+            capture_output=self.capture_output,
+            transient_title=f"Exec: {command_str}",
+            transient_indent="|   ",
+        )
+
+        if result.return_code == 0:
             # Short-circuit out if everything is fine.
             return
 
@@ -345,15 +353,15 @@ class Engine:
         logging.error("Command:")
         logging.error(f"  {' '.join(conan_cmd)}")
         logging.error("")
-        logging.error("Output:")
+        logging.error("Error Output:")
 
-        stderr_lines = result.stderr.decode().splitlines()
-        for line in stderr_lines:
+        columns, _rows = os.get_terminal_size(0)
+        for line in result.stderr_lines:
             logging.error(
                 "\n".join(
                     textwrap.wrap(
                         line,
-                        80,
+                        columns,
                         initial_indent="  ",
                         subsequent_indent="    ",
                         break_long_words=False,
@@ -401,7 +409,7 @@ class Engine:
                 "  ",
             ],
         }
-        for error in stderr_lines:
+        for error in result.stderr_lines:
             for regex, response in known_errors.items():
                 if re.match(regex, error):
                     logging.error("")
