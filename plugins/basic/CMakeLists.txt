@@ -33,13 +33,12 @@ set_target_properties(_basic_bindings PROPERTIES
         CXX_STANDARD_REQUIRED ON
 )
 
-if(PYTHON_BINDINGS_LOCAL_DEV)
-    set_target_properties(_basic_bindings
+set_target_properties(_basic_bindings
             PROPERTIES
             ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cloe/python"
             LIBRARY_OUTPUT_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cloe/python"
     )
-endif()
+
 
 install(TARGETS _basic_bindings LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/cloe/python)
 

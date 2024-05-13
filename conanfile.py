@@ -90,7 +90,7 @@ class Cloe(ConanFile):
         self.requires("fmt/9.1.0")
         self.requires("inja/3.4.0")
         self.requires("nlohmann_json/3.11.2")
-        self.requires("incbin/cci.20211107"),
+        self.requires("incbin/cci.20211107"),   
         self.requires("spdlog/1.11.0")
         self.requires("eigen/3.4.0")
         self.requires("cli11/2.3.2", private=True)
@@ -133,7 +133,6 @@ class Cloe(ConanFile):
         tc.cache_variables["CLOE_ENGINE_WITH_SERVER"] = self.options.engine_server
         tc.cache_variables["CLOE_ENGINE_WITH_LRDB"] = self.options.engine_lrdb
         tc.cache_variables["CLOE_PYTHON_API"] = self.options.python_api
-        tc.cache_variables["PYTHON_BINDINGS_LOCAL_DEV"] = not self.in_local_cache
         tc.generate()
 
     def build(self):
@@ -202,12 +201,14 @@ class Cloe(ConanFile):
             pydir = os.path.join(self.build_folder, "lib/cloe/python")
             py_path = os.path.join(self.source_folder, "python/python_api")
             libdir = os.path.join(self.build_folder, "lib")
+            cloe_lib_path = libdir
         else:
             self.cpp_info.builddirs.append(os.path.join("lib", "cmake", "cloe"))
             bindir = os.path.join(self.package_folder, "bin")
             luadir = os.path.join(self.package_folder, "lib/cloe/lua")
             pydir = os.path.join(self.package_folder, "lib/cloe/python")
             py_path = pydir
+            cloe_lib_path = os.path.join(self.package_folder, "lib/cloe/python/cloe")
             libdir = None
 
         self.output.info(f"Appending PATH environment variable: {bindir}")
@@ -215,10 +216,10 @@ class Cloe(ConanFile):
         self.output.info(f"Appending CLOE_LUA_PATH environment variable: {luadir}")
         self.runenv_info.prepend_path("CLOE_LUA_PATH", luadir)
         if libdir is not None:
-            #TODO
             self.output.info(f"Appending LD_LIBRARY_PATH environment variable: {libdir}")
             self.runenv_info.append_path("LD_LIBRARY_PATH", libdir)
         if self.options.python_api:
-            self.output.info(f"Appending PYHTONPATH and BASIC_CLOE_PYTHON_BINDINGS environment variables: {pydir}")
+            self.output.info(f"Appending PYHTONPATH and CLOE_PYTHON_BINDINGS environment variables: {pydir}")
             self.runenv_info.prepend_path("PYTHONPATH", str(py_path))
-            self.runenv_info.prepend_path("BASIC_CLOE_PYTHON_BINDINGS", str(pydir))
+            self.runenv_info.prepend_path("PYTHONPATH", str(cloe_lib_path))
+            self.runenv_info.prepend_path("CLOE_PYTHON_BINDINGS", str(pydir))

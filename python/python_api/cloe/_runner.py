@@ -6,8 +6,8 @@ from time import sleep
 from typing import Optional, Dict, Any
 from queue import Queue, Empty
 
-from ._cloe_bindings import SimulationDriver, CallbackResult, DataBrokerAdapter, SimulationDriver, Stack
-from ._cloe_bindings import Simulation as _Simulation
+from _cloe_bindings import SimulationDriver, CallbackResult, DataBrokerAdapter, SimulationDriver, Stack
+from _cloe_bindings import Simulation as _Simulation
 
 
 @dataclass
@@ -113,6 +113,7 @@ class InteractiveRunner:
         t = Thread(target=run)
         t.start()
         self.q.get(True)
+        #minimater error, no vehicle
 
     def __next__(self):
         return self
@@ -208,11 +209,11 @@ class Simulation:
 
         self._sim = _Simulation(full_config_stack, self.driver, uuid="123")
 
-        if "BASIC_CLOE_PYTHON_BINDINGS" in os.environ:
+        if "CLOE_PYTHON_BINDINGS" in os.environ:
             import importlib.util
             import sys
             binding_libs = []
-            for binding_dir in os.environ["BASIC_CLOE_PYTHON_BINDINGS"].split(":"):
+            for binding_dir in os.environ["CLOE_PYTHON_BINDINGS"].split(":"):
                 if len(str(binding_dir)) > 1:
                     binding_path = Path(binding_dir)
                     if binding_path.exists():
