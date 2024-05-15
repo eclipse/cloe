@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import timedelta
 from pathlib import Path
 import os
+import sys
 from time import sleep
 from typing import Optional, Dict, Any
 from queue import Queue, Empty
@@ -113,7 +114,6 @@ class InteractiveRunner:
         t = Thread(target=run)
         t.start()
         self.q.get(True)
-        #minimater error, no vehicle
 
     def __next__(self):
         return self
@@ -177,9 +177,7 @@ class Simulation:
         self._sim.log_level = value
 
     def bind_plugin_types(self, lib: Path):
-        import importlib
         import importlib.util
-        import sys
         components = str(lib.name).split('.')
         module_name = components[0]
         print(f"Attempting to load module {module_name} from {lib}")
