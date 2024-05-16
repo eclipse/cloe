@@ -22,25 +22,21 @@
 
 #pragma once
 
-#include <list>    // for list<>
-#include <map>     // for map<>
-#include <memory>  // for unique_ptr<>, shared_ptr<>
-#include <mutex>   // for mutex
-#include <queue>   // for queue<>
-#include <string>  // for string
-#include <vector>  // for vector<>
+#include <list>                // for list<>
+#include <map>                 // for map<>
+#include <memory>              // for unique_ptr<>, shared_ptr<>
+#include <mutex>               // for mutex
+#include <queue>               // for queue<>
+#include <string>              // for string
+#include <vector>              // for vector<>
 
-#include <cloe/trigger.hpp>  // for Trigger, Action, Event, ...
-
-// Forward declaration:
-namespace cloe {
-class Registrar;
-}
+#include <cloe/cloe_fwd.hpp>   // for Registrar
+#include <cloe/trigger.hpp>    // for Trigger, Action, Event, ...
 
 namespace engine {
 
 // Forward declarations:
-class TriggerRegistrar;  // from trigger_manager.cpp
+class TriggerRegistrar;  // from coordinator.cpp
 
 /**
  * TriggerUnknownAction is thrown when an Action cannot be created because the
@@ -120,13 +116,15 @@ class Coordinator {
    */
   cloe::Duration process(const cloe::Sync&);
 
+  size_t process_pending_web_triggers(const cloe::Sync& sync);
  protected:
   cloe::ActionPtr make_action(const cloe::Conf& c) const;
   cloe::EventPtr make_event(const cloe::Conf& c) const;
   cloe::TriggerPtr make_trigger(cloe::Source s, const cloe::Conf& c) const;
   void queue_trigger(cloe::Source s, const cloe::Conf& c) { queue_trigger(make_trigger(s, c)); }
-  void queue_trigger(cloe::TriggerPtr&& t);
-  void execute_trigger(cloe::TriggerPtr&& t, const cloe::Sync& s);
+  void queue_trigger(cloe::TriggerPtr&& tp);
+  void store_trigger(cloe::TriggerPtr&& tp, const cloe::Sync& sync);
+  cloe::CallbackResult execute_trigger(cloe::TriggerPtr&& tp, const cloe::Sync& sync);
 
   // for access to protected methods
   friend TriggerRegistrar;

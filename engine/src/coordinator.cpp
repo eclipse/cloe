@@ -62,6 +62,8 @@ class TriggerRegistrar : public cloe::TriggerRegistrar {
     return manager_.make_trigger(source_, c);
   }
 
+  // TODO: Should these queue_trigger becomes inserts? Because if they are coming from
+  // C++ then they should be from a single thread.
   void insert_trigger(const Conf& c) override { manager_.queue_trigger(source_, c); }
   void insert_trigger(TriggerPtr&& t) override { manager_.queue_trigger(std::move(t)); }
 
@@ -168,44 +170,54 @@ void Coordinator::register_event(const std::string& key, EventFactoryPtr&& ef,
       std::bind(&Coordinator::execute_trigger, this, std::placeholders::_1, std::placeholders::_2));
 }
 
-void Coordinator::execute_trigger(TriggerPtr&& t, const Sync& sync) {
+cloe::CallbackResult Coordinator::execute_trigger(TriggerPtr&& t, const Sync& sync) {
   logger()->debug("Execute trigger {}", inline_json(*t));
-  (t->action())(sync, *executer_registrar_);
+  auto result = (t->action())(sync, *executer_registrar_);
   if (!t->is_conceal()) {
-    history_.emplace_back(HistoryTrigger{sync.time(), std::move(t)});
+    history_.emplace_back(sync.time(), std::move(t));
+  }
+  return result;
+}
+
+size_t Coordinator::process_pending_web_triggers(const Sync& sync) {
+  // The only thing we need to do here is distribute the triggers from the
+  // input queue into their respective storage locations. We are responsible
+  // for thread safety here!
+  size_t count = 0;
+  std::unique_lock guard(input_mutex_);
+  while (!input_queue_.empty()) {
+    store_trigger(std::move(input_queue_.front()), sync);
+    input_queue_.pop_front();
+    count++;
+  }
+  return count;
+}
+
+void Coordinator::store_trigger(TriggerPtr&& tp, const Sync& sync) {
+  tp->set_since(sync.time());
+
+  // Decide where to put the trigger
+  auto key = tp->event().name();
+  if (storage_.count(key) == 0) {
+    // This is a programming error, since we should not be able to come this
+    // far at all.
+    throw std::logic_error("cannot insert trigger with unregistered event");
+  }
+  try {
+    logger()->debug("Insert trigger {}", inline_json(*tp));
+    storage_[key]->emplace(std::move(tp), sync);
+  } catch (TriggerError& e) {
+    logger()->error("Error inserting trigger: {}", e.what());
+    if (!allow_errors_) {
+      throw;
+    }
   }
 }
 
 Duration Coordinator::process(const Sync& sync) {
-  // The only thing we need to do here is distribute the triggers from the
-  // input queue into their respective storage locations. We are responsible
-  // for thread safety here!
   auto now = sync.time();
-  std::unique_lock guard(input_mutex_);
-  while (!input_queue_.empty()) {
-    auto tp = std::move(input_queue_.front());
-    input_queue_.pop_front();
-    tp->set_since(now);
-
-    // Decide where to put the trigger
-    auto key = tp->event().name();
-    if (storage_.count(key) == 0) {
-      // This is a programming error, since we should not be able to come this
-      // far at all.
-      throw std::logic_error("cannot insert trigger with unregistered event");
-    }
-    try {
-      logger()->debug("Insert trigger {}", inline_json(*tp));
-      storage_[key]->emplace(std::move(tp), sync);
-    } catch (TriggerError& e) {
-      logger()->error("Error inserting trigger: {}", e.what());
-      if (!allow_errors_) {
-        throw;
-      }
-    }
-  }
-
-  return now;
+  process_pending_web_triggers(sync);
+  return sync.time();
 }
 
 namespace {

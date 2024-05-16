@@ -31,8 +31,7 @@
 #include <cloe/sync.hpp>     // for Sync
 #include <cloe/trigger.hpp>  // for TriggerRegistrar
 
-namespace cloe {
-namespace actions {
+namespace cloe::actions {
 
 // Log -----------------------------------------------------------------------
 TriggerSchema LogFactory::schema() const {
@@ -54,7 +53,7 @@ ActionPtr LogFactory::make(const Conf& c) const {
 
 ActionPtr LogFactory::make(const std::string& s) const {
   auto level = spdlog::level::info;
-  auto pos = s.find(":");
+  auto pos = s.find(':');
   std::string msg;
   if (pos != std::string::npos) {
     try {
@@ -76,7 +75,7 @@ ActionPtr LogFactory::make(const std::string& s) const {
       {"level", logger::to_string(level)},
       {"msg", msg},
   }};
-  if (msg.size() == 0) {
+  if (msg.empty()) {
     throw TriggerInvalid(c, "cannot log an empty message");
   }
   return make(c);
@@ -108,11 +107,16 @@ ActionPtr Bundle::clone() const {
   return std::make_unique<Bundle>(name(), std::move(actions));
 }
 
-void Bundle::operator()(const Sync& sync, TriggerRegistrar& r) {
+CallbackResult Bundle::operator()(const Sync& sync, TriggerRegistrar& r) {
   logger()->trace("Run action bundle");
+  auto result = CallbackResult::Ok;
   for (auto& a : actions_) {
-    (*a)(sync, r);
+    auto ar = (*a)(sync, r);
+    if (ar == CallbackResult::Unpin) {
+      result = ar;
+    }
   }
+  return result;
 }
 
 TriggerSchema BundleFactory::schema() const {
@@ -141,11 +145,12 @@ void Insert::to_json(Json& j) const {
   };
 }
 
-void Insert::operator()(const Sync&, TriggerRegistrar& r) {
+CallbackResult Insert::operator()(const Sync& /*unused*/, TriggerRegistrar& r) {
   for (const auto& tc : triggers_.to_array()) {
     auto local = r.make_trigger(tc);
     r.insert_trigger(std::move(local));
   }
+  return CallbackResult::Ok;
 }
 
 TriggerSchema InsertFactory::schema() const {
@@ -170,7 +175,7 @@ ActionPtr InsertFactory::make(const Conf& c) const {
 }
 
 // PushRelease ---------------------------------------------------------------
-void PushRelease::operator()(const Sync&, TriggerRegistrar& r) {
+CallbackResult PushRelease::operator()(const Sync& /*unused*/, TriggerRegistrar& r) {
   // clang-format off
   r.insert_trigger(
     "push down button(s)",
@@ -187,6 +192,7 @@ void PushRelease::operator()(const Sync&, TriggerRegistrar& r) {
     }}),
     std::move(release_)
   );
+  return CallbackResult::Ok;
   // clang-format on
 }
 
@@ -234,5 +240,4 @@ ActionPtr PushReleaseFactory::make(const Conf& c) const {
   return std::make_unique<PushRelease>(name(), dur, create(true), create(false), repr);
 }
 
-}  // namespace actions
-}  // namespace cloe
+}  // namespace cloe::actions
