@@ -12,6 +12,7 @@ by a Lua file: `cloe-engine run simulation.lua`
 
    - Lua package path (`--lua-path`, `CLOE_LUA_PATH`)
    - Disable system packages (`--no-system-lua`)
+   - Enable LRDB Lua debugger (`--debug-lua`)
    - Cloe plugins (`--plugin-path`, `CLOE_PLUGIN_PATH`)
 
 2. Initialize Cloe Stack
@@ -25,11 +26,13 @@ by a Lua file: `cloe-engine run simulation.lua`
    - Expose Cloe API via `cloe` Lua table
    - Load Cloe Lua runtime (located in the package `lib/cloe/lua` directory)
 
-4. Source input files
+4. Start LRDB Lua debugger (Optional)
+
+5. Source input files
 
    - Files ending with `.lua` are merged as Lua
    - Other files are read as JSON
 
-5. Start simulation
+6. Start simulation
 
    - Schedule triggers pending from the Lua script

@@ -41,6 +41,7 @@ class Cloe(ConanFile):
         "fPIC": [True, False],
         "fable_allow_comments": [True, False],
         "engine_server": [True, False],
+        "engine_lrdb": [True, False],
         "with_esmini": [True, False],
         "with_vtd": [True, False],
     }
@@ -49,6 +50,7 @@ class Cloe(ConanFile):
         "fPIC": True,
         "fable_allow_comments": True,
         "engine_server": True,
+        "engine_lrdb": True,
         "with_esmini": True,
         "with_vtd": False,
     }
@@ -125,6 +127,7 @@ class Cloe(ConanFile):
         tc.cache_variables["CLOE_VERSION"] = self.version
         tc.cache_variables["CLOE_VERSION_U32"] = version_u32
         tc.cache_variables["CLOE_ENGINE_WITH_SERVER"] = self.options.engine_server
+        tc.cache_variables["CLOE_ENGINE_WITH_LRDB"] = self.options.engine_lrdb
         tc.cache_variables["CLOE_WITH_ESMINI"] = self.options.with_esmini
         tc.cache_variables["CLOE_WITH_VTD"] = self.options.with_vtd
         tc.generate()
