@@ -41,7 +41,10 @@ class Log : public Action {
   Log(const std::string& name, LogLevel level, const std::string& msg)
       : Action(name), level_(level), msg_(msg) {}
   ActionPtr clone() const override { return std::make_unique<Log>(name(), level_, msg_); }
-  void operator()(const Sync&, TriggerRegistrar&) override { logger()->log(level_, msg_.c_str()); }
+  CallbackResult operator()(const Sync&, TriggerRegistrar&) override {
+    logger()->log(level_, msg_.c_str());
+    return CallbackResult::Ok;
+  }
   bool is_significant() const override { return false; }
 
  protected:
@@ -71,7 +74,7 @@ class Bundle : public Action {
  public:
   Bundle(const std::string& name, std::vector<ActionPtr>&& actions);
   ActionPtr clone() const override;
-  void operator()(const Sync& s, TriggerRegistrar& r) override;
+  CallbackResult operator()(const Sync& s, TriggerRegistrar& r) override;
   bool is_significant() const override;
 
  protected:
@@ -103,7 +106,7 @@ class Insert : public Action {
  public:
   Insert(const std::string& name, const Conf& triggers) : Action(name), triggers_(triggers) {}
   ActionPtr clone() const override { return std::make_unique<Insert>(name(), triggers_); }
-  void operator()(const Sync& s, TriggerRegistrar& r) override;
+  CallbackResult operator()(const Sync& s, TriggerRegistrar& r) override;
 
  protected:
   void to_json(Json& j) const override;
@@ -138,7 +141,7 @@ class PushRelease : public Action {
     return std::make_unique<PushRelease>(name(), duration_, push_->clone(), release_->clone(),
                                          repr_);
   }
-  void operator()(const Sync&, TriggerRegistrar&) override;
+  CallbackResult operator()(const Sync&, TriggerRegistrar&) override;
 
  protected:
   void to_json(Json& j) const override { j = repr_; }

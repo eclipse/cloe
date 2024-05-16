@@ -108,9 +108,9 @@ void TriggerRegistrar::insert_trigger(const std::string& label, EventPtr&& e, Ac
   insert_trigger(std::make_unique<Trigger>(label, source_, std::move(e), std::move(a)));
 }
 
-void Callback::execute(TriggerPtr&& t, const Sync& sync) {
+CallbackResult Callback::execute(TriggerPtr&& t, const Sync& sync) {
   assert(executer_);
-  executer_(std::move(t), sync);
+  return executer_(std::move(t), sync);
 }
 
 }  // namespace cloe
