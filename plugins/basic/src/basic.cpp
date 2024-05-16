@@ -22,16 +22,15 @@
 
 #include "basic.hpp"
 
-#include <chrono>   // for duration<>
-#include <memory>   // for shared_ptr<>, unique_ptr<>
-#include <string>   // for string
-#include <tuple>    // for tie
-#include <utility>  // for pair, make_pair
-#include <vector>   // for vector<>
+#include <chrono>    // for duration<>
+#include <memory>    // for shared_ptr<>, unique_ptr<>
+#include <optional>  // for optional
+#include <string>    // for string
+#include <tuple>     // for tie
+#include <utility>   // for pair, make_pair
+#include <vector>    // for vector<>
 
-#include <boost/optional.hpp>               // for optional<>
-#include <fable/schema.hpp>                 // for Schema
-#include <fable/schema/boost_optional.hpp>  // for Optional<>
+#include <fable/schema.hpp>  // for Schema
 
 #include <cloe/component/driver_request.hpp>            // for DriverRequest
 #include <cloe/component/latlong_actuator.hpp>          // for LatLongActuator
@@ -102,10 +101,10 @@ struct AdaptiveCruiseControl {
   AccConfiguration config;
   std::shared_ptr<Vehicle> vehicle{nullptr};
 
-  bool enabled{false};                     // whether the function can be activated
-  bool active{false};                      // whether the function is currently active
-  size_t distance_algorithm{0};            // index of target distance algorithm
-  boost::optional<double> target_speed{};  // target speed in [km/h]
+  bool enabled{false};                   // whether the function can be activated
+  bool active{false};                    // whether the function is currently active
+  size_t distance_algorithm{0};          // index of target distance algorithm
+  std::optional<double> target_speed{};  // target speed in [km/h]
 
  public:
   explicit AdaptiveCruiseControl(const AccConfiguration& c) : config(c) {}
