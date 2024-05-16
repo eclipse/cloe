@@ -98,7 +98,7 @@ struct HistoryTrigger {
  */
 class Coordinator {
  public:
-  Coordinator(sol::state_view lua);
+  Coordinator(sol::state_view lua, cloe::DataBroker* db);
 
   const std::vector<HistoryTrigger>& history() const { return history_; }
 
@@ -108,6 +108,8 @@ class Coordinator {
                       std::shared_ptr<cloe::Callback> storage);
 
   sol::table register_lua_table(const std::string& field);
+
+  cloe::DataBroker* data_broker() const { return db_; }
 
   std::shared_ptr<cloe::TriggerRegistrar> trigger_registrar(cloe::Source s);
 
@@ -149,6 +151,7 @@ class Coordinator {
   std::map<std::string, cloe::ActionFactoryPtr> actions_;
   std::map<std::string, cloe::EventFactoryPtr> events_;
   sol::state_view lua_;
+  cloe::DataBroker* db_;  // non-owning
 
   // Execution:
   std::shared_ptr<cloe::TriggerRegistrar> executer_registrar_;
