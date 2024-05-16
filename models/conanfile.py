@@ -46,7 +46,7 @@ class CloeModels(ConanFile):
         self.requires("eigen/3.4.0")
 
     def build_requirements(self):
-        self.test_requires("gtest/1.13.0")
+        self.test_requires("gtest/1.14.0")
 
     def layout(self):
         cmake.cmake_layout(self)

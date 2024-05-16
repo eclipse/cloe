@@ -1,6 +1,8 @@
-cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.15...3.27 FATAL_ERROR)
 
 project(fable LANGUAGES CXX)
+
+option(FABLE_ALLOW_COMMENTS "Allow comments when parsing JSON?" ON)
 
 # NOTE: The variable FABLE_VERSION is used throughout this CMakeLists file
 # and is supplied from Conan or by hand on the command line.
@@ -10,10 +12,11 @@ set(FABLE_VERSION_U32 0 CACHE STRING "Fable version as (MAJOR<<16)|(MINOR<<8)|PA
 include(GNUInstallDirs)
 
 # Library ------------------------------------------------------------
-find_package(fmt REQUIRED)
-find_package(nlohmann_json REQUIRED)
+find_package(fmt REQUIRED QUIET)
+find_package(nlohmann_json REQUIRED QUIET)
 
 file(GLOB fable_PUBLIC_HEADERS "include/**/*.hpp")
+message(STATUS "Building fable library [with comments=${FABLE_ALLOW_COMMENTS}].")
 add_library(fable
     # find src -type f -name "*.cpp" \! -name "*_test.cpp"
     src/fable/conf.cpp
@@ -55,7 +58,6 @@ target_link_libraries(fable
     stdc++fs
 )
 
-option(FABLE_ALLOW_COMMENTS "Allow comments when parsing JSON?" ON)
 if(FABLE_ALLOW_COMMENTS)
     target_compile_definitions(fable PRIVATE PARSE_JSON_WITH_COMMENTS=true)
 else()
@@ -63,14 +65,14 @@ else()
 endif()
 
 # Testing ------------------------------------------------------------
-set(CMAKE_CTEST_ARGUMENTS "--output-on-failure")
 include(CTest)
 if(BUILD_TESTING)
-    find_package(GTest REQUIRED)
-    find_package(Boost COMPONENTS headers filesystem REQUIRED)
-    find_package(sol2 REQUIRED)
+    find_package(GTest REQUIRED QUIET)
+    find_package(Boost COMPONENTS headers filesystem REQUIRED QUIET)
+    find_package(sol2 REQUIRED QUIET)
     include(GoogleTest)
 
+    message(STATUS "Building test-fable executable.")
     add_executable(test-fable
         # find src -type f -name "*_test.cpp"
         src/fable/version_test.cpp

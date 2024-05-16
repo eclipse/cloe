@@ -56,10 +56,10 @@ class CloeEngine(ConanFile):
             self.requires(f"cloe-oak/{self.version}@cloe/develop", private=True)
         self.requires("boost/1.74.0")
         self.requires("fmt/9.1.0", override=True)
-        self.requires("nlohmann_json/3.11.2", override=True)
+        self.requires("nlohmann_json/3.11.3", override=True)
 
     def build_requirements(self):
-        self.test_requires("gtest/1.13.0")
+        self.test_requires("gtest/1.14.0")
 
     def layout(self):
         cmake.cmake_layout(self)
@@ -113,7 +113,8 @@ class CloeEngine(ConanFile):
             self.cpp_info.system_libs.append("dl")
         if self.in_local_cache:
             bindir = os.path.join(self.package_folder, "bin")
-        else:
-            bindir = os.path.join(self.build_folder, str(self.settings.build_type), "bin")
+        else: # editable mode
+            bindir = os.path.join(self.build_folder)
+
         self.output.info(f"Appending PATH environment variable: {bindir}")
-        self.env_info.PATH.append(bindir)
+        self.runenv_info.prepend_path("PATH", bindir)

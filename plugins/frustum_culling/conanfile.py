@@ -42,10 +42,10 @@ class CloeComponentFrustumCulling(ConanFile):
         self.requires(f"cloe-runtime/{self.version}@cloe/develop")
         self.requires(f"cloe-models/{self.version}@cloe/develop")
         self.requires("fmt/9.1.0")
-        self.requires("nlohmann_json/3.11.2", override=True)
+        self.requires("nlohmann_json/3.11.3", override=True)
 
     def build_requirements(self):
-        self.test_requires("gtest/1.13.0")
+        self.test_requires("gtest/1.14.0")
 
     def layout(self):
         cmake.cmake_layout(self)

@@ -1,11 +1,11 @@
-cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.15...3.27 FATAL_ERROR)
 
 project(cloe_plugin_frustum_culling LANGUAGES CXX)
 
 set(CLOE_FIND_PACKAGES ON CACHE BOOL "Call find_package() for cloe packages")
 if(CLOE_FIND_PACKAGES)
-    find_package(cloe-runtime REQUIRED)
-    find_package(cloe-models REQUIRED)
+    find_package(cloe-runtime REQUIRED QUIET)
+    find_package(cloe-models REQUIRED QUIET)
 endif()
 
 include(CloePluginSetup)
@@ -29,7 +29,7 @@ cloe_add_plugin(
 set(CMAKE_CTEST_ARGUMENTS "--output-on-failure")
 include(CTest)
 if(BUILD_TESTING)
-    find_package(GTest REQUIRED)
+    find_package(GTest REQUIRED QUIET)
     include(GoogleTest)
 
     add_executable(test-frustum-culling

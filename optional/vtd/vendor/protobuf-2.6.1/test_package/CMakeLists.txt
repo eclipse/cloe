@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.15...3.27 FATAL_ERROR)
 
 project(test_package LANGUAGES CXX)
 
-find_package(Protobuf CONFIG REQUIRED)
+find_package(Protobuf CONFIG REQUIRED QUIET)
 
 add_executable(${PROJECT_NAME} test_package.cpp addressbook.proto)
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_11)

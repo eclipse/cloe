@@ -191,8 +191,6 @@ help:: parse-info parse-editable
 	$(call print_help_target, export, "export recipe and sources", "[conan-cache]")
 	$(call print_help_target, download, "download or create package", "[conan-cache]")
 	$(call print_help_target, package, "create package with build policy", "[conan-cache]")
-	$(call print_help_target, package-all, "create package and dependencies", "[conan-cache]")
-	$(call print_help_target, package-outdated, "create package if outdated", "[conan-cache]")
 	$(call print_help_target, list, "list installed package files", "[conan-cache]")
 	$(call print_help_target, purge, "remove package from cache", "[conan-cache]")
 	echo
@@ -378,25 +376,6 @@ package: ${BUILD_LOCKFILE}
 	#
 	conan create . ${PACKAGE_FQN} \
 		--build=${BUILD_POLICY} --build=${PACKAGE_NAME} ${ALL_OPTIONS}
-
-.PHONY: package-all
-package-all: ${BUILD_LOCKFILE}
-	# Build the package in Conan cache unconditionally.
-	#
-	#   Conan will retrieve and build all dependencies unconditionally.
-	#   Note that this cannot be called if the package is currently in editable mode.
-	#
-	conan create . ${PACKAGE_FQN} --build ${ALL_OPTIONS}
-
-.PHONY: package-outdated
-package-outdated: ${BUILD_LOCKFILE}
-	# Build the package in Conan cache if it is outdated.
-	#
-	#   Note that this does not take dependencies of ${PACKAGE_NAME} into account.
-	#   Rebuilds will occur if package info has changed or a hash of the source
-	#   code changes. Timestamps are not taken into account.
-	#
-	conan create . ${PACKAGE_FQN} --build=outdated ${ALL_OPTIONS}
 
 .PHONY: purge
 purge:

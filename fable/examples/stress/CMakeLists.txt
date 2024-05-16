@@ -1,12 +1,12 @@
-cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.15...3.27 FATAL_ERROR)
 
 project(fable_stress_test LANGUAGES CXX)
 
 set(LARGE_STRUCT_SIZE 1000 CACHE NUMBER "Number of members of Large struct")
 
-find_package(CLI11 REQUIRED)
-find_package(fable REQUIRED)
-find_package(fmt REQUIRED)
+find_package(CLI11 REQUIRED QUIET)
+find_package(fable REQUIRED QUIET)
+find_package(fmt REQUIRED QUIET)
 
 # Executable ---------------------------------------------------------
 add_custom_command(
