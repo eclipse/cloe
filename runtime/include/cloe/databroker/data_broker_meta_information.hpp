@@ -3,6 +3,7 @@
 #include <typeindex>
 #include <any>
 #include <unordered_map>
+#include <string>
 
 namespace cloe {
 /**

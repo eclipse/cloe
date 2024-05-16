@@ -2,12 +2,13 @@ from dataclasses import dataclass
 from datetime import timedelta
 from pathlib import Path
 import os
+import sys
 from time import sleep
 from typing import Optional, Dict, Any
 from queue import Queue, Empty
 
-from ._cloe_bindings import SimulationDriver, CallbackResult, DataBrokerAdapter, SimulationDriver, Stack
-from ._cloe_bindings import Simulation as _Simulation
+from _cloe_bindings import SimulationDriver, CallbackResult, DataBrokerAdapter, SimulationDriver, Stack
+from _cloe_bindings import Simulation as _Simulation
 
 
 @dataclass
@@ -176,8 +177,7 @@ class Simulation:
         self._sim.log_level = value
 
     def bind_plugin_types(self, lib: Path):
-        import importlib
-        import sys
+        import importlib.util
         components = str(lib.name).split('.')
         module_name = components[0]
         print(f"Attempting to load module {module_name} from {lib}")
@@ -194,11 +194,7 @@ class Simulation:
     def __init__(self, stack: Optional[Dict[str, Any]] = None):
         self.databroker_adapter = DataBrokerAdapter()
         self.driver = SimulationDriver(self.databroker_adapter)
-        if "CLOE_PLUGIN_PATH" not in os.environ:
-            # todo this is just here for debugging
-            plugin_paths = ["/home/ohf4fe/dev/sil/cloe/build/linux-x86_64-gcc-8/Debug/lib/cloe"]
-        else:
-            plugin_paths = os.environ["CLOE_PLUGIN_PATH"].split(":")
+        plugin_paths = os.environ["CLOE_PLUGIN_PATH"].split(":")
         full_config_stack = Stack(plugin_paths)
         if not stack:
             # todo this is just here for debugging
