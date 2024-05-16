@@ -50,14 +50,14 @@ class CloeSimulatorVTD(ConanFile):
 
         # Overrides, same as in the cloe conanfile.py:
         self.requires("protobuf/[>=3.9.1]", override=True)
-        self.requires("zlib/1.2.12", override=True)
+        self.requires("zlib/1.2.13", override=True)
         self.requires("fmt/9.1.0", override=True)
         self.requires("inja/3.4.0", override=True)
-        self.requires("nlohmann_json/3.11.2", override=True)
+        self.requires("nlohmann_json/3.11.3", override=True)
         self.requires("incbin/cci.20211107", override=True),
 
     def build_requirements(self):
-        self.test_requires("gtest/1.13.0")
+        self.test_requires("gtest/1.14.0")
 
     def _compress_and_remove(self, dir):
         # reset() will remove the packages metadata

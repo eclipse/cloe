@@ -13,6 +13,12 @@ class ESMiniData(ConanFile):
     description = "Basic OpenScenario player example data"
     topics = ("Environment Simulator", "OpenScenario", "OpenDrive")
 
+    # This package may not be built while all other packages are built
+    # because it is solely a runtime dependency. Because it only copies
+    # a few files, the only thing that may take a longer period of time
+    # is downloading the esmini archive. For now, this is acceptable.
+    build_policy = "missing"
+
     def export_sources(self):
         files.export_conandata_patches(self)
 

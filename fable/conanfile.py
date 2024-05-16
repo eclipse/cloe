@@ -47,10 +47,10 @@ class Fable(ConanFile):
 
     def requirements(self):
         self.requires("fmt/9.1.0")
-        self.requires("nlohmann_json/3.11.2")
+        self.requires("nlohmann_json/3.11.3")
 
     def build_requirements(self):
-        self.test_requires("gtest/1.13.0")
+        self.test_requires("gtest/1.14.0")
         self.test_requires("boost/1.74.0")
         self.test_requires("sol2/3.3.0")
 

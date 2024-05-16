@@ -35,7 +35,16 @@ jobs:
           - "cloe-normal"
         package_target:
           # 1. Build each test configuration in Conan cache and run all tests
-          - "export export-vendor smoketest-deps smoketest"
+          - "export-vendor export-all smoketest-deps smoketest"
+
+          # 2. Build cloe super-package in editable mode and run tests
+          - "export-vendor editable all smoketest TEST_CONANFILES=tests/conanfile_superbuild.py"
+
+          # 3. TODO: Build individual packages in editable mode and run tests
+          #    This cannot be currently enabled because of a Conan deficiency in v1.
+          #    Once all build tooling is based on Conan v2, we can re-enable this use-case.
+          #    Until then, use the previous target for this use-case.
+          # - "export-vendor editable-select build-all smoketest TEST_CONANFILES=tests/conanfile_deployment.py"
     env:
       CONAN_NON_INTERACTIVE: "yes"
       DEBIAN_FRONTEND: noninteractive

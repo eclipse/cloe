@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.15...3.27 FATAL_ERROR)
 project(test_package CXX)
 
-find_package(open_simulation_interface REQUIRED CONFIG)
+find_package(open_simulation_interface REQUIRED QUIET CONFIG)
 
 add_executable(${PROJECT_NAME} test_package.cpp)
 target_link_libraries(${PROJECT_NAME}

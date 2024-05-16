@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.15...3.27 FATAL_ERROR)
 
 project(OSMPDummySensor LANGUAGES CXX)
 
@@ -8,8 +8,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(VTD_ROOT "" CACHE STRING "Path to VTD root directory")
 
 # Dependencies
-find_package(open_simulation_interface REQUIRED)
-find_package(Protobuf CONFIG REQUIRED)
+find_package(open_simulation_interface REQUIRED QUIET)
+find_package(Protobuf CONFIG REQUIRED QUIET)
 find_library(VTD_OSI_LIBRARY NAME libopen_simulation_interface.so
     PATHS "${VTD_ROOT}/Data/Setups/Standard.OSI3/Bin/"
     NO_DEFAULT_PATH

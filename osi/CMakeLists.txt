@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.15...3.27 FATAL_ERROR)
 
 project(cloe-osi LANGUAGES CXX)
 
@@ -6,13 +6,17 @@ include(GNUInstallDirs)
 include(TargetLinting)
 
 # Module -------------------------------------------------------------
-find_package(cloe-models REQUIRED)
-find_package(cloe-runtime REQUIRED)
-find_package(Eigen3 REQUIRED)
-find_package(Boost COMPONENTS headers REQUIRED)
-find_package(open_simulation_interface REQUIRED)
 
-message(STATUS "-> Building cloe-osi library.")
+set(CLOE_FIND_PACKAGES ON CACHE BOOL "Call find_package() for cloe packages")
+if(CLOE_FIND_PACKAGES)
+    find_package(cloe-models REQUIRED QUIET)
+    find_package(cloe-runtime REQUIRED QUIET)
+endif()
+find_package(Eigen3 REQUIRED QUIET)
+find_package(Boost COMPONENTS headers REQUIRED QUIET)
+find_package(open_simulation_interface REQUIRED QUIET)
+
+message(STATUS "Building cloe-osi library.")
 file(GLOB cloe-osi_PUBLIC_HEADERS "include/**/*.hpp")
 add_library(cloe-osi
     # find src -type f -name "*.cpp" \! -name "*_test.cpp"
@@ -48,9 +52,10 @@ target_link_libraries(cloe-osi
 # Testing -------------------------------------------------------------
 include(CTest)
 if(BUILD_TESTING)
-    find_package(GTest REQUIRED)
+    find_package(GTest REQUIRED QUIET)
     include(GoogleTest)
 
+    message(STATUS "Building test-osi executable.")
     add_executable(test-osi
         # find src -type f -name "*_test.cpp"
         src/cloe/component/osi_sensor_test.cpp

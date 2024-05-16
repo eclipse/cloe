@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.15...3.27 FATAL_ERROR)
 
 project(vtd_api LANGUAGES CXX VERSION 2022.3)
 

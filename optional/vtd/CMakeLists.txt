@@ -1,13 +1,13 @@
-cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.15...3.27 FATAL_ERROR)
 
 project(cloe_plugin_vtd LANGUAGES CXX)
 
 # Cloe Plugin --------------------------------------------------------
-find_package(vtd-api REQUIRED)
-find_package(cloe-runtime REQUIRED)
-find_package(cloe-models REQUIRED)
-find_package(cloe-osi REQUIRED)
-find_package(Boost REQUIRED)
+find_package(vtd-api REQUIRED QUIET)
+find_package(cloe-runtime REQUIRED QUIET)
+find_package(cloe-models REQUIRED QUIET)
+find_package(cloe-osi REQUIRED QUIET)
+find_package(Boost REQUIRED QUIET)
 
 add_library(vtd-object-lib STATIC
     src/omni_sensor_component.cpp
@@ -51,7 +51,7 @@ cloe_add_plugin(
 
 include(CTest)
 if(BUILD_TESTING)
-    find_package(GTest REQUIRED)
+    find_package(GTest REQUIRED QUIET)
     include(GoogleTest)
 
     add_executable(test-vtd-binding
