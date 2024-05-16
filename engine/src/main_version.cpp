@@ -45,6 +45,7 @@ int version(const VersionOptions& opt) {
       {"stack", CLOE_STACK_VERSION},                      // from "stack.hpp"
       {"plugin_manifest", CLOE_PLUGIN_MANIFEST_VERSION},  // from <cloe/plugin.hpp>
       {"feature_server", CLOE_ENGINE_WITH_SERVER != 0},   // from CMakeLists.txt
+      {"feature_lrdb", CLOE_ENGINE_WITH_LRDB != 0},       // from CMakeLists.txt
   };
 
   if (opt.output_json) {

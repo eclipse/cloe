@@ -56,6 +56,7 @@ local engine = {
             ["cloe-stackfile-4.1"] = true,
 
             ["cloe-server"] = false,
+            ["cloe-lrdb"] = false,
         },
 
         --- @type table Lua table dumped as JSON report at end of simulation.
