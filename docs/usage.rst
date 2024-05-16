@@ -16,6 +16,11 @@ guides will give you a better feel for how Cloe works and how it is built up.
    usage/viewing-cloe-registry
    usage/running-cloe-webui
    usage/creating-a-stackfile
+
+   usage/lua-introduction
+   usage/lua-cloe-shell
+   usage/lua-editor-integration
+
    usage/configuring-plugins-in-stackfiles
    usage/writing-modular-stackfiles
    usage/user-cloe-configuration

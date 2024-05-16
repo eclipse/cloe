@@ -21,6 +21,7 @@ if(NOT TARGET pantor::inja)
     add_library(pantor::inja ALIAS inja::inja)
 endif()
 find_package(incbin REQUIRED QUIET)
+find_package(sol2 REQUIRED QUIET)
 
 file(GLOB cloe-runtime_PUBLIC_HEADERS "include/**/*.hpp")
 message(STATUS "Building cloe-runtime library.")
@@ -70,6 +71,7 @@ target_link_libraries(cloe-runtime
     Boost::system
     fable::fable
     spdlog::spdlog
+    sol2::sol2
   INTERFACE
     pantor::inja
     incbin::incbin
@@ -79,6 +81,7 @@ target_compile_definitions(cloe-runtime
     PROJECT_SOURCE_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}\"
   PUBLIC
     _USE_MATH_DEFINES=1
+    SOL_ALL_SAFETIES_ON=1
 )
 
 # Testing -------------------------------------------------------------
@@ -103,6 +106,7 @@ if(BUILD_TESTING)
         GTest::gtest
         GTest::gtest_main
         Boost::boost
+        sol2::sol2
         cloe-runtime
     )
     gtest_add_tests(TARGET test-cloe)

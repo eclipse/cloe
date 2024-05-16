@@ -84,6 +84,15 @@ int main(int argc, char** argv) {
   // One of the above subcommands must be used.
   app.require_subcommand();
 
+  // Shell Command:
+  engine::ShellOptions shell_options{};
+  std::vector<std::string> shell_files{};
+  auto* shell = app.add_subcommand("shell", "Start a Lua shell.");
+  shell->add_flag("-i,--interactive,!--no-interactive", shell_options.interactive,
+                  "Drop into interactive mode (default)");
+  shell->add_option("-c,--command", shell_options.commands, "Lua to run after running files");
+  shell->add_option("files", shell_files, "Lua files to run before starting the shell");
+
   // Global Options:
   std::string log_level = "warn";
   app.set_help_all_flag("-H,--help-all", "Print all help messages and exit");
@@ -110,11 +119,18 @@ int main(int argc, char** argv) {
   app.add_flag("--interpolate-undefined", stack_options.interpolate_undefined,
                "Interpolate undefined variables with empty strings");
 
+  cloe::LuaOptions lua_options{};
+  lua_options.environment = stack_options.environment;
+  app.add_option("--lua-path", lua_options.lua_paths,
+                 "Scan directory for lua files when loading modules (Env:CLOE_LUA_PATH)");
+  app.add_flag("--no-system-lua", lua_options.no_system_lua, "Disable default Lua system paths");
+
   // The --strict flag here is useful for all our smoketests, since this is the
   // combination of flags we use for maximum reproducibility / isolation.
   // Note: This option also affects / overwrites options for the run subcommand!
-  app.add_flag("-t,--strict,!--no-strict", stack_options.strict_mode,
-               "Forces flags: --no-system-plugins --no-system-confs --require-success")
+  app.add_flag(
+         "-t,--strict,!--no-strict", stack_options.strict_mode,
+         "Forces flags: --no-system-plugins --no-system-confs --no-system-lua --require-success")
       ->envname("CLOE_STRICT_MODE");
   app.add_flag("-s,--secure,!--no-secure", stack_options.secure_mode,
                "Forces flags: --strict --no-hooks --no-interpolate")
@@ -147,6 +163,7 @@ int main(int argc, char** argv) {
     if (stack_options.strict_mode) {
       stack_options.no_system_plugins = true;
       stack_options.no_system_confs = true;
+      lua_options.no_system_lua = true;
       run_options.require_success = true;
     }
     stack_options.environment->prefer_external(false);
@@ -156,6 +173,7 @@ int main(int argc, char** argv) {
 
   auto with_global_options = [&](auto& opt) -> decltype(opt) {
     std::swap(opt.stack_options, stack_options);
+    std::swap(opt.lua_options, lua_options);
     return opt;
   };
 
@@ -172,6 +190,8 @@ int main(int argc, char** argv) {
       return engine::check(with_global_options(check_options), check_files);
     } else if (*run) {
       return engine::run(with_global_options(run_options), run_files);
+    } else if (*shell) {
+      return engine::shell(with_global_options(shell_options), shell_files);
     }
   } catch (cloe::ConcludedError& e) {
     return EXIT_FAILURE;

@@ -93,7 +93,11 @@
 #include <cloe/utility/resource_handler.hpp>  // for INCLUDE_RESOURCE, RESOURCE_HANDLER
 #include <cloe/vehicle.hpp>                   // for Vehicle
 #include <fable/utility.hpp>                  // for pretty_print
+#include <fable/utility/sol.hpp>              // for sol::object to_json
 
+#include "coordinator.hpp"            // for register_usertype_coordinator
+#include "lua_action.hpp"             // for LuaAction,
+#include "lua_api.hpp"                // for to_json(json, sol::object)
 #include "simulation_context.hpp"     // for SimulationContext
 #include "utility/command.hpp"        // for CommandFactory
 #include "utility/state_machine.hpp"  // for State, StateMachine
@@ -324,8 +328,7 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
     ctx.server->refresh_buffer();
   };
 
-  {
-    // 2. Initialize loggers
+  {  // 2. Initialize loggers
     update_progress("logging");
 
     for (const auto& c : ctx.config.logging) {
@@ -333,8 +336,14 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
     }
   }
 
-  {
-    // 3. Enroll endpoints and triggers for the server
+  {  // 3. Initialize Lua
+    auto types_tbl = sol::object(cloe::luat_cloe_engine_types(ctx.lua)).as<sol::table>();
+    register_usertype_coordinator(types_tbl, ctx.sync);
+
+    cloe::luat_cloe_engine_state(ctx.lua)["scheduler"] = std::ref(*ctx.coordinator);
+  }
+
+  {  // 4. Enroll endpoints and triggers for the server
     update_progress("server");
 
     auto rp = ctx.simulation_registrar();
@@ -428,6 +437,7 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
     r.register_action<actions::RealtimeFactorFactory>(&ctx.sync);
     r.register_action<actions::ResetStatisticsFactory>(&ctx.statistics);
     r.register_action<actions::CommandFactory>(ctx.commander.get());
+    r.register_action<actions::LuaFactory>(ctx.lua);
 
     // From: cloe/trigger/example_actions.hpp
     auto tr = ctx.coordinator->trigger_registrar(cloe::Source::TRIGGER);
@@ -437,8 +447,7 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
     r.register_action<cloe::actions::PushReleaseFactory>(tr);
   }
 
-  {
-    // 4. Initialize simulators
+  {  // 5. Initialize simulators
     update_progress("simulators");
 
     /**
@@ -482,8 +491,7 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
                             cloe::handler::StaticJson(ctx.simulator_ids()));
   }
 
-  {
-    // 5. Initialize vehicles
+  {  // 6. Initialize vehicles
     update_progress("vehicles");
 
     /**
@@ -673,8 +681,7 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
                             cloe::handler::StaticJson(ctx.vehicle_ids()));
   }
 
-  {
-    // 6. Initialize controllers
+  {  // 7. Initialize controllers
     update_progress("controllers");
 
     /**
@@ -759,6 +766,7 @@ StateId SimulationMachine::Start::impl(SimulationContext& ctx) {
 
   // Process initial trigger list
   insert_triggers_from_config(ctx);
+  ctx.coordinator->process_pending_lua_triggers(ctx.sync);
   ctx.coordinator->process(ctx.sync);
   ctx.callback_start->trigger(ctx.sync);
 
@@ -1197,16 +1205,19 @@ StateId SimulationMachine::Abort::impl(SimulationContext& ctx) {
 
 // --------------------------------------------------------------------------------------------- //
 
-Simulation::Simulation(const cloe::Stack& config, const std::string& uuid)
-    : logger_(cloe::logger::get("cloe")), config_(config), uuid_(uuid) {}
+Simulation::Simulation(cloe::Stack&& config, sol::state&& lua, const std::string& uuid)
+    : config_(std::move(config))
+    , lua_(std::move(lua))
+    , logger_(cloe::logger::get("cloe"))
+    , uuid_(uuid) {}
 
 SimulationResult Simulation::run() {
   // Input:
-  SimulationContext ctx;
+  SimulationContext ctx{lua_.lua_state()};
   ctx.server = make_server(config_.server);
-  ctx.coordinator.reset(new Coordinator{});
-  ctx.registrar.reset(new Registrar{ctx.server->server_registrar(), ctx.coordinator});
-  ctx.commander.reset(new CommandExecuter{logger()});
+  ctx.coordinator = std::make_unique<Coordinator>(ctx.lua);
+  ctx.registrar = std::make_unique<Registrar>(ctx.server->server_registrar(), ctx.coordinator.get());
+  ctx.commander = std::make_unique<CommandExecuter>(logger());
   ctx.sync = SimulationSync(config_.simulation.model_step_width);
   ctx.config = config_;
   ctx.uuid = uuid_;
@@ -1313,6 +1324,7 @@ SimulationResult Simulation::run() {
   r.statistics = ctx.statistics;
   r.elapsed = ctx.progress.elapsed();
   r.triggers = ctx.coordinator->history();
+  r.report = sol::object(cloe::luat_cloe_engine_state(ctx.lua)["report"]);
 
   abort_fn_ = nullptr;
   return r;

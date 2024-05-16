@@ -25,12 +25,14 @@
 
 #include <boost/optional.hpp>  // for optional<>
 
+#include "lua_setup.hpp"
 #include "stack_factory.hpp"
 
 namespace engine {
 
 struct CheckOptions {
   cloe::StackOptions stack_options;
+  cloe::LuaOptions lua_options;
 
   std::ostream* output = &std::cout;
   std::ostream* error = &std::cerr;
@@ -46,6 +48,7 @@ int check(const CheckOptions& opt, const std::vector<std::string>& filepaths);
 
 struct DumpOptions {
   cloe::StackOptions stack_options;
+  cloe::LuaOptions lua_options;
 
   std::ostream* output = &std::cout;
   std::ostream* error = &std::cerr;
@@ -58,6 +61,7 @@ int dump(const DumpOptions& opt, const std::vector<std::string>& filepaths);
 
 struct RunOptions {
   cloe::StackOptions stack_options;
+  cloe::LuaOptions lua_options;
 
   std::ostream* output = &std::cout;
   std::ostream* error = &std::cerr;
@@ -77,6 +81,7 @@ int run(const RunOptions& opt, const std::vector<std::string>& filepaths);
 
 struct ShellOptions {
   cloe::StackOptions stack_options;
+  cloe::LuaOptions lua_options;
 
   std::ostream* output = &std::cout;
   std::ostream* error = &std::cerr;
@@ -93,6 +98,7 @@ int shell(const ShellOptions& opt, const std::vector<std::string>& filepaths);
 
 struct UsageOptions {
   cloe::StackOptions stack_options;
+  cloe::LuaOptions lua_options;
 
   std::ostream* output = &std::cout;
   std::ostream* error = &std::cerr;
