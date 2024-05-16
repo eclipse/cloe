@@ -16,15 +16,15 @@
     {"event": "start",   "action": "realtime_factor=-1"},
     {
       "label": "Insert the stop trigger via curl to test the web server.",
-      "event": "time=10",
+      "event": "time=1",
       "action": {
         "name": "command",
-        "command": "echo '{\"event\": \"time=60\", \"action\": \"succeed\"}' | curl -d @- http://localhost:23456/api/triggers/input"
+        "command": "echo '{\"event\": \"time=2\", \"action\": \"succeed\"}' | curl -d @- http://localhost:23456/api/triggers/input"
       }
     },
     {
       "label": "If we get this far, then the curl command didn't work.",
-      "event": "time=120",
+      "event": "time=3",
       "action": {
         "name": "bundle",
         "actions": [

@@ -4,10 +4,8 @@
 # configuration of a simulation results in roughly the same output
 # again, i.e., the simulation is reproducible.
 
-cd "${BATS_TEST_DIRNAME}"
-export CLOE_ROOT="${BATS_TEST_DIRNAME}/../.."
-load "${CLOE_ROOT}/tests/setup_bats.bash"
-load "${CLOE_ROOT}/tests/setup_testname.bash"
+load setup_bats
+load setup_testname
 
 teardown() {
     # Remove the temporary registry.

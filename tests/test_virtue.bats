@@ -1,9 +1,7 @@
 #!/usr/bin/env bats
 
-cd "${BATS_TEST_DIRNAME}"
-export CLOE_ROOT="${BATS_TEST_DIRNAME}/../../.."
-load "${CLOE_ROOT}/tests/setup_bats.bash"
-load "${CLOE_ROOT}/tests/setup_testname.bash"
+load setup_bats
+load setup_testname
 
 @test "$(testname 'Expect check success' 'test_virtue_missing_lanes_fail.json' 'd9072cc3-62f3-4f11-bf9e-b514fea67e4b')" {
     cloe-engine check test_virtue_missing_lanes_fail.json

@@ -1,7 +1,7 @@
 {
   "version": "4",
   "include": [
-    "${CLOE_ROOT}/tests/controller_basic.json"
+    "just_controller_basic.json"
   ],
   "defaults": {
     "controllers": [

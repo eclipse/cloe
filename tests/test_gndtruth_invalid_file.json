@@ -1,7 +1,7 @@
 {
   "version": "4",
   "include": [
-    "config_minimator_smoketest.json"
+    "test_gndtruth_config.json"
   ],
   "controllers": [
     {

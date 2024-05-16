@@ -1,9 +1,7 @@
 #!/usr/bin/env bats
 
-cd "${BATS_TEST_DIRNAME}"
-export CLOE_ROOT="${BATS_TEST_DIRNAME}/../../.."
-load "${CLOE_ROOT}/tests/setup_bats.bash"
-load "${CLOE_ROOT}/tests/setup_testname.bash"
+load setup_bats
+load setup_testname
 
 # Usage: FILENAME=$(mktemp_gndtruth_out SUFFIX)
 #

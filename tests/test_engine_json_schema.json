@@ -257,6 +257,59 @@
             "properties": {
               "args": {
                 "additionalProperties": false,
+                "properties": {
+                  "components": {
+                    "description": "array of components to be extracted",
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "output_file": {
+                    "description": "file path to write groundtruth output to",
+                    "type": "string"
+                  },
+                  "output_type": {
+                    "description": "type of output file to write",
+                    "enum": [
+                      "json.bz2",
+                      "json.gz",
+                      "json.zip",
+                      "json",
+                      "msgpack.bz2",
+                      "msgpack.gz",
+                      "msgpack.zip",
+                      "msgpack"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "binding": {
+                "const": "gndtruth_extractor",
+                "description": "name of factory"
+              },
+              "name": {
+                "description": "globally unique identifier for controller",
+                "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+                "type": "string"
+              },
+              "vehicle": {
+                "description": "vehicle controller is assigned to",
+                "type": "string"
+              }
+            },
+            "required": [
+              "binding"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "args": {
+                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               },
@@ -1065,6 +1118,189 @@
               "args": {
                 "additionalProperties": false,
                 "properties": {
+                  "headless": {
+                    "description": "run esmini without viewer",
+                    "type": "boolean"
+                  },
+                  "scenario": {
+                    "description": "absolute path to open scenario file",
+                    "type": "string"
+                  },
+                  "vehicles": {
+                    "additionalProperties": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "closed_loop": {
+                          "description": "control the esmini vehicle",
+                          "type": "boolean"
+                        },
+                        "filter_distance": {
+                          "description": "filter distance for ground truth data",
+                          "maximum": 1.7976931348623157e+308,
+                          "minimum": -1.7976931348623157e+308,
+                          "type": "number"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "description": "vehicle configuration like sensors and component mapping",
+                    "type": "object"
+                  },
+                  "write_images": {
+                    "description": "save an image for each step",
+                    "type": "boolean"
+                  }
+                },
+                "type": "object"
+              },
+              "binding": {
+                "const": "esmini",
+                "description": "name of factory"
+              },
+              "name": {
+                "description": "globally unique identifier for simulator",
+                "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "binding"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "args": {
+                "additionalProperties": false,
+                "properties": {
+                  "vehicles": {
+                    "additionalProperties": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "ego_sensor_mockup": {
+                          "additionalProperties": false,
+                          "description": "Ego sensor mockup configuration",
+                          "properties": {
+                            "ego_object": {
+                              "additionalProperties": false,
+                              "description": "Ego object configuration in world coordinates",
+                              "properties": {
+                                "position": {
+                                  "additionalProperties": false,
+                                  "description": "Object position coordinates (x,y,z)",
+                                  "properties": {
+                                    "x": {
+                                      "description": "Object position x axis",
+                                      "maximum": 1.7976931348623157e+308,
+                                      "minimum": -1.7976931348623157e+308,
+                                      "type": "number"
+                                    },
+                                    "y": {
+                                      "description": "Object position y axis",
+                                      "maximum": 1.7976931348623157e+308,
+                                      "minimum": -1.7976931348623157e+308,
+                                      "type": "number"
+                                    },
+                                    "z": {
+                                      "description": "Object position z axis",
+                                      "maximum": 1.7976931348623157e+308,
+                                      "minimum": -1.7976931348623157e+308,
+                                      "type": "number"
+                                    }
+                                  },
+                                  "type": "object"
+                                },
+                                "velocity": {
+                                  "description": "Object longitudinal velocity",
+                                  "maximum": 1.7976931348623157e+308,
+                                  "minimum": -1.7976931348623157e+308,
+                                  "type": "number"
+                                }
+                              },
+                              "type": "object"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "object_sensor_mockup": {
+                          "additionalProperties": false,
+                          "description": "Object sensor mockup configuration",
+                          "properties": {
+                            "objects": {
+                              "description": "Array of object configuration relative to ego vehicle",
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "position": {
+                                    "additionalProperties": false,
+                                    "description": "Object position coordinates (x,y,z)",
+                                    "properties": {
+                                      "x": {
+                                        "description": "Object position x axis",
+                                        "maximum": 1.7976931348623157e+308,
+                                        "minimum": -1.7976931348623157e+308,
+                                        "type": "number"
+                                      },
+                                      "y": {
+                                        "description": "Object position y axis",
+                                        "maximum": 1.7976931348623157e+308,
+                                        "minimum": -1.7976931348623157e+308,
+                                        "type": "number"
+                                      },
+                                      "z": {
+                                        "description": "Object position z axis",
+                                        "maximum": 1.7976931348623157e+308,
+                                        "minimum": -1.7976931348623157e+308,
+                                        "type": "number"
+                                      }
+                                    },
+                                    "type": "object"
+                                  },
+                                  "velocity": {
+                                    "description": "Object longitudinal velocity",
+                                    "maximum": 1.7976931348623157e+308,
+                                    "minimum": -1.7976931348623157e+308,
+                                    "type": "number"
+                                  }
+                                },
+                                "type": "object"
+                              },
+                              "type": "array"
+                            }
+                          },
+                          "type": "object"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "description": "list of vehicle names to make available",
+                    "type": "object"
+                  }
+                },
+                "type": "object"
+              },
+              "binding": {
+                "const": "minimator",
+                "description": "name of factory"
+              },
+              "name": {
+                "description": "globally unique identifier for simulator",
+                "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "binding"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "args": {
+                "additionalProperties": false,
+                "properties": {
                   "vehicles": {
                     "description": "list of vehicle names to make available",
                     "items": {
@@ -1202,6 +1438,327 @@
           "components": {
             "additionalProperties": {
               "oneOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "args": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "enable": {
+                          "description": "enable or disable component",
+                          "type": "boolean"
+                        },
+                        "frustum_culling": {
+                          "description": "enable or disable frustum culling",
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "binding": {
+                      "const": "clothoid_fit",
+                      "description": "name of factory"
+                    },
+                    "from": {
+                      "anyOf": [
+                        {
+                          "description": "component input for binding",
+                          "type": "string"
+                        },
+                        {
+                          "description": "component inputs for binding",
+                          "items": {
+                            "type": "string"
+                          },
+                          "type": "array"
+                        }
+                      ]
+                    },
+                    "name": {
+                      "description": "globally unique identifier for component",
+                      "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "binding"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "args": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "frustum": {
+                          "additionalProperties": false,
+                          "description": "sensor frustum",
+                          "properties": {
+                            "clip_far": {
+                              "description": "far clipping plane [m]",
+                              "maximum": 1.7976931348623157e+308,
+                              "minimum": 0.0,
+                              "type": "number"
+                            },
+                            "clip_near": {
+                              "description": "near clipping plane [m]",
+                              "maximum": 1.7976931348623157e+308,
+                              "minimum": 0.0,
+                              "type": "number"
+                            },
+                            "fov_h": {
+                              "description": "horizontal field of view [rad]",
+                              "maximum": 6.283185307179586,
+                              "minimum": 0.0,
+                              "type": "number"
+                            },
+                            "fov_v": {
+                              "description": "vertical field of view [rad]",
+                              "maximum": 6.283185307179586,
+                              "minimum": 0.0,
+                              "type": "number"
+                            },
+                            "offset_h": {
+                              "description": "horizontal field-of-view offset [rad]",
+                              "maximum": 6.283185307179586,
+                              "minimum": -6.283185307179586,
+                              "type": "number"
+                            },
+                            "offset_v": {
+                              "description": "vertical field-of-view offset [rad]",
+                              "maximum": 6.283185307179586,
+                              "minimum": -6.283185307179586,
+                              "type": "number"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "reference_frame": {
+                          "additionalProperties": false,
+                          "description": "sensor frame of reference",
+                          "properties": {
+                            "pitch": {
+                              "description": "pitch angle relative to ego reference frame [rad]",
+                              "maximum": 1.7976931348623157e+308,
+                              "minimum": -1.7976931348623157e+308,
+                              "type": "number"
+                            },
+                            "roll": {
+                              "description": "roll angle relative to ego reference frame [rad]",
+                              "maximum": 1.7976931348623157e+308,
+                              "minimum": -1.7976931348623157e+308,
+                              "type": "number"
+                            },
+                            "x": {
+                              "description": "x-position in ego reference frame [m]",
+                              "maximum": 1.7976931348623157e+308,
+                              "minimum": -1.7976931348623157e+308,
+                              "type": "number"
+                            },
+                            "y": {
+                              "description": "y-position in ego reference frame [m]",
+                              "maximum": 1.7976931348623157e+308,
+                              "minimum": -1.7976931348623157e+308,
+                              "type": "number"
+                            },
+                            "yaw": {
+                              "description": "yaw angle relative to ego reference frame [rad]",
+                              "maximum": 1.7976931348623157e+308,
+                              "minimum": -1.7976931348623157e+308,
+                              "type": "number"
+                            },
+                            "z": {
+                              "description": "z-position in ego reference frame [m]",
+                              "maximum": 1.7976931348623157e+308,
+                              "minimum": -1.7976931348623157e+308,
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "x",
+                            "y",
+                            "z",
+                            "roll",
+                            "pitch",
+                            "yaw"
+                          ],
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "reference_frame",
+                        "frustum"
+                      ],
+                      "type": "object"
+                    },
+                    "binding": {
+                      "const": "frustum_culling_lanes",
+                      "description": "name of factory"
+                    },
+                    "from": {
+                      "anyOf": [
+                        {
+                          "description": "component input for binding",
+                          "type": "string"
+                        },
+                        {
+                          "description": "component inputs for binding",
+                          "items": {
+                            "type": "string"
+                          },
+                          "type": "array"
+                        }
+                      ]
+                    },
+                    "name": {
+                      "description": "globally unique identifier for component",
+                      "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "binding"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "args": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "frustum": {
+                          "additionalProperties": false,
+                          "description": "sensor frustum",
+                          "properties": {
+                            "clip_far": {
+                              "description": "far clipping plane [m]",
+                              "maximum": 1.7976931348623157e+308,
+                              "minimum": 0.0,
+                              "type": "number"
+                            },
+                            "clip_near": {
+                              "description": "near clipping plane [m]",
+                              "maximum": 1.7976931348623157e+308,
+                              "minimum": 0.0,
+                              "type": "number"
+                            },
+                            "fov_h": {
+                              "description": "horizontal field of view [rad]",
+                              "maximum": 6.283185307179586,
+                              "minimum": 0.0,
+                              "type": "number"
+                            },
+                            "fov_v": {
+                              "description": "vertical field of view [rad]",
+                              "maximum": 6.283185307179586,
+                              "minimum": 0.0,
+                              "type": "number"
+                            },
+                            "offset_h": {
+                              "description": "horizontal field-of-view offset [rad]",
+                              "maximum": 6.283185307179586,
+                              "minimum": -6.283185307179586,
+                              "type": "number"
+                            },
+                            "offset_v": {
+                              "description": "vertical field-of-view offset [rad]",
+                              "maximum": 6.283185307179586,
+                              "minimum": -6.283185307179586,
+                              "type": "number"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "reference_frame": {
+                          "additionalProperties": false,
+                          "description": "sensor frame of reference",
+                          "properties": {
+                            "pitch": {
+                              "description": "pitch angle relative to ego reference frame [rad]",
+                              "maximum": 1.7976931348623157e+308,
+                              "minimum": -1.7976931348623157e+308,
+                              "type": "number"
+                            },
+                            "roll": {
+                              "description": "roll angle relative to ego reference frame [rad]",
+                              "maximum": 1.7976931348623157e+308,
+                              "minimum": -1.7976931348623157e+308,
+                              "type": "number"
+                            },
+                            "x": {
+                              "description": "x-position in ego reference frame [m]",
+                              "maximum": 1.7976931348623157e+308,
+                              "minimum": -1.7976931348623157e+308,
+                              "type": "number"
+                            },
+                            "y": {
+                              "description": "y-position in ego reference frame [m]",
+                              "maximum": 1.7976931348623157e+308,
+                              "minimum": -1.7976931348623157e+308,
+                              "type": "number"
+                            },
+                            "yaw": {
+                              "description": "yaw angle relative to ego reference frame [rad]",
+                              "maximum": 1.7976931348623157e+308,
+                              "minimum": -1.7976931348623157e+308,
+                              "type": "number"
+                            },
+                            "z": {
+                              "description": "z-position in ego reference frame [m]",
+                              "maximum": 1.7976931348623157e+308,
+                              "minimum": -1.7976931348623157e+308,
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "x",
+                            "y",
+                            "z",
+                            "roll",
+                            "pitch",
+                            "yaw"
+                          ],
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "reference_frame",
+                        "frustum"
+                      ],
+                      "type": "object"
+                    },
+                    "binding": {
+                      "const": "frustum_culling_objects",
+                      "description": "name of factory"
+                    },
+                    "from": {
+                      "anyOf": [
+                        {
+                          "description": "component input for binding",
+                          "type": "string"
+                        },
+                        {
+                          "description": "component inputs for binding",
+                          "items": {
+                            "type": "string"
+                          },
+                          "type": "array"
+                        }
+                      ]
+                    },
+                    "name": {
+                      "description": "globally unique identifier for component",
+                      "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "binding"
+                  ],
+                  "type": "object"
+                },
                 {
                   "additionalProperties": false,
                   "properties": {

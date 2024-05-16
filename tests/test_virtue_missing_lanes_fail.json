@@ -1,7 +1,7 @@
 {
   "version": "4",
   "include": [
-    "${CLOE_ROOT}/tests/config_nop_infinite.json"
+    "config_nop_infinite.json"
   ],
   "defaults": {
     "controllers": [
