@@ -34,7 +34,7 @@
 #include <fable/utility.hpp>  // for read_conf
 
 #include "error_handler.hpp"  // for conclude_error
-#include "main_commands.hpp"  // for RunOptions, new_stack
+#include "main_commands.hpp"  // for RunOptions, new_stack, new_lua
 #include "simulation.hpp"     // for Simulation, SimulationResult
 #include "stack.hpp"          // for Stack
 
@@ -63,10 +63,15 @@ int run(const RunOptions& opt, const std::vector<std::string>& filepaths) {
 
   // Load the stack file:
   cloe::Stack stack = cloe::new_stack(opt.stack_options);
+  sol::state lua = cloe::new_lua(opt.lua_options, stack);
   try {
     cloe::conclude_error(*opt.stack_options.error, [&]() {
       for (const auto& file : filepaths) {
-        cloe::merge_stack(opt.stack_options, stack, file);
+        if (boost::algorithm::ends_with(file, ".lua")) {
+          cloe::merge_lua(lua, file);
+        } else {
+          cloe::merge_stack(opt.stack_options, stack, file);
+        }
       }
       if (!opt.allow_empty) {
         stack.check_completeness();
@@ -77,7 +82,7 @@ int run(const RunOptions& opt, const std::vector<std::string>& filepaths) {
   }
 
   // Create simulation:
-  Simulation sim(std::move(stack), uuid);
+  Simulation sim(std::move(stack), std::move(lua), uuid);
   GLOBAL_SIMULATION_INSTANCE = &sim;
   std::ignore = std::signal(SIGINT, handle_signal);
 

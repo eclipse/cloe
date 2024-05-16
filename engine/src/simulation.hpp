@@ -28,6 +28,7 @@
 #include <boost/filesystem/path.hpp>  // for path
 
 #include <fable/enum.hpp>  // for ENUM_SERIALIZATION
+#include <sol/state.hpp>   // for state
 
 #include "simulation_context.hpp"
 #include "stack.hpp"  // for Stack
@@ -44,6 +45,7 @@ struct SimulationResult {
   std::vector<std::string> errors;
   SimulationStatistics statistics;
   cloe::Json triggers;
+  cloe::Json report;
   boost::optional<boost::filesystem::path> output_dir;
 
  public:
@@ -97,6 +99,7 @@ struct SimulationResult {
         {"elapsed", r.elapsed},
         {"errors", r.errors},
         {"outcome", r.outcome},
+        {"report", r.report},
         {"simulation", r.sync},
         {"statistics", r.statistics},
         {"uuid", r.uuid},
@@ -106,7 +109,7 @@ struct SimulationResult {
 
 class Simulation {
  public:
-  Simulation(const cloe::Stack& config, const std::string& uuid);
+  Simulation(cloe::Stack&& config, sol::state&& lua, const std::string& uuid);
   ~Simulation() = default;
 
   /**
@@ -151,6 +154,7 @@ class Simulation {
 
  private:
   cloe::Stack config_;
+  sol::state lua_;
   cloe::Logger logger_;
   std::string uuid_;
   std::function<void()> abort_fn_;
