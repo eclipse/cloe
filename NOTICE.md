@@ -70,6 +70,12 @@ The following third-party libraries are included in the Cloe repository:
   - Website: https://github.com/kikito/inspect.lua
   - Source: engine/lua/inspect.lua
 
+- LRDB
+  - License: BSL-1.0
+  - License-Source: https://www.boost.org/LICENSE_1_0.txt
+  - Website: https://github.com/satoren/LRDB
+  - Source: engine/vendor/lrdb
+
 - Lust
   - License: MIT
   - License-Source: https://raw.githubusercontent.com/bjornbytes/lust/master/LICENSE

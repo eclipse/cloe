@@ -123,6 +123,7 @@ set_target_properties(cloe-enginelib PROPERTIES
 target_compile_definitions(cloe-enginelib
   PUBLIC
     SOL_ALL_SAFETIES_ON=1
+    LRDB_USE_BOOST_ASIO=1
     CLOE_ENGINE_VERSION="${CLOE_ENGINE_VERSION}"
     CLOE_ENGINE_TIMESTAMP="${CLOE_ENGINE_TIMESTAMP}"
     PROJECT_SOURCE_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}\"
@@ -155,6 +156,16 @@ else()
   target_compile_definitions(cloe-enginelib PUBLIC CLOE_ENGINE_WITH_SERVER=0)
 endif()
 
+option(CLOE_ENGINE_WITH_LRDB "Enable LRDB Lua Debugger?" ON)
+if(CLOE_ENGINE_WITH_LRDB)
+  add_subdirectory(vendor/lrdb)
+  target_sources(cloe-enginelib PRIVATE src/lua_debugger.cpp)
+  target_link_libraries(cloe-enginelib PRIVATE lrdb::lrdb)
+  target_compile_definitions(cloe-enginelib PUBLIC CLOE_ENGINE_WITH_LRDB=1)
+else()
+  target_compile_definitions(cloe-enginelib PUBLIC CLOE_ENGINE_WITH_LRDB=0)
+endif()
+
 if(BUILD_TESTING)
     message(STATUS "Building test-enginelib executable.")
     add_executable(test-enginelib
@@ -176,7 +187,7 @@ if(BUILD_TESTING)
 endif()
 
 # Executable ---------------------------------------------------------
-message(STATUS "Building cloe-engine executable [with server=${CLOE_ENGINE_WITH_SERVER}].")
+message(STATUS "Building cloe-engine executable [with server=${CLOE_ENGINE_WITH_SERVER}, lrdb=${CLOE_ENGINE_WITH_LRDB}].")
 add_subdirectory(vendor/linenoise)
 add_executable(cloe-engine
     src/main.cpp

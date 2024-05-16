@@ -198,7 +198,8 @@ void register_cloe_engine(sol::state_view& lua, Stack& stack) {
     "cloe-stackfile-4.1", true,
 
     // Server enabled:
-    "cloe-server", CLOE_ENGINE_WITH_SERVER != 0
+    "cloe-server", CLOE_ENGINE_WITH_SERVER != 0,
+    "cloe-lrdb", CLOE_ENGINE_WITH_LRDB != 0
   );
   // clang-format on
 
