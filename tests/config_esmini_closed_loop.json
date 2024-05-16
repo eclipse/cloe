@@ -27,7 +27,7 @@
           {
             "label": "Ego vehicle should reach stand-still.",
             "event": "default_speed/kmph=<0.2", "action": "succeed"
-          }      
+          }
         ]
       }
     }

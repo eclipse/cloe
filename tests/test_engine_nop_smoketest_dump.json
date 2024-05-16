@@ -31,11 +31,6 @@
       "path": "${CLOE_SIMULATION_UUID}"
     },
     "plugin_path": [
-      "/.../cloe-plugin-basic/.../",
-      "/.../cloe-plugin-mocks/.../",
-      "/.../cloe-plugin-noisy-sensor/.../",
-      "/.../cloe-plugin-speedometer/.../",
-      "/.../cloe-plugin-virtue/.../"
     ],
     "plugins": {
       "allow_clobber": true,

@@ -1,5 +1,8 @@
 #!/usr/bin/env bats
 
+# All tests are run from within the tests/ directory.
+cd "${BATS_TEST_DIRNAME}"
+
 # The path to use whenever we need a temporary registry. Whenever we use this, we
 # probably want to specify the `--write-output` flag too, otherwise nothing will
 # be written to the registry.
@@ -44,4 +47,16 @@ test_plugin_exists() {
     local plugin="$1"
 
     cloe-engine usage "${plugin}" &>/dev/null
+}
+
+require_program() {
+    if ! type $1 &>/dev/null; then
+        skip "required program not present: $1"
+    fi
+}
+
+require_engine_with_server() {
+    if ! cloe-engine version | grep -F "server: true" &>/dev/null; then
+        skip "required engine option not set: server"
+    fi
 }

@@ -1,9 +1,7 @@
 #!/usr/bin/env bats
 
-cd "${BATS_TEST_DIRNAME}"
-export CLOE_ROOT="${BATS_TEST_DIRNAME}/../../.."
-load "${CLOE_ROOT}/tests/setup_bats.bash"
-load "${CLOE_ROOT}/tests/setup_testname.bash"
+load setup_bats
+load setup_testname
 
 @test "$(testname 'Expect check success' 'test_minimator_smoketest.json' 'c7a427e7-eb2b-4ae7-85ec-a35b7540d4aa')" {
     cloe-engine check test_minimator_smoketest.json
@@ -14,13 +12,13 @@ load "${CLOE_ROOT}/tests/setup_testname.bash"
 }
 
 @test "$(testname 'Expect check/run success' 'test_minimator_smoketest.json [ts=5ms]' '57254185-5480-4859-b2a5-6c3a211a22e0')" {
-    local timestep_stack="${CLOE_ROOT}/tests/option_timestep_5.json"
+    local timestep_stack="option_timestep_5.json"
     cloe-engine check test_minimator_smoketest.json "${timestep_stack}"
     cloe-engine run test_minimator_smoketest.json "${timestep_stack}"
 }
 
 @test "$(testname 'Expect check/run success' 'test_minimator_smoketest.json [ts=60ms]' 'a0d4982f-8c02-4759-bc88-cc30a1ccbbf0')" {
-    local timestep_stack="${CLOE_ROOT}/tests/option_timestep_60.json"
+    local timestep_stack="option_timestep_60.json"
     cloe-engine check test_minimator_smoketest.json "${timestep_stack}"
     cloe-engine run test_minimator_smoketest.json "${timestep_stack}"
 }
