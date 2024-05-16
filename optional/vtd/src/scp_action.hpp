@@ -35,9 +35,10 @@ class ScpAction : public cloe::Action {
   ScpAction(const std::string& name, std::shared_ptr<ScpTransceiver> scp_client, const std::string& msg)
     : cloe::Action(name), client_(scp_client), xml_(msg) {}
   cloe::ActionPtr clone() const override { return std::make_unique<ScpAction>(name(), client_, xml_); }
-  void operator()(const cloe::Sync&, cloe::TriggerRegistrar&) override {
+  cloe::CallbackResult operator()(const cloe::Sync&, cloe::TriggerRegistrar&) override {
     logger()->info("Sending SCP message: {}", xml_);
     client_->send(xml_);
+    return cloe::CallbackResult::Ok;
   }
   bool is_significant() const override { return false; }
 

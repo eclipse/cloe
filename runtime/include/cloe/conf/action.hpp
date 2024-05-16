@@ -39,7 +39,10 @@ class Configure : public Action {
     conf_.erase("name");
   }
   ActionPtr clone() const override { return std::make_unique<Configure>(name(), ptr_, conf_); }
-  void operator()(const Sync&, TriggerRegistrar&) override { ptr_->from_conf(conf_); }
+  CallbackResult operator()(const Sync&, TriggerRegistrar&) override {
+    ptr_->from_conf(conf_);
+    return CallbackResult::Ok;
+  }
 
  protected:
   void to_json(Json& j) const override { j = *conf_; }
