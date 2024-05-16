@@ -314,6 +314,8 @@ struct EngineConf : public Confable {
   boost::optional<boost::filesystem::path> output_file_config{"config.json"};
   boost::optional<boost::filesystem::path> output_file_result{"result.json"};
   boost::optional<boost::filesystem::path> output_file_triggers{"triggers.json"};
+  boost::optional<boost::filesystem::path> output_file_signals{"signals.json"};
+  boost::optional<boost::filesystem::path> output_file_signals_autocompletion;
   boost::optional<boost::filesystem::path> output_file_data_stream;
   bool output_clobber_files{true};
 
@@ -416,6 +418,8 @@ struct EngineConf : public Confable {
               {"config", make_schema(&output_file_config, file_proto(), "file to store config in")},
               {"result", make_schema(&output_file_result, file_proto(), "file to store simulation result in")},
               {"triggers", make_schema(&output_file_triggers, file_proto(), "file to store triggers in")},
+              {"signals", make_schema(&output_file_signals, file_proto(), "file to store signals in")},
+              {"signals_autocompletion", make_schema(&output_file_signals_autocompletion, file_proto(), "file to store signal autocompletion in")},
               {"api_recording", make_schema(&output_file_data_stream, file_proto(), "file to store api data stream")},
            }},
         }},

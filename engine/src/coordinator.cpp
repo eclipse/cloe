@@ -56,8 +56,8 @@ void to_json(Json& j, const HistoryTrigger& t) {
   j["at"] = t.when;
 }
 
-Coordinator::Coordinator(sol::state_view lua)
-    : lua_(lua), executer_registrar_(trigger_registrar(Source::TRIGGER)) {}
+Coordinator::Coordinator(sol::state_view lua, cloe::DataBroker* db)
+    : lua_(lua), executer_registrar_(trigger_registrar(Source::TRIGGER)), db_(db) {}
 
 class TriggerRegistrar : public cloe::TriggerRegistrar {
  public:

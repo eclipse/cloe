@@ -51,6 +51,7 @@ TEST(cloe_stack, serialization_of_empty_stack) {
         "files": {
           "config": "config.json",
           "result": "result.json",
+          "signals": "signals.json",
           "triggers": "triggers.json"
         }
       },
@@ -142,6 +143,7 @@ TEST(cloe_stack, serialization_with_logging) {
         "files": {
           "config": "config.json",
           "result": "result.json",
+          "signals": "signals.json",
           "triggers": "triggers.json"
         }
       },

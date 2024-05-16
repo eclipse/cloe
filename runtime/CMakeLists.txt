@@ -46,6 +46,7 @@ add_library(cloe-runtime SHARED
     src/cloe/utility/std_extensions.cpp
     src/cloe/utility/uid_tracker.cpp
     src/cloe/utility/xdg.cpp
+    src/cloe/data_broker.cpp
 
     # For IDE integration
     ${cloe-runtime_PUBLIC_HEADERS}
@@ -96,10 +97,20 @@ if(BUILD_TESTING)
         src/cloe/version_test.cpp
         src/cloe/utility/statistics_test.cpp
         src/cloe/utility/uid_tracker_test.cpp
+        src/cloe/data_broker_test.cpp
     )
     set_target_properties(test-cloe PROPERTIES
         CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
+    )
+    target_compile_options(test-cloe
+        PUBLIC
+        -g
+        -O0
+    )
+    target_compile_definitions(test-cloe
+        PUBLIC
+            SOL_ALL_SAFETIES_ON=1
     )
     target_link_libraries(test-cloe
       PRIVATE

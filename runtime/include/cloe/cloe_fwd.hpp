@@ -43,6 +43,13 @@ class ConcludedError;
 using Logger = std::shared_ptr<spdlog::logger>;
 using LogLevel = spdlog::level::level_enum;
 
+// from data_broker.hpp
+template <typename T>
+class BasicContainer;
+class Signal;
+using SignalPtr = std::shared_ptr<Signal>;
+class DataBroker;
+
 // from entity.hpp
 class Entity;
 
