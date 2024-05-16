@@ -24,8 +24,11 @@ set(PROJECT_GIT_REF "unknown")
 # Library libstack ---------------------------------------------------
 message(STATUS "Building cloe-stacklib library.")
 add_library(cloe-stacklib STATIC
+    src/config.hpp
     src/stack.hpp
     src/stack.cpp
+    src/stack_factory.hpp
+    src/stack_factory.cpp
     src/plugin.hpp
     src/plugin.cpp
 
@@ -63,6 +66,7 @@ if(BUILD_TESTING)
     message(STATUS "Building test-stacklib executable.")
     add_executable(test-stacklib
         src/stack_test.cpp
+        src/stack_component_test.cpp
     )
     set_target_properties(test-stacklib PROPERTIES
         CXX_STANDARD 17
@@ -78,16 +82,74 @@ if(BUILD_TESTING)
     gtest_add_tests(TARGET test-stacklib)
 endif()
 
-# Executable ---------------------------------------------------------
-add_executable(cloe-engine
-    src/main.cpp
-    src/main_stack.cpp
+# Library libengine ----------------------------------------------
+message(STATUS "Building cloe-enginelib library.")
+add_library(cloe-enginelib STATIC
     src/coordinator.cpp
+    src/coordinator.hpp
+    src/registrar.hpp
+    # These are added below and depend on CLOE_ENGINE_WITH_SERVER:
+    # src/server.cpp
+    # src/server_mock.cpp
     src/simulation.cpp
+    src/simulation.hpp
     src/simulation_context.cpp
     src/simulation_context.hpp
     src/simulation_progress.hpp
     src/utility/command.cpp
+    src/utility/command.hpp
+    src/utility/defer.hpp
+    src/utility/progress.hpp
+    src/utility/state_machine.hpp
+    src/utility/time_event.hpp
+)
+add_library(cloe::enginelib ALIAS cloe-enginelib)
+set_target_properties(cloe-enginelib PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+    OUTPUT_NAME engine
+)
+target_compile_definitions(cloe-enginelib
+  PUBLIC
+    PROJECT_SOURCE_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}\"
+)
+target_include_directories(cloe-enginelib
+  PRIVATE
+    src
+)
+target_link_libraries(cloe-enginelib
+  PUBLIC
+    cloe::stacklib
+    cloe::models
+    cloe::runtime
+    fable::fable
+    boost::boost
+    Threads::Threads
+)
+
+option(CLOE_ENGINE_WITH_SERVER "Enable integrated server component?" ON)
+if(CLOE_ENGINE_WITH_SERVER)
+  if(CLOE_FIND_PACKAGES)
+    find_package(cloe-oak REQUIRED QUIET)
+  endif()
+  target_sources(cloe-enginelib PRIVATE src/server.cpp)
+  target_link_libraries(cloe-enginelib PRIVATE cloe::oak)
+  target_compile_definitions(cloe-enginelib PUBLIC CLOE_ENGINE_WITH_SERVER=1)
+else()
+  target_sources(cloe-enginelib PRIVATE src/server_mock.cpp)
+  target_compile_definitions(cloe-enginelib PUBLIC CLOE_ENGINE_WITH_SERVER=0)
+endif()
+
+# Executable ---------------------------------------------------------
+message(STATUS "Building cloe-engine executable [with server=${CLOE_ENGINE_WITH_SERVER}].")
+add_executable(cloe-engine
+    src/main.cpp
+    src/main_commands.hpp
+    src/main_check.cpp
+    src/main_dump.cpp
+    src/main_run.cpp
+    src/main_usage.cpp
+    src/main_version.cpp
 )
 set_target_properties(cloe-engine PROPERTIES
     CXX_STANDARD 17
@@ -98,7 +160,6 @@ target_compile_definitions(cloe-engine
   PRIVATE
     CLOE_ENGINE_VERSION="${CLOE_ENGINE_VERSION}"
     CLOE_ENGINE_TIMESTAMP="${CLOE_ENGINE_TIMESTAMP}"
-    PROJECT_SOURCE_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}\"
 )
 target_include_directories(cloe-engine
   PRIVATE
@@ -106,40 +167,10 @@ target_include_directories(cloe-engine
 )
 target_link_libraries(cloe-engine
   PRIVATE
-    CLI11::CLI11
-    cloe::models
     cloe::stacklib
+    cloe::enginelib
+    CLI11::CLI11
 )
-
-option(CLOE_ENGINE_WITH_SERVER "Enable integrated server component?" ON)
-if(CLOE_ENGINE_WITH_SERVER)
-  message(STATUS "-> Enable server component")
-  if(CLOE_FIND_PACKAGES)
-    find_package(cloe-oak REQUIRED QUIET)
-  endif()
-  target_sources(cloe-engine
-    PRIVATE
-      src/server.cpp
-  )
-  target_link_libraries(cloe-engine
-    PRIVATE
-      cloe::oak
-  )
-  target_compile_definitions(cloe-engine
-    PRIVATE
-      CLOE_ENGINE_WITH_SERVER=1
-  )
-else()
-  message(STATUS "-> Disable server component")
-  target_sources(cloe-engine
-    PRIVATE
-      src/server_mock.cpp
-  )
-  target_compile_definitions(cloe-engine
-    PRIVATE
-      CLOE_ENGINE_WITH_SERVER=0
-  )
-endif()
 
 # Installation -------------------------------------------------------
 install(TARGETS cloe-engine

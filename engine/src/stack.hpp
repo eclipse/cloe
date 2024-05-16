@@ -44,30 +44,8 @@
 #include <cloe/trigger.hpp>          // for Source
 #include <cloe/utility/command.hpp>  // for Command
 
+#include "config.hpp"
 #include "plugin.hpp"  // for Plugin
-
-#ifndef CLOE_STACK_VERSION
-#define CLOE_STACK_VERSION "4.1"
-#endif
-
-#ifndef CLOE_STACK_SUPPORTED_VERSIONS
-#define CLOE_STACK_SUPPORTED_VERSIONS \
-  { "4", "4.0", "4.1" }
-#endif
-
-#ifndef CLOE_XDG_SUFFIX
-#define CLOE_XDG_SUFFIX "cloe"
-#endif
-
-#ifndef CLOE_CONFIG_HOME
-#define CLOE_CONFIG_HOME "${XDG_CONFIG_HOME-${HOME}/.config}/" CLOE_XDG_SUFFIX
-#endif
-
-#ifndef CLOE_DATA_HOME
-#define CLOE_DATA_HOME "${XDG_DATA_HOME-${HOME}/.local/share}/" CLOE_XDG_SUFFIX
-#endif
-
-#define CLOE_SIMULATION_UUID_VAR "CLOE_SIMULATION_UUID"
 
 namespace cloe {
 
@@ -81,7 +59,7 @@ class PersistentConfable : public Confable {
  public:
   const Conf& conf() const { return conf_; }
 
-  void from_conf(const Conf& c) {
+  void from_conf(const Conf& c) override {
     Confable::from_conf(c);
     conf_ = c;
   }
@@ -889,8 +867,8 @@ class StackIncompleteError : public Error {
  public:
   explicit StackIncompleteError(std::vector<std::string>&& missing);
 
-  std::string all_sections_missing(const std::string& sep = ", ") const;
-  const std::vector<std::string>& sections_missing() const { return sections_missing_; }
+  [[nodiscard]] std::string all_sections_missing(const std::string& sep = ", ") const;
+  [[nodiscard]] const std::vector<std::string>& sections_missing() const { return sections_missing_; }
 
  private:
   std::vector<std::string> sections_missing_;
@@ -898,6 +876,10 @@ class StackIncompleteError : public Error {
 
 using ConfReader = std::function<Conf(const std::string&)>;
 
+/**
+ * Stack represents the entire configuration of the engine and the simulation
+ * to be run.
+ */
 class Stack : public Confable {
  private:  // Constants (1)
   std::vector<std::string> reserved_ids_;
@@ -937,9 +919,10 @@ class Stack : public Confable {
  public:  // Constructors
   Stack();
   Stack(const Stack& other);
-  Stack(Stack&& other);
-  Stack& operator=(Stack other);
-  ~Stack() = default;
+  Stack(Stack&& other) noexcept;
+  Stack& operator=(const Stack& other);
+  Stack& operator=(Stack&& other) noexcept;
+  ~Stack() override = default;
 
   friend void swap(Stack& left, Stack& right);
 
@@ -956,8 +939,13 @@ class Stack : public Confable {
    */
   void set_conf_reader(ConfReader fn) {
     assert(fn != nullptr);
-    conf_reader_func_ = fn;
+    conf_reader_func_ = std::move(fn);
   }
+
+  /**
+   * Open the given JSON file and merge it into the stack.
+   */
+  void merge_stackfile(const std::string& filepath);
 
   /**
    * Try to load and register one or more plugins based on the PluginConf.

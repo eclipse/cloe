@@ -22,32 +22,27 @@
 
 #pragma once
 
-#include <cstdint>     // for uint64_t
-#include <functional>  // for function<>
-#include <map>         // for map<>
-#include <memory>      // for unique_ptr<>, shared_ptr<>
-#include <string>      // for string
-#include <vector>      // for vector<>
+#include <cstdint>                      // for uint64_t
+#include <functional>                   // for function<>
+#include <map>                          // for map<>
+#include <memory>                       // for unique_ptr<>, shared_ptr<>
+#include <optional>                     // for optional<>
+#include <string>                       // for string
+#include <vector>                       // for vector<>
 
-#include <boost/optional.hpp>  // for optional<>
-
-#include <cloe/controller.hpp>          // for Controller
-#include <cloe/core.hpp>                // for Duration
-#include <cloe/registrar.hpp>           // for Registrar
-#include <cloe/simulator.hpp>           // for Simulator
+#include <cloe/cloe_fwd.hpp>            // for Simulator, Controller, Registrar, Vehicle, Duration
 #include <cloe/sync.hpp>                // for Sync
 #include <cloe/trigger/nil_event.hpp>   // for DEFINE_NIL_EVENT
 #include <cloe/utility/statistics.hpp>  // for Accumulator
 #include <cloe/utility/timer.hpp>       // for DurationTimer
-#include <cloe/vehicle.hpp>             // for Vehicle
 
-#include "coordinator.hpp"         // for Coordinator
-#include "registrar.hpp"           // for Registrar
-#include "server.hpp"              // for Server
-#include "stack.hpp"               // for Stack
-#include "simulation_progress.hpp" // for SimulationProgress
-#include "utility/command.hpp"     // for CommandExecuter
-#include "utility/time_event.hpp"  // for TimeCallback
+#include "coordinator.hpp"              // for Coordinator
+#include "registrar.hpp"                // for Registrar
+#include "server.hpp"                   // for Server
+#include "simulation_progress.hpp"      // for SimulationProgress
+#include "stack.hpp"                    // for Stack
+#include "utility/command.hpp"          // for CommandExecuter
+#include "utility/time_event.hpp"       // for TimeCallback
 
 namespace engine {
 
@@ -194,7 +189,9 @@ DEFINE_NIL_EVENT(Loop, "loop", "begin of inner simulation loop each cycle")
 /**
  * SimulationContext represents the entire context of a running simulation.
  *
- * This clearly separates data from functionality.
+ * This clearly separates data from functionality. There is no constructor
+ * where extra initialization is performed. Instead any initialization is
+ * performed in the simulation states in the `simulation.cpp` file.
  */
 struct SimulationContext {
   // Setup
@@ -216,7 +213,7 @@ struct SimulationContext {
   std::map<std::string, std::unique_ptr<cloe::Simulator>> simulators;
   std::map<std::string, std::shared_ptr<cloe::Vehicle>> vehicles;
   std::map<std::string, std::unique_ptr<cloe::Controller>> controllers;
-  boost::optional<SimulationOutcome> outcome;
+  std::optional<SimulationOutcome> outcome;
   timer::DurationTimer<cloe::Duration> cycle_duration;
   bool pause_execution{false};
 
@@ -233,6 +230,7 @@ struct SimulationContext {
 
  public:
   std::string version() const;
+  cloe::Logger logger() const { return cloe::logger::get("cloe"); }
 
   std::shared_ptr<cloe::Registrar> simulation_registrar();
 
