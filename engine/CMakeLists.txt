@@ -12,6 +12,7 @@ find_package(Boost REQUIRED QUIET)
 find_package(CLI11 REQUIRED QUIET)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED QUIET)
+find_package(sol2 REQUIRED QUIET)
 
 include(TargetLinting)
 include(GNUInstallDirs)
@@ -85,8 +86,18 @@ endif()
 # Library libengine ----------------------------------------------
 message(STATUS "Building cloe-enginelib library.")
 add_library(cloe-enginelib STATIC
+    src/lua_api.hpp
+    src/lua_api.cpp
+    src/lua_setup.hpp
+    src/lua_setup.cpp
+    src/lua_setup_duration.cpp
+    src/lua_setup_fs.cpp
+    src/lua_setup_stack.cpp
+    src/lua_setup_sync.cpp
     src/coordinator.cpp
     src/coordinator.hpp
+    src/lua_action.cpp
+    src/lua_action.hpp
     src/registrar.hpp
     # These are added below and depend on CLOE_ENGINE_WITH_SERVER:
     # src/server.cpp
@@ -111,6 +122,9 @@ set_target_properties(cloe-enginelib PROPERTIES
 )
 target_compile_definitions(cloe-enginelib
   PUBLIC
+    SOL_ALL_SAFETIES_ON=1
+    CLOE_ENGINE_VERSION="${CLOE_ENGINE_VERSION}"
+    CLOE_ENGINE_TIMESTAMP="${CLOE_ENGINE_TIMESTAMP}"
     PROJECT_SOURCE_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}\"
 )
 target_include_directories(cloe-enginelib
@@ -124,6 +138,7 @@ target_link_libraries(cloe-enginelib
     cloe::runtime
     fable::fable
     boost::boost
+    sol2::sol2
     Threads::Threads
 )
 
@@ -140,8 +155,29 @@ else()
   target_compile_definitions(cloe-enginelib PUBLIC CLOE_ENGINE_WITH_SERVER=0)
 endif()
 
+if(BUILD_TESTING)
+    message(STATUS "Building test-enginelib executable.")
+    add_executable(test-enginelib
+        src/lua_stack_test.cpp
+    )
+    set_target_properties(test-enginelib PROPERTIES
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED ON
+    )
+    target_link_libraries(test-enginelib
+        GTest::gtest
+        GTest::gtest_main
+        Boost::boost
+        cloe::models
+        cloe::stacklib
+        cloe::enginelib
+    )
+    gtest_add_tests(TARGET test-enginelib)
+endif()
+
 # Executable ---------------------------------------------------------
 message(STATUS "Building cloe-engine executable [with server=${CLOE_ENGINE_WITH_SERVER}].")
+add_subdirectory(vendor/linenoise)
 add_executable(cloe-engine
     src/main.cpp
     src/main_commands.hpp
@@ -149,6 +185,7 @@ add_executable(cloe-engine
     src/main_dump.cpp
     src/main_run.cpp
     src/main_usage.cpp
+    src/main_shell.cpp
     src/main_version.cpp
 )
 set_target_properties(cloe-engine PROPERTIES
@@ -170,10 +207,16 @@ target_link_libraries(cloe-engine
     cloe::stacklib
     cloe::enginelib
     CLI11::CLI11
+    linenoise::linenoise
 )
 
 # Installation -------------------------------------------------------
 install(TARGETS cloe-engine
     RUNTIME
         DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+install(
+    DIRECTORY lua/
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cloe/lua
 )

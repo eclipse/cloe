@@ -30,6 +30,8 @@
 #include <string>                       // for string
 #include <vector>                       // for vector<>
 
+#include <sol/state_view.hpp>           // for state_view
+
 #include <cloe/cloe_fwd.hpp>            // for Simulator, Controller, Registrar, Vehicle, Duration
 #include <cloe/sync.hpp>                // for Sync
 #include <cloe/trigger/nil_event.hpp>   // for DEFINE_NIL_EVENT
@@ -194,6 +196,10 @@ DEFINE_NIL_EVENT(Loop, "loop", "begin of inner simulation loop each cycle")
  * performed in the simulation states in the `simulation.cpp` file.
  */
 struct SimulationContext {
+  SimulationContext(sol::state_view&& l) : lua(l) {}
+
+  sol::state_view lua;
+
   // Setup
   std::unique_ptr<Server> server;
   std::shared_ptr<Coordinator> coordinator;

@@ -30,7 +30,10 @@
 #include <string>              // for string
 #include <vector>              // for vector<>
 
-#include <cloe/cloe_fwd.hpp>   // for Registrar
+#include <sol/state_view.hpp>  // for state_view
+#include <sol/table.hpp>       // for table
+
+#include <cloe/cloe_fwd.hpp>   // for Registrar, DataBroker
 #include <cloe/trigger.hpp>    // for Trigger, Action, Event, ...
 
 namespace engine {
@@ -95,7 +98,7 @@ struct HistoryTrigger {
  */
 class Coordinator {
  public:
-  Coordinator();
+  Coordinator(sol::state_view lua);
 
   const std::vector<HistoryTrigger>& history() const { return history_; }
 
@@ -103,6 +106,8 @@ class Coordinator {
 
   void register_event(const std::string& key, cloe::EventFactoryPtr&& ef,
                       std::shared_ptr<cloe::Callback> storage);
+
+  sol::table register_lua_table(const std::string& field);
 
   std::shared_ptr<cloe::TriggerRegistrar> trigger_registrar(cloe::Source s);
 
@@ -116,11 +121,18 @@ class Coordinator {
    */
   cloe::Duration process(const cloe::Sync&);
 
+  size_t process_pending_lua_triggers(const cloe::Sync& sync);
   size_t process_pending_web_triggers(const cloe::Sync& sync);
+
+  void insert_trigger_from_lua(const cloe::Sync& sync, const sol::object& obj);
+  void execute_action_from_lua(const cloe::Sync& sync, const sol::object& obj);
+
  protected:
+  cloe::ActionPtr make_action(const sol::object& lua) const;
   cloe::ActionPtr make_action(const cloe::Conf& c) const;
   cloe::EventPtr make_event(const cloe::Conf& c) const;
   cloe::TriggerPtr make_trigger(cloe::Source s, const cloe::Conf& c) const;
+  cloe::TriggerPtr make_trigger(const sol::table& tbl) const;
   void queue_trigger(cloe::Source s, const cloe::Conf& c) { queue_trigger(make_trigger(s, c)); }
   void queue_trigger(cloe::TriggerPtr&& tp);
   void store_trigger(cloe::TriggerPtr&& tp, const cloe::Sync& sync);
@@ -136,6 +148,7 @@ class Coordinator {
   // Factories:
   std::map<std::string, cloe::ActionFactoryPtr> actions_;
   std::map<std::string, cloe::EventFactoryPtr> events_;
+  sol::state_view lua_;
 
   // Execution:
   std::shared_ptr<cloe::TriggerRegistrar> executer_registrar_;
@@ -150,5 +163,7 @@ class Coordinator {
   // History:
   std::vector<HistoryTrigger> history_;
 };
+
+void register_usertype_coordinator(sol::table& lua, const cloe::Sync& sync);
 
 }  // namespace engine

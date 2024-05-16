@@ -33,9 +33,8 @@ namespace engine {
 
 class Registrar : public cloe::Registrar {
  public:
-  Registrar(std::unique_ptr<ServerRegistrar> r, std::shared_ptr<Coordinator> c)
-      : server_registrar_(std::move(r))
-      , coordinator_(std::move(c)) {}
+  Registrar(std::unique_ptr<ServerRegistrar> r, Coordinator* c)
+      : server_registrar_(std::move(r)), coordinator_(c) {}
 
   Registrar(const Registrar& ar,
             const std::string& trigger_prefix,
@@ -104,9 +103,13 @@ class Registrar : public cloe::Registrar {
     coordinator_->register_event(trigger_key(ef->name()), std::move(ef), storage);
   }
 
+  sol::table register_lua_table() override {
+    return coordinator_->register_lua_table(trigger_prefix_);
+  }
+
  private:
   std::unique_ptr<ServerRegistrar> server_registrar_;
-  std::shared_ptr<Coordinator> coordinator_;
+  Coordinator* coordinator_;       // non-owning
   std::string trigger_prefix_;
 };
 
