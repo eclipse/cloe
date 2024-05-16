@@ -15,14 +15,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-/**
- * \file main_run.hpp
- * \see  main.cpp
- *
- * This file contains the "run" options and command.
- */
-
-#pragma once
 
 #include <csignal>   // for signal
 #include <cstdlib>   // for getenv
@@ -33,6 +25,7 @@
 // we still need to support earlier versions of Boost.
 #define BOOST_ALLOW_DEPRECATED_HEADERS
 
+#include <boost/algorithm/string/predicate.hpp>
 #include <boost/lexical_cast.hpp>          // for lexical_cast
 #include <boost/uuid/uuid_generators.hpp>  // for random_generator
 #include <boost/uuid/uuid_io.hpp>
@@ -40,48 +33,22 @@
 #include <cloe/core.hpp>      // for logger::get
 #include <fable/utility.hpp>  // for read_conf
 
-#include "main_stack.hpp"  // for Stack, new_stack
-#include "simulation.hpp"  // for Simulation, SimulationResult
-#include "stack.hpp"       // for Stack
+#include "error_handler.hpp"  // for conclude_error
+#include "main_commands.hpp"  // for RunOptions, new_stack
+#include "simulation.hpp"     // for Simulation, SimulationResult
+#include "stack.hpp"          // for Stack
 
 namespace engine {
 
-void handle_signal(int);
+void handle_signal(int /*sig*/);
 
-struct RunOptions {
-  cloe::StackOptions stack_options;
-  std::ostream& output = std::cout;
-  std::ostream& error = std::cerr;
+// We need a global instance so that our signal handler has access to it.
+Simulation* GLOBAL_SIMULATION_INSTANCE{nullptr}; // NOLINT
 
-  // Options
-  std::string uuid;
-
-  // Flags:
-  int json_indent = 2;
-  bool allow_empty = false;
-  bool write_output = true;
-  bool require_success = false;
-  bool report_progress = true;
-};
-
-Simulation* GLOBAL_SIMULATION_INSTANCE{nullptr};
-
-template <typename Func>
-auto handle_cloe_error(std::ostream& out, Func f) -> decltype(f()) {
-  try {
-    return f();
-  } catch (cloe::Error& e) {
-    out << "Error: " << e.what() << std::endl;
-    if (e.has_explanation()) {
-      out << "    Note:\n" << fable::indent_string(e.explanation(), "    ") << std::endl;
-    }
-    throw cloe::ConcludedError(e);
-  }
-}
-
-inline int run(const RunOptions& opt, const std::vector<std::string>& filepaths) {
+int run(const RunOptions& opt, const std::vector<std::string>& filepaths) {
+  assert(opt.output != nullptr && opt.error != nullptr);
+  auto log = cloe::logger::get("cloe");
   cloe::logger::get("cloe")->info("Cloe {}", CLOE_ENGINE_VERSION);
-  cloe::StackOptions stack_opt = opt.stack_options;
 
   // Set the UUID of the simulation:
   std::string uuid;
@@ -92,15 +59,17 @@ inline int run(const RunOptions& opt, const std::vector<std::string>& filepaths)
   } else {
     uuid = boost::lexical_cast<std::string>(boost::uuids::random_generator()());
   }
-  stack_opt.environment->set(CLOE_SIMULATION_UUID_VAR, uuid);
+  opt.stack_options.environment->set(CLOE_SIMULATION_UUID_VAR, uuid);
 
   // Load the stack file:
-  cloe::Stack s;
+  cloe::Stack stack = cloe::new_stack(opt.stack_options);
   try {
-    handle_cloe_error(*stack_opt.error, [&]() {
-      s = cloe::new_stack(stack_opt, filepaths);
+    cloe::conclude_error(*opt.stack_options.error, [&]() {
+      for (const auto& file : filepaths) {
+        cloe::merge_stack(opt.stack_options, stack, file);
+      }
       if (!opt.allow_empty) {
-        s.check_completeness();
+        stack.check_completeness();
       }
     });
   } catch (cloe::ConcludedError& e) {
@@ -108,15 +77,15 @@ inline int run(const RunOptions& opt, const std::vector<std::string>& filepaths)
   }
 
   // Create simulation:
-  Simulation sim(s, uuid);
+  Simulation sim(std::move(stack), uuid);
   GLOBAL_SIMULATION_INSTANCE = &sim;
-  std::signal(SIGINT, handle_signal);
+  std::ignore = std::signal(SIGINT, handle_signal);
 
   // Set options:
   sim.set_report_progress(opt.report_progress);
 
   // Run simulation:
-  auto result = handle_cloe_error(*stack_opt.error, [&]() { return sim.run(); });
+  auto result = cloe::conclude_error(*opt.stack_options.error, [&]() { return sim.run(); });
   if (result.outcome == SimulationOutcome::NoStart) {
     // If we didn't get past the initialization phase, don't output any
     // statistics or write any files, just go home.
@@ -127,7 +96,7 @@ inline int run(const RunOptions& opt, const std::vector<std::string>& filepaths)
   if (opt.write_output) {
     sim.write_output(result);
   }
-  opt.output << cloe::Json(result).dump(opt.json_indent) << std::endl;
+  *opt.output << cloe::Json(result).dump(opt.json_indent) << std::endl;
 
   switch (result.outcome) {
     case SimulationOutcome::Success:
@@ -160,7 +129,7 @@ inline int run(const RunOptions& opt, const std::vector<std::string>& filepaths)
  * by the standard library, so that in the case that we do hang for some
  * reasons, the user can force abort by sending the signal a third time.
  */
-inline void handle_signal(int sig) {
+void handle_signal(int sig) {
   static size_t interrupts = 0;
   switch (sig) {
     case SIGSEGV:
@@ -171,9 +140,9 @@ inline void handle_signal(int sig) {
     default:
       std::cerr << std::endl;  // print newline so that ^C is on its own line
       if (++interrupts == 3) {
-        std::signal(sig, SIG_DFL);  // third time goes to the default handler
+        std::ignore = std::signal(sig, SIG_DFL);  // third time goes to the default handler
       }
-      if (GLOBAL_SIMULATION_INSTANCE) {
+      if (GLOBAL_SIMULATION_INSTANCE != nullptr) {
         GLOBAL_SIMULATION_INSTANCE->signal_abort();
       }
       break;

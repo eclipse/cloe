@@ -41,6 +41,7 @@ struct SimulationResult {
   SimulationSync sync;
   cloe::Duration elapsed;
   SimulationOutcome outcome;
+  std::vector<std::string> errors;
   SimulationStatistics statistics;
   cloe::Json triggers;
   boost::optional<boost::filesystem::path> output_dir;
@@ -93,8 +94,12 @@ struct SimulationResult {
 
   friend void to_json(cloe::Json& j, const SimulationResult& r) {
     j = cloe::Json{
-        {"uuid", r.uuid},       {"statistics", r.statistics}, {"simulation", r.sync},
-        {"elapsed", r.elapsed}, {"outcome", r.outcome},
+        {"elapsed", r.elapsed},
+        {"errors", r.errors},
+        {"outcome", r.outcome},
+        {"simulation", r.sync},
+        {"statistics", r.statistics},
+        {"uuid", r.uuid},
     };
   }
 };
@@ -145,8 +150,8 @@ class Simulation {
   void signal_abort();
 
  private:
-  cloe::Logger logger_;
   cloe::Stack config_;
+  cloe::Logger logger_;
   std::string uuid_;
   std::function<void()> abort_fn_;
 

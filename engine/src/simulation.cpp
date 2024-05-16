@@ -84,11 +84,14 @@
 
 #include <boost/filesystem.hpp>  // for is_directory, is_regular_file, ...
 
+#include <cloe/controller.hpp>                // for Controller
 #include <cloe/core/abort.hpp>                // for AsyncAbort
 #include <cloe/registrar.hpp>                 // for DirectCallback
+#include <cloe/simulator.hpp>                 // for Simulator
 #include <cloe/trigger/example_actions.hpp>   // for CommandFactory, BundleFactory, ...
 #include <cloe/trigger/set_action.hpp>        // for DEFINE_SET_STATE_ACTION, SetDataActionFactory
 #include <cloe/utility/resource_handler.hpp>  // for INCLUDE_RESOURCE, RESOURCE_HANDLER
+#include <cloe/vehicle.hpp>                   // for Vehicle
 #include <fable/utility.hpp>                  // for pretty_print
 
 #include "simulation_context.hpp"     // for SimulationContext
@@ -251,7 +254,7 @@ class SimulationMachine
   }
 
 #define DEFINE_STATE(Id, S) DEFINE_STATE_STRUCT(SimulationMachine, SimulationContext, Id, S)
- private:
+ public:
   DEFINE_STATE(CONNECT, Connect);
   DEFINE_STATE(START, Start);
   DEFINE_STATE(STEP_BEGIN, StepBegin);
@@ -279,12 +282,8 @@ DEFINE_SET_STATE_ACTION(Stop, "stop", "stop simulation with neither success nor 
 DEFINE_SET_STATE_ACTION(Succeed, "succeed", "stop simulation with success", SimulationMachine, { ptr_->succeed(); })
 DEFINE_SET_STATE_ACTION(Fail, "fail", "stop simulation with failure", SimulationMachine, { ptr_->fail(); })
 DEFINE_SET_STATE_ACTION(Reset, "reset", "attempt to reset simulation", SimulationMachine, { ptr_->reset(); })
-
-DEFINE_SET_STATE_ACTION(KeepAlive, "keep_alive", "keep simulation alive after termination",
-                        SimulationContext, { ptr_->config.engine.keep_alive = true; })
-
-DEFINE_SET_STATE_ACTION(ResetStatistics, "reset_statistics", "reset simulation statistics",
-                        SimulationStatistics, { ptr_->reset(); })
+DEFINE_SET_STATE_ACTION(KeepAlive, "keep_alive", "keep simulation alive after termination", SimulationContext, { ptr_->config.engine.keep_alive = true; })
+DEFINE_SET_STATE_ACTION(ResetStatistics, "reset_statistics", "reset simulation statistics", SimulationStatistics, { ptr_->reset(); })
 
 DEFINE_SET_DATA_ACTION(RealtimeFactor, "realtime_factor", "modify the simulation speed", SimulationSync, "factor", double,
                         {
@@ -728,33 +727,38 @@ StateId SimulationMachine::Connect::impl(SimulationContext& ctx) {
 
 // START --------------------------------------------------------------------------------------- //
 
-StateId SimulationMachine::Start::impl(SimulationContext& ctx) {
-  logger()->info("Starting simulation...");
-
-  // Begin execution progress
-  ctx.progress.exec_begin();
-
-  // Insert triggers from the config
+size_t insert_triggers_from_config(SimulationContext& ctx) {
   auto r = ctx.coordinator->trigger_registrar(cloe::Source::FILESYSTEM);
+  size_t count = 0;
   for (const auto& c : ctx.config.triggers) {
     if (!ctx.config.engine.triggers_ignore_source && source_is_transient(c.source)) {
       continue;
     }
     try {
       r->insert_trigger(c.conf());
+      count++;
     } catch (cloe::SchemaError& e) {
-      logger()->error("Error inserting trigger: {}", e.what());
+      ctx.logger()->error("Error inserting trigger: {}", e.what());
       std::stringstream s;
       fable::pretty_print(e, s);
-      logger()->error("> Message:\n    {}", s.str());
-      return ABORT;
+      ctx.logger()->error("> Message:\n    {}", s.str());
+      throw cloe::ConcludedError(e);
     } catch (cloe::TriggerError& e) {
-      logger()->error("Error inserting trigger ({}): {}", e.what(), c.to_json().dump());
-      return ABORT;
+      ctx.logger()->error("Error inserting trigger ({}): {}", e.what(), c.to_json().dump());
+      throw cloe::ConcludedError(e);
     }
   }
+  return count;
+}
+
+StateId SimulationMachine::Start::impl(SimulationContext& ctx) {
+  logger()->info("Starting simulation...");
+
+  // Begin execution progress
+  ctx.progress.exec_begin();
 
   // Process initial trigger list
+  insert_triggers_from_config(ctx);
   ctx.coordinator->process(ctx.sync);
   ctx.callback_start->trigger(ctx.sync);
 
@@ -808,7 +812,7 @@ StateId SimulationMachine::StepBegin::impl(SimulationContext& ctx) {
   //
   ctx.server->refresh_buffer();
 
-  // Run time-based triggers
+  // Run cycle- and time-based triggers
   ctx.callback_loop->trigger(ctx.sync);
   ctx.callback_time->trigger(ctx.sync);
 
@@ -841,7 +845,9 @@ StateId SimulationMachine::StepSimulators::impl(SimulationContext& ctx) {
         throw cloe::ModelStop("simulator {} no longer operational", simulator.name());
       }
       if (sim_time != ctx.sync.time()) {
-        throw cloe::ModelError("simulator {} did not progress to required time: got {}ms, expected {}ms", simulator.name(), sim_time.count()/1'000'000, ctx.sync.time().count()/1'000'000);
+        throw cloe::ModelError(
+            "simulator {} did not progress to required time: got {}ms, expected {}ms",
+            simulator.name(), sim_time.count() / 1'000'000, ctx.sync.time().count() / 1'000'000);
       }
     } catch (cloe::ModelReset& e) {
       throw;
@@ -1167,7 +1173,7 @@ StateId SimulationMachine::KeepAlive::impl(SimulationContext& ctx) {
 // ABORT --------------------------------------------------------------------------------------- //
 
 StateId SimulationMachine::Abort::impl(SimulationContext& ctx) {
-  auto previous_state = state_machine()->previous_state();
+  const auto* previous_state = state_machine()->previous_state();
   if (previous_state == KEEP_ALIVE) {
     return DISCONNECT;
   } else if (previous_state == CONNECT) {
@@ -1215,10 +1221,11 @@ SimulationResult Simulation::run() {
 
   // Abort handler:
   SimulationMachine machine;
-  abort_fn_ = [this, &ctx, &machine]() {
+  abort_fn_ = [this, &r, &ctx, &machine]() {
     static size_t requests = 0;
 
     logger()->info("Signal caught.");
+    r.errors.emplace_back("user sent abort signal (e.g. with Ctrl+C)");
     requests += 1;
     if (ctx.progress.is_init_ended()) {
       if (!ctx.progress.is_exec_ended()) {
@@ -1275,9 +1282,11 @@ SimulationResult Simulation::run() {
     // Run the simulation
     machine.run(ctx);
   } catch (cloe::ConcludedError& e) {
-    // Nothing
+    r.errors.emplace_back(e.what());
+    ctx.outcome = SimulationOutcome::Aborted;
   } catch (std::exception& e) {
-    throw;
+    r.errors.emplace_back(e.what());
+    ctx.outcome = SimulationOutcome::Aborted;
   }
 
   try {
@@ -1286,6 +1295,7 @@ SimulationResult Simulation::run() {
     ctx.commander->run_all(config_.engine.hooks_post_disconnect);
   } catch (cloe::ConcludedError& e) {
     // TODO(ben): ensure outcome is correctly saved
+    r.errors.emplace_back(e.what());
   }
 
   // Wait for any running children to terminate.
@@ -1314,7 +1324,7 @@ size_t Simulation::write_output(const SimulationResult& r) const {
   }
 
   size_t files_written = 0;
-  auto write_file = [&](auto filename, cloe::Json output) {
+  auto write_file = [&](auto filename, const cloe::Json& output) {
     if (!filename) {
       return;
     }

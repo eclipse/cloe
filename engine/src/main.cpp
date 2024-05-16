@@ -15,69 +15,58 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-/**
- * \file main.cpp
- * \see  main_check.hpp
- * \see  main_dump.hpp
- * \see  main_run.hpp
- * \see  main_usage.hpp
- * \see  main_version.hpp
- */
 
 #include <iostream>  // for cerr
 #include <string>    // for string
+#include <utility>   // for swap
 
 #include <CLI/CLI.hpp>
 
-#include "main_check.hpp"
-#include "main_dump.hpp"
-#include "main_run.hpp"
-#include "main_stack.hpp"
-#include "main_usage.hpp"
-#include "main_version.hpp"
+#include <cloe/core/error.hpp>
+#include <cloe/core/logger.hpp>
 
-#ifndef CLOE_CONTACT_EMAIL
-#define CLOE_CONTACT_EMAIL "cloe-dev@eclipse.org"
-#endif
+#include "config.hpp"
+#include "main_commands.hpp"
 
 int main(int argc, char** argv) {
   CLI::App app("Cloe " CLOE_ENGINE_VERSION);
+  app.option_defaults()->always_capture_default();
 
   // Version Command:
-  engine::VersionOptions version_options;
-  auto version = app.add_subcommand("version", "Show program version information.");
+  engine::VersionOptions version_options{};
+  auto* version = app.add_subcommand("version", "Show program version information.");
   version->add_flag("-j,--json", version_options.output_json,
                     "Output version information as JSON data");
   version->add_option("-J,--json-indent", version_options.json_indent, "JSON indentation level");
 
   // Usage Command:
-  engine::UsageOptions usage_options;
+  engine::UsageOptions usage_options{};
   std::string usage_key_or_path;
-  auto usage = app.add_subcommand("usage", "Show schema or plugin usage information.");
+  auto* usage = app.add_subcommand("usage", "Show schema or plugin usage information.");
   usage->add_flag("-j,--json", usage_options.output_json, "Output global/plugin JSON schema");
   usage->add_option("-J,--json-indent", usage_options.json_indent, "JSON indentation level");
   usage->add_option("files", usage_key_or_path, "Plugin name, key or path to show schema of");
 
   // Dump Command:
-  engine::DumpOptions dump_options;
+  engine::DumpOptions dump_options{};
   std::vector<std::string> dump_files;
-  auto dump = app.add_subcommand("dump", "Dump configuration of (merged) stack files.");
+  auto* dump = app.add_subcommand("dump", "Dump configuration of (merged) stack files.");
   dump->add_option("-J,--json-indent", dump_options.json_indent, "JSON indentation level");
   dump->add_option("files", dump_files, "Files to read into the stack");
 
   // Check Command:
-  engine::CheckOptions check_options;
+  engine::CheckOptions check_options{};
   std::vector<std::string> check_files;
-  auto check = app.add_subcommand("check", "Validate stack file configurations.");
+  auto* check = app.add_subcommand("check", "Validate stack file configurations.");
   check->add_flag("-s,--summarize", check_options.summarize, "Summarize results");
   check->add_flag("-j,--json", check_options.output_json, "Output results as JSON data");
   check->add_option("-J,--json-indent", check_options.json_indent, "JSON indentation level");
   check->add_option("files", check_files, "Files to check");
 
   // Run Command:
-  engine::RunOptions run_options;
-  std::vector<std::string> run_files;
-  auto run = app.add_subcommand("run", "Run a simulation with (merged) stack files.");
+  engine::RunOptions run_options{};
+  std::vector<std::string> run_files{};
+  auto* run = app.add_subcommand("run", "Run a simulation with (merged) stack files.");
   run->add_option("-J,--json-indent", run_options.json_indent, "JSON indentation level");
   run->add_option("-u,--uuid", run_options.uuid, "Override simulation UUID")
       ->envname("CLOE_SIMULATION_UUID");
@@ -103,10 +92,10 @@ int main(int argc, char** argv) {
       ->envname("CLOE_LOG_LEVEL");
 
   // Stack Options:
-  cloe::StackOptions stack_options;
-  stack_options.environment.reset(new fable::Environment());
+  cloe::StackOptions stack_options{};
+  stack_options.environment = std::make_unique<fable::Environment>();
   app.add_option("-p,--plugin-path", stack_options.plugin_paths,
-                 "Scan additional directory for plugins");
+                 "Scan additional directory for plugins (Env:CLOE_PLUGIN_PATH)");
   app.add_option("-i,--ignore", stack_options.ignore_sections,
                  "Ignore sections by JSON pointer syntax");
   app.add_flag("--no-builtin-plugins", stack_options.no_builtin_plugins,
@@ -165,8 +154,8 @@ int main(int argc, char** argv) {
     stack_options.environment->insert(CLOE_SIMULATION_UUID_VAR, "${" CLOE_SIMULATION_UUID_VAR "}");
   }
 
-  auto with_stack_options = [&](auto& opt) -> decltype(opt) {
-    opt.stack_options = stack_options;
+  auto with_global_options = [&](auto& opt) -> decltype(opt) {
+    std::swap(opt.stack_options, stack_options);
     return opt;
   };
 
@@ -175,19 +164,17 @@ int main(int argc, char** argv) {
   try {
     if (*version) {
       return engine::version(version_options);
+    } else if (*usage) {
+      return engine::usage(with_global_options(usage_options), usage_key_or_path);
+    } else if (*dump) {
+      return engine::dump(with_global_options(dump_options), dump_files);
+    } else if (*check) {
+      return engine::check(with_global_options(check_options), check_files);
+    } else if (*run) {
+      return engine::run(with_global_options(run_options), run_files);
     }
-    if (*usage) {
-      return engine::usage(with_stack_options(usage_options), usage_key_or_path);
-    }
-    if (*dump) {
-      return engine::dump(with_stack_options(dump_options), dump_files);
-    }
-    if (*check) {
-      return engine::check(with_stack_options(check_options), check_files);
-    }
-    if (*run) {
-      return engine::run(with_stack_options(run_options), run_files);
-    }
+  } catch (cloe::ConcludedError& e) {
+    return EXIT_FAILURE;
   } catch (std::exception& e) {
     bool is_logic_error = false;
     if (dynamic_cast<std::logic_error*>(&e) != nullptr) {
@@ -218,9 +205,6 @@ int main(int argc, char** argv) {
 
     std::cerr << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
               << std::endl;
-
-    // Write a core dump.
-    throw;
   }
 
   return EXIT_FAILURE;
