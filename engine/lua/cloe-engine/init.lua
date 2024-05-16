@@ -34,6 +34,12 @@ local engine = {
 
         --- @type number Number of triggers processed from the initial input.
         triggers_processed = 0,
+
+        --- @type table<string, string> Map of signal names to regular expression matches.
+        signal_aliases = {},
+
+        --- @type string[] List of signals to make available during simulation.
+        signal_requires = {},
     },
 
     --- Contains engine state for a simulation.
@@ -80,6 +86,9 @@ local engine = {
 
     --- @type table<string, table> Namespaced Lua interfaces of instantiated plugins.
     plugins = {},
+
+    --- @type table<string, userdata> Table of required signals.
+    signals = {},
 }
 
 require("cloe-engine.types")

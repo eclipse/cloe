@@ -124,6 +124,136 @@ function engine.log(level, fmt, ...)
     api.log(level, "lua", msg)
 end
 
+--- Alias a set of signals in the Cloe data broker.
+---
+--- @param list table<string, string> # regular expression to alias key
+--- @return table<string, string> # current signal aliases table
+function engine.alias_signals(list)
+    -- TODO: Throw an error if simulation already started.
+    api.initial_input.signal_aliases = luax.tbl_extend("force", api.initial_input.signal_aliases, list)
+    return api.initial_input.signal_aliases
+end
+
+--- Require a set of signals to be made available via the Cloe data broker.
+---
+--- @param list string[] signals to merge into main list of required signals
+--- @return string[] # merged list of signals
+function engine.require_signals(list)
+    -- TODO: Throw an error if simulation already started.
+    api.initial_input.signal_requires = luax.tbl_extend("force", api.initial_input.signal_requires, list)
+    return api.initial_input.signal_requires
+end
+
+--- Optionally alias and require a set of signals from a signals enum list.
+---
+--- This allows you to make an enum somewhere which the language server
+--- can use for autocompletion and which you can use as an alias:
+---
+---     ---@enum Sig
+---     local Sig = {
+---         DriverDoorLatch = "vehicle::framework::chassis::.*driver_door::latch",
+---         VehicleMps = "vehicle::sensors::chassis::velocity",
+---     }
+---     cloe.require_signals_enum(Sig, true)
+---
+--- Later, you can use the enum with `cloe.signal()`:
+---
+---     cloe.signal(Sig.DriverDoorLatch)
+---
+--- @param enum table<string, string> input mappging from enum name to signal name
+--- @param alias boolean whether to treat signal names as alias regular expressions
+--- @return nil
+function engine.require_signals_enum(enum, alias)
+    -- TODO: Throw an error if simulation already started.
+    local signals = {}
+    if alias then
+        local aliases = {}
+        for key, sigregex in pairs(enum) do
+            table.insert(aliases, { sigregex, key })
+            table.insert(signals, key)
+        end
+        engine.alias_signals(aliases)
+    else
+        for _, signame in pairs(enum) do
+            table.insert(signals, signame)
+        end
+    end
+    engine.require_signals(signals)
+end
+
+--- Return full list of loaded signals.
+---
+--- Example:
+---
+---     local signals = cloe.signals()
+---     signals[SigName] = value
+---
+--- @return table
+function engine.signals()
+    return api.signals
+end
+
+--- Return the specified signal.
+---
+--- If the signal does not exist, nil is returned.
+---
+--- If you want to set the signal, you need to use `cloe.set_signal()`
+--- or access the value via `cloe.signals()`.
+---
+--- @param name string signal name
+--- @return any|nil # signal value
+function engine.signal(name)
+    return api.signals[name]
+end
+
+--- Set the specified signal with a value.
+---
+--- @param name string signal name
+--- @param value any signal value
+--- @return nil
+function engine.set_signal(name, value)
+    api.signals[name] = value
+end
+
+--- Record the given list of signals into the report.
+---
+--- This can be called multiple times, but if the signal is already
+--- being recorded, then an error will be raised.
+---
+--- This should be called before simulation starts,
+--- so not from a scheduled callback.
+---
+--- @param list string[] array of signal names
+--- @return nil
+function engine.record_signals(list)
+    validate("cloe.record_signals(string[])", list)
+    api.state.report.signals = api.state.report.signals or {}
+    local signals = api.state.report.signals
+    signals.time = signals.time or {}
+    for _, sig in ipairs(list) do
+        if signals[sig] then
+            error("signal already exists: " .. sig)
+        end
+        signals[sig] = {}
+    end
+
+    cloe.schedule({
+        on = "loop",
+        pin = true,
+        run = function(sync)
+            local last_time = signals.time[#signals.time]
+            local cur_time = sync:time():ms()
+            if last_time ~= cur_time then
+                table.insert(signals.time, cur_time)
+            end
+
+            for _, sig in ipairs(list) do
+                table.insert(signals[sig], cloe.signal(sig))
+            end
+        end,
+    })
+end
+
 --- Schedule a trigger.
 ---
 --- It is not recommended to use this low-level function, as it is viable to change.
