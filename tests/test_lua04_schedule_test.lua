@@ -5,21 +5,33 @@ cloe.load_stackfile("config_nop_smoketest.json")
 
 -- If schedule_test does not work, then we will keep running until
 -- this event triggers and we fail.
-cloe.schedule {
+cloe.schedule({
     on = events.time("5s"),
     run = actions.fail(),
-}
+})
 
-cloe.schedule {
+cloe.schedule({
     on = events.every("1s"),
     pin = true,
     run = function(sync)
         cloe.log("info", "Current time is %s", sync:time())
-    end
-}
+    end,
+})
+
+local signals = { "vehicles.default.basic.acc" }
+cloe.require_signals(signals)
+cloe.record_signals(signals)
+cloe.record_signals( {
+    ["acc_config.limit_acceleration"] = function()
+        return cloe.signal("vehicles.default.basic.acc").limit_acceleration
+    end,
+    ["acc_config.limit_deceleration"] = function()
+        return cloe.signal("vehicles.default.basic.acc").limit_deceleration
+    end,
+})
 
 -- Check that schedule_test works as intended.
-cloe.schedule_test {
+cloe.schedule_test({
     -- Note that this is the same ID as used in BATS.
     id = "e03fc31f-586b-4e57-80fa-ff2cba5ff9dd",
     on = events.start(),
@@ -39,5 +51,5 @@ cloe.schedule_test {
 
         cloe.log("info", "We're good here.")
         z:succeed()
-    end
-}
+    end,
+})

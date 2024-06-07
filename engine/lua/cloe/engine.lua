@@ -223,21 +223,27 @@ end
 --- This should be called before simulation starts,
 --- so not from a scheduled callback.
 ---
---- @param list string[] array of signal names
+--- @param mapping table mapping from signal names
 --- @return nil
-function engine.record_signals(list)
-    validate("cloe.record_signals(string[])", list)
+function engine.record_signals(mapping)
+    validate("cloe.record_signals(table)", mapping)
     api.state.report.signals = api.state.report.signals or {}
     local signals = api.state.report.signals
     signals.time = signals.time or {}
-    for _, sig in ipairs(list) do
+    for sig, getter in pairs(mapping) do
+        if type(sig) == "number" then
+            if type(getter) ~= "string" then
+                error("positional signals can only be signal names")
+            end
+            sig = getter
+        end
         if signals[sig] then
             error("signal already exists: " .. sig)
         end
         signals[sig] = {}
     end
 
-    cloe.schedule({
+    engine.schedule({
         on = "loop",
         pin = true,
         run = function(sync)
@@ -247,8 +253,21 @@ function engine.record_signals(list)
                 table.insert(signals.time, cur_time)
             end
 
-            for _, sig in ipairs(list) do
-                table.insert(signals[sig], cloe.signal(sig))
+            for name, getter in pairs(mapping) do
+                local value
+                if type(name) == "number" then
+                    name = getter
+                end
+                if type(getter) == "string" then
+                    value = engine.signal(getter)
+                else
+                    value = getter()
+                end
+                if value == nil then
+                    -- TODO: Improve error message!
+                    error("nil value received as signal value")
+                end
+                table.insert(signals[name], value)
             end
         end,
     })
