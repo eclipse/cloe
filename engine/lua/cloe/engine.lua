@@ -223,7 +223,10 @@ end
 --- This should be called before simulation starts,
 --- so not from a scheduled callback.
 ---
---- @param mapping table mapping from signal names
+--- You can pass it a list of signals to record, or a mapping
+--- from name to
+---
+--- @param mapping table<number|string, string|fun():any> mapping from signal names
 --- @return nil
 function engine.record_signals(mapping)
     validate("cloe.record_signals(table)", mapping)
