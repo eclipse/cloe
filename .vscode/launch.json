@@ -1,0 +1,76 @@
+{
+    "configurations": [
+        {
+            "name": "Debug cloe",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${input:get_executable_path}",
+            "args": [
+                "run",
+                "--write-output",
+                "${workspaceFolder}/${input:get_test_case}",
+                //Example to run a specific test-case
+                //"${workspaceFolder}/tests/test_lua04_schedule_test.lua",
+                //Example to run a specific smoketest
+                //"-u",
+                //"smoketest",
+                //"${workspaceFolder}/tests/test_engine_replica_smoketest_temp.json",
+            ],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "Build Cloe",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "envFile": "${input:get_shell_path}"
+        }
+    ],
+    "inputs": [
+        {
+            "type": "command",
+            "id": "get_test_case",
+            "command": "shellCommand.execute",
+            "args":{
+                "command":"ls tests/*.lua",
+                "cwd": "${workspaceFolder}"
+            }
+        },
+        {
+            "type": "command",
+            "id": "get_shell_path",
+            "command": "shellCommand.execute",
+            //bash magic to set CLOE_SHELL variable and get the value of it
+            "args": {
+                "command": "bash -c \"source <(PYTHONPATH=\"${workspaceFolder}/cli\" python3 -m cloe_launch activate tests/conanfile_all.py) && printenv CLOE_SHELL\"",
+                "cwd": "${workspaceFolder}",
+                "useSingleResult": "true"
+            }
+        },
+        {
+            "type": "command",
+            "id": "get_executable_path",
+            "command": "shellCommand.execute",
+            //bash magic to set CLOE_ENGINE variable and get the value of it
+            "args": {
+                //"command": "bash -c \"source <(cloe-launch activate tests/conanfile_all.py) && printenv CLOE_ENGINE\"",
+                "command": "bash -c \"source <(PYTHONPATH=\"${workspaceFolder}/cli\" python3 -m cloe_launch activate tests/conanfile_all.py) && printenv CLOE_ENGINE\"",
+                "cwd": "${workspaceFolder}",
+                "useSingleResult": "true"
+            }
+        }
+    ],
+    "version": "2.0.0"
+}
