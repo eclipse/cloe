@@ -110,9 +110,7 @@ export-all:
 .PHONY: deploy-all
 deploy-all:
 	$(call print_header, "Deploying binaries to $(INSTALL_DIR)...")
-	conan install $(CONAN_OPTIONS) --install-folder $(DEPLOY_DIR) -g deploy .
-	mkdir -p $(INSTALL_DIR)
-	cp -r $(DEPLOY_DIR)/cloe-*/* $(INSTALL_DIR)/
+	$(CLOE_LAUNCH) deploy -D $(DEPLOY_DIR) $(DEPLOY_LOCKFILE_SOURCE) $(CONAN_OPTIONS)
 
 .PHONY: clean-all
 clean-all:
