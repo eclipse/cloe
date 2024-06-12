@@ -15,7 +15,16 @@ class Cloe(ConanFile):
     name = "cloe"
     license = "Apache-2.0"
     url = "https://github.com/eclipse/cloe"
-    description = "Closed-loop automated driving simulation environment"
+    description = """
+        Development package containing most cloe-* packages from the primary Eclipse repository.
+
+        WARNING:
+          This package "provides" the cloe-* packages it contains,
+          but unfortunately this is NOT compatible with other packages that
+          require these. This is a severe limitation of Conan (v1).
+
+          As such, this package should only be used for development purposes.
+    """
     topics = ["simulation"]
     settings = "os", "compiler", "build_type", "arch"
     provides = (

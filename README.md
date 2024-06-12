@@ -275,6 +275,26 @@ both. Unfortunately, this is only fixed in Conan 2.
 The use-case for build-all is to build everything in editable mode.
 For that, use the new super-build instead of building individual packages.
 
+### Superbuild 'cloe' package "provides the same functionality" error
+
+When using the `cloe` super-build package in tests, you may run into the
+following error:
+
+    ERROR: At least two recipes provides the same functionality:
+    - 'fable' provided by 'cloe/0.25.0@cloe/develop', 'fable/0.25.0@cloe/develop'
+    - 'cloe-runtime' provided by 'cloe/0.25.0@cloe/develop', 'cloe-runtime/0.25.0@cloe/develop'
+    - 'cloe-models' provided by 'cloe/0.25.0@cloe/develop', 'cloe-models/0.25.0@cloe/develop'
+
+This problem occurs when both `cloe` and one of the packages that `cloe`
+*provides* are pulled in as dependencies. Ideally, Conan should then
+use `cloe` instead, but it would appear that Conan, at least in v1,
+is unable to do this.
+
+The `cloe` super-build package is primarily used for development purposes,
+and until these kinks can be worked out, you should use the set of
+individual packages for production.
+
+
 [1]: https://conan.io
 [2]: https://docs.microsoft.com/en-us/windows/wsl/about
 [3]: https://ubuntu.com
