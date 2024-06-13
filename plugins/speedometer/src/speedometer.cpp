@@ -19,42 +19,57 @@
  * \file speedometer.cpp
  */
 
+#include <memory>  // for shared_ptr<>
+
+#include <fable/confable.hpp>  // for Confable, CONFABLE_FRIENDS
+#include <fable/json.hpp>      // for Json
+
 #include <cloe/component.hpp>                           // for Component, ComponentFactory, ...
 #include <cloe/component/utility/ego_sensor_canon.hpp>  // for EgoSensorCanon
+#include <cloe/data_broker.hpp>                         // for DataBroker
 #include <cloe/plugin.hpp>                              // for EXPORT_CLOE_PLUGIN
 #include <cloe/registrar.hpp>                           // for Registrar
 #include <cloe/trigger/evaluate_event.hpp>              // for EvaluateCallback
 #include <cloe/vehicle.hpp>                             // for Vehicle
-using namespace cloe;
 
-struct SpeedometerConf : public Confable {
+struct SpeedometerConf : public fable::Confable {
   CONFABLE_FRIENDS(SpeedometerConf)
 };
 
-class Speedometer : public Component {
+class Speedometer : public cloe::Component {
  public:
-  Speedometer(const std::string& name, const SpeedometerConf&, std::shared_ptr<EgoSensor> ego)
+  Speedometer(const std::string& name, const SpeedometerConf&, std::shared_ptr<cloe::EgoSensor> ego)
       : Component(name, "provides an event trigger to evaluate speed in km/h"), sensor_(ego) {}
 
   virtual ~Speedometer() noexcept = default;
 
-  void enroll(Registrar& r) override {
+  void enroll(cloe::Registrar& r) override {
     callback_kmph_ =
-        r.register_event<events::EvaluateFactory, double>("kmph", "vehicle speed in km/h");
+        r.register_event<cloe::events::EvaluateFactory, double>("kmph", "vehicle speed in km/h");
+
+    auto& db = r.data_broker();
+    {
+      std::string signal_name = fmt::format("components.{}.kmph", name());
+      auto signal = db.declare<double>(signal_name);
+      signal->set_getter<double>(
+          [this]() -> double { return cloe::utility::EgoSensorCanon(sensor_).velocity_as_kmph(); });
+    }
   }
 
-  Duration process(const Sync& sync) override {
-    auto ego = utility::EgoSensorCanon(sensor_);
+  cloe::Duration process(const cloe::Sync& sync) override {
+    auto ego = cloe::utility::EgoSensorCanon(sensor_);
     callback_kmph_->trigger(sync, ego.velocity_as_kmph());
     return sync.time();
   }
 
-  Json active_state() const override { return nullptr; }
+  fable::Json active_state() const override {
+    return fable::Json{{"kmph", utility::EgoSensorCanon(sensor_).velocity_as_kmph()}};
+  }
 
  private:
   // State:
-  std::shared_ptr<events::EvaluateCallback> callback_kmph_;
-  std::shared_ptr<EgoSensor> sensor_;
+  std::shared_ptr<cloe::events::EvaluateCallback> callback_kmph_;
+  std::shared_ptr<cloe::EgoSensor> sensor_;
 };
 
 DEFINE_COMPONENT_FACTORY(SpeedometerFactory, SpeedometerConf, "speedometer",
