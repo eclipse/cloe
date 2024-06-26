@@ -49,8 +49,20 @@
 #define CLOE_SIMULATION_UUID_VAR "CLOE_SIMULATION_UUID"
 #endif
 
+#ifndef CLOE_LUA_DEBUGGER_PORT
+#define CLOE_LUA_DEBUGGER_PORT 21110
+#endif
+
 // The environment variable from which additional plugins should
 // be loaded. Takes the same format as PATH.
 #ifndef CLOE_PLUGIN_PATH
 #define CLOE_PLUGIN_PATH "CLOE_PLUGIN_PATH"
+#endif
+
+#ifndef CLOE_TRIGGER_PATH_DELIMITER
+#define CLOE_TRIGGER_PATH_DELIMITER "/"
+#endif
+
+#ifndef CLOE_SIGNAL_PATH_DELIMITER
+#define CLOE_SIGNAL_PATH_DELIMITER "/"
 #endif

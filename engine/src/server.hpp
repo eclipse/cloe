@@ -41,9 +41,9 @@ class ServerRegistrar {
  public:
   virtual ~ServerRegistrar() = default;
 
-  virtual std::unique_ptr<ServerRegistrar> clone() const = 0;
+  [[nodiscard]] virtual std::unique_ptr<ServerRegistrar> clone() const = 0;
 
-  virtual std::unique_ptr<ServerRegistrar> with_prefix(const std::string& static_prefix,
+  [[nodiscard]] virtual std::unique_ptr<ServerRegistrar> with_prefix(const std::string& static_prefix,
                                                        const std::string& api_prefix) const = 0;
 
   virtual void register_static_handler(const std::string& endpoint, cloe::Handler h) = 0;
@@ -59,25 +59,29 @@ class ServerRegistrar {
  */
 class Server {
  public:
-  Server(const cloe::ServerConf& config) : config_(config) {}
+  Server(const Server&) = default;
+  Server(Server&&) = delete;
+  Server& operator=(const Server&) = default;
+  Server& operator=(Server&&) = delete;
+  Server(cloe::ServerConf config) : config_(std::move(config)) {}
   virtual ~Server() = default;
 
   /**
    * Return the server configuration.
    */
-  const cloe::ServerConf& config() const { return config_; }
+  [[nodiscard]] const cloe::ServerConf& config() const { return config_; }
 
   /**
    * Return whether the server is alive and listening for requests.
    */
-  virtual bool is_listening() const = 0;
+  [[nodiscard]] virtual bool is_listening() const = 0;
 
   /**
    * Return whether the server is currently streaming buffer data to a file.
    *
    * If it is, expect performance to be bad.
    */
-  virtual bool is_streaming() const = 0;
+  [[nodiscard]] virtual bool is_streaming() const = 0;
 
   /**
    * Start the web server.
@@ -104,7 +108,7 @@ class Server {
    * Return a new ServerRegistrar that lets you register static content and
    * API endpoints with the web server.
    */
-  virtual std::unique_ptr<ServerRegistrar> server_registrar() = 0;
+  [[nodiscard]] virtual std::unique_ptr<ServerRegistrar> server_registrar() = 0;
 
   /**
    * Refresh and/or start streaming api data to a file.
@@ -124,7 +128,7 @@ class Server {
    *
    * \return Lock guard
    */
-  virtual Defer lock() = 0;
+  [[nodiscard]] virtual Defer lock() = 0;
 
  protected:
   cloe::Logger logger() const { return cloe::logger::get("cloe"); }

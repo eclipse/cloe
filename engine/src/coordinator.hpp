@@ -49,12 +49,12 @@ class TriggerUnknownAction : public cloe::TriggerInvalid {
  public:
   TriggerUnknownAction(const std::string& key, const cloe::Conf& c)
       : TriggerInvalid(c, "unknown action: " + key), key_(key) {}
-  virtual ~TriggerUnknownAction() noexcept = default;
+   ~TriggerUnknownAction() noexcept override = default;
 
   /**
    * Return key that is unknown.
    */
-  const char* key() const { return key_.c_str(); }
+  [[nodiscard]] const char* key() const { return key_.c_str(); }
 
  private:
   std::string key_;
@@ -73,7 +73,7 @@ class TriggerUnknownEvent : public cloe::TriggerInvalid {
   /**
    * Return key that is unknown.
    */
-  const char* key() const { return key_.c_str(); }
+  [[nodiscard]] const char* key() const { return key_.c_str(); }
 
  private:
   std::string key_;
@@ -107,15 +107,15 @@ class Coordinator {
   void register_event(const std::string& key, cloe::EventFactoryPtr&& ef,
                       std::shared_ptr<cloe::Callback> storage);
 
-  sol::table register_lua_table(const std::string& field);
+  [[nodiscard]] sol::table register_lua_table(const std::string& field);
 
-  cloe::DataBroker* data_broker() const { return db_; }
+  [[nodiscard]] cloe::DataBroker* data_broker() const { return db_; }
 
   std::shared_ptr<cloe::TriggerRegistrar> trigger_registrar(cloe::Source s);
 
   void enroll(cloe::Registrar& r);
 
-  cloe::Logger logger() const { return cloe::logger::get("cloe"); }
+  [[nodiscard]] cloe::Logger logger() const { return cloe::logger::get("cloe"); }
 
   /**
    * Process any incoming triggers, clear the buffer, and trigger time-based
@@ -130,11 +130,11 @@ class Coordinator {
   void execute_action_from_lua(const cloe::Sync& sync, const sol::object& obj);
 
  protected:
-  cloe::ActionPtr make_action(const sol::object& lua) const;
-  cloe::ActionPtr make_action(const cloe::Conf& c) const;
-  cloe::EventPtr make_event(const cloe::Conf& c) const;
-  cloe::TriggerPtr make_trigger(cloe::Source s, const cloe::Conf& c) const;
-  cloe::TriggerPtr make_trigger(const sol::table& tbl) const;
+  [[nodiscard]] cloe::ActionPtr make_action(const sol::object& lua) const;
+  [[nodiscard]] cloe::ActionPtr make_action(const cloe::Conf& c) const;
+  [[nodiscard]] cloe::EventPtr make_event(const cloe::Conf& c) const;
+  [[nodiscard]] cloe::TriggerPtr make_trigger(cloe::Source s, const cloe::Conf& c) const;
+  [[nodiscard]] cloe::TriggerPtr make_trigger(const sol::table& tbl) const;
   void queue_trigger(cloe::Source s, const cloe::Conf& c) { queue_trigger(make_trigger(s, c)); }
   void queue_trigger(cloe::TriggerPtr&& tp);
   void store_trigger(cloe::TriggerPtr&& tp, const cloe::Sync& sync);

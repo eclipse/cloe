@@ -18,7 +18,8 @@
 
 #pragma once
 
-#include <iostream>
+#include <ostream>  // for ostream
+#include <sstream>  // for stringstream
 
 #include <cloe/core/error.hpp>  // for Error
 #include <fable/error.hpp>      // for ConfError, SchemaError
@@ -26,6 +27,12 @@
 
 namespace cloe {
 
+/**
+ * Format various kinds of error so that they are easy to read.
+ *
+ * \param exception error to format
+ * \return formatted string, ready for printing
+ */
 inline std::string format_error(const std::exception& exception) {
   std::stringstream buf;
   if (const auto* err = dynamic_cast<const fable::SchemaError*>(&exception); err) {
@@ -44,6 +51,21 @@ inline std::string format_error(const std::exception& exception) {
   return buf.str();
 }
 
+/**
+ * Run a function and print any exception nicely to the ostream provided.
+ *
+ * This essentially replaces:
+ *
+ *     try { ... }
+ *     catch (cloe::ConcludedError&) { ... }
+ *     catch (std::exception&) { ... }
+ *
+ * with a single line.
+ *
+ * \param out stream to write error message to (e.g. std::cerr)
+ * \param f function to run
+ * \return return value of f
+ */
 template <typename Func>
 auto conclude_error(std::ostream& out, Func f) -> decltype(f()) {
   try {

@@ -71,19 +71,19 @@ class Server {
    */
   void set_address(const std::string& addr) { listen_addr_ = addr; }
 
-  const std::string& address() const { return listen_addr_; }
+  [[nodiscard]] const std::string& address() const { return listen_addr_; }
 
   /**
    * Set the port on which to listen.
    */
   void set_port(int port) { listen_port_ = port; }
 
-  int port() const { return listen_port_; }
+  [[nodiscard]] int port() const { return listen_port_; }
 
   /**
    * Returns whether the server has started and is currently listening.
    */
-  bool is_listening() const { return listening_; }
+  [[nodiscard]] bool is_listening() const { return listening_; }
 
   /**
    * Start the server.
@@ -93,7 +93,7 @@ class Server {
   /**
    * Return endpoint data in json format.
    */
-  fable::Json endpoints_to_json(const std::vector<std::string>& endpoints) const;
+  [[nodiscard]] fable::Json endpoints_to_json(const std::vector<std::string>& endpoints) const;
 
   /**
    * Stop the server.
@@ -103,7 +103,7 @@ class Server {
   /**
    * Return a list of all registered endpoints.
    */
-  std::vector<std::string> endpoints() const;
+  [[nodiscard]] std::vector<std::string> endpoints() const;
 
  protected:
   friend StaticRegistrar;

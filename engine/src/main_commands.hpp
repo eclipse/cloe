@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+#include "config.hpp"
 #include "lua_setup.hpp"
 #include "stack_factory.hpp"
 
@@ -77,7 +78,7 @@ struct RunOptions {
   bool report_progress = true;
 
   bool debug_lua = false;
-  int debug_lua_port = 21110;
+  int debug_lua_port = CLOE_LUA_DEBUGGER_PORT;
 };
 
 int run(const RunOptions& opt, const std::vector<std::string>& filepaths);
