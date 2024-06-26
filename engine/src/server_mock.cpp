@@ -124,6 +124,10 @@ class ServerImpl : public Server {
   void refresh_buffer() override {
   }
 
+  std::vector<std::string> endpoints() const override {
+    return {};
+  }
+
   Defer lock() override {
     return Defer([]() {});
   }

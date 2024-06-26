@@ -39,7 +39,7 @@ void print_error(std::ostream& os, const S& chunk) {
   os << sol::to_string(chunk.status()) << " error: " << err.what() << std::endl;
 }
 
-bool evaluate(sol::state& lua, std::ostream& os, const char* buf) {
+bool evaluate(sol::state_view lua, std::ostream& os, const char* buf) {
   try {
     auto result = lua.safe_script(buf, sol::script_pass_on_error);
     if (!result.valid()) {
@@ -53,7 +53,7 @@ bool evaluate(sol::state& lua, std::ostream& os, const char* buf) {
   return true;
 }
 
-int noninteractive_shell(sol::state& lua, std::ostream& os, const std::vector<std::string>& actions,
+int noninteractive_shell(sol::state_view lua, std::ostream& os, const std::vector<std::string>& actions,
                          bool ignore_errors) {
   int errors = 0;
   for (const auto& action : actions) {
@@ -68,7 +68,7 @@ int noninteractive_shell(sol::state& lua, std::ostream& os, const std::vector<st
   return errors;
 }
 
-void interactive_shell(sol::state& lua, std::ostream& os, const std::vector<std::string>& actions,
+void interactive_shell(sol::state_view lua, std::ostream& os, const std::vector<std::string>& actions,
                        bool ignore_errors) {
   constexpr auto PROMPT = "> ";
   constexpr auto PROMPT_CONTINUE = ">> ";
@@ -165,7 +165,10 @@ int shell(const ShellOptions& opt, const std::vector<std::string>& filepaths) {
   cloe::Stack stack = cloe::new_stack(stack_opt);
   auto lopt = opt.lua_options;
   lopt.auto_require_cloe = true;
-  sol::state lua = cloe::new_lua(lopt, stack);
+
+  sol::state lua_state;
+  sol::state_view lua_view(lua_state.lua_state());
+  cloe::setup_lua(lua_view, lopt, stack);
 
   // Collect input files and strings to execute
   std::vector<std::string> actions{};
@@ -178,12 +181,12 @@ int shell(const ShellOptions& opt, const std::vector<std::string>& filepaths) {
   // Determine whether we should be interactive or not
   bool interactive = opt.interactive ? *opt.interactive : opt.commands.empty() && filepaths.empty();
   if (!interactive) {
-    auto errors = noninteractive_shell(lua, *opt.error, actions, opt.ignore_errors);
+    auto errors = noninteractive_shell(lua_view, *opt.error, actions, opt.ignore_errors);
     if (errors != 0) {
       return EXIT_FAILURE;
     }
   } else {
-    interactive_shell(lua, *opt.output, actions, opt.ignore_errors);
+    interactive_shell(lua_view, *opt.output, actions, opt.ignore_errors);
   }
   return EXIT_SUCCESS;
 }

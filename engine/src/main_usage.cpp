@@ -202,12 +202,53 @@ Several subcommands are available:
     runtime, such as simulator that is inconsistently configured or a scenario
     that uses other vehicle names.
 
-    The output from the check command follows the UNIX philosophy by default,
-    but this can be altered with the --summarize option flag.
+    The output from the check command follows the UNIX philosophy by default
+    (i.e., no output when everything is OK), but this can be altered with
+    the --summarize option flag.
 
     Examples:
       cloe-engine check tests/test_nop_smoketest.json tests/option_timestep_60.json
       cloe-engine --no-system-confs check -ds tests/*.json
+
+  probe
+    Probe a simulation configuration with merged stack files.
+
+    In this mode, a simulation is set up and all the participants are connected,
+    probed, and then disconnected. That means:
+
+    - the simulation must be fully configured,
+    - failures may occur during connection phase, and
+    - scripts included must be correct.
+
+    The output of the probe is a JSON written to stdout:
+
+    {
+      "http_endpoints": [ "/endpoints", ... ],
+      "plugins": {
+        "PLUGIN_NAME": "PLUGIN_PATH",
+        ...
+      },
+      "signals": {
+        "SIGNAL_NAME": "DESCRIPTION",
+        ...
+      },
+      "tests": {
+      }
+      "trigger_actions": [ "ACTION1", "..." ],
+      "trigger_events": [ "EVENT1", ... ],
+      "uuid": "UUID",
+      "vehicles": {
+        "NAME": [ "COMPONENT1", ... ]
+      }
+    }
+
+    The tests section is only defined if the simulation configuration
+    contains Lua that defines tests (via cloe.schedule_test() API).
+    You can use tools like jq to further filter and refine the output.
+
+    Examples:
+      cloe-engine probe tests/test_nop_smoketest.json
+      cloe-engine probe my_lua_test.lua | jq -r '.tests | keys | .[]'
 
   run
     Run a single simulation with merged stack files.

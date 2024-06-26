@@ -29,7 +29,7 @@ local m = {}
 --- @return nil
 function m.init_report(...)
     local results = {}
-    local file = api.state.current_script_file
+    local file = api.get_script_file()
     if file then
         results["source"] = cloe.fs.realpath(file)
     end
@@ -38,7 +38,7 @@ function m.init_report(...)
         results = luax.tbl_extend("force", results, tbl)
     end
 
-    api.state.report.metadata = results
+    api.get_report().metadata = results
 end
 
 --- Apply a stackfile, setting version to "4".

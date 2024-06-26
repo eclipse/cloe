@@ -220,6 +220,15 @@ class Vehicle : public Model {
     this->components_[key] = component;
   }
 
+  std::vector<std::string> component_names() const {
+    std::vector<std::string> results;
+    results.reserve(components_.size());
+    for (const auto& kv : components_) {
+      results.emplace_back(kv.first);
+    }
+    return results;
+  }
+
  public:  // Overrides
   /**
    * Process all components.
