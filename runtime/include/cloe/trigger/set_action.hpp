@@ -31,24 +31,23 @@
 #include <cloe/trigger.hpp>                // for Action, ActionFactory
 #include <cloe/trigger/helper_macros.hpp>  // for _X_FACTORY, _X_CALLBACK
 
-namespace cloe {
-namespace actions {
+namespace cloe::actions {
 
 template <typename T>
 T from_string(const std::string& s);
 
 template <>
-double from_string<double>(const std::string& s) {
+inline double from_string<double>(const std::string& s) {
   return std::stod(s);
 }
 
 template <>
-int from_string<int>(const std::string& s) {
+inline int from_string<int>(const std::string& s) {
   return std::stoi(s);
 }
 
 template <>
-bool from_string<bool>(const std::string& s) {
+inline bool from_string<bool>(const std::string& s) {
   if (s == "true") {
     return true;
   } else if (s == "false") {
@@ -108,8 +107,7 @@ class SetVariableActionFactory : public ActionFactory {
   T* data_ptr_;
 };
 
-}  // namespace actions
-}  // namespace cloe
+}  // namespace cloe::actions
 
 /**
  * Macro DEFINE_SET_STATE_ACTION defines an action that has only a single state
