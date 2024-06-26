@@ -36,9 +36,8 @@ namespace engine {
 
 class ServerRegistrarImpl : public ServerRegistrar {
  public:
-  ServerRegistrarImpl(
-      oak::Registrar static_reg, oak::ProxyRegistrar<cloe::HandlerType> api_reg)
-      : static_registrar_(static_reg), api_registrar_(api_reg) {}
+  ServerRegistrarImpl(const oak::Registrar& static_reg, oak::ProxyRegistrar<cloe::HandlerType> api_reg)
+      : static_registrar_(static_reg), api_registrar_(std::move(api_reg)) {}
 
   std::unique_ptr<ServerRegistrar> clone() const override {
     return std::make_unique<ServerRegistrarImpl>(static_registrar_, api_registrar_);
@@ -62,7 +61,7 @@ class ServerRegistrarImpl : public ServerRegistrar {
   }
 
   void register_api_handler(const std::string& endpoint, cloe::HandlerType t,
-                                    cloe::Handler h) override {
+                            cloe::Handler h) override {
     api_registrar_.register_handler(endpoint, t, h);
   }
 
