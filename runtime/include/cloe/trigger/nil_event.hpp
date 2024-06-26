@@ -25,6 +25,7 @@
 #include <string>  // for string
 
 #include <cloe/core.hpp>                   // for Conf, Json
+#include <cloe/registrar.hpp>              // for DirectCallback
 #include <cloe/trigger.hpp>                // for Event, EventFactory, Action, ActionFactory
 #include <cloe/trigger/helper_macros.hpp>  // for _X_FACTORY, _X_CALLBACK
 

@@ -38,22 +38,19 @@ struct SpeedometerConf : public fable::Confable {
 
 class Speedometer : public cloe::Component {
  public:
-  Speedometer(const std::string& name, const SpeedometerConf&, std::shared_ptr<cloe::EgoSensor> ego)
+  Speedometer(const std::string& name, const SpeedometerConf& /*conf*/,
+              std::shared_ptr<cloe::EgoSensor> ego)
       : Component(name, "provides an event trigger to evaluate speed in km/h"), sensor_(ego) {}
 
-  virtual ~Speedometer() noexcept = default;
+  ~Speedometer() noexcept override = default;
 
   void enroll(cloe::Registrar& r) override {
     callback_kmph_ =
         r.register_event<cloe::events::EvaluateFactory, double>("kmph", "vehicle speed in km/h");
 
-    auto& db = r.data_broker();
-    {
-      std::string signal_name = fmt::format("components.{}.kmph", name());
-      auto signal = db.declare<double>(signal_name);
-      signal->set_getter<double>(
-          [this]() -> double { return cloe::utility::EgoSensorCanon(sensor_).velocity_as_kmph(); });
-    }
+    auto kmph_signal = r.declare_signal<double>("kmph");
+    kmph_signal->set_getter<double>(
+        [this]() -> double { return cloe::utility::EgoSensorCanon(sensor_).velocity_as_kmph(); });
   }
 
   cloe::Duration process(const cloe::Sync& sync) override {
@@ -63,7 +60,7 @@ class Speedometer : public cloe::Component {
   }
 
   fable::Json active_state() const override {
-    return fable::Json{{"kmph", utility::EgoSensorCanon(sensor_).velocity_as_kmph()}};
+    return fable::Json{{"kmph", cloe::utility::EgoSensorCanon(sensor_).velocity_as_kmph()}};
   }
 
  private:
@@ -75,7 +72,7 @@ class Speedometer : public cloe::Component {
 DEFINE_COMPONENT_FACTORY(SpeedometerFactory, SpeedometerConf, "speedometer",
                          "provide an event trigger to evaluate speed in km/h")
 
-DEFINE_COMPONENT_FACTORY_MAKE(SpeedometerFactory, Speedometer, EgoSensor)
+DEFINE_COMPONENT_FACTORY_MAKE(SpeedometerFactory, Speedometer, cloe::EgoSensor)
 
 // Register factory as plugin entrypoint
 EXPORT_CLOE_PLUGIN(SpeedometerFactory)
