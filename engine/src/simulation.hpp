@@ -22,97 +22,28 @@
 
 #pragma once
 
+#include <filesystem>  // for path
 #include <functional>  // for function<>
-#include <memory>      // for unique_ptr<>
+#include <optional>    // for optional<>
 
-#include <boost/filesystem/path.hpp>  // for path
+#include <sol/state_view.hpp>  // for state_view
 
-#include <fable/enum.hpp>  // for ENUM_SERIALIZATION
-#include <sol/state.hpp>   // for state
-
-#include "simulation_context.hpp"
 #include "stack.hpp"  // for Stack
 
 namespace engine {
 
-struct SimulationResult {
-  cloe::Stack config;
-
-  std::string uuid;
-  SimulationSync sync;
-  cloe::Duration elapsed;
-  SimulationOutcome outcome;
-  std::vector<std::string> errors;
-  SimulationStatistics statistics;
-  cloe::Json triggers;
-  cloe::Json report;
-  cloe::Json signals;  // dump of all signals in DataBroker right before the simulation started
-  std::vector<std::string>
-      signals_autocompletion;  // pseudo lua file used for vscode autocompletion
-  std::optional<std::filesystem::path> output_dir;
-
- public:
-  /**
-   * The output directory of files is normally built up with:
-   *
-   *     $registry / $id / $filename
-   *
-   * If any of the last variables is absolute, the preceding variables
-   * shall be ignored; e.g. if $filename is absolute, then neither the
-   * simulation registry nor the UUID-based path shall be considered.
-   *
-   * If not explicitly specified in the configuration file, the registry
-   * and output path are set automatically. Thus, if they are empty, then
-   * that is because the user explicitly set them so.
-   */
-  std::filesystem::path get_output_filepath(const std::filesystem::path& filename) const {
-    std::filesystem::path filepath;
-    if (filename.is_absolute()) {
-      filepath = filename;
-    } else if (output_dir) {
-      filepath = *output_dir / filename;
-    } else {
-      throw cloe::ModelError{"cannot determine output path for '{}'", filename.native()};
-    }
-
-    return filepath;
-  }
-
-  /**
-   * Determine the output directory from config.
-   *
-   * Must be called before output_dir is used.
-   */
-  void set_output_dir() {
-    if (config.engine.output_path) {
-      // For $registry to be of value, output_path (~= $id) here needs to be set.
-      if (config.engine.output_path->is_absolute()) {
-        // If it's absolute, then registry_path doesn't matter.
-        output_dir = *config.engine.output_path;
-      } else if (config.engine.registry_path) {
-        // Now, since output_dir is relative, we need the registry path.
-        // We don't care here whether the registry is relative or not.
-        output_dir = *config.engine.registry_path / *config.engine.output_path;
-      }
-    }
-  }
-
-  friend void to_json(cloe::Json& j, const SimulationResult& r) {
-    j = cloe::Json{
-        {"elapsed", r.elapsed},
-        {"errors", r.errors},
-        {"outcome", r.outcome},
-        {"report", r.report},
-        {"simulation", r.sync},
-        {"statistics", r.statistics},
-        {"uuid", r.uuid},
-    };
-  }
-};
+class SimulationContext;
+class SimulationMachine;
+class SimulationResult;
+class SimulationProbe;
 
 class Simulation {
  public:
-  Simulation(cloe::Stack&& config, sol::state&& lua, const std::string& uuid);
+  Simulation(const Simulation&) = default;
+  Simulation(Simulation&&) = delete;
+  Simulation& operator=(const Simulation&) = default;
+  Simulation& operator=(Simulation&&) = delete;
+  Simulation(cloe::Stack&& config, sol::state_view lua, const std::string& uuid);
   ~Simulation() = default;
 
   /**
@@ -127,6 +58,13 @@ class Simulation {
    * This will throw an exception on failure.
    */
   SimulationResult run();
+
+  /**
+   * Probe a simulation.
+   *
+   * This connects and enrolls, but does not start the simulation.
+   */
+  SimulationProbe probe();
 
   /**
    * Write simulation output into files and return number of files written.
@@ -156,10 +94,49 @@ class Simulation {
   void signal_abort();
 
  private:
+  /**
+   * Determine the output directory from config.
+   *
+   * Must be called before output_dir is used.
+   */
+  void set_output_dir();
+
+  /**
+   * The output directory of files is normally built up with:
+   *
+   *     $registry / $id / $filename
+   *
+   * If any of the last variables is absolute, the preceding variables
+   * shall be ignored; e.g. if $filename is absolute, then neither the
+   * simulation registry nor the UUID-based path shall be considered.
+   *
+   * If not explicitly specified in the configuration file, the registry
+   * and output path are set automatically. Thus, if they are empty, then
+   * that is because the user explicitly set them so.
+   */
+  std::filesystem::path get_output_filepath(const std::filesystem::path& filename) const;
+
+  /**
+   * Create the default abort handler that can be used by signal_abort() on
+   * this Simulation instance. The return value can be assigned to abort_fn_.
+   *
+   * It is important that the lifetime of all passed arguments exceeds that
+   * of the returned function! Before they are removed, call reset_abort_handler().
+   */
+  void set_abort_handler(SimulationMachine& machine, SimulationContext& ctx,
+                         std::function<void()> hook);
+
+  /**
+   * Reset the abort handler before it becomes invalid.
+   */
+  void reset_abort_handler() { abort_fn_ = nullptr; }
+
+ private:
   cloe::Stack config_;
-  sol::state lua_;
+  sol::state_view lua_;
   cloe::Logger logger_;
   std::string uuid_;
+  std::optional<std::filesystem::path> output_dir_;
   std::function<void()> abort_fn_;
 
   // Options:

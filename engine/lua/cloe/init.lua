@@ -81,12 +81,12 @@ end
 --- Require a module, prioritizing modules relative to the script
 --- launched by cloe-engine.
 ---
---- If api.state.current_script_dir is nil, this is equivalent to require().
+--- If api.get_script_dir() is nil, this is equivalent to require().
 ---
 --- @param module string module identifier, such as "project"
 function cloe.require(module)
     cloe.validate("cloe.require(string)", module)
-    local script_dir = api.state.current_script_dir
+    local script_dir = api.get_script_dir()
     if script_dir then
         local old_package_path = package.path
         package.path = string.format("%s/?.lua;%s/?/init.lua;%s", script_dir, script_dir, package.path)
@@ -106,7 +106,7 @@ end
 function cloe.init_report(header)
     cloe.validate("cloe.init_report(?table)", header)
     local system = require("cloe.system")
-    local report = api.state.report
+    local report = api.get_report()
     report.metadata = {
         hostname = system.get_hostname(),
         username = system.get_username(),

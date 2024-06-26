@@ -53,12 +53,12 @@ function events.after_tests(...)
     if #names == 1 then
         local name = names[1]
         return function()
-            return api.state.report.tests[name].complete
+            return api.get_report().tests[name].complete
         end
     else
         return function()
             for _, k in ipairs(names) do
-                if not api.state.report.tests[k].complete then
+                if not api.get_report().tests[k].complete then
                     return false
                 end
             end
@@ -78,7 +78,7 @@ function events.every(duration)
     if type(duration) == "string" then
         duration = types.Duration.new(duration)
     end
-    if duration:ns() % api.state.config.simulation.model_step_width ~= 0 then
+    if duration:ns() % api.get_config().simulation.model_step_width ~= 0 then
         error("interval duration is not a multiple of nominal step width")
     end
     return function(sync)

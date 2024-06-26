@@ -22,6 +22,7 @@
 #include "lua_setup.hpp"
 
 #include <filesystem>  // for path
+#include <iostream>
 
 #include <sol/state_view.hpp>  // for state_view
 
@@ -107,7 +108,7 @@ int lua_exception_handler(lua_State* L, sol::optional<const std::exception&> may
  *
  * \see lua_setup_builtin.cpp
  */
-void configure_package_path(sol::state_view& lua, const std::vector<std::string>& paths) {
+void configure_package_path(sol::state_view lua, const std::vector<std::string>& paths) {
   std::string package_path = lua["package"]["path"];
   for (const std::string& p : paths) {
     package_path += ";" + p + "/?.lua";
@@ -119,7 +120,7 @@ void configure_package_path(sol::state_view& lua, const std::vector<std::string>
 /**
  * Add Lua package paths so that bundled Lua libaries can be found.
  */
-void register_package_path(sol::state_view& lua, const LuaOptions& opt) {
+void register_package_path(sol::state_view lua, const LuaOptions& opt) {
   // Setup lua path:
   std::vector<std::string> lua_path{};
   if (!opt.no_system_lua) {
@@ -157,7 +158,7 @@ void register_package_path(sol::state_view& lua, const LuaOptions& opt) {
  *
  *     engine/lua/cloe-engine/init.lua
  */
-void register_cloe_engine(sol::state_view& lua, Stack& stack) {
+void register_cloe_engine(sol::state_view lua, Stack& stack) {
   sol::table tbl = lua.create_table();
 
   // Initial input will be processed at simulation start.
@@ -175,10 +176,10 @@ void register_cloe_engine(sol::state_view& lua, Stack& stack) {
   tbl["state"] = lua.create_table();
   tbl["state"]["report"] = lua.create_table();
   tbl["state"]["stack"] = std::ref(stack);
-  tbl["state"]["config"] = fable::into_sol_object(lua, stack.active_config());
   tbl["state"]["scheduler"] = sol::lua_nil;
   tbl["state"]["current_script_file"] = sol::lua_nil;
   tbl["state"]["current_script_dir"] = sol::lua_nil;
+  tbl["state"]["is_running"] = false;
   tbl["state"]["scripts_loaded"] = lua.create_table();
   tbl["state"]["features"] = lua.create_table_with(
     // Version compatibility:
@@ -188,8 +189,16 @@ void register_cloe_engine(sol::state_view& lua, Stack& stack) {
     "cloe-0.19", true,
     "cloe-0.20.0", true,
     "cloe-0.20", true,
-    "cloe-0.21.0", true, // nightly
-    "cloe-0.21", true,   // nightly
+    "cloe-0.21.0", true,
+    "cloe-0.21", true,
+    "cloe-0.22.0", true,
+    "cloe-0.22", true,
+    "cloe-0.23.0", true,
+    "cloe-0.23", true,
+    "cloe-0.24.0", true,
+    "cloe-0.24", true,
+    "cloe-0.25.0", true,
+    "cloe-0.25", true,
 
     // Stackfile versions support:
     "cloe-stackfile", true,
@@ -203,8 +212,11 @@ void register_cloe_engine(sol::state_view& lua, Stack& stack) {
   );
   // clang-format on
 
-#if 0
   tbl.set_function("is_available", []() { return true; });
+
+  tbl.set_function("is_simulation_running",
+                   [](sol::this_state lua) { return luat_cloe_engine_state(lua)["is_running"]; });
+
   tbl.set_function("get_script_file", [](sol::this_state lua) {
     return luat_cloe_engine_state(lua)["current_script_file"];
   });
@@ -217,16 +229,18 @@ void register_cloe_engine(sol::state_view& lua, Stack& stack) {
                    [](sol::this_state lua) { return luat_cloe_engine_state(lua)["scheduler"]; });
   tbl.set_function("get_features",
                    [](sol::this_state lua) { return luat_cloe_engine_state(lua)["features"]; });
-  tbl.set_function("get_stack",
-                   [](sol::this_state lua) { return luat_cloe_engine_state(lua)["stack"]; });
-#endif
+  tbl.set_function("get_stack", [&stack]() { return std::ref(stack); });
+  tbl.set_function("get_config", [&stack](sol::this_state lua) {
+    return fable::into_sol_object(lua, stack.active_config());
+  });
+
   tbl.set_function("log", cloe_api_log);
   tbl.set_function("exec", cloe_api_exec);
 
   luat_cloe_engine(lua) = tbl;
 }
 
-void register_enum_loglevel(sol::state_view& lua, sol::table& tbl) {
+void register_enum_loglevel(sol::state_view lua, sol::table& tbl) {
   // clang-format off
   tbl["LogLevel"] = lua.create_table_with(
     "TRACE",    "trace",
@@ -250,7 +264,7 @@ void register_enum_loglevel(sol::state_view& lua, sol::table& tbl) {
  *
  *     engine/lua/cloe-engine/types.lua
  */
-void register_cloe_engine_types(sol::state_view& lua) {
+void register_cloe_engine_types(sol::state_view lua) {
   sol::table tbl = lua.create_table();
   register_usertype_duration(tbl);
   register_usertype_sync(tbl);
@@ -270,7 +284,7 @@ void register_cloe_engine_types(sol::state_view& lua) {
  *
  *     engine/lua/cloe-engine/fs.lua
  */
-void register_cloe_engine_fs(sol::state_view& lua) {
+void register_cloe_engine_fs(sol::state_view lua) {
   sol::table tbl = lua.create_table();
   register_lib_fs(tbl);
   luat_cloe_engine_fs(lua) = tbl;
@@ -282,7 +296,7 @@ void register_cloe_engine_fs(sol::state_view& lua) {
  * You can just use `cloe`, and it will auto-require the cloe module.
  * If you don't use it, then it won't be loaded.
  */
-void register_cloe(sol::state_view& lua) {
+void register_cloe(sol::state_view lua) {
   // This takes advantage of the `__index` function for metatables, which is called
   // when a key can't be found in the original table, here an empty table
   // assigned to cloe. It then loads the cloe module, and returns the key
@@ -305,9 +319,8 @@ void register_cloe(sol::state_view& lua) {
 
 }  // anonymous namespace
 
-sol::state new_lua(const LuaOptions& opt, Stack& stack) {
+void setup_lua(sol::state_view lua, const LuaOptions& opt, Stack& stack) {
   // clang-format off
-  sol::state lua;
   lua.open_libraries(
     sol::lib::base,
     sol::lib::coroutine,
@@ -329,10 +342,9 @@ sol::state new_lua(const LuaOptions& opt, Stack& stack) {
   if (opt.auto_require_cloe) {
     register_cloe(lua);
   }
-  return lua;
 }
 
-void merge_lua(sol::state_view& lua, const std::string& filepath) {
+void merge_lua(sol::state_view lua, const std::string& filepath) {
   logger::get("cloe")->debug("Load script {}", filepath);
   auto result = lua_safe_script_file(lua, std::filesystem::path(filepath));
   if (!result.valid()) {

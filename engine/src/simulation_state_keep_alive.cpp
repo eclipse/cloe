@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Robert Bosch GmbH
+ * Copyright 2024 Robert Bosch GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,22 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
- * \file stack_lua.cpp
+ * \file simulation_state_keep_alive.cpp
  */
 
-#include "lua_setup.hpp"
+#include "simulation_context.hpp"  // for SimulationContext
+#include "simulation_machine.hpp"  // for SimulationMachine
 
-#include <lrdb/server.hpp>  // lrdb::server
-#include <sol/state_view.hpp>  // for state_view
+namespace engine {
 
-namespace cloe {
-
-void start_lua_debugger(sol::state_view lua, int listen_port) {
-  static lrdb::server debug_server(listen_port);
-  debug_server.reset(lua.lua_state());
+StateId SimulationMachine::KeepAlive::impl(SimulationContext& ctx) {
+  if (state_machine()->previous_state() != KEEP_ALIVE) {
+    logger()->info("Keeping simulation alive...");
+    logger()->info("Press [Ctrl+C] to disconnect.");
+  }
+  ctx.callback_pause->trigger(ctx.sync);
+  std::this_thread::sleep_for(ctx.config.engine.polling_interval);
+  return KEEP_ALIVE;
 }
 
-}  // namespace cloe
+}  // namespace engine

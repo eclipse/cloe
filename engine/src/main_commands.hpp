@@ -59,6 +59,25 @@ struct DumpOptions {
 
 int dump(const DumpOptions& opt, const std::vector<std::string>& filepaths);
 
+struct ProbeOptions {
+  cloe::StackOptions stack_options;
+  cloe::LuaOptions lua_options;
+
+  std::ostream* output = &std::cout;
+  std::ostream* error = &std::cerr;
+
+  // Options
+  std::string uuid;  // Not currently used.
+
+  // Flags:
+  int json_indent = 2;
+
+  bool debug_lua = false;                       // Not currently used.
+  int debug_lua_port = CLOE_LUA_DEBUGGER_PORT;  // Not currently used.
+};
+
+int probe(const ProbeOptions& opt, const std::vector<std::string>& filepaths);
+
 struct RunOptions {
   cloe::StackOptions stack_options;
   cloe::LuaOptions lua_options;
@@ -125,5 +144,28 @@ struct VersionOptions {
 };
 
 int version(const VersionOptions& opt);
+
+// ------------------------------------------------------------------------- //
+
+class Simulation;
+
+extern Simulation* GLOBAL_SIMULATION_INSTANCE;  // NOLINT
+
+/**
+ * Handle interrupt signals sent by the operating system.
+ *
+ * When this function is called, it cannot call any other functions that
+ * might have set any locks, because it might not get the lock, and then the
+ * program hangs instead of gracefully exiting. It's a bit sad, true, but
+ * that's the way it is.
+ *
+ * That is why you cannot make use of the logging in this function. You also
+ * cannot make use of triggers, because they also have a lock.
+ *
+ * The function immediately resets the signal handler to the default provided
+ * by the standard library, so that in the case that we do hang for some
+ * reasons, the user can force abort by sending the signal a third time.
+ */
+void handle_signal(int sig);
 
 }  // namespace engine

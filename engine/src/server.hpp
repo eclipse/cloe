@@ -121,6 +121,11 @@ class Server {
   virtual void refresh_buffer() = 0;
 
   /**
+   * Return a list of all registered endpoints.
+   */
+  [[nodiscard]] virtual std::vector<std::string> endpoints() const = 0;
+
+  /**
    * Return a write lock guard on the server.
    *
    * Keep the returned value alive for as long as the server should be locked.

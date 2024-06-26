@@ -173,6 +173,8 @@ class ServerImpl : public Server {
     }
   }
 
+  std::vector<std::string> endpoints() const override { return this->server_.endpoints(); }
+
   Defer lock() override {
     auto lock = locked_api_registrar_.lock();
     return Defer([&]() { lock.release(); });

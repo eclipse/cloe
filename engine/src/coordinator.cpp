@@ -82,6 +82,24 @@ std::shared_ptr<cloe::TriggerRegistrar> Coordinator::trigger_registrar(Source s)
   return std::make_shared<TriggerRegistrar>(*this, s);
 }
 
+[[nodiscard]] std::vector<std::string> Coordinator::trigger_action_names() const {
+  std::vector<std::string> results;
+  results.reserve(actions_.size());
+  for (const auto& [key, _] : actions_) {
+    results.emplace_back(key);
+  }
+  return results;
+}
+
+[[nodiscard]] std::vector<std::string> Coordinator::trigger_event_names() const {
+  std::vector<std::string> results;
+  results.reserve(events_.size());
+  for (const auto& [key, _] : events_) {
+    results.emplace_back(key);
+  }
+  return results;
+}
+
 void Coordinator::enroll(Registrar& r) {
   // clang-format off
   r.register_api_handler("/triggers/actions", HandlerType::STATIC,

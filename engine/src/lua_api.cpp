@@ -25,7 +25,7 @@
 
 namespace cloe {
 
-sol::protected_function_result lua_safe_script_file(sol::state_view& lua,
+sol::protected_function_result lua_safe_script_file(sol::state_view lua,
                                                     const std::filesystem::path& filepath) {
   auto file = std::filesystem::path(filepath);
   auto dir = file.parent_path().generic_string();
@@ -33,16 +33,17 @@ sol::protected_function_result lua_safe_script_file(sol::state_view& lua,
     dir = ".";
   }
 
-  auto state = luat_cloe_engine_state(lua);
-  auto old_file = state["current_script_file"];
-  auto old_dir = state["current_script_dir"];
-  state["scripts_loaded"].get<sol::table>().add(file.generic_string());
-  state["current_script_file"] = file.generic_string();
-  state["current_script_dir"] = dir;
+  sol::object old_file = luat_cloe_engine_state(lua)["current_script_file"];
+  sol::object old_dir = luat_cloe_engine_state(lua)["current_script_dir"];
+  sol::table scripts_loaded = luat_cloe_engine_state(lua)["scripts_loaded"];
+  scripts_loaded[scripts_loaded.size() + 1] = file.generic_string();
+  luat_cloe_engine_state(lua)["scripts_loaded"] = scripts_loaded;
+  luat_cloe_engine_state(lua)["current_script_file"] = file.generic_string();
+  luat_cloe_engine_state(lua)["current_script_dir"] = dir;
   logger::get("cloe")->info("Loading {}", file.generic_string());
   auto result = lua.safe_script_file(file.generic_string(), sol::script_pass_on_error);
-  state["current_script_file"] = old_file;
-  state["current_script_dir"] = old_dir;
+  luat_cloe_engine_state(lua)["current_script_file"] = old_file;
+  luat_cloe_engine_state(lua)["current_script_dir"] = old_dir;
   return result;
 }
 

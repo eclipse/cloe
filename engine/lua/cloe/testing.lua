@@ -75,7 +75,7 @@ function TestFixture.new(test, scheduler)
     local debinfo = debug.getinfo(test.run)
     local source = string.format("%s:%s-%s", debinfo.short_src, debinfo.linedefined, debinfo.lastlinedefined)
 
-    local report = api.state.report
+    local report = api.get_report()
     if report["tests"] == nil then
         report["tests"] = {}
     end
@@ -217,7 +217,7 @@ end
 
 --- @private
 function TestFixture:_terminate()
-    local report = api.state.report
+    local report = api.get_report()
     local tests = 0
     local tests_failed = 0
     for _, test in pairs(report["tests"]) do
