@@ -56,7 +56,7 @@ struct LuaOptions {
  * \see stack_factory.hpp
  * \see lua_setup.cpp
  */
-sol::state new_lua(const LuaOptions& opt, Stack& s);
+void setup_lua(sol::state_view lua, const LuaOptions& opt, Stack& s);
 
 #if CLOE_ENGINE_WITH_LRDB
 /**
@@ -65,7 +65,7 @@ sol::state new_lua(const LuaOptions& opt, Stack& s);
  * \param lua
  * \param listen_port
  */
-void start_lua_debugger(sol::state& lua, int listen_port);
+void start_lua_debugger(sol::state_view lua, int listen_port);
 #endif
 
 /**
@@ -73,7 +73,7 @@ void start_lua_debugger(sol::state& lua, int listen_port);
  *
  * \see lua_setup.cpp
  */
-void merge_lua(sol::state_view& lua, const std::string& filepath);
+void merge_lua(sol::state_view lua, const std::string& filepath);
 
 /**
  * Define the filesystem library functions in the given table.

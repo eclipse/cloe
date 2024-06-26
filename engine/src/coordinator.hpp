@@ -118,6 +118,16 @@ class Coordinator {
   [[nodiscard]] cloe::Logger logger() const { return cloe::logger::get("cloe"); }
 
   /**
+   * Return a list of names of all available actions that have been enrolled.
+   */
+  [[nodiscard]] std::vector<std::string> trigger_action_names() const;
+
+  /**
+   * Return a list of names of all available events that have been enrolled.
+   */
+  [[nodiscard]] std::vector<std::string> trigger_event_names() const;
+
+  /**
    * Process any incoming triggers, clear the buffer, and trigger time-based
    * events.
    */

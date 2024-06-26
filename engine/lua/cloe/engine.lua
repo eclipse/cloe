@@ -39,7 +39,7 @@ end
 --- @nodiscard
 function engine.has_feature(id)
     validate("cloe.has_feature(string)", id)
-    return api.state.features[id] and true or false
+    return api.get_features()[id] and true or false
 end
 
 --- Throw an exception if Cloe does not have feature as defined by string.
@@ -60,7 +60,7 @@ end
 ---
 --- @return StackConf
 function engine.config()
-    return api.state.config
+    return api.get_config()
 end
 
 --- Try to load (merge) stackfile.
@@ -69,12 +69,12 @@ end
 --- @return Stack
 function engine.load_stackfile(file)
     validate("cloe.load_stackfile(string)", file)
-    local cwd = api.state.current_script_dir or "."
+    local cwd = api.get_script_dir() or "."
     if fs.is_relative(file) then
         file = cwd .. "/" .. file
     end
-    api.state.stack:merge_stackfile(file)
-    return api.state.stack
+    api.get_stack():merge_stackfile(file)
+    return api.get_stack()
 end
 
 --- Read JSON file into Lua types (most likely as Lua table).
@@ -99,11 +99,11 @@ end
 --- @return nil
 function engine.apply_stack(stack)
     validate("cloe.apply_stack(string|table)", stack)
-    local file = api.state.current_script_file or ""
+    local file = api.get_script_file() or ""
     if type(stack) == "table" then
-        api.state.stack:merge_stacktable(stack --[[ @as table ]], file)
+        api.get_stack():merge_stacktable(stack --[[ @as table ]], file)
     else
-        api.state.stack:merge_stackjson(stack --[[ @as string ]], file)
+        api.get_stack():merge_stackjson(stack --[[ @as string ]], file)
     end
 end
 
@@ -126,10 +126,18 @@ end
 
 --- Alias a set of signals in the Cloe data broker.
 ---
+--- TODO: Does this mean that the signals are also required?
+--- {
+---     ["^regular expression$"] =
+--- }
+---
 --- @param list table<string, string> # regular expression to alias key
 --- @return table<string, string> # current signal aliases table
 function engine.alias_signals(list)
-    -- TODO: Throw an error if simulation already started.
+    if api.is_simulation_running() then
+        error("can only alias signals before simulation start")
+    end
+
     api.initial_input.signal_aliases = luax.tbl_extend("force", api.initial_input.signal_aliases, list)
     return api.initial_input.signal_aliases
 end
@@ -139,7 +147,10 @@ end
 --- @param list string[] signals to merge into main list of required signals
 --- @return string[] # merged list of signals
 function engine.require_signals(list)
-    -- TODO: Throw an error if simulation already started.
+    if api.is_simulation_running() then
+        error("can only require signals before simulation start")
+    end
+
     api.initial_input.signal_requires = luax.tbl_extend("force", api.initial_input.signal_requires, list)
     return api.initial_input.signal_requires
 end
@@ -151,33 +162,50 @@ end
 ---
 ---     ---@enum Sig
 ---     local Sig = {
----         DriverDoorLatch = "vehicle::framework::chassis::.*driver_door::latch",
----         VehicleMps = "vehicle::sensors::chassis::velocity",
+---         DriverDoorLatch = "^vehicle::framework::chassis::.*driver_door::latch$",
+---         VehicleMps = "^vehicle::sensors::chassis::velocity$",
 ---     }
----     cloe.require_signals_enum(Sig, true)
+---     cloe.require_signals_enum(Sig)
 ---
 --- Later, you can use the enum with `cloe.signal()`:
 ---
 ---     cloe.signal(Sig.DriverDoorLatch)
+---     cloe.signal("...")
 ---
 --- @param enum table<string, string> input mappging from enum name to signal name
---- @param alias boolean whether to treat signal names as alias regular expressions
 --- @return nil
-function engine.require_signals_enum(enum, alias)
-    -- TODO: Throw an error if simulation already started.
-    local signals = {}
-    if alias then
-        local aliases = {}
-        for key, sigregex in pairs(enum) do
-            table.insert(aliases, { sigregex, key })
-            table.insert(signals, key)
+function engine.require_signals_enum(enum)
+    if api.is_simulation_running() then
+        error("can only require/alias signals before simulation start")
+    end
+
+    -- Return true if signal should be treated as a regular expression.
+    local function is_regex(s)
+        return string.match(s, "^%^.*%$$") ~= nil
+    end
+
+    -- We have to handle the following three variants:
+    --
+    --     {
+    --       A = "A",         -- do not alias
+    --       B = "B.b",       -- alias B
+    --       C = "^C$",       -- alias C and ^C$
+    --       ["^D$"] = "^D$", -- alias ^D$
+    --     }
+    local signals, aliases = {}, {}
+    for key, signal in pairs(enum) do
+        -- Case A
+        table.insert(signals, signal)
+        if signal ~= key then
+            -- Case B and C
+            table.insert(aliases, { signal, key })
         end
-        engine.alias_signals(aliases)
-    else
-        for _, signame in pairs(enum) do
-            table.insert(signals, signame)
+        if is_regex(signal) then
+            -- Case C
+            table.insert(aliases, { signal, signal })
         end
     end
+    engine.alias_signals(aliases)
     engine.require_signals(signals)
 end
 
@@ -215,23 +243,73 @@ function engine.set_signal(name, value)
     api.signals[name] = value
 end
 
---- Record the given list of signals into the report.
+--- Record the given list of signals each cycle and write the results into the
+--- report.
 ---
---- This can be called multiple times, but if the signal is already
---- being recorded, then an error will be raised.
+--- This (currently) works by scheduling a Lua function to run every
+--- cycle and write the current signal value. If a signal changes
+--- value multiple times during a cycle, it's currently *undefined*
+--- which of these values will be recorded.
 ---
---- This should be called before simulation starts,
---- so not from a scheduled callback.
+--- This setup function can be called multiple times, but if the output signal
+--- name is already being recorded, then an error will be raised.
+---
+--- This should be called before simulation starts, so not from a scheduled
+--- callback.
 ---
 --- You can pass it a list of signals to record, or a mapping
---- from name to
+--- from output name or signal name or function to produce value.
+---
+--- When just specifying signal names to be recorded without a function
+--- defining how they are to be recorded, a default implementation of:
+---
+---     function() return cloe.signal(signal_name) end
+---
+--- is used. This means that the signal needs to be made available through a
+--- call to `cloe.require_signals()` or equivalent.
+---
+--- Example 1: plain signal list
+---
+---     local want = {"A", "B-signal", "C"}
+---     cloe.require_signals(want)
+---     cloe.record_signals(want)
+---
+--- Example 2: mapping from recorded value to
+---
+---     math.randomseed(os.time())
+---     cloe.record_signals({
+---         ["random_number"] = math.random,
+---         ["A_subvalue"] = function() return cloe.signal("A").subvalue end,
+---     })
+---
+--- Example 3:
+---
+---     cloe.record_signals({
+---         "A",
+---         ["B"] = "B-signal",
+---         ["C"] = function() return cloe.signal("C").subvalue end,
+---     })
+---
+--- Example 4:
+---
+---     local Sig = {
+---         Brake = "^vehicles.default.controllerA.brake_position$",
+---         Accel = "^vehicles.default.controllerA.accel_position$",
+---     }
+---     cloe.require_signal_enum(Sig)
+---     cloe.record_signals(Sig)
 ---
 --- @param mapping table<number|string, string|fun():any> mapping from signal names
 --- @return nil
 function engine.record_signals(mapping)
     validate("cloe.record_signals(table)", mapping)
-    api.state.report.signals = api.state.report.signals or {}
-    local signals = api.state.report.signals
+    if api.is_simulation_running() then
+        error("cloe.record_signals() cannot be called after simulation start")
+    end
+
+    local report = api.get_report()
+    report.signals = report.signals or {}
+    local signals = report.signals
     signals.time = signals.time or {}
     for sig, getter in pairs(mapping) do
         if type(sig) == "number" then
@@ -259,6 +337,7 @@ function engine.record_signals(mapping)
             for name, getter in pairs(mapping) do
                 local value
                 if type(name) == "number" then
+                    assert(type(getter) == "string")
                     name = getter
                 end
                 if type(getter) == "string" then
@@ -267,8 +346,7 @@ function engine.record_signals(mapping)
                     value = getter()
                 end
                 if value == nil then
-                    -- TODO: Improve error message!
-                    error("nil value received as signal value")
+                    error(string.format("cannot record nil as value for signal %s at %d ms", name, cur_time))
                 end
                 table.insert(signals[name], value)
             end
@@ -291,8 +369,8 @@ function engine.insert_trigger(trigger)
     -- events are put in a queue and picked up by the engine at simulation
     -- start. After this, cloe.state.scheduler exists and we can use its
     -- methods.
-    if api.state.scheduler then
-        api.state.scheduler:insert_trigger(trigger)
+    if api.get_scheduler() then
+        api.get_scheduler():insert_trigger(trigger)
     else
         table.insert(api.initial_input.triggers, trigger)
     end
@@ -307,8 +385,8 @@ end
 --- @return nil
 function engine.execute_action(action)
     validate("cloe.execute_action(string|table)", action)
-    if api.state.scheduler then
-        api.state.scheduler:execute_action(action)
+    if api.get_scheduler() then
+        api.get_scheduler():execute_action(action)
     else
         error("can only execute actions within scheduled events")
     end
@@ -330,7 +408,7 @@ end
 local Task
 do
     local types = require("tableshape").types
-    Task = types.shape {
+    Task = types.shape({
         on = types.string + types.table + types.func,
         run = types.string + types.table + types.func,
         desc = types.string:is_optional(),
@@ -339,7 +417,7 @@ do
         pin = types.boolean:is_optional(),
         priority = types.integer:is_optional(),
         source = types.string:is_optional(),
-    }
+    })
 end
 
 --- @class PartialTask
@@ -373,12 +451,9 @@ end
 local Tasks
 do
     local types = require("tableshape").types
-    Tasks = types.shape(
-        PartialTaskSpec,
-        {
-            extra_fields = types.array_of(PartialTask)
-        }
-    )
+    Tasks = types.shape(PartialTaskSpec, {
+        extra_fields = types.array_of(PartialTask),
+    })
 end
 
 --- Expand a list of partial tasks to a list of complete tasks.
@@ -501,7 +576,7 @@ end
 local Test
 do
     local types = require("tableshape").types
-    Test = types.shape {
+    Test = types.shape({
         id = types.string,
         on = types.string + types.table + types.func,
         run = types.string + types.table + types.func,
@@ -509,7 +584,7 @@ do
         info = types.table:is_optional(),
         enable = types.boolean:is_optional(),
         terminate = types.boolean:is_optional(),
-    }
+    })
 end
 
 --- Schedule a test as a coroutine that can yield to Cloe.

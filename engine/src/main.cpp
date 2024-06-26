@@ -63,6 +63,12 @@ int main(int argc, char** argv) {
   check->add_option("-J,--json-indent", check_options.json_indent, "JSON indentation level");
   check->add_option("files", check_files, "Files to check");
 
+  engine::ProbeOptions probe_options{};
+  std::vector<std::string> probe_files{};
+  auto* probe = app.add_subcommand("probe", "Probe a simulation with (merged) stack files.");
+  probe->add_option("-J,--json-indent", probe_options.json_indent, "JSON indentation level");
+  probe->add_option("files", probe_files, "Files to merge into a single stackfile")->required();
+
   // Run Command:
   engine::RunOptions run_options{};
   std::vector<std::string> run_files{};
@@ -195,6 +201,8 @@ int main(int argc, char** argv) {
       return engine::dump(with_global_options(dump_options), dump_files);
     } else if (*check) {
       return engine::check(with_global_options(check_options), check_files);
+    } else if (*probe) {
+      return engine::probe(with_global_options(probe_options), probe_files);
     } else if (*run) {
       return engine::run(with_global_options(run_options), run_files);
     } else if (*shell) {

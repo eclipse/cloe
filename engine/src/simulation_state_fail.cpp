@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Robert Bosch GmbH
+ * Copyright 2024 Robert Bosch GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,19 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
- * \file stack_lua.cpp
+ * \file simulation_state_fail.cpp
  */
 
-#include "lua_setup.hpp"
+#include "simulation_context.hpp"  // for SimulationContext
+#include "simulation_machine.hpp"  // for SimulationMachine
 
-#include <lrdb/server.hpp>  // lrdb::server
-#include <sol/state_view.hpp>  // for state_view
+namespace engine {
 
-namespace cloe {
-
-void start_lua_debugger(sol::state_view lua, int listen_port) {
-  static lrdb::server debug_server(listen_port);
-  debug_server.reset(lua.lua_state());
+StateId SimulationMachine::Fail::impl(SimulationContext& ctx) {
+  logger()->info("Simulation failed.");
+  ctx.outcome = SimulationOutcome::Failure;
+  ctx.callback_failure->trigger(ctx.sync);
+  return STOP;
 }
 
-}  // namespace cloe
+}  // namespace engine

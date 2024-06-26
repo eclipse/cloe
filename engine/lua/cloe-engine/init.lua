@@ -44,9 +44,6 @@ local engine = {
 
     --- Contains engine state for a simulation.
     state = {
-        --- @type StackConf The current active stack configuration (volatile).
-        config = {},
-
         --- @type table<string, boolean> A table of feature flags.
         features = {
             ["cloe-0.18.0"] = true,
@@ -73,6 +70,9 @@ local engine = {
 
         --- @type Stack Reference to simulation stack type.
         stack = nil,
+
+        --- @type boolean True if simulation has started.
+        is_running = false,
 
         --- @type string|nil Path to currently executing Lua script file.
         current_script_file = nil,
@@ -144,6 +144,13 @@ function engine.is_available()
     return false
 end
 
+--- Return whether the simulation has started.
+---
+--- @return boolean
+function engine.is_simulation_running()
+    return engine.state.is_running
+end
+
 --- Return path to Lua file that the engine is currently merging,
 --- or nil if no file is being loaded.
 ---
@@ -165,6 +172,14 @@ end
 --- @return Stack
 function engine.get_stack()
     return unavailable("get_stack")
+end
+
+--- Return the current simulation configuration.
+---
+--- This is essential a dump of the stack.
+--- @return StackConf
+function engine.get_config()
+    return unavailable("get_config")
 end
 
 --- Return the simulation scheduler (aka. Coordinator) global instance.

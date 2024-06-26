@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Robert Bosch GmbH
+ * Copyright 2024 Robert Bosch GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
- * \file time_event.hpp
+ * \file simulation_events.hpp
  *
  * This file defines the "time" and "next" events.
  */
@@ -27,12 +27,28 @@
 #include <memory>  // for unique_ptr<>, make_unique<>
 #include <queue>   // for priority_queue<>
 
-#include <cloe/core.hpp>     // for Json, Duration, Seconds
-#include <cloe/sync.hpp>     // for Sync
-#include <cloe/trigger.hpp>  // for Trigger, Event, EventFactory, ...
+#include <cloe/core.hpp>               // for Json, Duration, Seconds
+#include <cloe/sync.hpp>               // for Sync
+#include <cloe/trigger.hpp>            // for Trigger, Event, EventFactory, ...
+#include <cloe/trigger/nil_event.hpp>  // for DEFINE_NIL_EVENT
 
-namespace engine {
-namespace events {
+namespace engine::events {
+
+DEFINE_NIL_EVENT(Start, "start", "start of simulation")
+
+DEFINE_NIL_EVENT(Stop, "stop", "stop of simulation")
+
+DEFINE_NIL_EVENT(Success, "success", "simulation success")
+
+DEFINE_NIL_EVENT(Failure, "failure", "simulation failure")
+
+DEFINE_NIL_EVENT(Reset, "reset", "reset of simulation")
+
+DEFINE_NIL_EVENT(Pause, "pause", "pausation of simulation")
+
+DEFINE_NIL_EVENT(Resume, "resume", "resumption of simulation after pause")
+
+DEFINE_NIL_EVENT(Loop, "loop", "begin of inner simulation loop each cycle")
 
 class NextCallback;
 
@@ -140,7 +156,8 @@ class TimeCallback : public cloe::Callback {
   // a shared_ptr because you can only get objects by copy out of
   // a priority_queue.
   std::priority_queue<
-      std::shared_ptr<TimeTrigger>, std::vector<std::shared_ptr<TimeTrigger>>,
+      std::shared_ptr<TimeTrigger>,
+      std::vector<std::shared_ptr<TimeTrigger>>,
       std::function<bool(const std::shared_ptr<TimeTrigger>&, const std::shared_ptr<TimeTrigger>&)>>
       storage_{[](const std::shared_ptr<TimeTrigger>& x,
                   const std::shared_ptr<TimeTrigger>& y) -> bool { return x->time > y->time; }};
@@ -193,5 +210,4 @@ class NextCallback : public cloe::AliasCallback {
   }
 };
 
-}  // namespace events
-}  // namespace engine
+}  // namespace engine::events

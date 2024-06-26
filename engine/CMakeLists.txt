@@ -106,13 +106,36 @@ add_library(cloe-enginelib STATIC
     src/simulation.hpp
     src/simulation_context.cpp
     src/simulation_context.hpp
+    src/simulation_actions.hpp
+    src/simulation_events.hpp
+    src/simulation_outcome.hpp
+    src/simulation_result.hpp
+    src/simulation_probe.hpp
+    src/simulation_statistics.hpp
+    src/simulation_sync.hpp
     src/simulation_progress.hpp
+    src/simulation_machine.hpp
+    src/simulation_state_abort.cpp
+    src/simulation_state_connect.cpp
+    src/simulation_state_disconnect.cpp
+    src/simulation_state_fail.cpp
+    src/simulation_state_keep_alive.cpp
+    src/simulation_state_pause.cpp
+    src/simulation_state_probe.cpp
+    src/simulation_state_reset.cpp
+    src/simulation_state_resume.cpp
+    src/simulation_state_start.cpp
+    src/simulation_state_step_begin.cpp
+    src/simulation_state_step_controllers.cpp
+    src/simulation_state_step_end.cpp
+    src/simulation_state_step_simulators.cpp
+    src/simulation_state_stop.cpp
+    src/simulation_state_success.cpp
     src/utility/command.cpp
     src/utility/command.hpp
     src/utility/defer.hpp
     src/utility/progress.hpp
     src/utility/state_machine.hpp
-    src/utility/time_event.hpp
 )
 add_library(cloe::enginelib ALIAS cloe-enginelib)
 set_target_properties(cloe-enginelib PROPERTIES
@@ -170,6 +193,11 @@ if(BUILD_TESTING)
     message(STATUS "Building test-enginelib executable.")
     add_executable(test-enginelib
         src/lua_stack_test.cpp
+        src/lua_setup_test.cpp
+    )
+    target_compile_definitions(test-enginelib
+      PRIVATE
+        CLOE_LUA_PATH="${CMAKE_CURRENT_SOURCE_DIR}/lua"
     )
     set_target_properties(test-enginelib PROPERTIES
         CXX_STANDARD 17
@@ -192,11 +220,13 @@ add_subdirectory(vendor/linenoise)
 add_executable(cloe-engine
     src/main.cpp
     src/main_commands.hpp
+    src/main_commands.cpp
     src/main_check.cpp
     src/main_dump.cpp
+    src/main_probe.cpp
     src/main_run.cpp
-    src/main_usage.cpp
     src/main_shell.cpp
+    src/main_usage.cpp
     src/main_version.cpp
 )
 set_target_properties(cloe-engine PROPERTIES

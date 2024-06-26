@@ -18,11 +18,32 @@
 
 #include "simulation_context.hpp"
 
-#include <cloe/vehicle.hpp>
-#include <cloe/controller.hpp>
-#include <cloe/simulator.hpp>
+#include <memory>  // for make_unique<>
+
+#include <cloe/controller.hpp>   // for Controller
+#include <cloe/data_broker.hpp>  // for DataBroker
+#include <cloe/simulator.hpp>    // for Simulator
+#include <cloe/vehicle.hpp>      // for Vehicle
+
+#include "coordinator.hpp"      // for Coordinator
+#include "registrar.hpp"        // for Registrar
+#include "server.hpp"           // for Server
+#include "utility/command.hpp"  // for CommandExecuter
 
 namespace engine {
+
+SimulationContext::SimulationContext(cloe::Stack conf_, sol::state_view lua_)
+    : config(std::move(conf_))
+    , lua(std::move(lua_))
+    , db(std::make_unique<cloe::DataBroker>(lua))
+    , server(make_server(config.server))
+    , coordinator(std::make_unique<Coordinator>(lua, db.get()))
+    , registrar(
+          std::make_unique<Registrar>(server->server_registrar(), coordinator.get(), db.get()))
+    , commander(std::make_unique<CommandExecuter>(logger()))
+    , sync(SimulationSync(config.simulation.model_step_width)) {}
+
+cloe::Logger SimulationContext::logger() const { return cloe::logger::get("cloe"); }
 
 std::string SimulationContext::version() const { return CLOE_ENGINE_VERSION; }
 
@@ -73,15 +94,21 @@ std::shared_ptr<cloe::Registrar> SimulationContext::simulation_registrar() {
 bool SimulationContext::foreach_model(std::function<bool(cloe::Model&, const char*)> f) {
   for (auto& kv : controllers) {
     auto ok = f(*kv.second, "controller");
-    if (!ok) return false;
+    if (!ok) {
+      return false;
+    }
   }
   for (auto& kv : vehicles) {
     auto ok = f(*kv.second, "vehicle");
-    if (!ok) return false;
+    if (!ok) {
+      return false;
+    }
   }
   for (auto& kv : simulators) {
     auto ok = f(*kv.second, "simulator");
-    if (!ok) return false;
+    if (!ok) {
+      return false;
+    }
   }
   return true;
 }
@@ -90,15 +117,21 @@ bool SimulationContext::foreach_model(
     std::function<bool(const cloe::Model&, const char*)> f) const {
   for (auto& kv : controllers) {
     auto ok = f(*kv.second, "controller");
-    if (!ok) return false;
+    if (!ok) {
+      return false;
+    }
   }
   for (auto& kv : vehicles) {
     auto ok = f(*kv.second, "vehicle");
-    if (!ok) return false;
+    if (!ok) {
+      return false;
+    }
   }
   for (auto& kv : simulators) {
     auto ok = f(*kv.second, "simulator");
-    if (!ok) return false;
+    if (!ok) {
+      return false;
+    }
   }
   return true;
 }
@@ -106,7 +139,9 @@ bool SimulationContext::foreach_model(
 bool SimulationContext::foreach_simulator(std::function<bool(cloe::Simulator&)> f) {
   for (auto& kv : simulators) {
     auto ok = f(*kv.second);
-    if (!ok) return false;
+    if (!ok) {
+      return false;
+    }
   }
   return true;
 }
@@ -114,7 +149,9 @@ bool SimulationContext::foreach_simulator(std::function<bool(cloe::Simulator&)> 
 bool SimulationContext::foreach_simulator(std::function<bool(const cloe::Simulator&)> f) const {
   for (auto& kv : simulators) {
     auto ok = f(*kv.second);
-    if (!ok) return false;
+    if (!ok) {
+      return false;
+    }
   }
   return true;
 }
@@ -122,7 +159,9 @@ bool SimulationContext::foreach_simulator(std::function<bool(const cloe::Simulat
 bool SimulationContext::foreach_vehicle(std::function<bool(cloe::Vehicle&)> f) {
   for (auto& kv : vehicles) {
     auto ok = f(*kv.second);
-    if (!ok) return false;
+    if (!ok) {
+      return false;
+    }
   }
   return true;
 }
@@ -130,7 +169,9 @@ bool SimulationContext::foreach_vehicle(std::function<bool(cloe::Vehicle&)> f) {
 bool SimulationContext::foreach_vehicle(std::function<bool(const cloe::Vehicle&)> f) const {
   for (auto& kv : vehicles) {
     auto ok = f(*kv.second);
-    if (!ok) return false;
+    if (!ok) {
+      return false;
+    }
   }
   return true;
 }
@@ -138,7 +179,9 @@ bool SimulationContext::foreach_vehicle(std::function<bool(const cloe::Vehicle&)
 bool SimulationContext::foreach_controller(std::function<bool(cloe::Controller&)> f) {
   for (auto& kv : controllers) {
     auto ok = f(*kv.second);
-    if (!ok) return false;
+    if (!ok) {
+      return false;
+    }
   }
   return true;
 }
@@ -146,7 +189,9 @@ bool SimulationContext::foreach_controller(std::function<bool(cloe::Controller&)
 bool SimulationContext::foreach_controller(std::function<bool(const cloe::Controller&)> f) const {
   for (auto& kv : controllers) {
     auto ok = f(*kv.second);
-    if (!ok) return false;
+    if (!ok) {
+      return false;
+    }
   }
   return true;
 }
