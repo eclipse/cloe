@@ -26,11 +26,11 @@
 #include <string>   // for string
 #include <utility>  // for move
 
+#include <cloe/data_broker.hpp>  // for DataBroker
+#include <cloe/handler.hpp>      // for Handler
+#include <cloe/trigger.hpp>      // for ActionFactory, EventFactory, Callback, ...
+#include <fable/json.hpp>        // for Json
 #include <sol/table.hpp>
-#include <cloe/cloe_fwd.hpp> // for DataBroker
-#include <cloe/handler.hpp>  // for Handler
-#include <cloe/trigger.hpp>  // for ActionFactory, EventFactory, Callback, ...
-#include <fable/json.hpp>    // for Json
 
 namespace cloe {
 
@@ -159,19 +159,37 @@ class Registrar {
   virtual std::unique_ptr<Registrar> with_static_prefix(const std::string& prefix) const = 0;
 
   /**
-   * Return a new Registrar with the given trigger prefix.
+   * Return a new Registrar with the given trigger and data broker prefix.
    *
    * The returned object should remain valid even if the object creating it
    * is destroyed.
    */
   virtual std::unique_ptr<Registrar> with_trigger_prefix(const std::string& prefix) const = 0;
 
+  [[nodiscard]] virtual std::string make_signal_name(std::string_view name) const = 0;
+
   /**
    * Register an ActionFactory.
    */
   virtual void register_action(std::unique_ptr<ActionFactory>&&) = 0;
 
-  virtual DataBroker& data_broker() const = 0;
+  template <typename T>
+  SignalPtr declare_signal(std::string_view name) {
+    return data_broker().declare<T>(make_signal_name(name));
+  }
+
+  template <typename T>
+  SignalPtr declare_signal(std::string_view name, T&& value_ptr) {
+    return data_broker().declare(make_signal_name(name), std::forward<T>(value_ptr));
+  }
+
+  template <typename T, typename GetterFunc, typename SetterFunc>
+  SignalPtr declare_signal(std::string_view name, GetterFunc&& getter, SetterFunc&& setter) {
+    return data_broker().declare(make_signal_name(name), std::forward<GetterFunc>(getter),
+                                 std::forward<SetterFunc>(setter));
+  }
+
+  [[nodiscard]] virtual DataBroker& data_broker() const = 0;
 
   /**
    * Construct and register an ActionFactory.

@@ -1574,14 +1574,47 @@ class DataBroker {
    * \return Pointer to the specified signal
    */
   template <typename T>
-  SignalPtr declare(std::string_view new_name) {
+  SignalPtr declare(std::string_view name) {
     assert_static_type<T>();
     using compatible_type = databroker::compatible_base_t<T>;
 
     declare<compatible_type>();
 
     SignalPtr signal = Signal::make<compatible_type>();
-    alias(signal, new_name);
+    alias(signal, name);
+    return signal;
+  }
+
+  /**
+   * Declare a new signal and auto-implement getter and setter.
+   *
+   * \tparam T type of the signal value
+   * \param name name of the signal
+   * \param value_ptr pointer to signal value
+   * \return pointer to specified signal
+   */
+  template <typename T>
+  SignalPtr declare(std::string_view name, T* value_ptr) {
+    assert(value_ptr != nullptr);
+    auto signal = this->declare<T>(name);
+    signal->template set_getter<T>([value_ptr]() -> const T& {
+      return *value_ptr;
+    });
+    signal->template set_setter<T>([value_ptr](const T& value) {
+      *value_ptr = value;
+    });
+    return signal;
+  }
+
+  template <typename T>
+  SignalPtr declare(std::string_view name, std::function<T()> getter, std::function<void(T)> setter) {
+    auto signal = this->declare<T>(name);
+    if (getter) {
+      signal->template set_getter<T>(getter);
+    }
+    if (setter) {
+      signal->template set_setter<T>(setter);
+    }
     return signal;
   }
 

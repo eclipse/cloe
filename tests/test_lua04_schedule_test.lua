@@ -18,15 +18,17 @@ cloe.schedule({
     end,
 })
 
-local signals = { "vehicles.default.basic.acc" }
-cloe.require_signals(signals)
-cloe.record_signals(signals)
+local Sig = {
+    VehAcc = "basic/acc"
+}
+cloe.require_signals_enum(Sig)
+cloe.record_signals(Sig)
 cloe.record_signals( {
     ["acc_config.limit_acceleration"] = function()
-        return cloe.signal("vehicles.default.basic.acc").limit_acceleration
+        return cloe.signal(Sig.VehAcc).limit_acceleration
     end,
     ["acc_config.limit_deceleration"] = function()
-        return cloe.signal("vehicles.default.basic.acc").limit_deceleration
+        return cloe.signal(Sig.VehAcc).limit_deceleration
     end,
 })
 
