@@ -1,0 +1,11 @@
+---
+
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    # Disable version updates for npm dependencies:
+    # - It is currently unmaintained and these clutter
+    open-pull-requests-limit: 0
+    commit-message:
+      prefix: "ui"
