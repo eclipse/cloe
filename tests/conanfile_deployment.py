@@ -29,6 +29,7 @@ class CloeStandardDeployment(ConanFile):
 
         "fable:allow_comments": True,
         "cloe-engine:server": True,
+        "cloe-engine:lrdb": True,
     }
 
     @property

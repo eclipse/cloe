@@ -26,6 +26,7 @@
       "files": {
         "config": "config.json",
         "result": "result.json",
+        "signals": "signals.json",
         "triggers": "triggers.json"
       },
       "path": "${CLOE_SIMULATION_UUID}"

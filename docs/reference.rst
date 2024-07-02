@@ -47,6 +47,9 @@ background knowledge for any of the following topics.
 :doc:`reference/plugins`
    provides an overview of all plugins that are part of the Cloe distribution.
 
+:doc:`reference/lua-initialization`
+   provides an overview of how the engine processes a Lua file.
+
 .. toctree::
    :hidden:
 
@@ -62,3 +65,4 @@ background knowledge for any of the following topics.
    reference/events
    reference/actions
    reference/plugins
+   reference/lua-initialization

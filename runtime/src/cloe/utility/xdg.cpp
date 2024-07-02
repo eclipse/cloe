@@ -22,21 +22,18 @@
 
 #include <cloe/utility/xdg.hpp>
 
-#include <sstream>  // for stringstream
-#include <string>   // for string
-#include <vector>   // for vector<>
-
-#include <boost/filesystem/operations.hpp>  // for temp_directory_path
-#include <boost/filesystem/path.hpp>        // for path
+#include <filesystem>  // for path, temp_directory_path
+#include <sstream>     // for stringstream
+#include <string>      // for string
+#include <vector>      // for vector<>
 
 #ifdef __linux__
 #include <unistd.h>  // for getuid
 #endif
 
-namespace cloe {
-namespace utility {
+namespace cloe::utility {
 
-using boost::filesystem::path;  // NOLINT
+using std::filesystem::path;  // NOLINT
 
 namespace {
 
@@ -72,7 +69,7 @@ std::vector<path> split(const std::string& paths, char delim = '/') {
 
 #ifdef __linux__
 path xdg_temp_dir() {
-  path tmpdir = boost::filesystem::temp_directory_path();
+  path tmpdir = std::filesystem::temp_directory_path();
   return tmpdir / path("xdg-" + std::to_string(getuid()));
 }
 #endif
@@ -126,8 +123,8 @@ std::vector<path> xdg_paths(const std::string& env, const std::string& default_p
 }
 
 path xdg_find(const path& file, const std::vector<path>& dirs) {
-  for (auto& dir : dirs) {
-    if (boost::filesystem::exists(dir / file)) {
+  for (const auto& dir : dirs) {
+    if (std::filesystem::exists(dir / file)) {
       return dir / file;
     }
   }
@@ -136,8 +133,8 @@ path xdg_find(const path& file, const std::vector<path>& dirs) {
 
 std::vector<path> xdg_findall(const path& file, const std::vector<path>& dirs) {
   std::vector<path> out;
-  for (auto& dir : dirs) {
-    if (boost::filesystem::exists(dir / file)) {
+  for (const auto& dir : dirs) {
+    if (std::filesystem::exists(dir / file)) {
       out.push_back(dir / file);
     }
   }
@@ -145,7 +142,7 @@ std::vector<path> xdg_findall(const path& file, const std::vector<path>& dirs) {
 }
 
 void xdg_merge(const path& file, const std::vector<path>& dirs, bool rev,
-               std::function<bool(const path&)> mergefn) {
+               const std::function<bool(const path&)>& mergefn) {
   auto files = xdg_findall(file, dirs);
   if (rev) {
     for (auto it = files.rbegin(); it != files.rend(); it++) {
@@ -162,5 +159,4 @@ void xdg_merge(const path& file, const std::vector<path>& dirs, bool rev,
   }
 }
 
-}  // namespace utility
-}  // namespace cloe
+}  // namespace cloe::utility

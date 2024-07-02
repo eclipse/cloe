@@ -12,6 +12,7 @@ if(CLOE_FIND_PACKAGES)
 endif()
 find_package(Eigen3 REQUIRED QUIET)
 find_package(Boost COMPONENTS headers REQUIRED QUIET)
+find_package(sol2 REQUIRED QUIET)
 
 message(STATUS "Building cloe-models library.")
 file(GLOB cloe-models_PUBLIC_HEADERS "include/**/*.hpp")
@@ -21,6 +22,7 @@ add_library(cloe-models
     src/cloe/component/utility/ego_sensor_canon.cpp
     src/cloe/component/utility/steering_utils.cpp
     src/cloe/utility/actuation_state.cpp
+    src/cloe/utility/lua_types.cpp
 
     # For IDE integration
     ${cloe-models_PUBLIC_HEADERS}
@@ -41,6 +43,7 @@ target_link_libraries(cloe-models
     cloe::runtime
     Boost::headers
     Eigen3::Eigen
+    sol2::sol2
 )
 
 # Testing -------------------------------------------------------------
@@ -57,6 +60,7 @@ if(BUILD_TESTING)
         src/cloe/component/utility/steering_utils_test.cpp
         src/cloe/utility/actuation_level_test.cpp
         src/cloe/utility/frustum_culling_test.cpp
+        src/cloe/utility/lua_types_test.cpp
     )
     set_target_properties(test-models PROPERTIES
         CXX_STANDARD 17

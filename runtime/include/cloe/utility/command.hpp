@@ -22,12 +22,11 @@
 
 #pragma once
 
-#include <string>  // for string
-#include <vector>  // for vector<>
+#include <filesystem>  // for filesystem::path
+#include <string>      // for string
+#include <vector>      // for vector<>
 
-#include <boost/filesystem/path.hpp>    // for path
-#include <fable/schema.hpp>             // for Schema, Struct, Variant
-#include <fable/schema/boost_path.hpp>  // for make_schema, Path
+#include <fable/schema.hpp>  // for Schema, Struct, Variant
 
 #include <cloe/core.hpp>  // for Confable, Schema
 
@@ -77,7 +76,7 @@ class Command : public Confable {
     });
   }
 
-  Command(boost::filesystem::path executable, std::initializer_list<std::string> args) {
+  Command(const std::filesystem::path& executable, std::initializer_list<std::string> args) {
     from_conf(Json{
         {"executable", executable.native()},
         {"args", args},
@@ -88,7 +87,7 @@ class Command : public Confable {
   /**
    * Return the executable.
    */
-  boost::filesystem::path executable() const { return executable_; }
+  std::filesystem::path executable() const { return executable_; }
 
   /**
    * Return the executable arguments.
@@ -159,7 +158,7 @@ class Command : public Confable {
   void from_conf(const Conf& c) override;
 
  private:
-  boost::filesystem::path executable_;
+  std::filesystem::path executable_;
   std::vector<std::string> args_;
   std::string command_;
   Mode mode_ = Mode::Sync;

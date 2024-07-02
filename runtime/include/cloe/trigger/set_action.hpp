@@ -31,24 +31,23 @@
 #include <cloe/trigger.hpp>                // for Action, ActionFactory
 #include <cloe/trigger/helper_macros.hpp>  // for _X_FACTORY, _X_CALLBACK
 
-namespace cloe {
-namespace actions {
+namespace cloe::actions {
 
 template <typename T>
 T from_string(const std::string& s);
 
 template <>
-double from_string<double>(const std::string& s) {
+inline double from_string<double>(const std::string& s) {
   return std::stod(s);
 }
 
 template <>
-int from_string<int>(const std::string& s) {
+inline int from_string<int>(const std::string& s) {
   return std::stoi(s);
 }
 
 template <>
-bool from_string<bool>(const std::string& s) {
+inline bool from_string<bool>(const std::string& s) {
   if (s == "true") {
     return true;
   } else if (s == "false") {
@@ -68,7 +67,10 @@ class SetVariableAction : public Action {
   ActionPtr clone() const override {
     return std::make_unique<SetVariableAction>(name(), data_name_, data_ptr_, value_);
   }
-  void operator()(const Sync&, TriggerRegistrar&) override { *data_ptr_ = value_; }
+  CallbackResult operator()(const Sync&, TriggerRegistrar&) override {
+    *data_ptr_ = value_;
+    return CallbackResult::Ok;
+  }
   bool is_significant() const override { return false; }
   void to_json(Json& j) const override {
     j = Json{
@@ -105,8 +107,7 @@ class SetVariableActionFactory : public ActionFactory {
   T* data_ptr_;
 };
 
-}  // namespace actions
-}  // namespace cloe
+}  // namespace cloe::actions
 
 /**
  * Macro DEFINE_SET_STATE_ACTION defines an action that has only a single state
@@ -138,34 +139,37 @@ class SetVariableActionFactory : public ActionFactory {
  *
  * This action can be registered with the `register_action` helper function.
  */
-#define DEFINE_SET_STATE_ACTION(xName, xname, xdescription, xState, xOperatorBlock)             \
-  class xName : public ::cloe::Action {                                                         \
-   public:                                                                                      \
-    xName(const std::string& name, xState* ptr) : ::cloe::Action(name), ptr_(ptr) {}            \
-    ::cloe::ActionPtr clone() const override { return std::make_unique<xName>(name(), ptr_); }  \
-    void operator()(const ::cloe::Sync&, ::cloe::TriggerRegistrar&) override { xOperatorBlock } \
-    void to_json(::cloe::Json&) const override {}                                               \
-                                                                                                \
-   private:                                                                                     \
-    xState* ptr_;                                                                               \
-  };                                                                                            \
-                                                                                                \
-  class _X_FACTORY(xName) : public ::cloe::ActionFactory {                                      \
-   public:                                                                                      \
-    using ActionType = xName;                                                                   \
-                                                                                                \
-    _X_FACTORY(xName)(xState * ptr) : ::cloe::ActionFactory(xname, xdescription), ptr_(ptr) {}  \
-                                                                                                \
-    ::cloe::ActionPtr make(const ::cloe::Conf&) const override {                                \
-      return std::make_unique<xName>(name(), ptr_);                                             \
-    }                                                                                           \
-                                                                                                \
-    ::cloe::ActionPtr make(const std::string&) const override {                                 \
-      return std::make_unique<xName>(name(), ptr_);                                             \
-    }                                                                                           \
-                                                                                                \
-   private:                                                                                     \
-    xState* ptr_;                                                                               \
+#define DEFINE_SET_STATE_ACTION(xName, xname, xdescription, xState, xOperatorBlock)              \
+  class xName : public ::cloe::Action {                                                          \
+   public:                                                                                       \
+    xName(const std::string& name, xState* ptr) : ::cloe::Action(name), ptr_(ptr) {}             \
+    ::cloe::ActionPtr clone() const override { return std::make_unique<xName>(name(), ptr_); }   \
+    ::cloe::CallbackResult operator()(const ::cloe::Sync&, ::cloe::TriggerRegistrar&) override { \
+      xOperatorBlock;                                                                            \
+      return ::cloe::CallbackResult::Ok;                                                         \
+    }                                                                                            \
+    void to_json(::cloe::Json&) const override {}                                                \
+                                                                                                 \
+   private:                                                                                      \
+    xState* ptr_;                                                                                \
+  };                                                                                             \
+                                                                                                 \
+  class _X_FACTORY(xName) : public ::cloe::ActionFactory {                                       \
+   public:                                                                                       \
+    using ActionType = xName;                                                                    \
+                                                                                                 \
+    _X_FACTORY(xName)(xState * ptr) : ::cloe::ActionFactory(xname, xdescription), ptr_(ptr) {}   \
+                                                                                                 \
+    ::cloe::ActionPtr make(const ::cloe::Conf&) const override {                                 \
+      return std::make_unique<xName>(name(), ptr_);                                              \
+    }                                                                                            \
+                                                                                                 \
+    ::cloe::ActionPtr make(const std::string&) const override {                                  \
+      return std::make_unique<xName>(name(), ptr_);                                              \
+    }                                                                                            \
+                                                                                                 \
+   private:                                                                                      \
+    xState* ptr_;                                                                                \
   };
 
 /**
@@ -203,51 +207,54 @@ class SetVariableActionFactory : public ActionFactory {
  * This action can be registered with the `register_action` helper function.
  * Refer to doc/reference/actions.rst for the configuration.
  */
-#define DEFINE_SET_DATA_ACTION(xName, xActionName, xActionDesc, xDataType, xAttributeName,      \
-                               xAttributeType, xOperatorBlock)                                  \
-  class xName : public ::cloe::Action {                                                         \
-   public:                                                                                      \
-    xName(const std::string& action_name, xDataType* ptr, const std::string& attribute_name,    \
-          const xAttributeType attribute_value)                                                 \
-        : ::cloe::Action(action_name)                                                           \
-        , ptr_(ptr)                                                                             \
-        , name_(attribute_name)                                                                 \
-        , value_(attribute_value) {}                                                            \
-    ::cloe::ActionPtr clone() const override {                                                  \
-      return std::make_unique<xName>(name(), ptr_, name_, value_);                              \
-    }                                                                                           \
-    void operator()(const ::cloe::Sync&, ::cloe::TriggerRegistrar&) override { xOperatorBlock } \
-    bool is_significant() const override { return false; }                                      \
-    void to_json(::cloe::Json& j) const override {                                              \
-      j = ::fable::Json{                                                                        \
-          {name_, value_},                                                                      \
-      };                                                                                        \
-    }                                                                                           \
-                                                                                                \
-   private:                                                                                     \
-    xDataType* ptr_;                                                                            \
-    std::string name_;                                                                          \
-    xAttributeType value_;                                                                      \
-  };                                                                                            \
-                                                                                                \
-  class _X_FACTORY(xName) : public ::cloe::ActionFactory {                                      \
-   public:                                                                                      \
-    using ActionType = xName;                                                                   \
-    _X_FACTORY(xName)                                                                           \
-    (xDataType * ptr) : ::cloe::ActionFactory(xActionName, xActionDesc), ptr_(ptr) {}           \
-                                                                                                \
-    ::cloe::ActionPtr make(const ::cloe::Conf& c) const override {                              \
-      auto value = c.get<xAttributeType>(xAttributeName);                                       \
-      return std::make_unique<xName>(name(), ptr_, xAttributeName, value);                      \
-    }                                                                                           \
-                                                                                                \
-    ::cloe::ActionPtr make(const std::string& s) const override {                               \
-      auto value = ::cloe::actions::from_string<xAttributeType>(s);                             \
-      return make(::fable::Conf{::fable::Json{                                                  \
-          {xAttributeName, value},                                                              \
-      }});                                                                                      \
-    }                                                                                           \
-                                                                                                \
-   private:                                                                                     \
-    xDataType* ptr_;                                                                            \
+#define DEFINE_SET_DATA_ACTION(xName, xActionName, xActionDesc, xDataType, xAttributeName,       \
+                               xAttributeType, xOperatorBlock)                                   \
+  class xName : public ::cloe::Action {                                                          \
+   public:                                                                                       \
+    xName(const std::string& action_name, xDataType* ptr, const std::string& attribute_name,     \
+          const xAttributeType attribute_value)                                                  \
+        : ::cloe::Action(action_name)                                                            \
+        , ptr_(ptr)                                                                              \
+        , name_(attribute_name)                                                                  \
+        , value_(attribute_value) {}                                                             \
+    ::cloe::ActionPtr clone() const override {                                                   \
+      return std::make_unique<xName>(name(), ptr_, name_, value_);                               \
+    }                                                                                            \
+    ::cloe::CallbackResult operator()(const ::cloe::Sync&, ::cloe::TriggerRegistrar&) override { \
+      xOperatorBlock;                                                                            \
+      return ::cloe::CallbackResult::Ok;                                                         \
+    }                                                                                            \
+    bool is_significant() const override { return false; }                                       \
+    void to_json(::cloe::Json& j) const override {                                               \
+      j = ::fable::Json{                                                                         \
+          {name_, value_},                                                                       \
+      };                                                                                         \
+    }                                                                                            \
+                                                                                                 \
+   private:                                                                                      \
+    xDataType* ptr_;                                                                             \
+    std::string name_;                                                                           \
+    xAttributeType value_;                                                                       \
+  };                                                                                             \
+                                                                                                 \
+  class _X_FACTORY(xName) : public ::cloe::ActionFactory {                                       \
+   public:                                                                                       \
+    using ActionType = xName;                                                                    \
+    _X_FACTORY(xName)                                                                            \
+    (xDataType * ptr) : ::cloe::ActionFactory(xActionName, xActionDesc), ptr_(ptr) {}            \
+                                                                                                 \
+    ::cloe::ActionPtr make(const ::cloe::Conf& c) const override {                               \
+      auto value = c.get<xAttributeType>(xAttributeName);                                        \
+      return std::make_unique<xName>(name(), ptr_, xAttributeName, value);                       \
+    }                                                                                            \
+                                                                                                 \
+    ::cloe::ActionPtr make(const std::string& s) const override {                                \
+      auto value = ::cloe::actions::from_string<xAttributeType>(s);                              \
+      return make(::fable::Conf{::fable::Json{                                                   \
+          {xAttributeName, value},                                                               \
+      }});                                                                                       \
+    }                                                                                            \
+                                                                                                 \
+   private:                                                                                      \
+    xDataType* ptr_;                                                                             \
   };

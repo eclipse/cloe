@@ -1,0 +1,14 @@
+LRDB Modifications
+==================
+
+The LRDB library is sourced from the GitHub repository below:
+
+  - License: BSL-1.0
+  - License-Source: https://www.boost.org/LICENSE_1_0.txt
+  - Website: https://github.com/satoren/LRDB
+
+The source code has been modified in following ways:
+
+- Remove files not relevant to our use (e.g. test, node, cmake).
+- Replace include/lrdb/debugger.hpp implementation of is_file_path_match.
+- Replace CMakeLists.txt with a simplified version.

@@ -50,6 +50,7 @@ class Cloe(ConanFile):
         "fPIC": [True, False],
         "fable_allow_comments": [True, False],
         "engine_server": [True, False],
+        "engine_lrdb": [True, False],
         "with_esmini": [True, False],
         "with_vtd": [True, False],
     }
@@ -58,6 +59,7 @@ class Cloe(ConanFile):
         "fPIC": True,
         "fable_allow_comments": True,
         "engine_server": True,
+        "engine_lrdb": True,
         "with_esmini": True,
         "with_vtd": False,
     }
@@ -72,7 +74,9 @@ class Cloe(ConanFile):
 
         "fable/examples/*",
 
+        "engine/lua/*",
         "engine/webui/*",
+        "engine/vendor/*",
 
         "CMakelists.txt"
     ]
@@ -93,6 +97,7 @@ class Cloe(ConanFile):
         self.requires("incbin/cci.20211107"),
         self.requires("inja/3.4.0")
         self.requires("nlohmann_json/3.11.3")
+        self.requires("sol2/3.3.1")
         self.requires("spdlog/1.11.0")
         if self.options.engine_server:
             self.requires("oatpp/1.3.0", private=True)
@@ -105,7 +110,6 @@ class Cloe(ConanFile):
 
     def build_requirements(self):
         self.test_requires("gtest/1.14.0")
-        self.test_requires("sol2/3.3.0")
 
     def layout(self):
         cmake.cmake_layout(self)
@@ -132,6 +136,7 @@ class Cloe(ConanFile):
         tc.cache_variables["CLOE_VERSION"] = self.version
         tc.cache_variables["CLOE_VERSION_U32"] = version_u32
         tc.cache_variables["CLOE_ENGINE_WITH_SERVER"] = self.options.engine_server
+        tc.cache_variables["CLOE_ENGINE_WITH_LRDB"] = self.options.engine_lrdb
         tc.cache_variables["CLOE_WITH_ESMINI"] = self.options.with_esmini
         tc.cache_variables["CLOE_WITH_VTD"] = self.options.with_vtd
         tc.generate()
@@ -195,14 +200,18 @@ class Cloe(ConanFile):
             self.cpp_info.builddirs.append(os.path.join(self.source_folder, "cmake"))
             self.cpp_info.includedirs.append(os.path.join(self.build_folder, "include"))
             bindir = os.path.join(self.build_folder, "bin")
+            luadir = os.path.join(self.source_folder, "engine/lua")
             libdir = os.path.join(self.build_folder, "lib");
         else:
             self.cpp_info.builddirs.append(os.path.join("lib", "cmake", "cloe"))
             bindir = os.path.join(self.package_folder, "bin")
+            luadir = os.path.join(self.package_folder, "lib/cloe/lua")
             libdir = None
 
         self.output.info(f"Appending PATH environment variable: {bindir}")
         self.runenv_info.prepend_path("PATH", bindir)
+        self.output.info(f"Appending CLOE_LUA_PATH environment variable: {luadir}")
+        self.runenv_info.prepend_path("CLOE_LUA_PATH", luadir)
         if libdir is not None:
             self.output.info(f"Appending LD_LIBRARY_PATH environment variable: {libdir}")
             self.runenv_info.append_path("LD_LIBRARY_PATH", libdir)

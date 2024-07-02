@@ -21,6 +21,7 @@ if(NOT TARGET pantor::inja)
     add_library(pantor::inja ALIAS inja::inja)
 endif()
 find_package(incbin REQUIRED QUIET)
+find_package(sol2 REQUIRED QUIET)
 
 file(GLOB cloe-runtime_PUBLIC_HEADERS "include/**/*.hpp")
 message(STATUS "Building cloe-runtime library.")
@@ -45,6 +46,7 @@ add_library(cloe-runtime SHARED
     src/cloe/utility/std_extensions.cpp
     src/cloe/utility/uid_tracker.cpp
     src/cloe/utility/xdg.cpp
+    src/cloe/data_broker.cpp
 
     # For IDE integration
     ${cloe-runtime_PUBLIC_HEADERS}
@@ -70,6 +72,7 @@ target_link_libraries(cloe-runtime
     Boost::system
     fable::fable
     spdlog::spdlog
+    sol2::sol2
   INTERFACE
     pantor::inja
     incbin::incbin
@@ -79,6 +82,7 @@ target_compile_definitions(cloe-runtime
     PROJECT_SOURCE_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}\"
   PUBLIC
     _USE_MATH_DEFINES=1
+    SOL_ALL_SAFETIES_ON=1
 )
 
 # Testing -------------------------------------------------------------
@@ -93,16 +97,27 @@ if(BUILD_TESTING)
         src/cloe/version_test.cpp
         src/cloe/utility/statistics_test.cpp
         src/cloe/utility/uid_tracker_test.cpp
+        src/cloe/data_broker_test.cpp
     )
     set_target_properties(test-cloe PROPERTIES
         CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
+    )
+    target_compile_options(test-cloe
+        PUBLIC
+        -g
+        -O0
+    )
+    target_compile_definitions(test-cloe
+        PUBLIC
+            SOL_ALL_SAFETIES_ON=1
     )
     target_link_libraries(test-cloe
       PRIVATE
         GTest::gtest
         GTest::gtest_main
         Boost::boost
+        sol2::sol2
         cloe-runtime
     )
     gtest_add_tests(TARGET test-cloe)

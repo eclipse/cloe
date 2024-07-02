@@ -21,11 +21,14 @@
 
 #pragma once
 
-#include <memory>  // for unique_ptr<>, shared_ptr<>
-#include <string>  // for string
+#include <memory>       // for unique_ptr<>, shared_ptr<>
+#include <string>       // for string
+#include <string_view>  // for string_view
 
-#include <cloe/registrar.hpp>  // for cloe::Registrar
+#include <cloe/core/logger.hpp>  // for logger::get
+#include <cloe/registrar.hpp>    // for cloe::Registrar
 
+#include "config.hpp"       // for CLOE_TRIGGER_PATH_DELIMITER, ...
 #include "coordinator.hpp"  // for Coordinator
 #include "server.hpp"       // for Server, ServerRegistrar
 
@@ -33,15 +36,14 @@ namespace engine {
 
 class Registrar : public cloe::Registrar {
  public:
-  Registrar(std::unique_ptr<ServerRegistrar> r, std::shared_ptr<Coordinator> c)
-      : server_registrar_(std::move(r))
-      , coordinator_(std::move(c)) {}
+  Registrar(std::unique_ptr<ServerRegistrar> r, Coordinator* c, cloe::DataBroker* db)
+      : server_registrar_(std::move(r)), coordinator_(c), data_broker_(db) {}
 
   Registrar(const Registrar& ar,
             const std::string& trigger_prefix,
             const std::string& static_prefix,
             const std::string& api_prefix)
-      : coordinator_(ar.coordinator_) {
+      : coordinator_(ar.coordinator_), data_broker_(ar.data_broker_) {
     if (trigger_prefix.empty()) {
       trigger_prefix_ = ar.trigger_prefix_;
     } else {
@@ -60,53 +62,77 @@ class Registrar : public cloe::Registrar {
     server_registrar_->register_api_handler(endpoint, t, h);
   }
 
-  std::unique_ptr<cloe::Registrar> clone() const {
+  [[nodiscard]] std::unique_ptr<cloe::Registrar> clone() const {
     return std::make_unique<Registrar>(*this, "", "", "");
   }
 
   std::unique_ptr<cloe::Registrar> with_static_prefix(const std::string& prefix) const override {
-    assert(prefix.size() > 0);
+    assert(!prefix.empty());
     return std::make_unique<Registrar>(*this, "", prefix, "");
   }
 
   std::unique_ptr<cloe::Registrar> with_api_prefix(const std::string& prefix) const override {
-    assert(prefix.size() > 0);
+    assert(!prefix.empty());
     return std::make_unique<Registrar>(*this, "", "", prefix);
   }
 
   std::unique_ptr<cloe::Registrar> with_trigger_prefix(const std::string& prefix) const override {
-    assert(prefix.size() > 0 && prefix[0] != '_');
+    assert(!prefix.empty() && prefix[0] != '_');
     return std::make_unique<Registrar>(*this, prefix, "", "");
   }
 
-  std::string trigger_key(const std::string& name) {
-    assert(name.size() != 0);
+  [[nodiscard]] std::string make_prefix(std::string_view name, std::string_view delim) const {
+    assert(!name.empty());
 
-    if (trigger_prefix_.size() == 0) {
+    if (trigger_prefix_.empty()) {
       // This only works for Cloe internal triggers.
-      return name;
+      return std::string(name);
     }
+
+    std::string prefix = trigger_prefix_;
     if (name == "_") {
       // Special case: "_" means we can actually use just trigger_prefix_.
       // This might cause a problem if we name a plugin the same as one
       // of the internal Cloe triggers...
-      return trigger_prefix_;
+      return prefix;
     }
-    return trigger_prefix_ + "/" + name;
+    prefix += delim;
+    prefix += name;
+    return prefix;
+  }
+
+  [[nodiscard]] std::string make_trigger_name(std::string_view name) const {
+    return make_prefix(name, CLOE_TRIGGER_PATH_DELIMITER);
+  }
+
+  [[nodiscard]] std::string make_signal_name(std::string_view name) const override {
+    auto sname = make_prefix(name, CLOE_SIGNAL_PATH_DELIMITER);
+    coordinator_->logger()->debug("Register signal: {}", sname);
+    return sname;
   }
 
   void register_action(cloe::ActionFactoryPtr&& af) override {
-    coordinator_->register_action(trigger_key(af->name()), std::move(af));
+    coordinator_->register_action(make_trigger_name(af->name()), std::move(af));
   }
 
   void register_event(
       cloe::EventFactoryPtr&& ef, std::shared_ptr<cloe::Callback> storage) override {
-    coordinator_->register_event(trigger_key(ef->name()), std::move(ef), storage);
+    coordinator_->register_event(make_trigger_name(ef->name()), std::move(ef), storage);
+  }
+
+  sol::table register_lua_table() override {
+    return coordinator_->register_lua_table(trigger_prefix_);
+  }
+
+  [[nodiscard]] cloe::DataBroker& data_broker() const override {
+    assert(data_broker_ != nullptr);
+    return *data_broker_;
   }
 
  private:
   std::unique_ptr<ServerRegistrar> server_registrar_;
-  std::shared_ptr<Coordinator> coordinator_;
+  Coordinator* coordinator_;       // non-owning
+  cloe::DataBroker* data_broker_;  // non-owning
   std::string trigger_prefix_;
 };
 

@@ -153,8 +153,13 @@ todos:
 
 .PHONY: grep-uuids
 grep-uuids:
-	$(AG) "\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b"
+	 @rg -H --no-heading '^.*([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}).*$$' -r '$$1' \
+		 | sed -nr 's/^(.+):([a-f0-9-]+)$$/\1\t\2/p' \
+		 | sort -k2 \
+		 | uniq --all-repeated=separate -f1 \
+		 | sed -r 's/^(.*)  (.*)$$/\2\t\1/'
 
+.PHONY: grep-conan-requires
 grep-conan-requires:
 	@rg -t py '^.*requires\(f?["](.+/[0-9]+\.[^)]+)["].*\).*$$' -r '$$1' -I --no-heading --no-line-number | sort | uniq
 

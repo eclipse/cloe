@@ -22,25 +22,24 @@
 
 #pragma once
 
-#include <list>    // for list<>
-#include <map>     // for map<>
-#include <memory>  // for unique_ptr<>, shared_ptr<>
-#include <mutex>   // for mutex
-#include <queue>   // for queue<>
-#include <string>  // for string
-#include <vector>  // for vector<>
+#include <list>                // for list<>
+#include <map>                 // for map<>
+#include <memory>              // for unique_ptr<>, shared_ptr<>
+#include <mutex>               // for mutex
+#include <queue>               // for queue<>
+#include <string>              // for string
+#include <vector>              // for vector<>
 
-#include <cloe/trigger.hpp>  // for Trigger, Action, Event, ...
+#include <sol/state_view.hpp>  // for state_view
+#include <sol/table.hpp>       // for table
 
-// Forward declaration:
-namespace cloe {
-class Registrar;
-}
+#include <cloe/cloe_fwd.hpp>   // for Registrar, DataBroker
+#include <cloe/trigger.hpp>    // for Trigger, Action, Event, ...
 
 namespace engine {
 
 // Forward declarations:
-class TriggerRegistrar;  // from trigger_manager.cpp
+class TriggerRegistrar;  // from coordinator.cpp
 
 /**
  * TriggerUnknownAction is thrown when an Action cannot be created because the
@@ -50,12 +49,12 @@ class TriggerUnknownAction : public cloe::TriggerInvalid {
  public:
   TriggerUnknownAction(const std::string& key, const cloe::Conf& c)
       : TriggerInvalid(c, "unknown action: " + key), key_(key) {}
-  virtual ~TriggerUnknownAction() noexcept = default;
+   ~TriggerUnknownAction() noexcept override = default;
 
   /**
    * Return key that is unknown.
    */
-  const char* key() const { return key_.c_str(); }
+  [[nodiscard]] const char* key() const { return key_.c_str(); }
 
  private:
   std::string key_;
@@ -74,7 +73,7 @@ class TriggerUnknownEvent : public cloe::TriggerInvalid {
   /**
    * Return key that is unknown.
    */
-  const char* key() const { return key_.c_str(); }
+  [[nodiscard]] const char* key() const { return key_.c_str(); }
 
  private:
   std::string key_;
@@ -99,7 +98,7 @@ struct HistoryTrigger {
  */
 class Coordinator {
  public:
-  Coordinator();
+  Coordinator(sol::state_view lua, cloe::DataBroker* db);
 
   const std::vector<HistoryTrigger>& history() const { return history_; }
 
@@ -108,11 +107,25 @@ class Coordinator {
   void register_event(const std::string& key, cloe::EventFactoryPtr&& ef,
                       std::shared_ptr<cloe::Callback> storage);
 
+  [[nodiscard]] sol::table register_lua_table(const std::string& field);
+
+  [[nodiscard]] cloe::DataBroker* data_broker() const { return db_; }
+
   std::shared_ptr<cloe::TriggerRegistrar> trigger_registrar(cloe::Source s);
 
   void enroll(cloe::Registrar& r);
 
-  cloe::Logger logger() const { return cloe::logger::get("cloe"); }
+  [[nodiscard]] cloe::Logger logger() const { return cloe::logger::get("cloe"); }
+
+  /**
+   * Return a list of names of all available actions that have been enrolled.
+   */
+  [[nodiscard]] std::vector<std::string> trigger_action_names() const;
+
+  /**
+   * Return a list of names of all available events that have been enrolled.
+   */
+  [[nodiscard]] std::vector<std::string> trigger_event_names() const;
 
   /**
    * Process any incoming triggers, clear the buffer, and trigger time-based
@@ -120,13 +133,22 @@ class Coordinator {
    */
   cloe::Duration process(const cloe::Sync&);
 
+  size_t process_pending_lua_triggers(const cloe::Sync& sync);
+  size_t process_pending_web_triggers(const cloe::Sync& sync);
+
+  void insert_trigger_from_lua(const cloe::Sync& sync, const sol::object& obj);
+  void execute_action_from_lua(const cloe::Sync& sync, const sol::object& obj);
+
  protected:
-  cloe::ActionPtr make_action(const cloe::Conf& c) const;
-  cloe::EventPtr make_event(const cloe::Conf& c) const;
-  cloe::TriggerPtr make_trigger(cloe::Source s, const cloe::Conf& c) const;
+  [[nodiscard]] cloe::ActionPtr make_action(const sol::object& lua) const;
+  [[nodiscard]] cloe::ActionPtr make_action(const cloe::Conf& c) const;
+  [[nodiscard]] cloe::EventPtr make_event(const cloe::Conf& c) const;
+  [[nodiscard]] cloe::TriggerPtr make_trigger(cloe::Source s, const cloe::Conf& c) const;
+  [[nodiscard]] cloe::TriggerPtr make_trigger(const sol::table& tbl) const;
   void queue_trigger(cloe::Source s, const cloe::Conf& c) { queue_trigger(make_trigger(s, c)); }
-  void queue_trigger(cloe::TriggerPtr&& t);
-  void execute_trigger(cloe::TriggerPtr&& t, const cloe::Sync& s);
+  void queue_trigger(cloe::TriggerPtr&& tp);
+  void store_trigger(cloe::TriggerPtr&& tp, const cloe::Sync& sync);
+  cloe::CallbackResult execute_trigger(cloe::TriggerPtr&& tp, const cloe::Sync& sync);
 
   // for access to protected methods
   friend TriggerRegistrar;
@@ -138,6 +160,8 @@ class Coordinator {
   // Factories:
   std::map<std::string, cloe::ActionFactoryPtr> actions_;
   std::map<std::string, cloe::EventFactoryPtr> events_;
+  sol::state_view lua_;
+  cloe::DataBroker* db_;  // non-owning
 
   // Execution:
   std::shared_ptr<cloe::TriggerRegistrar> executer_registrar_;
@@ -152,5 +176,7 @@ class Coordinator {
   // History:
   std::vector<HistoryTrigger> history_;
 };
+
+void register_usertype_coordinator(sol::table& lua, const cloe::Sync& sync);
 
 }  // namespace engine

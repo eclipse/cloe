@@ -38,6 +38,16 @@ load setup_testname
     cloe-engine run test_engine_smoketest.json
 }
 
+@test "$(testname 'Expect run success' 'test_engine_smoketest.json' '8e2c5c01-5d7e-45a5-a0fb-d8a338cefcde')" {
+    # Test cloe-engine --output-path and --write-output flag. (In the test environment, CLOE_WRITE_OUTPUT=0.)
+    local output_path="$(mktemp -d --suffix=.cloe-test)"
+    mkdir -p "$output_path"
+    run cloe-engine run --write-output --output-path="$output_path" test_engine_smoketest.json
+    test $status -eq 0
+    test -f "$output_path/result.json"
+    rm -rf "$output_path"
+}
+
 @test "$(testname 'Expect check failure' 'test_engine_bad_logging.json' '107c36fe-7bd9-4559-b5e9-74b72baafd9f')" {
     run cloe-engine check test_bad_logging.json
     assert_check_failure $status $output
