@@ -38,8 +38,9 @@
 #include <fable/json.hpp>        // for Json
 using namespace cloe;            // NOLINT(build/namespaces)
 
-#include "oak/request_stub.hpp"  // for RequestStub
-#include "oak/route_muxer.hpp"   // for Muxer<>
+#include <oak/route_muxer.hpp>   // for Muxer<>
+
+#include "request_stub.hpp"  // for RequestStub
 
 namespace oak {
 

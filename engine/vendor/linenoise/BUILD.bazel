@@ -1,0 +1,16 @@
+cc_library(
+    name = "linenoise",
+    hdrs = ["linenoise.h"],
+    srcs = ["linenoise.c"],
+    includes = ["."],
+    local_defines = [
+        "__STDC_WANT_LIB_EXT2__=1",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_test(
+    name = "linenoise_example",
+    srcs = ["example.c"],
+    deps = [":linenoise"],
+)

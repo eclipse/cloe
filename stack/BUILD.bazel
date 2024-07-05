@@ -1,0 +1,27 @@
+cc_library(
+    name = "stack",
+    hdrs = glob(["include/**/*.hpp"]),
+    srcs = glob(["src/**/*.cpp"], exclude=["src/**/*_test.cpp"]),
+    includes = ["include"],
+    deps = [
+        "//fable",
+        "//runtime",
+        "//models",
+        "@boost//:algorithm",
+        "@boost//:optional",
+        "@boost//:filesystem",
+    ],
+    linkopts = [
+        "-ldl",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_test(
+    name = "stack_test",
+    srcs = glob(["src/**/*_test.cpp"]),
+    deps = [
+        ":stack",
+        "@gtest//:gtest_main",
+    ],
+)

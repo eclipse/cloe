@@ -1,0 +1,23 @@
+cc_library(
+    name = "lrdb",
+    hdrs = glob(["include/**/*.hpp"]),
+    includes = ["include"],
+    defines = [
+        "LRDB_USE_BOOST_ASIO=1",
+    ],
+    deps = [
+        ":picojson",
+        "@lua",
+        "@boost//:asio",
+    ],
+    linkopts = [
+        "-lpthread",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "picojson",
+    hdrs = ["third_party/picojson/picojson.h"],
+    includes = ["third_party/picojson"],
+)

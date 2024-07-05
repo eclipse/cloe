@@ -1,0 +1,38 @@
+load("//:plugin.bzl", "cloe_plugin", "cloe_plugin_library")
+
+cloe_plugin(
+    name = "basic",
+    deps = [
+        ":basic_impl",
+    ],
+)
+
+cloe_plugin_library(
+    name = "basic_impl",
+    hdrs = glob(["src/*.hpp"]),
+    srcs = glob(["src/*.cpp"], exclude=["src/*_test.cpp", "src/plugin.cpp"]),
+    additional_compiler_inputs = [":basic_ui"],
+    includes = ["src"],
+    local_defines = [
+        "PROJECT_SOURCE_DIR=\\\"" + package_name() + "\\\"",
+    ],
+    data = [":basic_ui"],
+    deps = [
+        "//runtime",
+        "//models",
+    ],
+)
+
+filegroup(
+    name = "basic_ui",
+    srcs = glob(["ui/**"]),
+)
+
+cc_test(
+    name = "basic_test",
+    srcs = glob(["src/*_test.cpp", "src/*.hpp"]),
+    deps = [
+        ":basic_impl",
+        "@gtest//:gtest_main",
+    ]
+)

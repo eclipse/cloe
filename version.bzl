@@ -1,0 +1,2 @@
+PROJECT_VERSION = "0.25.0"
+PROJECT_VERSION_U32 = (0<<24) | (0 << 16) | (25 << 8) | 0

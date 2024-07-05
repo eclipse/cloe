@@ -1,0 +1,8 @@
+load("//:plugin.bzl", "CLOE_PLUGINS")
+
+sh_binary(
+    name = "cloe_shell",
+    srcs = ["cloe_shell.sh"],
+    args = ["$(location //engine:cloe-engine)"] + ["$(location {})".format(p) for p in CLOE_PLUGINS],
+    data = ["//engine:cloe-engine"] + CLOE_PLUGINS + glob(["tests/*"]),
+)

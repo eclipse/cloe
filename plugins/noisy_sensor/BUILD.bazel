@@ -1,0 +1,38 @@
+load("//:plugin.bzl", "cloe_plugin")
+
+cloe_plugin(
+    name = "noisy_object_sensor",
+    srcs = [
+        "src/noise_data.hpp",
+        "src/noisy_object_sensor.cpp",
+    ],
+    deps = [
+        "//runtime",
+        "//models",
+    ],
+)
+
+cloe_plugin(
+    name = "noisy_lane_sensor",
+    srcs = [
+        "src/noise_data.hpp",
+        "src/noisy_lane_sensor.cpp",
+    ],
+    deps = [
+        "//runtime",
+        "//models",
+    ],
+)
+
+cc_test(
+    name = "noisy_sensor_test",
+    srcs = [
+        "src/noise_data.hpp",
+        "src/noisy_sensor_test.cpp",
+    ],
+    deps = [
+        "//runtime",
+        "//models",
+        "@gtest//:gtest_main",
+    ]
+)

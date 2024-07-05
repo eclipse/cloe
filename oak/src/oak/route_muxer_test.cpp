@@ -28,7 +28,7 @@
 #include <vector>     // for vector<>
 using namespace std;  // NOLINT(build/namespaces)
 
-#include "oak/route_muxer.hpp"  // for Muxer<>
+#include <oak/route_muxer.hpp>  // for Muxer<>
 using oak::Muxer;
 using oak::Parameters;
 

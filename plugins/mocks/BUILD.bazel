@@ -1,0 +1,23 @@
+load("//:plugin.bzl", "cloe_plugin")
+
+cloe_plugin(
+    name = "demo_stuck",
+    srcs = [
+        "src/demo_stuck.cpp",
+    ],
+    deps = [
+        "//runtime",
+        "//models",
+    ],
+)
+
+cloe_plugin(
+    name = "demo_printer",
+    srcs = [
+        "src/demo_printer.cpp",
+    ],
+    deps = [
+        "//runtime",
+        "//models",
+    ],
+)

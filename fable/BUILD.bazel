@@ -1,0 +1,38 @@
+load(
+    "@cmake_configure_file//:cmake_configure_file.bzl",
+    "cmake_configure_file",
+)
+load("//:version.bzl", "PROJECT_VERSION", "PROJECT_VERSION_U32")
+
+cmake_configure_file(
+    name = "fable_version_hpp",
+    src = "src/fable/version.hpp.in",
+    out = "include/fable/version.hpp",
+    defines = [
+        "FABLE_VERSION={}".format(PROJECT_VERSION),
+        "FABLE_VERSION_U32={}".format(PROJECT_VERSION_U32),
+    ]
+)
+
+cc_library(
+    name = "fable",
+    srcs = glob(["src/**/*.cpp"], exclude=["src/**/*_test.cpp"]),
+    hdrs = glob(["include/**/*.hpp"]) + [":fable_version_hpp"],
+    includes = [ "include" ],
+    deps = [
+        "@fmt",
+        "@nlohmann_json//:json",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_test(
+    name = "fable_test",
+    srcs = glob(["src/**/*_test.cpp"]),
+    deps = [
+        ":fable",
+        "@sol",
+        "@boost//:optional",
+        "@gtest//:gtest_main",
+    ],
+)

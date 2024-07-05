@@ -1,0 +1,27 @@
+load("//:plugin.bzl", "cloe_plugin", "cloe_plugin_library")
+
+cloe_plugin(
+    name = "gndtruth_extractor",
+    deps = [
+        ":gndtruth_extractor_impl",
+    ]
+)
+
+cloe_plugin_library(
+    name = "gndtruth_extractor_impl",
+    srcs = glob(["src/*.cpp", "src/*.hpp"], exclude=["src/*_test.cpp"]),
+    includes = ["src"],
+    deps = [
+        "//runtime",
+        "//models",
+    ],
+)
+
+cc_test(
+    name = "gndtruth_extractor_test",
+    srcs = glob(["src/*_test.cpp"]),
+    deps = [
+        ":gndtruth_extractor_impl",
+        "@gtest//:gtest_main",
+    ]
+)

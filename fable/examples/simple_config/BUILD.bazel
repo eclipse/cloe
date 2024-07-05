@@ -1,0 +1,20 @@
+filegroup(
+    name = "inputs",
+    srcs = [
+        "example_input.json",
+    ]
+)
+
+cc_binary(
+    name = "simple_config",
+    srcs = [
+        "src/main.cpp",
+    ],
+    deps = [
+        "//fable",
+        "@cli11",
+    ],
+    data = [
+        ":inputs",
+    ]
+)
