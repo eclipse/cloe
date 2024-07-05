@@ -1,0 +1,65 @@
+load("//:version.bzl", "PROJECT_VERSION")
+
+cc_library(
+    name = "enginelib",
+    hdrs = glob(["src/**/*.hpp"], exclude=["src/main*.hpp"]),
+    srcs = glob(
+        ["src/**/*.cpp"],
+        exclude=[
+            "src/main*.cpp",
+            "src/**/*_test.cpp",
+            "src/server_mock.cpp",
+        ]
+    ),
+    data = glob(["lua/**"]),
+    includes = ["src"],
+    additional_compiler_inputs = glob(["webui/**"]),
+    deps = [
+        "//engine/vendor/lrdb",
+        "//engine/vendor/linenoise",
+        "//stack",
+        "//fable",
+        "//runtime",
+        "//models",
+        "//oak",
+        "@boost//:algorithm",
+        "@boost//:conversion",
+        "@boost//:optional",
+        "@boost//:process",
+        "@boost//:uuid",
+        "@sol",
+    ],
+    defines = [
+        "CLOE_ENGINE_VERSION=\\\"{}\\\"".format(PROJECT_VERSION),
+        "CLOE_ENGINE_TIMESTAMP=\\\"unknown\\\"",
+        "CLOE_ENGINE_WITH_SERVER=1",
+        "CLOE_ENGINE_WITH_LRDB=1",
+        "PROJECT_SOURCE_DIR=\\\"engine\\\"",
+    ],
+    linkopts = [
+        "-lpthread",
+    ],
+)
+
+cc_test(
+    name = "engine_test",
+    srcs = glob(["src/**/*_test.cpp"]),
+    defines = [
+        "CLOE_LUA_PATH=\\\"" + package_name() + "/lua\\\"",
+    ],
+    deps = [
+        ":enginelib",
+        "@gtest//:gtest_main",
+    ],
+)
+
+cc_binary(
+    name = "cloe-engine",
+    srcs = glob(["src/main*.hpp", "src/main*.cpp"]),
+    includes = ["src"],
+    deps = [
+        ":enginelib",
+        "@cli11",
+    ],
+    visibility = ["//visibility:public"],
+)

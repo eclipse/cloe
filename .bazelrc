@@ -1,0 +1,14 @@
+common --enable_bzlmod
+common --registry=https://bcr.bazel.build
+try-import %workspace%/.bazelrc.user
+
+# bazel from apt needs access to this cacerts location
+startup --host_jvm_args=-Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts
+
+# So we can support private dependencies
+build --experimental_cc_implementation_deps
+
+build --action_env=BAZEL_CXXOPTS="-std=c++17"
+build --strip=never
+build --copt='-O2'
+build --conlyopt='-std=c11'

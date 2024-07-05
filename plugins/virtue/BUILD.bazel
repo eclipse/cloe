@@ -1,0 +1,12 @@
+load("//:plugin.bzl", "cloe_plugin")
+
+cloe_plugin(
+    name = "virtue",
+    srcs = [
+        "src/virtue.cpp",
+    ],
+    deps = [
+        "//runtime",
+        "//models",
+    ],
+)

@@ -38,9 +38,10 @@
 #include <cloe/registrar.hpp>
 #include <fable/utility/gtest.hpp>
 
-#include "oak/curl.hpp"       // for Curl
-#include "oak/registrar.hpp"  // for Registrar
-#include "oak/server.hpp"     // for Server
+#include <oak/registrar.hpp>  // for Registrar
+#include <oak/server.hpp>     // for Server
+
+#include "curl.hpp"       // for Curl
 
 using namespace std;  // NOLINT(build/namespaces)
 

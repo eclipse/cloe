@@ -1,0 +1,61 @@
+load("//:plugin.bzl", "cloe_plugin", "cloe_plugin_library")
+
+cloe_plugin(
+    name = "clothoid_fit",
+    deps = [
+        ":clothoid_fit_impl",
+    ],
+)
+
+cloe_plugin_library(
+    name = "clothoid_fit_impl",
+    hdrs = [
+        "src/clothoid_fit.hpp"
+    ],
+    srcs = [
+        "src/clothoid_fit.cpp"
+    ],
+    includes = [
+        "src"
+    ],
+    deps = [
+        ":g1_fitting",
+        "//runtime",
+        "//models",
+        "@eigen",
+    ],
+)
+
+cc_test(
+    name = "clothoid_fit_test",
+    srcs = ["src/clothoid_fit.cpp"],
+    deps = [
+        ":clothoid_fit_impl",
+        "@gtest//:gtest_main",
+    ]
+)
+
+cc_library(
+    name = "g1_fitting",
+    hdrs = [
+        "src/g1_fitting.hpp",
+    ],
+    srcs = [
+        "src/g1_fitting.cpp"
+    ],
+    deps = [
+        "@eigen",
+    ],
+    includes = [
+        "src",
+    ],
+)
+
+cc_test(
+    name = "g1_fitting_test",
+    srcs = ["src/g1_fitting_test.cpp"],
+    deps = [
+        ":g1_fitting",
+        "@gtest//:gtest_main",
+    ]
+)

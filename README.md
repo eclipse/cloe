@@ -194,6 +194,37 @@ When using `make` to build the project, add this to the command line:
 
     CONAN_OPTIONS="-c tools.build:skip_test=1"
 
+## Building with Bazel
+
+Bazel tooling is currently experimental, and is meant to support users
+who already are using Bazel in their projects and are not afraid of
+providing their own registries and modules for Cloe's dependencies.
+
+(That allows us to not have to vendor massive amounts of Bazel modules
+in this repository, of which Boost is the main problematic point.
+Once Boost makes it into the Bazel Central Registry, it may be worthwhile
+to vendor the remaining libraries in this repository.)
+
+You will need to create a `.bazelrc.user` file in the repository root
+with the following contents:
+
+    common --registry=file:///path/to/your/bazel/registry
+
+This file is ignored by Git to prevent you from exposing your secrets.
+The registry should contain the following modules:
+
+    boost
+    cli11
+    esmini
+    incbin
+    inja
+    luajit (optional)
+    oatpp
+    open-simulation-interface
+    sol
+
+The rest of the dependencies are taken from the Bazel Central Registry.
+See `MODULE.bazel` for the full list.
 
 ### Building Docker Images
 

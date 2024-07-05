@@ -1,0 +1,25 @@
+cc_library(
+    name = "osi",
+    srcs = glob(["src/**/*.cpp"], exclude=["src/**/*_test.cpp"]),
+    hdrs = glob(["include/**/*.hpp"]),
+    includes = [ "include" ],
+    deps = [
+        "//fable",
+        "//models",
+        "//runtime",
+        "@boost//:asio",
+        "@eigen",
+        "@open-simulation-interface//:osi_cc_proto",
+        "@protobuf",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_test(
+    name = "osi_test",
+    srcs = glob(["src/**/*_test.cpp"]),
+    deps = [
+        ":osi",
+        "@gtest//:gtest_main",
+    ],
+)

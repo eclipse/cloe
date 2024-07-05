@@ -20,7 +20,7 @@
  * \see  oak/registrar.hpp
  */
 
-#include "oak/registrar.hpp"
+#include <oak/registrar.hpp>
 
 #include <map>
 #include <memory>
@@ -30,8 +30,9 @@
 
 #include <cloe/handler.hpp>  // for Request, Response, Handler
 
-#include "oak/request_stub.hpp"  // for RequestStub
-#include "oak/server.hpp"        // for Server
+#include <oak/server.hpp>        // for Server
+
+#include "request_stub.hpp"  // for RequestStub
 
 namespace oak {
 

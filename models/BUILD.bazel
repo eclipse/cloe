@@ -1,0 +1,21 @@
+cc_library(
+    name = "models",
+    hdrs = glob(["include/**/*.hpp"]),
+    srcs = glob(["src/**/*.cpp"], exclude=["src/**/*_test.cpp"]),
+    includes = [ "include" ],
+    deps = [
+        "//runtime",
+        "@boost//:optional",
+        "@eigen",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_test(
+    name = "models_test",
+    srcs = glob(["src/**/*_test.cpp"]),
+    deps = [
+        ":models",
+        "@gtest//:gtest_main",
+    ],
+)

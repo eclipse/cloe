@@ -1,0 +1,20 @@
+cc_library(
+    name = "oak",
+    hdrs = glob(["include/**/*.hpp"]),
+    srcs = glob(["src/**"], exclude=["src/**/*_test.cpp"]),
+    includes = [ "include" ],
+    deps = [
+        "//runtime",
+        "@oatpp",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_test(
+    name = "models_test",
+    srcs = glob(["src/**/*_test.cpp", "src/**/*.hpp"]),
+    deps = [
+        ":oak",
+        "@gtest//:gtest_main",
+    ],
+)
