@@ -55,10 +55,10 @@ struct SimulationProbe {
   std::map<std::string, std::vector<std::string>> vehicles;
 
   /// List of trigger actions enrolled.
-  std::vector<std::string> trigger_actions;
+  std::map<std::string, fable::Json> trigger_actions;
 
   /// List of trigger events enrolled.
-  std::vector<std::string> trigger_events;
+  std::map<std::string, fable::Json> trigger_events;
 
   /// List of HTTP endpoints that are available.
   std::vector<std::string> http_endpoints;

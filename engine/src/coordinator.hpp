@@ -22,19 +22,19 @@
 
 #pragma once
 
-#include <list>                // for list<>
-#include <map>                 // for map<>
-#include <memory>              // for unique_ptr<>, shared_ptr<>
-#include <mutex>               // for mutex
-#include <queue>               // for queue<>
-#include <string>              // for string
-#include <vector>              // for vector<>
+#include <list>    // for list<>
+#include <map>     // for map<>
+#include <memory>  // for unique_ptr<>, shared_ptr<>
+#include <mutex>   // for mutex
+#include <queue>   // for queue<>
+#include <string>  // for string
+#include <vector>  // for vector<>
 
 #include <sol/state_view.hpp>  // for state_view
 #include <sol/table.hpp>       // for table
 
-#include <cloe/cloe_fwd.hpp>   // for Registrar, DataBroker
-#include <cloe/trigger.hpp>    // for Trigger, Action, Event, ...
+#include <cloe/cloe_fwd.hpp>  // for Registrar, DataBroker
+#include <cloe/trigger.hpp>   // for Trigger, Action, Event, ...
 
 namespace engine {
 
@@ -49,7 +49,7 @@ class TriggerUnknownAction : public cloe::TriggerInvalid {
  public:
   TriggerUnknownAction(const std::string& key, const cloe::Conf& c)
       : TriggerInvalid(c, "unknown action: " + key), key_(key) {}
-   ~TriggerUnknownAction() noexcept override = default;
+  ~TriggerUnknownAction() noexcept override = default;
 
   /**
    * Return key that is unknown.
@@ -120,12 +120,12 @@ class Coordinator {
   /**
    * Return a list of names of all available actions that have been enrolled.
    */
-  [[nodiscard]] std::vector<std::string> trigger_action_names() const;
+  [[nodiscard]] std::map<std::string, fable::Json> trigger_action_schemas() const;
 
   /**
    * Return a list of names of all available events that have been enrolled.
    */
-  [[nodiscard]] std::vector<std::string> trigger_event_names() const;
+  [[nodiscard]] std::map<std::string, fable::Json> trigger_event_schemas() const;
 
   /**
    * Process any incoming triggers, clear the buffer, and trigger time-based
