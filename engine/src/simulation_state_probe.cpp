@@ -69,8 +69,8 @@ StateId SimulationMachine::Probe::impl(SimulationContext& ctx) {
   for (const auto& [name, veh] : ctx.vehicles) {
     data.vehicles[name] = veh->component_names();
   }
-  data.trigger_actions = ctx.coordinator->trigger_action_names();
-  data.trigger_events = ctx.coordinator->trigger_event_names();
+  data.trigger_actions = ctx.coordinator->trigger_action_schemas();
+  data.trigger_events = ctx.coordinator->trigger_event_schemas();
   data.http_endpoints = ctx.server->endpoints();
   data.signal_metadata = dump_signals(*ctx.db);
   data.test_metadata = sol::object(cloe::luat_cloe_engine_state(ctx.lua)["report"]["tests"]);

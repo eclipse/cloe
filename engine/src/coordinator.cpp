@@ -82,20 +82,18 @@ std::shared_ptr<cloe::TriggerRegistrar> Coordinator::trigger_registrar(Source s)
   return std::make_shared<TriggerRegistrar>(*this, s);
 }
 
-[[nodiscard]] std::vector<std::string> Coordinator::trigger_action_names() const {
-  std::vector<std::string> results;
-  results.reserve(actions_.size());
-  for (const auto& [key, _] : actions_) {
-    results.emplace_back(key);
+[[nodiscard]] std::map<std::string, fable::Json> Coordinator::trigger_action_schemas() const {
+  std::map<std::string, fable::Json> results;
+  for (const auto& [key, ptr] : actions_) {
+    results.emplace(key, ptr->schema().json_schema());
   }
   return results;
 }
 
-[[nodiscard]] std::vector<std::string> Coordinator::trigger_event_names() const {
-  std::vector<std::string> results;
-  results.reserve(events_.size());
-  for (const auto& [key, _] : events_) {
-    results.emplace_back(key);
+[[nodiscard]] std::map<std::string, fable::Json> Coordinator::trigger_event_schemas() const {
+  std::map<std::string, fable::Json> results;
+  for (const auto& [key, ptr] : events_) {
+    results.emplace(key, ptr->schema().json_schema());
   }
   return results;
 }
