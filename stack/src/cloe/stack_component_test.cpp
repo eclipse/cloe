@@ -16,9 +16,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
- * \file stack_component_test.cpp
- * \see  stack.hpp
- * \see  stack.cpp
+ * \file cloe/stack_component_test.cpp
+ * \see  cloe/stack.hpp
+ * \see  cloe/stack.cpp
  */
 
 #include <gtest/gtest.h>
@@ -30,8 +30,9 @@
 #include <cloe/component/object_sensor.hpp>  // for ObjectSensor
 #include <cloe/core.hpp>                     // for Json
 #include <fable/utility/gtest.hpp>           // for assert_from_conf
-#include "stack.hpp"                         // for Stack
-using namespace cloe;                        // NOLINT(build/namespaces)
+
+#include "cloe/stack.hpp"  // for Stack
+using namespace cloe;      // NOLINT(build/namespaces)
 
 namespace {
 
@@ -65,7 +66,7 @@ DEFINE_COMPONENT_FACTORY(DummySensorFactory, DummySensorConf, "dummy_object_sens
 
 DEFINE_COMPONENT_FACTORY_MAKE(DummySensorFactory, DummySensor, cloe::ObjectSensor)
 
-}
+}  // namespace
 
 TEST(cloe_stack, deserialization_of_component) {
   // Create a sensor component from the given configuration.
@@ -137,7 +138,7 @@ std::unique_ptr<::cloe::Component> FusionSensorFactory::make(
   return std::make_unique<FusionSensor>(this->name(), conf, obj_sensors, ego_sensors.front());
 }
 
-}
+}  // namespace
 
 TEST(cloe_stack, deserialization_of_fusion_component) {
   // Create a sensor component from the given configuration.

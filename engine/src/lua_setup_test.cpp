@@ -23,11 +23,11 @@
 #include <fstream>
 #include <string_view>
 
+#include <cloe/stack.hpp>  // for Stack
 #include <sol/state.hpp>
 
 #include "lua_api.hpp"    // for lua_safe_script_file
 #include "lua_setup.hpp"  // for setup_lua
-#include "stack.hpp"      // for Stack
 using namespace cloe;     // NOLINT(build/namespaces)
 
 #ifndef CLOE_LUA_PATH
@@ -87,7 +87,8 @@ TEST_F(cloe_lua_setup, cloe_engine_is_available) {
 
 TEST_F(cloe_lua_setup, describe_cloe) {
   setup_lua(lua, opt, stack);
-  ASSERT_EQ(lua.script("local cloe = require('cloe'); return cloe.inspect(cloe.LogLevel.CRITICAL)").get<std::string>(),
+  ASSERT_EQ(lua.script("local cloe = require('cloe'); return cloe.inspect(cloe.LogLevel.CRITICAL)")
+                .get<std::string>(),
             std::string("\"critical\""));
 }
 

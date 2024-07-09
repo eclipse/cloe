@@ -32,8 +32,8 @@
 #include <utility>     // for move
 #include <vector>      // for vector<>
 
-#include <fable/schema/custom.hpp>          // for CustomDeserializer
-#include <fable/schema/factory.hpp>         // for Factory
+#include <fable/schema/custom.hpp>   // for CustomDeserializer
+#include <fable/schema/factory.hpp>  // for Factory
 
 #include <cloe/component.hpp>        // for ComponentFactory
 #include <cloe/controller.hpp>       // for ControllerFactory
@@ -42,8 +42,8 @@
 #include <cloe/trigger.hpp>          // for Source
 #include <cloe/utility/command.hpp>  // for Command
 
-#include "config.hpp"
-#include "plugin.hpp"  // for Plugin
+#include <cloe/plugin_loader.hpp>  // for Plugin
+#include <cloe/stack_config.hpp>
 
 namespace cloe {
 
@@ -870,7 +870,9 @@ class StackIncompleteError : public Error {
   explicit StackIncompleteError(std::vector<std::string>&& missing);
 
   [[nodiscard]] std::string all_sections_missing(const std::string& sep = ", ") const;
-  [[nodiscard]] const std::vector<std::string>& sections_missing() const { return sections_missing_; }
+  [[nodiscard]] const std::vector<std::string>& sections_missing() const {
+    return sections_missing_;
+  }
 
  private:
   std::vector<std::string> sections_missing_;

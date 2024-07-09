@@ -57,6 +57,7 @@ class CloeEngine(ConanFile):
     def requirements(self):
         self.requires(f"cloe-runtime/{self.version}@cloe/develop")
         self.requires(f"cloe-models/{self.version}@cloe/develop")
+        self.requires(f"cloe-stack/{self.version}@cloe/develop")
         self.requires("cli11/2.3.2", private=True)
         self.requires("sol2/3.3.1")
         if self.options.server:

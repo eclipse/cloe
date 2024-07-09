@@ -16,25 +16,23 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
- * \file plugins/nop_simulator.hpp
- * \see  plugins/nop_simulator.cpp
+ * \file cloe/plugins/nop_simulator.hpp
+ * \see  cloe/plugins/nop_simulator.cpp
  */
 
 #pragma once
 
-#include <memory>  // for unique_ptr<>
 #include <string>  // for string
 #include <vector>  // for vector
 
 #include <cloe/simulator.hpp>  // for Simulator, SimulatorFactory, ...
 
-namespace cloe {
-namespace simulator {
+namespace cloe::plugins {
 
-struct NopConfiguration : public Confable {
+struct NopSimulatorConfiguration : public Confable {
   std::vector<std::string> vehicles{"default"};
 
-  CONFABLE_SCHEMA(NopConfiguration) {
+  CONFABLE_SCHEMA(NopSimulatorConfiguration) {
     return Schema{
         {"vehicles", Schema(&vehicles, "list of vehicle names to make available")},
     };
@@ -47,7 +45,7 @@ struct NopConfiguration : public Confable {
   }
 };
 
-DEFINE_SIMULATOR_FACTORY(NopFactory, NopConfiguration, "nop", "stand-in no-operation simulator")
+DEFINE_SIMULATOR_FACTORY(NopSimulatorFactory, NopSimulatorConfiguration, "nop",
+                         "stand-in no-operation simulator")
 
-}  // namespace simulator
-}  // namespace cloe
+}  // namespace cloe::plugins

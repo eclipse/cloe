@@ -20,22 +20,22 @@
  * \see  stack_factory.hpp
  */
 
-#include "stack_factory.hpp"
+#include "cloe/stack_factory.hpp"
 
 #include <filesystem>  // for path
 #include <iostream>    // for ostream, cerr
 #include <string>      // for string
 #include <vector>      // for vector<>
 
+#include <cloe/plugins/nop_controller.hpp>  // for NopControllerFactory
+#include <cloe/plugins/nop_simulator.hpp>   // for NopControllerFactory
 #include <cloe/utility/std_extensions.hpp>  // for split_string
 #include <cloe/utility/xdg.hpp>             // for merge_config
 #include <fable/environment.hpp>            // for Environment
 #include <fable/utility.hpp>                // for pretty_print, read_conf_from_file
 
-#include "config.hpp"                  // for CLOE_PLUGIN_PATH
-#include "plugins/nop_controller.hpp"  // for NopFactory
-#include "plugins/nop_simulator.hpp"   // for NopFactory
-#include "stack.hpp"                   // for Stack
+#include "cloe/stack.hpp"         // for Stack
+#include "cloe/stack_config.hpp"  // for CLOE_PLUGIN_PATH
 
 namespace cloe {
 
@@ -129,8 +129,10 @@ Stack new_stack(const StackOptions& opt) {
 
   // Insert built-in plugins:
   if (!opt.no_builtin_plugins) {
-    s.insert_plugin(make_plugin<controller::NopFactory>(), PluginConf{"builtin://controller/nop"});
-    s.insert_plugin(make_plugin<simulator::NopFactory>(), PluginConf{"builtin://simulator/nop"});
+    s.insert_plugin(make_plugin<plugins::NopControllerFactory>(),
+                    PluginConf{"builtin://controller/nop"});
+    s.insert_plugin(make_plugin<plugins::NopSimulatorFactory>(),
+                    PluginConf{"builtin://simulator/nop"});
   }
 
   // Setup plugin path:

@@ -16,19 +16,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
- * \file plugins/nop_controller.hpp
- * \see  plugins/nop_controller.cpp
+ * \file cloe/plugins/nop_controller.hpp
+ * \see  cloe/plugins/nop_controller.cpp
  */
 
 #pragma once
 
 #include <cloe/controller.hpp>  // for DEFINE_CONTROLLER_FACTORY, Json, ...
 
-namespace cloe {
-namespace controller {
+namespace cloe::plugins {
 
-struct NopConfiguration : public Confable {
-  CONFABLE_FRIENDS(NopConfiguration)
+struct NopControllerConfiguration : public Confable {
+  CONFABLE_FRIENDS(NopControllerConfiguration)
 };
 
 /**
@@ -36,7 +35,7 @@ struct NopConfiguration : public Confable {
  *
  * This is useful for smoke-test testing.
  */
-DEFINE_CONTROLLER_FACTORY(NopFactory, NopConfiguration, "nop", "stand-in that does nothing")
+DEFINE_CONTROLLER_FACTORY(NopControllerFactory, NopControllerConfiguration, "nop",
+                          "stand-in that does nothing")
 
-}  // namespace controller
-}  // namespace cloe
+}  // namespace cloe::plugins

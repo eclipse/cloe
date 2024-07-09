@@ -37,11 +37,11 @@
 #include <boost/uuid/uuid_io.hpp>
 
 #include <cloe/core.hpp>      // for logger::get
+#include <cloe/stack.hpp>     // for Stack
 #include <fable/utility.hpp>  // for read_conf
 
 #include "error_handler.hpp"  // for conclude_error
 #include "simulation.hpp"     // for Simulation
-#include "stack.hpp"          // for Stack
 
 namespace engine {
 
@@ -89,7 +89,7 @@ std::string handle_uuid(const ProbeOptions& opt) { return handle_uuid_impl(opt);
 
 template <typename Options>
 std::tuple<cloe::Stack, sol::state> handle_config_impl(const Options& opt,
-                                                  const std::vector<std::string>& filepaths) {
+                                                       const std::vector<std::string>& filepaths) {
   assert(opt.output != nullptr && opt.error != nullptr);
   auto log = cloe::logger::get("cloe");
   cloe::logger::get("cloe")->info("Cloe {}", CLOE_ENGINE_VERSION);
@@ -122,13 +122,13 @@ std::tuple<cloe::Stack, sol::state> handle_config_impl(const Options& opt,
   return {std::move(stack), std::move(lua_state)};
 }
 
-std::tuple<cloe::Stack, sol::state> handle_config(
-    const RunOptions& opt, const std::vector<std::string>& filepaths) {
+std::tuple<cloe::Stack, sol::state> handle_config(const RunOptions& opt,
+                                                  const std::vector<std::string>& filepaths) {
   return handle_config_impl(opt, filepaths);
 }
 
-std::tuple<cloe::Stack, sol::state> handle_config(
-    const ProbeOptions& opt, const std::vector<std::string>& filepaths) {
+std::tuple<cloe::Stack, sol::state> handle_config(const ProbeOptions& opt,
+                                                  const std::vector<std::string>& filepaths) {
   return handle_config_impl(opt, filepaths);
 }
 

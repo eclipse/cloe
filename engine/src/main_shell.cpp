@@ -25,11 +25,11 @@
 #include <linenoise.h>
 
 #include <fmt/format.h>
+#include <cloe/stack.hpp>
 #include <fable/utility/string.hpp>  // for ends_with
 
 #include "lua_api.hpp"        // for lua_safe_script_file
 #include "main_commands.hpp"  // for Stack, new_stack, LuaOptions, new_lua
-#include "stack.hpp"          // for Stack
 
 namespace engine {
 
@@ -53,8 +53,8 @@ bool evaluate(sol::state_view lua, std::ostream& os, const char* buf) {
   return true;
 }
 
-int noninteractive_shell(sol::state_view lua, std::ostream& os, const std::vector<std::string>& actions,
-                         bool ignore_errors) {
+int noninteractive_shell(sol::state_view lua, std::ostream& os,
+                         const std::vector<std::string>& actions, bool ignore_errors) {
   int errors = 0;
   for (const auto& action : actions) {
     auto ok = evaluate(lua, os, action.c_str());
@@ -68,8 +68,8 @@ int noninteractive_shell(sol::state_view lua, std::ostream& os, const std::vecto
   return errors;
 }
 
-void interactive_shell(sol::state_view lua, std::ostream& os, const std::vector<std::string>& actions,
-                       bool ignore_errors) {
+void interactive_shell(sol::state_view lua, std::ostream& os,
+                       const std::vector<std::string>& actions, bool ignore_errors) {
   constexpr auto PROMPT = "> ";
   constexpr auto PROMPT_CONTINUE = ">> ";
   constexpr auto PROMPT_HISTORY = "< ";

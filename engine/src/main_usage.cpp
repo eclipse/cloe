@@ -22,10 +22,10 @@
 #include <utility>   // for pair<>, move
 #include <vector>    // for vector<>
 
+#include <cloe/stack.hpp>        // for Stack
 #include <cloe/utility/xdg.hpp>  // for find_all_config
 
 #include "main_commands.hpp"  // for new_stack
-#include "stack.hpp"          // for Stack
 
 namespace engine {
 

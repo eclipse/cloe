@@ -24,9 +24,10 @@
 #include <string>
 #include <vector>
 
-#include "config.hpp"
+#include <cloe/stack_config.hpp>
+#include <cloe/stack_factory.hpp>
+
 #include "lua_setup.hpp"
-#include "stack_factory.hpp"
 
 namespace engine {
 

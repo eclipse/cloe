@@ -25,8 +25,8 @@
 #include <memory>  // for unique_ptr<>
 
 #include <cloe/registrar.hpp>  // for Registrar
+#include <cloe/stack.hpp>
 
-#include "stack.hpp"          // for ServerConf
 #include "utility/defer.hpp"  // for Defer
 
 namespace engine {

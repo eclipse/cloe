@@ -16,11 +16,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
- * \file plugin.cpp
- * \see  plugin.hpp
+ * \file cloe/plugin_loader.cpp
+ * \see  cloe/plugin_loader.hpp
  */
 
-#include "plugin.hpp"
+#include "cloe/plugin_loader.hpp"
 
 #include <dlfcn.h>  // for dlopen, dlsym, RTLD_NOW, ...
 #include <memory>   // for unique_ptr<>

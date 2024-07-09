@@ -21,7 +21,7 @@
  * \see  stack_test.cpp
  */
 
-#include "stack.hpp"
+#include "cloe/stack.hpp"
 
 #include <algorithm>   // for transform, swap
 #include <filesystem>  // for filesystem
@@ -35,6 +35,8 @@ namespace fs = std::filesystem;
 #include <cloe/utility/std_extensions.hpp>  // for join_vector
 #include <fable/utility.hpp>                // for indent_string
 #include <fable/utility/string.hpp>         // for starts_with
+
+#include "cloe/plugin_loader.hpp"
 
 namespace cloe {
 

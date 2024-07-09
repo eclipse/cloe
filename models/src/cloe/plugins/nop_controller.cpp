@@ -16,18 +16,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
- * \file plugins/nop_controller.cpp
- * \see  plugins/nop_controller.hpp
+ * \file cloe/plugins/nop_controller.cpp
+ * \see  cloe/plugins/nop_controller.hpp
  */
 
-#include "plugins/nop_controller.hpp"
+#include <cloe/plugins/nop_controller.hpp>
 
 #include <memory>  // for unique_ptr<>, make_unique<>
 
 #include <cloe/sync.hpp>  // for Sync
 
-namespace cloe {
-namespace controller {
+namespace cloe::plugins {
 
 class NopController : public Controller {
  public:
@@ -46,9 +45,8 @@ class NopController : public Controller {
   Duration process(const Sync& sync) override { return sync.time(); }
 };
 
-std::unique_ptr<Controller> NopFactory::make(const Conf&) const {
+std::unique_ptr<Controller> NopControllerFactory::make(const Conf&) const {
   return std::make_unique<NopController>(this->name());
 }
 
-}  // namespace controller
-}  // namespace cloe
+}  // namespace cloe::plugins

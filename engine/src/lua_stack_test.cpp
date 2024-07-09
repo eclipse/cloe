@@ -22,13 +22,13 @@
 
 #include <sol/state.hpp>
 
-#include <cloe/core.hpp>  // for Json
+#include <cloe/core.hpp>   // for Json
+#include <cloe/stack.hpp>  // for Stack
 #include <fable/utility.hpp>
 #include <fable/utility/gtest.hpp>  // for assert_from_conf
 #include <fable/utility/sol.hpp>
 
 #include "lua_setup.hpp"
-#include "stack.hpp"   // for Stack
 using namespace cloe;  // NOLINT(build/namespaces)
 
 TEST(cloe_lua_stack, deserialize_vehicle_conf) {
