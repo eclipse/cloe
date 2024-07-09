@@ -16,11 +16,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
- * \file plugins/nop_simulator.cpp
- * \see  plugins/nop_simulator.hpp
+ * \file cloe/plugins/nop_simulator.cpp
+ * \see  cloe/plugins/nop_simulator.hpp
  */
 
-#include "plugins/nop_simulator.hpp"
+#include <cloe/plugins/nop_simulator.hpp>
 
 #include <functional>  // for function<>
 #include <memory>      // for unique_ptr<>
@@ -45,8 +45,7 @@
 #include <cloe/sync.hpp>                         // for Sync
 #include <cloe/vehicle.hpp>                      // for Vehicle
 
-namespace cloe {
-namespace simulator {
+namespace cloe::plugins {
 
 struct NopVehicle : public Vehicle {
   NopVehicle(uint64_t id, const std::string& name) : Vehicle(id, name) {
@@ -86,7 +85,7 @@ struct NopVehicle : public Vehicle {
 
 class NopSimulator : public Simulator {
  public:
-  explicit NopSimulator(const std::string& name, const NopConfiguration& c)
+  explicit NopSimulator(const std::string& name, const NopSimulatorConfiguration& c)
       : Simulator(name), config_(c) {}
   virtual ~NopSimulator() noexcept = default;
 
@@ -109,8 +108,9 @@ class NopSimulator : public Simulator {
 
   void enroll(Registrar& r) override {
     r.register_api_handler("/state", HandlerType::BUFFERED, handler::ToJson<NopSimulator>(this));
-    r.register_api_handler(
-        "/configuration", HandlerType::BUFFERED, handler::ToJson<NopConfiguration>(&config_));
+    r.register_api_handler("/configuration",
+                           HandlerType::BUFFERED,
+                           handler::ToJson<NopSimulatorConfiguration>(&config_));
   }
 
   size_t num_vehicles() const override {
@@ -154,12 +154,11 @@ class NopSimulator : public Simulator {
   }
 
  private:
-  NopConfiguration config_;
+  NopSimulatorConfiguration config_;
   std::vector<std::shared_ptr<Vehicle>> vehicles_;
   std::function<bool(const Sync&)> finfunc_;
 };
 
-DEFINE_SIMULATOR_FACTORY_MAKE(NopFactory, NopSimulator)
+DEFINE_SIMULATOR_FACTORY_MAKE(NopSimulatorFactory, NopSimulator)
 
-}  // namespace simulator
-}  // namespace cloe
+}  // namespace cloe::plugins

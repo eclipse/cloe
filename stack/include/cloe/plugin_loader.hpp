@@ -16,9 +16,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
- * \file plugin.hpp
- * \see  plugin.cpp
- * \see  version.hpp
+ * \file cloe/plugin_laoder.hpp
+ * \see  cloe/plugin_loader.cpp
  */
 
 #pragma once

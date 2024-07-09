@@ -32,6 +32,7 @@
 #include <sol/state_view.hpp>  // for state_view
 
 #include <cloe/cloe_fwd.hpp>       // for Simulator, Controller, Registrar, Vehicle, Duration
+#include <cloe/stack.hpp>          // for Stack
 #include <cloe/utility/timer.hpp>  // for DurationTimer
 
 #include "simulation_events.hpp"      // for LoopCallback, ...
@@ -41,7 +42,6 @@
 #include "simulation_result.hpp"      // for SimulationResult
 #include "simulation_statistics.hpp"  // for SimulationStatistics
 #include "simulation_sync.hpp"        // for SimulationSync
-#include "stack.hpp"                  // for Stack
 
 namespace engine {
 

@@ -16,19 +16,20 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 /**
- * \file stack_test.cpp
- * \see  stack.hpp
- * \see  stack.cpp
+ * \file cloe/stack_test.cpp
+ * \see  cloe/stack.hpp
+ * \see  cloe/stack.cpp
  */
 
 #include <gtest/gtest.h>
 #include <string>
 #include <vector>
 
-#include <cloe/core.hpp>                     // for Json
-#include <fable/utility/gtest.hpp>           // for assert_from_conf
-#include "stack.hpp"                         // for Stack
-using namespace cloe;                        // NOLINT(build/namespaces)
+#include <cloe/core.hpp>            // for Json
+#include <fable/utility/gtest.hpp>  // for assert_from_conf
+
+#include "cloe/stack.hpp"  // for Stack
+using namespace cloe;      // NOLINT(build/namespaces)
 
 TEST(cloe_stack, serialization_of_empty_stack) {
   Stack s;

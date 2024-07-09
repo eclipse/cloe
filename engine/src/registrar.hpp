@@ -25,10 +25,10 @@
 #include <string>       // for string
 #include <string_view>  // for string_view
 
-#include <cloe/core/logger.hpp>  // for logger::get
-#include <cloe/registrar.hpp>    // for cloe::Registrar
+#include <cloe/core/logger.hpp>   // for logger::get
+#include <cloe/registrar.hpp>     // for cloe::Registrar
+#include <cloe/stack_config.hpp>  // for CLOE_TRIGGER_PATH_DELIMITER, ...
 
-#include "config.hpp"       // for CLOE_TRIGGER_PATH_DELIMITER, ...
 #include "coordinator.hpp"  // for Coordinator
 #include "server.hpp"       // for Server, ServerRegistrar
 

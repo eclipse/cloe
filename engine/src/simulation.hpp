@@ -26,9 +26,8 @@
 #include <functional>  // for function<>
 #include <optional>    // for optional<>
 
+#include <cloe/stack.hpp>      // for Stack
 #include <sol/state_view.hpp>  // for state_view
-
-#include "stack.hpp"  // for Stack
 
 namespace engine {
 

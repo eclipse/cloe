@@ -17,10 +17,10 @@
  */
 
 #include <fable/utility/sol.hpp>
+#include <cloe/stack.hpp>
 
 #include "lua_api.hpp"
 #include "lua_setup.hpp"
-#include "stack.hpp"
 
 namespace cloe {
 

@@ -23,6 +23,8 @@ add_library(cloe-models
     src/cloe/component/utility/steering_utils.cpp
     src/cloe/utility/actuation_state.cpp
     src/cloe/utility/lua_types.cpp
+    src/cloe/plugins/nop_controller.cpp
+    src/cloe/plugins/nop_simulator.cpp
 
     # For IDE integration
     ${cloe-models_PUBLIC_HEADERS}

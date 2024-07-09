@@ -32,6 +32,7 @@ add_subdirectory(runtime)
 add_subdirectory(models)
 add_subdirectory(osi)
 add_subdirectory(oak)
+add_subdirectory(stack)
 add_subdirectory(engine)
 add_subdirectory(plugins)
 

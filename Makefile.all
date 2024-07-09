@@ -50,6 +50,7 @@ ALL_PKGS := \
 	fable \
 	runtime \
 	models \
+	stack \
 	osi \
 	oak \
 	engine \
@@ -77,7 +78,8 @@ runtime: fable
 models: runtime
 osi: runtime models
 oak: runtime
-engine: models oak
+stack: runtime models
+engine: models oak stack
 $(PLUGIN_PKGS): runtime models
 plugins/esmini: osi
 

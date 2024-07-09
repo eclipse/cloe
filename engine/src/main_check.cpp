@@ -21,9 +21,9 @@
 #include <vector>    // for vector<>
 
 #include <cloe/core/fable.hpp>
+#include <cloe/stack.hpp>
 
 #include "main_commands.hpp"
-#include "stack.hpp"
 
 namespace engine {
 

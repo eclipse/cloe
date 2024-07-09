@@ -17,13 +17,14 @@
  */
 
 #include <csignal>  // for signal
-#include <tuple>     // for tuple
+#include <tuple>    // for tuple
+
+#include <cloe/stack.hpp>  // for Stack
 
 #include "error_handler.hpp"      // for conclude_error
 #include "main_commands.hpp"      // for RunOptions, handle_*
 #include "simulation.hpp"         // for Simulation
 #include "simulation_result.hpp"  // for SimulationResult
-#include "stack.hpp"              // for Stack
 
 namespace engine {
 
