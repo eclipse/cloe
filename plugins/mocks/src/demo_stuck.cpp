@@ -28,8 +28,11 @@
 #include <cloe/component/object_sensor.hpp>  // for ObjectSensor
 #include <cloe/controller.hpp>               // for Controller, ControllerFactory, ...
 #include <cloe/plugin.hpp>                   // for EXPORT_CLOE_PLUGIN
+#include <cloe/registrar.hpp>                // for Registrar
 #include <cloe/sync.hpp>                     // for Sync
 #include <cloe/vehicle.hpp>                  // for Vehicle
+
+#include "delay_action.hpp"  // for WallClockDelayFactory
 
 namespace demo {
 
@@ -67,6 +70,14 @@ class DemoStuck : public cloe::Controller {
 
   void abort() override {
     // Nothing to do here.
+  }
+
+  void enroll(cloe::Registrar& r) override {
+    r.register_action<cloe::actions::WallClockDelayFactory>(
+        "delay", "delay by amount", [this](const cloe::Sync&) {
+          logger()->info("Delaying in {}", reinterpret_cast<size_t>(this));  // NOLINT
+          return true;
+        });
   }
 
   cloe::Duration process(const cloe::Sync& s) override {
