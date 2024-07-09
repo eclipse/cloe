@@ -26,6 +26,7 @@
 
 #include <Eigen/Geometry>  // for Isometry3d, Vector3d
 
+#include <google/protobuf/stubs/common.h> // for GOOGLE_PROTOBUF_VERSION
 #include <google/protobuf/util/json_util.h>  // for JsonPrint
 
 #include <cloe/utility/geometry.hpp>  // for quaternion_from_rpy
@@ -41,8 +42,10 @@ template <typename OSI_T>
 void osi_to_json(const OSI_T& msg, std::string* json_string) {
   google::protobuf::util::JsonPrintOptions options;
   options.add_whitespace = true;
+#if GOOGLE_PROTOBUF_VERSION < 5026000
   options.always_print_primitive_fields = true;
-  google::protobuf::util::MessageToJsonString(msg, json_string, options);
+#endif
+  std::ignore = google::protobuf::util::MessageToJsonString(msg, json_string, options);
 }
 
 template void osi_to_json(const osi3::SensorData& msg, std::string* json_string);
