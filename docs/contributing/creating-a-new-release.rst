@@ -72,7 +72,7 @@ Run ``conan search`` to check that your cache only has the expected packages.
 
 Then, compile the entire project locally::
 
-    make purge-all export-vendor export smoketest-deps smoketest
+    make purge-all export-cli export-vendor export-all smoketest-deps smoketest
 
 This should run through without errors. Then make sure to do the same with
 the optional packages::

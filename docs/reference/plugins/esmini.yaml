@@ -1,6 +1,6 @@
 Name: esmini
 Type: simulator
-Path: ~/.conan/data/cloe-plugin-esmini/0.24.0/cloe/develop/package/d7a7554cbdefb6329d8ab091c6c8b1679c2bb1be/lib/cloe/simulator_esmini.so
+Path: ~/.conan/data/cloe-plugin-esmini/0.25.0/cloe/develop/package/84ccb4ea840b4d87c205641ecb352be3b8054b58/lib/cloe/simulator_esmini.so
 Usage: {
   "headless": "boolean :: run esmini without viewer",
   "scenario": "string :: absolute path to open scenario file",

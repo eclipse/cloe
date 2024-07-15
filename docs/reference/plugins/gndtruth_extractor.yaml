@@ -1,6 +1,6 @@
 Name: gndtruth_extractor
 Type: controller
-Path: ~/.conan/data/cloe-plugin-gndtruth-extractor/0.24.0/cloe/develop/package/b604e04f9a20730e6de510c8305e28e783869866/lib/cloe/controller_gndtruth_extractor.so
+Path: ~/.conan/data/cloe-plugin-gndtruth-extractor/0.25.0/cloe/develop/package/722452d8f3bfc1eef1fc5de534638769b66120b8/lib/cloe/controller_gndtruth_extractor.so
 Usage: {
   "components": "array of string :: array of components to be extracted",
   "output_file": "string :: file path to write groundtruth output to",

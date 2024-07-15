@@ -1,5 +1,5 @@
 {
-  "$id": "~/.conan/data/cloe-plugin-frustum-culling/0.24.0/cloe/develop/package/7ecda101666cc57e74197e36a88beb3d4fdbf3be/lib/cloe/component_frustum_culling_objects.so",
+  "$id": "~/.conan/data/cloe-plugin-frustum-culling/0.25.0/cloe/develop/package/91b5125cdd7bd55b869f186e62db770e4e0299fd/lib/cloe/component_frustum_culling_objects.so",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "additionalProperties": false,
   "description": "transform objects to given reference frame and apply frustum culling",
