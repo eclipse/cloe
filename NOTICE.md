@@ -46,17 +46,12 @@ The following third-party libraries are included in the Cloe repository:
   - Website: https://jothepro.github.io/doxygen-awesome-css
   - Source: docs/_vendor/doxygen-awesome
 
-- Typecheck
-  - License: MIT
-  - License-Source: https://github.com/gvvaughan/typecheck/raw/master/LICENSE.md
-  - Website: https://github.com/gvvaughan/typecheck
-  - Source: engine/lua/typecheck.lua
+<!-- C & C++ -->
 
-- Tableshape
-  - License: MIT
-  - License-Source: https://github.com/leafo/tableshape/blob/v2.6.0/README.md
-  - Website: https://github.com/leafo/tableshape
-  - Source: engine/lua/tableshape.lua
+- LRDB
+  - License: BSL-1.0
+  - License-Source: https://www.boost.org/LICENSE_1_0.txt
+  - Website: https://github.com/satoren/LRDB
 
 - Linenoise
   - License: BSD2
@@ -64,17 +59,19 @@ The following third-party libraries are included in the Cloe repository:
   - Website: https://github.com/antirez/linenoise
   - Source: engine/vendor/linenoise
 
+<!-- Lua -->
+
 - Inspect.lua
   - License: MIT
   - License-Source: https://raw.githubusercontent.com/kikito/inspect.lua/master/MIT-LICENSE.txt
   - Website: https://github.com/kikito/inspect.lua
   - Source: engine/lua/inspect.lua
 
-- LRDB
-  - License: BSL-1.0
-  - License-Source: https://www.boost.org/LICENSE_1_0.txt
-  - Website: https://github.com/satoren/LRDB
-  - Source: engine/vendor/lrdb
+- JSON.lua
+  - License: CC-BY "Attribution"
+  - License-Source: http://creativecommons.org/licenses/by/3.0/deed.en_US
+  - Website: http://regex.info/blog/lua/json
+  - Source: engine/lua/json.lua
 
 - Lust
   - License: MIT
@@ -82,14 +79,26 @@ The following third-party libraries are included in the Cloe repository:
   - Website: https://github.com/bjornbytes/lust
   - Source: engine/lua/lust.lua
 
+- Tableshape
+  - License: MIT
+  - License-Source: https://github.com/leafo/tableshape/blob/v2.6.0/README.md
+  - Website: https://github.com/leafo/tableshape
+  - Source: engine/lua/tableshape.lua
+
+- Typecheck
+  - License: MIT
+  - License-Source: https://github.com/gvvaughan/typecheck/raw/master/LICENSE.md
+  - Website: https://github.com/gvvaughan/typecheck
+  - Source: engine/lua/typecheck.lua
+
 The following third-party libraries are used by this project (these are usually
 installed with the help of Conan):
 
-- Google Test with Google Mock
-  - License: BSD-3
-  - License-Source: https://github.com/google/googletest/blob/master/LICENSE
-  - Website: https://github.com/google/googletest
-  - Conan-Package: gtest
+- Boost
+  - License: BSL-1.0
+  - License-Source: https://www.boost.org/LICENSE_1_0.txt
+  - Website: https://www.boost.org
+  - Conan-Package: boost
 
 - CLI11
   - License: BSD-3
@@ -97,11 +106,17 @@ installed with the help of Conan):
   - Website: https://github.com/cliutils/cli11
   - Conan-Package: CLI11@cliutils/stable
 
-- gabime/spdlog
-  - License: MIT
-  - License-Source: https://github.com/gabime/spdlog/blob/v1.x/LICENSE
-  - Source: https://github.com/gabime/spdlog
-  - Conan-Package: spdlog
+- Eigen3
+  - License: MPL-2.0
+  - License-Source: https://www.mozilla.org/en-US/MPL/2.0
+  - Website: https://eigen.tuxfamily.org
+  - Conan-Package: eigen
+
+- ESmini
+  - License: MPL-2.0
+  - License-Source: https://github.com/esmini/esmini/blob/master/LICENSE
+  - Source: https://github.com/esmini/esmini
+  - Conan-Package: esmini
 
 - fmtlib/fmt
   - License: BSD-2
@@ -110,11 +125,17 @@ installed with the help of Conan):
   - Source: https://github.com/fmtlib/fmt
   - Conan-Package: fmt
 
-- nlohmann/json
+- gabime/spdlog
   - License: MIT
-  - License-Source: https://github.com/nlohmann/json/blob/master/LICENSE.MIT
-  - Source: https://github.com/nlohmann/json
-  - Conan-Package: nlohmann_json
+  - License-Source: https://github.com/gabime/spdlog/blob/v1.x/LICENSE
+  - Source: https://github.com/gabime/spdlog
+  - Conan-Package: spdlog
+
+- Google Test with Google Mock
+  - License: BSD-3
+  - License-Source: https://github.com/google/googletest/blob/master/LICENSE
+  - Website: https://github.com/google/googletest
+  - Conan-Package: gtest
 
 - incbin
   - License: Unlicense
@@ -128,17 +149,11 @@ installed with the help of Conan):
   - Source: https://github.com/pantor/inja
   - Conan-Package: inja
 
-- Boost
-  - License: BSL-1.0
-  - License-Source: https://www.boost.org/LICENSE_1_0.txt
-  - Website: https://www.boost.org
-  - Conan-Package: boost
-
-- Eigen3
-  - License: MPL2
-  - License-Source: https://www.mozilla.org/en-US/MPL/2.0
-  - Website: https://eigen.tuxfamily.org
-  - Conan-Package: eigen
+- nlohmann/json
+  - License: MIT
+  - License-Source: https://github.com/nlohmann/json/blob/master/LICENSE.MIT
+  - Source: https://github.com/nlohmann/json
+  - Conan-Package: nlohmann_json
 
 - Oat++
   - License: Apache-2.0
@@ -148,7 +163,7 @@ installed with the help of Conan):
   - Conan-Package: oatpp
 
 - Open-Simulation-Interface
-  - License: MPL2
+  - License: MPL-2.0
   - License-Source: https://github.com/OpenSimulationInterface/open-simulation-interface/blob/master/LICENSE
   - Source: https://github.com/OpenSimulationInterface/open-simulation-interface
   - Conan-Package: open-simulation-interface
