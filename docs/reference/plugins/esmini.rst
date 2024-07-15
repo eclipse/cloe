@@ -1,4 +1,5 @@
 .. reference-gen: esmini
+.. conan-pkg: cloe-plugin-esmini
 
 ESMini Simulator
 ================

@@ -1,6 +1,6 @@
 Name: minimator
 Type: simulator
-Path: ~/.conan/data/cloe-plugin-minimator/0.24.0/cloe/develop/package/b604e04f9a20730e6de510c8305e28e783869866/lib/cloe/simulator_minimator.so
+Path: ~/.conan/data/cloe-plugin-minimator/0.25.0/cloe/develop/package/722452d8f3bfc1eef1fc5de534638769b66120b8/lib/cloe/simulator_minimator.so
 Usage: {
   "vehicles": "object :: list of vehicle names to make available"
 }

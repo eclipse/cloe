@@ -257,6 +257,16 @@ Several subcommands are available:
       cloe-engine -l trace run cloe-stackfile.json debug-conf.json
       cloe-engine --no-system-confs -l warn run tests/build_config.json
 
+  shell
+    Launch a Lua interactive shell and/or run Lua scripts.
+
+    A simulation is not started.
+
+    Examples:
+      cloe-engine shell
+      cloe-engine shell -c 'cloe.describe(cloe)'
+      cloe-engine shell -i 'testfile.lua'
+
 Please report any bugs to: cloe-dev@eclipse.org
 
 ---

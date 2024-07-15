@@ -23,6 +23,7 @@ News
    :hidden:
    :maxdepth: 1
 
+   news/release-0.25.0
    news/release-0.24.0
    news/release-0.23.0
    news/release-0.22.0
@@ -30,6 +31,27 @@ News
    news/release-0.20.0
    news/release-0.19.0
 
+:doc:`Version 0.25.0 Release <news/release-0.25.0>`
+---------------------------------------------------
+
+This release contains the initial implementation of Lua support with the new
+DataBroker and Signals concept.
+
+- New command ``shell`` for cloe-engine allows running Lua scripts and/or
+  provides an interactive shell prompt (similar to the ``lua`` command).
+- New command ``probe`` for cloe-engine dumps available triggers, signals, and
+  other metadata for a simulation without running the simulation in its entirety.
+
+The Cloe build has been streamlined and simplified:
+
+- Discontinue `cloe` meta-package. It was not possible to continue using this
+  with Conan 1 due to technical limitations.
+  (The `conanfile.py` in the repo root is now a superbuild of cloe for
+  development purposes only.)
+- Move tests from various sub-directories into a single unified tests directory.
+- Add experimental Bazel build tooling configuration.
+
+Read more about these changes and more :doc:`here <news/release-0.25.0>`.
 
 :doc:`Version 0.24.0 Release <news/release-0.24.0>`
 ---------------------------------------------------

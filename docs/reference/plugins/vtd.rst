@@ -1,4 +1,5 @@
 .. reference-gen: vtd
+.. conan-pkg: cloe-plugin-vtd
 
 VTD Simulator Binding
 =====================

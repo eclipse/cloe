@@ -58,6 +58,71 @@ readable perspective on new releases.
 
       Note that the most recent release is at the *top* of the document.
 
+
+0.25.0 (2024-07-15)
+-------------------
+
+This is the first Cloe release that contains the Lua and DataBroker integration.
+Read all about the changes :doc:`here <news/release-0.25.0>`.
+
+**Engine:**
+
+- engine: Make probe output trigger schema `[6c6c71cb] <https://github.com/eclipse/cloe/commit/6c6c71cb7e539f1f3e74ab10759b041ee522e7bb>`_
+- engine: Add probe subcommand `[4be46cb1] <https://github.com/eclipse/cloe/commit/4be46cb158411d4fc4b78d60048b4b7e7b5c27e9>`_
+- engine: Fix some findings from clang-tidy `[58382a67] <https://github.com/eclipse/cloe/commit/58382a670fabb556bc339fbc2617856ddf6af45c>`_
+- engine: Add --output-path to cloe-engine `[4fc65ac9] <https://github.com/eclipse/cloe/commit/4fc65ac906dcc24cb639c6979807347d0e1329c8>`_
+- engine: Replace boost::filesystem with std::filesystem `[71844110] <https://github.com/eclipse/cloe/commit/71844110d79f9eea9fdcba20fe8acf5eb50927e9>`_
+- engine: Replace boost::optional with std::optional `[8b0acb2f] <https://github.com/eclipse/cloe/commit/8b0acb2f4375e9ce9405a6a14008801ce96e0092>`_
+- engine: Add LRDB debugging support `[c60a3ef9] <https://github.com/eclipse/cloe/commit/c60a3ef9a70d3c9acefd7e71bceddbb7450d61b0>`_
+- engine: Add Lua scripting support `[d182d035] <https://github.com/eclipse/cloe/commit/d182d035b7608b3207f0ab98f1216f92fb97b098>`_
+- engine: Vendor linenoise library `[12fb330c] <https://github.com/eclipse/cloe/commit/12fb330c0528901406ef70f623a9a03b96d3717b>`_
+- engine: Restructure code for better compilation times `[a1137367] <https://github.com/eclipse/cloe/commit/a113736729b097ddc6fa5442ec8c1d2df1734360>`_
+- engine: Extract SimulationProgress into simulation_progress.hpp `[30b05f5f] <https://github.com/eclipse/cloe/commit/30b05f5f836c7bb06241438d8b4dbfed95fdfb72>`_
+- engine: Set stack options in own scope `[5e3d4efe] <https://github.com/eclipse/cloe/commit/5e3d4efe479761508755449ecdc22f28610f20cf>`_
+- engine: Remove --distinct option from check command `[fa7d2586] <https://github.com/eclipse/cloe/commit/fa7d258628b4f22ada0442b2307e5d911de31676>`_
+- tests: Add test for cloe-engine --write-output and --output-path `[d9fcd704] <https://github.com/eclipse/cloe/commit/d9fcd704103a2d6272c51633d68a424f81013578>`_
+
+**Core Libraries:**
+
+- all: Improve DataBroker interface for common types `[0d9509cc] <https://github.com/eclipse/cloe/commit/0d9509cc9ff3d7c209869ff36c4e340897895314>`_
+- all: Add DataBroker and Signals concepts `[34fcf16d] <https://github.com/eclipse/cloe/commit/34fcf16d99adaca1a985ae26105ea73859d7a9c1>`_
+
+- fable: Implement clang-tidy suggestions `[3f017f36] <https://github.com/eclipse/cloe/commit/3f017f36141cbfcbf7eef26e63f184d5ea098914>`_
+
+- runtime: Fix duplicate definitions in set_action.hpp `[1cf804f6] <https://github.com/eclipse/cloe/commit/1cf804f6b6832d9ae30b1fb6f09699effcb5d9c7>`_
+- runtime: Replace boost::filesystem with std::filesystem `[aec4bce1] <https://github.com/eclipse/cloe/commit/aec4bce148003c1cf5045317099cd13443dadcc1>`_
+- runtime: Add CallbackResult return value to all action operator() `[51f3c0ae] <https://github.com/eclipse/cloe/commit/51f3c0aebd507f3e7ee42df33c49a0929ebb8a67>`_
+
+- stack: Refactor stack into its own library `[55dc93e5] <https://github.com/eclipse/cloe/commit/55dc93e59f543a5da4e14759b254a4c538185d4d>`_
+
+- osi: Fix compatiblity with protobuf > v25 `[3b7bf9d7] <https://github.com/eclipse/cloe/commit/3b7bf9d751a384aaddb2590e6d1d3507d38277f9>`_
+
+**Plugins:**
+
+- basic: Replace boost::optional with std::optional `[e59a6360] <https://github.com/eclipse/cloe/commit/e59a63600d22268391a39b06dd5aa1b6b8352b3b>`_
+
+- speedometer: Implement data broker `[a29afa6a] <https://github.com/eclipse/cloe/commit/a29afa6a56eaf7c3dbe3efb0710b66e4ba371bea>`_
+
+- mocks: Add delay action to demo_stuck `[984fda42] <https://github.com/eclipse/cloe/commit/984fda421aaa9cd657533fb59a5041eb95dce1b9>`_
+
+**Tooling & Dependencies:**
+
+- tests: Add (disabled) test combining cloe with external package `[e401c0f7] <https://github.com/eclipse/cloe/commit/e401c0f7fc1aba154ca7f426a60170daafee5be1>`_
+
+- ci: Reduce number of jobs run for branches `[906a6a21] <https://github.com/eclipse/cloe/commit/906a6a214072cbc9c2ac49b4b4f9c17e683e24c0>`_
+- ci: Enable Github workflows for important branches `[dbfefddd] <https://github.com/eclipse/cloe/commit/dbfefddd6489751943e3959605b63e26321576a5>`_
+
+- tooling: Add Bazel support `[73d24a43] <https://github.com/eclipse/cloe/commit/73d24a4333a11a5875c18a67d347f873daeb840a>`_
+- tooling: Disable dependabot for the UI `[c22e9d74] <https://github.com/eclipse/cloe/commit/c22e9d746df9b3c537bbd7e7872cfada2c82d8b1>`_
+- tooling: Improve grep-uuids to better show duplicates `[e58c48fe] <https://github.com/eclipse/cloe/commit/e58c48fe96cfeb5d6eb10a42b223681f4e3427d3>`_
+- tooling: Add VS Code project configuration `[6c03bd5f] <https://github.com/eclipse/cloe/commit/6c03bd5fb86954b63429ac7cfb4c2d0dfb8286ce>`_
+- tooling: Update deploy-all to simply call cloe-launch deploy `[29eed02f] <https://github.com/eclipse/cloe/commit/29eed02fa015087c0a27353db6676031cab0d710>`_
+- tooling: Fix interspersed $() and ${} in Makefiles `[a2494825] <https://github.com/eclipse/cloe/commit/a24948251dbd2dc1f97091512fd3a832d726694c>`_
+- tooling: Move tests into project root tests directory `[1a9436dd] <https://github.com/eclipse/cloe/commit/1a9436dd3c07fd38229e30a32afd4864fe0704be>`_
+- tooling: Make cloe a super-build of all packages `[65a4aef8] <https://github.com/eclipse/cloe/commit/65a4aef8542b4968e3fb10e42507ac06585cc06c>`_
+
+- vendor/open-simulation-interface: Add full_package_mode `[d5f33148] <https://github.com/eclipse/cloe/commit/d5f33148a21359f80836fccd6c8587b43de8565d>`_
+
 0.24.0 (2024-05-06)
 -------------------
 
