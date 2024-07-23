@@ -101,6 +101,13 @@ class CloeEngine(ConanFile):
 
     def package_id(self):
         self.info.requires["boost"].full_package_mode()
+        self.info.requires["cloe-runtime"].full_package_mode()
+        self.info.requires["cloe-models"].full_package_mode()
+        self.info.requires["cli11"].full_package_mode()
+        if self.options.server:
+            self.info.requires["cloe-oak"].full_package_mode()
+        self.info.requires["fmt"].full_package_mode()
+        self.info.requires["nlohmann_json"].full_package_mode()
         del self.info.options.pedantic
 
     def package_info(self):
