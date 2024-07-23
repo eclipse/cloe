@@ -38,11 +38,10 @@ class ESMini(ConanFile):
     def configure(self):
         if self.options.with_osg:
             self.options.with_osi = True
-        if self.options.with_osi:
-            self.options["open-simulation-interface"].shared = self.options.shared
-            self.options["protobuf"].shared = True
-        self.options["open-simulation-interface"].shared = self.options.shared
-        self.options["protobuf"].shared = self.options.shared
+        # Note: we use the following combination for OSI and Protobuf to avoid runtime
+        # issues either in WSL or Linux.
+        self.options["open-simulation-interface"].shared = True
+        self.options["protobuf"].shared = False
 
     def layout(self):
         # We can't use cmake_layout because ESmini *really* doesn't like stuff to
@@ -158,6 +157,9 @@ class ESMini(ConanFile):
             src=os.path.join(self.source_folder, "3rd_party_terms_and_licenses"),
             dst=os.path.join(self.package_folder, "licenses"),
         )
+
+    def package_id(self):
+        self.info.requires["open-simulation-interface"].full_package_mode()
 
     def package_info(self):
         self.cpp_info.set_property("cmake_file_name", "esmini")
