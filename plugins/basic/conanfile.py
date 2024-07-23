@@ -71,6 +71,8 @@ class CloeControllerBasic(ConanFile):
 
     def package_id(self):
         self.info.requires["boost"].full_package_mode()
+        self.info.requires["cloe-models"].full_package_mode()
+        self.info.requires["cloe-runtime"].full_package_mode()
         del self.info.options.pedantic
 
     def package_info(self):
