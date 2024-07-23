@@ -73,7 +73,9 @@ class CloeModels(ConanFile):
             cm.install()
 
     def package_id(self):
+        self.info.requires["cloe-runtime"].full_package_mode()
         self.info.requires["boost"].full_package_mode()
+        self.info.requires["eigen"].full_package_mode()
         del self.info.options.pedantic
 
     def package_info(self):
