@@ -89,6 +89,10 @@ class Fable(ConanFile):
         if self.should_install:
             cm.install()
 
+    def package_id(self):
+        self.info.requires["nlohmann_json"].full_package_mode()
+        self.info.requires["fmt"].full_package_mode()
+
     def package_info(self):
         self.cpp_info.set_property("cmake_find_mode", "both")
         self.cpp_info.set_property("cmake_file_name", "fable")
