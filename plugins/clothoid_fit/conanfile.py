@@ -62,6 +62,9 @@ class CloeComponentClothoidFit(ConanFile):
 
     def package_id(self):
         self.info.requires["boost"].full_package_mode()
+        self.info.requires["cloe-models"].full_package_mode()
+        self.info.requires["cloe-runtime"].full_package_mode()
+        self.info.requires["eigen"].full_package_mode()
 
     def package_info(self):
         self.cpp_info.set_property("cmake_find_mode", "both")
