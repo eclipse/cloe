@@ -58,6 +58,37 @@ readable perspective on new releases.
 
       Note that the most recent release is at the *top* of the document.
 
+0.24.1 (2024-07-23)
+-------------------
+
+This is the eighth public minor release of the Cloe packages.
+Read all about the changes :doc:`here <news/release-0.24.1>`.
+
+Please note that if you are trying to override a dependency to a different patch release, then
+the following Cloe packages will not take in consideration your override in their package_id unless
+you update to this version or you change the default configuration in your Conan config.
+
+- tooling: Align dependencies with master branch `[d4f103c] <https://github.com/eclipse/cloe/commit/d4f103c1246bb48aa0d4d94d65f3b59f2116737b>`_
+- engine: Set full_package_mode() for dependencies `[56e451f] <https://github.com/eclipse/cloe/commit/56e451fd757a1a1cb7352580bf39cfde1945fea2>`_
+- fable: Set full_package_mode() for dependencies `[35a803d] <https://github.com/eclipse/cloe/commit/35a803de06d5fa67485db60fc1f906ce5a87f80a>`_
+- models: Set full_package_mode() for dependencies `[456150f] <https://github.com/eclipse/cloe/commit/456150ff0ddcf79dbd2dbdef248e785c853e50c2>`_
+- oak: Set full_package_mode() for dependencies `[57e1011] <https://github.com/eclipse/cloe/commit/57e1011512af6cae70931420164e3122e97d6d62>`_
+- optional/vtd: Set full_package_mode() for dependencies `[44a083d] <https://github.com/eclipse/cloe/commit/44a083d654713a10133ba52b0175ec91cb19d895>`_
+- osi: Set full_package_mode() for dependencies `[439ff8e] <https://github.com/eclipse/cloe/commit/439ff8ef7e600eefb340a7df9c1c1d7518b76bf8>`_
+- plugins/basic: Set full_package_mode() for dependencies `[564f9ff] <https://github.com/eclipse/cloe/commit/564f9ff8a21f3b553095304bd60e9b1ea27a17e7>`_
+- plugins/clothoid_fit: Set full_package_mode() for dependencies `[f2651d5] <https://github.com/eclipse/cloe/commit/f2651d50d52254f7cf832be3c5d04ac9b1aa1a13>`_
+- plugins/esmini: Set full_package_mode() for dependencies `[8600619] <https://github.com/eclipse/cloe/commit/860061950a86923965c550dd8a2ba0c2ab5dd525>`_
+- plugins/frustum_culling: Set full_package_mode() for dependencies `[fe23929] <https://github.com/eclipse/cloe/commit/fe23929152654fc8ba97c2d912c170ee0ceb0c76>`_
+- plugins/gndtruth_extractor: Set full_package_mode() for dependencies `[6d13a7e] <https://github.com/eclipse/cloe/commit/6d13a7ed0966023dd907ad8f9d3f0342344b0083>`_
+- plugins/minimator: Set full_package_mode() for dependencies `[212635a] <https://github.com/eclipse/cloe/commit/212635a70b7a7d44bc158307db413b14f20c7969>`_
+- plugins/mocks: Set full_package_mode() for dependencies `[d652af4] <https://github.com/eclipse/cloe/commit/d652af4e7f42d83aec5f25920795ba5a43d831f0>`_
+- plugins/noisy_sensor: Set full_package_mode() for dependencies `[e67c81d] <https://github.com/eclipse/cloe/commit/e67c81d7948a413b20200f87afe804395acbf8dd>`_
+- plugins/speedometer: Set full_package_mode() for dependencies `[f603c11] <https://github.com/eclipse/cloe/commit/f603c115e9785ca3d757db57ecaa1cfa5329cd1e>`_
+- plugins/virtue: Set full_package_mode() for dependencies `[ffa82b0] <https://github.com/eclipse/cloe/commit/ffa82b0c90f2b19a0d02edd47dcfbfeabc6939f7>`_
+- runtime: Set full_package_mode() for dependencies `[fc1e7bd] <https://github.com/eclipse/cloe/commit/fc1e7bd69ba885d6346163bf14f50d813819516f>`_
+- vendor/esmini: Fix dependency configuration `[4e4f3f3] <https://github.com/eclipse/cloe/commit/4e4f3f3bfa5644a968cf9f7f4348cb88a749ba6d>`_
+- vendor/osi: Set full_package_mode() for dependencies `[f804d62] <https://github.com/eclipse/cloe/commit/f804d62b9235e760ce718949292edc04285e660f>`_
+
 0.24.0 (2024-05-06)
 -------------------
 
