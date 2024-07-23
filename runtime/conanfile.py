@@ -90,6 +90,10 @@ class CloeRuntime(ConanFile):
 
     def package_id(self):
         self.info.requires["boost"].full_package_mode()
+        self.info.requires["fable"].full_package_mode()
+        self.info.requires["inja"].full_package_mode()
+        self.info.requires["spdlog"].full_package_mode()
+        self.info.requires["incbin"].full_package_mode()
         del self.info.options.pedantic
 
     def package_info(self):
