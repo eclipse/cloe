@@ -58,7 +58,6 @@ class Cloe(ConanFile):
         if self.options.with_vtd:
             cloe_requires("cloe-plugin-vtd")
 
-        boost_version = "1.74.0"
         if self.options.with_engine:
             cloe_requires("cloe-engine")
 
@@ -66,6 +65,6 @@ class Cloe(ConanFile):
         self.requires("zlib/1.2.13", override=True)
         self.requires("fmt/9.1.0", override=True)
         self.requires("inja/3.4.0", override=True)
-        self.requires("nlohmann_json/3.11.2", override=True)
-        self.requires("incbin/cci.20211107", override=True),
-        self.requires(f"boost/{boost_version}", override=True)
+        self.requires("nlohmann_json/3.11.3", override=True)
+        self.requires("incbin/cci.20211107", override=True)
+        self.requires(f"boost/1.74.0", override=True)
