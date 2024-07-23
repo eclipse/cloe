@@ -54,7 +54,7 @@ class CloeSimulatorVTD(ConanFile):
         self.requires("fmt/9.1.0", override=True)
         self.requires("inja/3.4.0", override=True)
         self.requires("nlohmann_json/3.11.2", override=True)
-        self.requires("incbin/cci.20211107", override=True),
+        self.requires("incbin/cci.20211107", override=True)
 
     def build_requirements(self):
         self.test_requires("gtest/1.13.0")
@@ -135,6 +135,7 @@ class CloeSimulatorVTD(ConanFile):
         self.info.requires["open-simulation-interface"].full_package_mode()
         self.info.requires["vtd-api"].full_package_mode()
         self.info.requires["boost"].full_package_mode()
+        self.info.requires["nlohmann_json"].full_package_mode()
 
     def package_info(self):
         self.cpp_info.set_property("cmake_find_mode", "both")
