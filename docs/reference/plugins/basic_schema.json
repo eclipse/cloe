@@ -1,5 +1,5 @@
 {
-  "$id": "~/.conan/data/cloe-plugin-basic/0.24.0/cloe/develop/package/b604e04f9a20730e6de510c8305e28e783869866/lib/cloe/controller_basic.so",
+  "$id": "~/.conan/data/cloe-plugin-basic/0.24.1/cloe/develop/package/5c3bb391fe904448001b7294c2ab64c9c24ce1c5/lib/cloe/controller_basic.so",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "additionalProperties": false,
   "description": "very basic vehicle controller",

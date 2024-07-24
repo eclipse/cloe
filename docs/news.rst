@@ -23,6 +23,7 @@ News
    :hidden:
    :maxdepth: 1
 
+   news/release-0.24.1
    news/release-0.24.0
    news/release-0.23.0
    news/release-0.22.0
@@ -30,6 +31,25 @@ News
    news/release-0.20.0
    news/release-0.19.0
 
+:doc:`Version 0.24.1 Release <news/release-0.24.1>`
+---------------------------------------------------
+
+This is a patch release to address two issues:
+
+- The open-simulation-interface and Protobuf configuration that we want to
+  support with ESMini is set to support the integration in WSL and Linux.
+  OSI is set to be compiled as a shared library and Protobuf as static. At
+  least with the current versions of OSI and Protobuf any other configuration
+  combination produces issues either in WSL or Linux.
+- Set full_package_mode() for dependencies. The Conan configuration has as
+  default semver_direct_mode. This means that from the final consumer recipe
+  perspective if I override the version of a dependency package A from v1.0.0
+  to v1.0.1, any dependency that is also part of the dependency tree and is
+  also consuming package A, will not be rebuilt because semver_direct_mode
+  doesn't consider patch releases in the package_id of the consumer. We set
+  full_package_mode to the dependencies to consider this case, the user,
+  channel and package_id of the dependencies to define the resulting package_id
+  of the consumer.
 
 :doc:`Version 0.24.0 Release <news/release-0.24.0>`
 ---------------------------------------------------
