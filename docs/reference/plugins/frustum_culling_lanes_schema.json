@@ -1,5 +1,5 @@
 {
-  "$id": "~/.conan/data/cloe-plugin-frustum-culling/0.24.0/cloe/develop/package/7ecda101666cc57e74197e36a88beb3d4fdbf3be/lib/cloe/component_frustum_culling_lanes.so",
+  "$id": "~/.conan/data/cloe-plugin-frustum-culling/0.24.1/cloe/develop/package/6a34472426314ffa0c566906e297483bc1c99f10/lib/cloe/component_frustum_culling_lanes.so",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "additionalProperties": false,
   "description": "transform lane boundaries to given reference frame and apply frustum culling",
