@@ -187,7 +187,7 @@ class StateMachine {
   void push_interrupt(StateId id) {
     logger()->trace("Push interrupt: {}", id);
     std::lock_guard<std::mutex> guard(interrupt_mtx_);
-    if (interrupt_ != nullptr) {
+    if (interrupt_ != nullptr && interrupt_ != id) {
       throw std::logic_error{"interrupt queuing is currently not available, already processing: " +
                              std::string(interrupt_)};
     }

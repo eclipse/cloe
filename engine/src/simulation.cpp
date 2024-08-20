@@ -231,6 +231,25 @@ SimulationResult Simulation::run() {
   ctx.commander->wait_all();
   reset_abort_handler();
 
+  //In case of abort still try to get the simulation results from lua
+  // Gather up the simulation results.
+  if (!ctx.result)
+  {
+    try{
+      auto result = SimulationResult();
+      result.outcome = ctx.outcome.value_or(SimulationOutcome::Aborted);
+      result.uuid = ctx.uuid;
+      result.sync = ctx.sync;
+      result.statistics = ctx.statistics;
+      result.elapsed = ctx.progress.elapsed();
+      result.triggers = ctx.coordinator->history();
+      result.report = sol::object(cloe::luat_cloe_engine_state(ctx.lua)["report"]);
+      ctx.result = result;
+    }
+    catch(std::exception& e)
+    {}
+  }
+
   auto result = ctx.result.value_or(SimulationResult{});
   result.outcome = ctx.outcome.value_or(SimulationOutcome::Aborted);
   assert(result.errors.empty()); // Not currently used in simulation.
